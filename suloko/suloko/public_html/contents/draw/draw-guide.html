@@ -1,0 +1,105 @@
+<?php
+  $page_title = "추첨 안내 - 파워볼, 메가밀리언, 미국 로또, 슈로코";
+  $page_description = "메가밀리언, 파워볼 등 미국 로또 당첨 번호 확인 및 추첨 안내";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  $menu_on['draw'] = true;
+
+  $mega  = timesss('MM');
+  $power = timesss('PB');
+
+  $megaTime  = substr($mega['e_date'], -5);
+  $powerTime = substr($power['e_date'], -5);
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html";?>
+  <main id="main">
+    <div class="location ls50">
+      <div class="wrap_com">
+        <ol class="clear">
+          <li><a href="#" class="add_before"><span class="hide">홈</span></a></li>
+          <li><a href="#">당첨번호 확인</a></li>
+          <li><a href="#">추첨안내</a></li>
+        </ol>
+      </div>
+    </div>
+    <section class="sec_draw sec_tab wrap_com">
+      <h2 class="h_type4">당첨번호 확인</h2>
+      <div class="wrap_tab">
+        <ul class="tab_type1 flex align_center ls75">
+          <li class="on"><a href="draw-guide.html">추첨 안내</a></li>
+          <li><a href="draw-mega.html">메가밀리언 당첨 결과</a></li>
+          <li><a href="draw-power.html">파워볼 당첨 결과</a></li>
+        </ul>
+      </div>
+      <div class="wrap_tabbox">
+        <div class="tabbox on">
+          <ul class="list_result clear f_GmarketSans">
+            <li class="mega left">
+              <div>
+                <span>메가밀리언</span>
+                <p class="add_after h_type2">MEGA MILLIONS<sup>®</sup></p>
+                <div>
+                  <p>매주 수/토요일</p>
+                  <p>한국시간 <strong class="va_mid color_red2"><?=$megaTime?></strong></p>
+                </div>
+              </div>
+            </li>
+            <li class="power right">
+              <div>
+                <span>파워볼</span>
+                <p class="add_after h_type2">POWERBALL<sup>®</sup></p>
+                <div>
+                  <p>매주 화/목/일요일</p>
+                  <p>한국시간 <strong class="va_mid color_red2"><?=$powerTime?></strong></p>
+                </div>
+              </div>
+            </li>
+          </ul>
+          <ul class="list_type2 f_NotoSansKR space_btm">
+            <li>
+              <strong>당첨번호 추첨</strong>
+              <div>
+                <ul class="list_bul">
+                  <li><span>당첨번호 6개는 추첨 이슈가 없는 한 5분 안에 추첨되어 미국 파워볼, 메가밀리언 사이트에 등재 됩니다.<br>(번호가 등재되는 이슈에 따라 시간이 달라질 수 있습니다)</span></li>
+                </ul>
+              </div>
+            </li>
+            <li>
+              <strong>당첨금 적립</strong>
+              <div>
+                <ul class="list_bul">
+                  <li>
+                    <span>
+                      당첨된 회원님은 당첨금을 자동으로 캐시로 적립받으며, 출금신청은 마이페이지 > 출금신청을 통해 신청해 주셔야 합니다.<br>캐시적립은 업무시간 기준으로 실시간 승인됩니다.
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    <?php include $_SERVER['DOCUMENT_ROOT']."/inc/quick-sub.html";?>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html";?>
+
+  <script>
+    $(function() {
+      $.post('/other.php', {
+        mode: 'mainnew'
+      }, function(e) {
+        let mm = e.MM;
+        let pb = e.PB;
+        $('.mega-time').html(mm.e_date.slice(-5, mm.e_date.length));
+        $('.power-time').html(pb.e_date.slice(-5, pb.e_date.length));
+      }, 'json');
+    });
+  </script>
+</body>
+
+</html>

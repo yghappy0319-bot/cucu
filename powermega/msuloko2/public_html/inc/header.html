@@ -1,0 +1,49 @@
+<header>
+  <div class="top wrap_com clear">
+    <h1 class="left mainlogo">
+      <a href="/index.html" class="ls25 color_blue" style="width: 57%;">
+        <img src="<?=$site_logo?>">
+      </a>
+    </h1>
+  </div>
+
+  <div class="gnb f_NotoSansKR">
+    <div class="zindex100">
+      <h2 class="hide">대메뉴</h2>
+      <nav>
+        <ul class="nav_gnb box">
+          <li <?=($menu_on['mega'] == true) ? "class='on'" : ""?>><a href="/contents/lottery/mega-step1.html">메가밀리언 구매</a><div class="babgeB">새로워진</div></li>
+          <li <?=($menu_on['power'] == true) ? "class='on'" : ""?>><a href="/contents/lottery/power-step1.html">파워볼 구매</a></li>
+          <?php if (isset($M_login['user_id'])) { ?>
+          <li <?=($menu_on['cash'] == true) ? "class='on'" : ""?>><a href="/contents/mypage/cash-charge.html">캐시충전</a></li>
+          <?php } ?>
+          <li <?=($menu_on['shop'] == true) ? "class='on'" : ""?>><a href="/contents/shop/list.html"><?=$사이트명1?>몰</a></li>
+        </ul>
+        <ul class="nav_gnb box">
+          <li <?=($menu_on['service'] == true) ? "class='on'" : ""?>><a href="/contents/service/purchase.html">서비스안내</a></li>
+          <li <?=($menu_on['draw'] == true) ? "class='on'" : ""?>><a href="/contents/draw/draw-mega.html">당첨결과</a></li>
+          <li <?=($menu_on['stats'] == true) ? "class='on'" : ""?>><a href="/contents/statistic/frequency.html">당첨통계</a></li>
+          <li <?=($menu_on['bbs'] == true) ? "class='on'" : ""?>><a href="/contents/cs/news.html?utp=Y">고객센터</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <div class="util">
+    <h2 class="hide">유틸리티 메뉴</h2>
+    <nav>
+      <ul class="login clear f_NotoSansKR">
+        <?php if (isset($M_login['user_id'])) { ?>
+        <!-- <li class="add_after left"><a href="/webapp_guide.html">앱설치</a></li> -->
+        <li class="add_after left"><a href="/webapp_guide.html" target="_blank">앱설치</a></li>
+        <li class="add_after left"><a href="/contents/mypage/">마이페이지</a></li>
+        <?php } else { ?>
+        <!-- <li class="add_after left"><a href="/webapp_guide.html">앱설치</a></li> -->
+        <li class="add_after left"><a href="/webapp_guide.html" target="_blank">앱설치</a></li>
+        <li class="add_after left"><a href="/signup.html">회원가입</a></li>
+        <li class="add_after left"><a href="/login.html">로그인</a></li>
+        <?php } ?>
+      </ul>
+    </nav>
+  </div>
+</header>

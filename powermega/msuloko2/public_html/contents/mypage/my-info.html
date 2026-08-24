@@ -1,0 +1,73 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  if ($M_login['user_id'] == "") {
+    meta_go("/login.html");
+    exit;
+  }
+
+  if ($M_login['hp'] == "") {
+    meta_go("./my-info-detail.html");
+    exit;
+  }
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub bb border_dcdcdc" style="margin-bottom: 0;">
+            <h2 class="title">MY정보</h2>
+            <a href="/contents/mypage/" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <section class="sec_myinfo">
+            <div class="bx_gray txt_type1 wrap_com bx_padding lh16">
+              <ul class="list_bul">
+                <li><p>회원님의 정보를 안전하게 보호하기 위해 비밀번호를 다시 확인해주세요.</p></li>
+                <li><p>파메코은 회원님의 개인정보를 신중하게 취급하며, 회원님의 동의 없이는 기재하신 회원 정보 공개 및 변경하지 않습니다.</p></li>
+              </ul>
+            </div>
+            <div class="section wrap_com mt30">
+              <h3 class="h_type4">회원정보수정</h3>
+              <div class="wrap_tab">
+                <ul class="tab_type1 flex">
+                  <li class="on"><a href="">회원정보수정</a></li>
+                  <li><a href="delete.html">회원탈퇴</a></li>
+                </ul>
+              </div>
+              <div class="notice_type1">
+                <div class="wrap_img dp_inb mb30"><img src="/common/images/img_smile.png" alt="" /></div>
+                <p class="mb40">안전한 개인 정보 보호를 위해<br>비밀번호를 다시 한번 확인하고 있습니다.</p>
+              </div>
+              <div class="space_btm">
+                <form name="w_frm" id="w_frm" method="post" action="my-info-detail.html" class="wrap_type1 flex justify_center align_center">
+                  <div class="bx_input">
+                    <input type="password" name="pwd" id="pwd" autocomplete="new-password" placeholder="비밀번호를 입력해주세요." />
+                  </div>
+                  <a class="btn_navy btn" id="ok_btn">확인</a>
+                </form>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script>
+  $(document).ready(function() {
+    $(document).on('click', '#ok_btn', function() {
+      let pwd = $('#pwd').val();
+      if (pwd == '') {
+        alert("비밀번호를 입력해 주세요.");
+        return false;
+      }
+      $('#w_frm').submit();
+    });
+  });
+</script>
+</html>

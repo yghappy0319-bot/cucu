@@ -1,0 +1,119 @@
+<?php
+  $page_title = "서비스 안내 - 파워볼, 메가밀리언, 미국 복권, 파메코";
+  $page_description = "파워볼, 메가밀리언 소개 및 미국 로또 구매 대행 신청 방법, 복권 당첨금 수령 안내";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  $menu_on['service'] = true;
+?>
+
+<style>
+  .guide_text {
+    padding: 20px 40px 25px 40px !important;
+    margin: 0px;
+    border: 1px solid #dcdcdc;
+  }
+  .div_youtube {
+    position: relative;
+    width: 100%;
+    height: 333px;
+    border-radius: 10px;
+    text-align: center;
+    background-color: #FFFFFF;
+    padding: 0 0.2rem 0 0.2rem;
+  }
+</style>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html";?>
+  <main id="main">
+    <div class="location ls50">
+      <div class="wrap_com">
+        <ol class="clear">
+          <li><a href="/" class="add_before"><span class="hide">홈</span></a></li>
+          <li><a href="/contents/service/purchase.html">서비스안내</a></li>
+          <li><a href="/contents/service/purchase.html">미국 복권 구매대행 이용안내</a></li>
+        </ol>
+      </div>
+    </div>
+    <section class="sec_service purchase sec_tab wrap_com">
+      <h2 class="h_type4">서비스안내</h2>
+      <div class="wrap_tab">
+        <ul class="tab_type1 flex align_center ls75">
+          <li class="on"><a href="/contents/service/purchase.html">미국 복권 구매대행 이용안내</a></li>
+          <li><a href="/contents/service/mega.html">메가밀리언 소개</a></li>
+          <li><a href="/contents/service/power.html">파워볼 소개</a></li>
+          <li><a href="/contents/service/receive.html">당첨금 수령 안내</a></li>
+          <li><a href="/contents/service/policy.html">회원 등급 안내</a></li>
+        </ul>
+      </div>
+      <div class="wrap_board ls50">
+        <div class="guide_text br20">
+          <div class="flex align_end">
+            <div><img src="<?=$site_logo?>" style="width: 13rem; margin: 1.5rem 0 1.5rem 0;"/></div>
+          </div>
+          <div class="txt_type2 mt20 fs16">
+            <p>
+              <?=$사이트명1?>(www.<?=$domain?>)는 미국 복권 구매대행 서비스를 제공합니다.<br/><br/>
+              회원이 선택한 번호를 미국 현지 구매대행사에 구매 요청합니다.
+              실물 복권(유가증권)은 당첨 결과 발표 시까지 미국 현지 구매대행사에서 안전하게 보관합니다.<br/>
+              당첨 결과 및 실구매한 로또 스캔본은 <?=$사이트명1?> 홈페이지 및 모바일 앱을 통해 확인하실 수 있습니다.<br/>
+              스캔본과 미국복권 구매를 위해 캐시 충전에 사용된 신용카드와 무통장입금(계좌이체 포함) 시 사용된 은행 계좌는 반드시 회원님 본인 명의여야 하며, 이 두 항목은 당첨된 복권이 회원님 소유임을 입증하는 가장 중요한 근거이자 증거입니다.<br/><br/>
+              미화 100만 불(약 13억 원) 이상 당첨 시 당첨된 회원 본인, <?=$사이트명1?> 직원이 동행하여 미국으로 출국하며, 미국 현지 도착 후 미국 변호사와 함께 당첨금을 수령하게 됩니다.<br>
+              미화 100만 불 미만 당첨 시 회원님의 <?=$사이트명1?> 계정으로 캐시가 적립되며, 회원님의 요청 시(당첨금 환급신청) 회원님 본인 명의의 은행 계좌로 현금 입금됩니다.<br/>
+              [서비스 안내 -> 당첨금 수령 안내]를 통해 당첨 금액별 입금 기한을 확인하실 수 있습니다.<br>
+            </p>
+          </div>
+        </div>
+
+        <!-- <div class="clear flex space pt30 pb30">
+          <div class="div_youtube">
+            <div class="text-left pb10">미국복권(파워볼) 구매 안내</div>
+            <iframe class="br10" width="100%" height="100%" src="https://www.youtube.com/embed/0PmYdr-gmD8" title="구매안내" frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          </div>
+
+          <div class="div_youtube">
+            <div class="text-left pb10">캐시 충전 안내</div>
+            <iframe class="br10" width="100%" height="100%" src="https://www.youtube.com/embed/_0tLD_MscJU" title="충전안내" frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          </div>
+        </div> -->
+
+        <div class="space pt30">
+          <div class="top clear bb">
+            <h3 class="left ls50 fw400">1. 구매대행 신청방법</h3>
+          </div>
+          <ul class="list">
+            <li>
+              <p>신청방법 (회원)</p>
+              <p><img src="<?=$site_service_flow_img?>"></p>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="top clear bb">
+            <h3 class="left ls50 fw400">2. 실물복권 취급 방침</h3>
+          </div>
+          <ul class="list_bul txt_type2">
+            <li>구매대행을 통해 현지에서 구매한 실물 복권은 미국 관련법 및 복권 사업자 관리 규정에 의거(당첨 결과 발표전 복권 해외 반출시 당첨 무효) 한국으로의 즉시 배송이 불가합니다.</li>
+            <li><?=$사이트명1?>는 미국 현지 구매대행사와 변호사 3자 간 계약 및 공증을 기반으로 현지 구매대행사가 구매한 복권을 안전하게 보관하도록 상시 관리 감독합니다.</li>
+            <li><?=$사이트명1?>의 구매대행 서비스를 이용한 회원은 현지에서 구매한 실물 복권 스캔본을 자사 앱 및 홈페이지에서 확인하실 수 있습니다.</li>
+            <li>낙첨 실물 복권은 회원의 요청 시 당첨 결과 발표 후 유료(해외 우편발송 비용 실비) 배송하여 드립니다.</li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="top clear bb">
+            <h3 class="left ls50 fw400">3. 구매대행 신청 시간 및 스캔본 확인 가능 시간</h3>
+          </div>
+        </div>
+        <p class="mt30 mb100"><img src="/images/web/st_pc<?php if($deadline_time_num == 9) echo "_summer"; ?>.v3.png"></p>
+      </div>
+    </section>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html";?>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_STAFF.php";
+  F_admin_chk($S_login);
+
+  if ($mode == 'update') {
+
+    $info = F_STAFF(array("mode"=>"read", "STAFF_NO"=>$no));
+  }else{
+    $info = array();
+  }
+
+  if (!isset($mode)) $mode = "insert";
+  if (!isset($info['LEVEL'])) $info['LEVEL'] = "";
+  if (!isset($info['STOPYN'])) $info['STOPYN'] = "";
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">관리자관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">회원정보</a></li>
+          <li class="breadcrumb-item active" aria-current="page">관리자관리</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <div class="row">
+      <div class="col-lg-12 col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">관리자등록/수정</h3>
+          </div>
+          <div class="card-body">
+            <form class="needs-validation" novalidate method="post" name="w_frm" action="admin_action.php" enctype='multipart/form-data'>
+              <input type="hidden" name="STAFF_NO" value="<?=(isset($info['STAFF_NO'])) ? $info['STAFF_NO'] : ""?>" />
+              <input type="hidden" name="mode" value="<?=$mode?>" />
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom01">Admin ID</label>
+                  <input type="text" class="form-control" id="validationCustom01" value="<?=(isset($info['USER_ID'])) ? $info['USER_ID'] : ""?>" name="USER_ID" required />
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please provide a valid Admin ID.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom02">Password</label>
+                  <input type="password" class="form-control" id="validationCustom02" value="" name="PASSWD" required />
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please provide a valid Password.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom03">Name</label>
+                  <input type="text" class="form-control" name="NAME" value="<?=(isset($info['NAME'])) ? $info['NAME'] : ""?>" id="validationCustom03" required />
+                  <div class="invalid-feedback">Please provide a valid Name.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom04">LEVEL</label>
+                  <select class="form-select select2 form-control" name="LEVEL" id="validationCustom04" required>
+                    <option selected disabled value="">선택</option>
+                    <?=option_make($level_op, $info['LEVEL'])?>
+                  </select>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please select a valid LEVEL.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom03">Mobile</label>
+                  <input type="text" class="form-control" name="HP" value="<?=(isset($info['HP'])) ? $info['HP'] : ""?>" id="validationCustom03" onkeyup="onlyNum(this);setHypenPhone(this)" required />
+                  <div class="invalid-feedback">Please provide a valid Mobile.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom04">STOP</label>
+                  <select class="form-select select2 form-control" name="STOPYN" id="validationCustom04" required>
+                    <?=option_make($stop_op, $info['STOPYN'])?>
+                  </select>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please select a valid STOP.</div>
+                </div>
+              </div>
+              <button class="btn btn-primary" type="submit">Submit form</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ROW CLOSED -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+    $('.side-menu').find('.slide').eq(6).addClass('is-expanded');
+    $('.side-menu').find('.slide').eq(6).find('.side-menu__item').addClass('active');
+    $('.side-menu').find('.slide').eq(6).find('.slide-menu').addClass('open');
+    $('.side-menu').find('.slide').eq(6).find('.slide-menu').find('li').eq(0).addClass('active');
+    $('.side-menu').find('.slide').eq(6).find('.slide-menu').find('li').eq(0).find('a').addClass('active');
+  });
+</script>

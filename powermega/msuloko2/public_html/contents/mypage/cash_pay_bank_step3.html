@@ -1,0 +1,209 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  $menu_on['cash'] = true;
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}'");
+
+  // 결제 이벤트 대상 확인
+  $cash_op = select_event_cash_op($M_login['user_id']);
+
+  $cash = $cash_op[$_GET["cno"]];
+
+  $RES["price"]       = $cash["price"];
+  $RES["price_text"]  = number_format($cash["price"]);
+  $RES["ipoint"]      = $cash["ipoint"];
+  $RES["ipoint_text"] = $cash["ipoint_text"];
+  $RES["cash"]        = $cash["cash"];
+  $RES["cash_text"]   = number_format($cash["cash"]);
+?>
+
+<style>
+  .bx_gray.top {
+    padding: 0.5rem;
+    font-size: 1rem;
+    color: #545454;
+    line-height: 1.4;
+    font-weight: bold;
+  }
+  .bx_gray {
+    background: #eee;
+  }
+  .bx_gray ul {
+    list-style: none;
+  }
+  .bx_gray .list_bul > li {
+    padding: 0;
+  }
+  .bx_gray .list_bul > li {
+    /*padding-left: 0.6rem;*/
+    position: relative;
+    line-height: 1.2rem;
+    font-size: 0.8rem;
+    letter-spacing: -0.5px;
+  }
+  .bx_gray .list_bul > li:before {
+    background: none;
+    /*content: "*";*/
+    width: inherit;
+    height: inherit;
+  }
+  .bx_gray .list_bul > li:before {
+    position: absolute;
+    left: -12px;
+    top: 0.2em;
+    display: inline-block;
+    vertical-align: middle;
+    border-radius: 100%;
+  }
+  .bx_gray .list_bul .pd-left1 { left: 1.2rem; list-style-type: square; }
+  .bx_gray .list_bul .pd-left2 { position: absolute; left: 3.7rem; }
+  .sec_charge .pay {
+    margin-top: 20px;
+    text-align: center;
+  }
+  .sec_charge .pay .bx_border {
+    border: 1px solid #5c5c5c;
+    border-radius: 0.25rem;
+  }
+  .sec_charge .btn_pay {
+    width: 100%;
+    height: 2.5rem;
+    line-height: 2.5rem;
+    font-size: 1rem;
+  }
+  .f_GmarketSans {
+    font-family: 'GmarketSans', sans-serif !important;
+  }
+  .btn_red {
+    background: #f00 !important;
+    color: #fff;
+  }
+  .border_blue {
+    border: 2px solid blue !important;
+  }
+</style>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage bg">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub bb border_dcdcdc" style="margin-bottom: 0;">
+            <h2 class="title">캐시충전</h2>
+            <a href="/contents/mypage/cash-charge.html" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <section class="sec_charge">
+            <div class="section wrap_com bg_white" style="text-align: center; line-height: 1.2rem;">
+              <img src="/common/images/icon_green.png" class="pt30">
+              <h3 class="h_type4" style="padding-top: 1rem;">캐시 충전은 입금 확인 후 완료됩니다.<br>이용해 주셔서 감사합니다.</h3>
+              <div class="bx_gray top" style="text-align:left">
+                <ul class="list_bul">
+                  <li class="pd-left1">
+                    <span>입금은행 : </span>
+                    <span class="pd-left2">
+                      <img src="/common/images/kb_logo.png" style="width: 5.5rem; padding-bottom: 0.2rem;">
+                    </span>
+                  </li>
+                  <li class="pd-left1">
+                    <span>계좌번호 : </span>
+                    <span class="pd-left2"><?=$site_account_number?>
+                      <a type="button" id="account_copy" class="account_copy">
+                        <img src="/common/images/copy_icon.png" style="width: 0.8rem; padding-bottom: 0.2rem;">
+                        <span style="color: #545454; font-size: 0.6rem;">(복사하기)</span>
+                      </a>
+                    </span>
+                  </li>
+                  <li class="pd-left1">
+                    <span style="word-spacing: 3.5px;">예 금 주</span> : <span class="pd-left2"><?=$site_account_name?></span>
+                  </li>
+                  <li class="pd-left1">
+                    <span style="word-spacing: 3.5px;">입 금 액</span> :
+                    <span class="pd-left2">
+                      <strong style="color: #FF0000;" id="cash_moo_cash2"><?=number_format($cash["price"])?>원</strong>(VAT 포함)
+                    </span>
+                  </li>
+                </ul>
+              </div>
+              <div class="pay">
+                <button type="button" class="btn_pay bx_border btn_red f_GmarketSans btm_bank_buy_cash">
+                  <strong>완 료</strong>
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+        <input type="hidden" id="account_number" class="account_number" value="<?=$site_account_number?>">
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+  <form name="form" id="w_frm" method="GET" action="./cash_pay_bank_step2.php">
+    <input type="hidden" class="it1" value="<?=$_GET["ITEMNAME"]?>" name="ITEMNAME" id="ITEMNAME" /><!--상품명-->
+    <input type="hidden" class="it1" value="<?=$_GET["cash_no"]?>" name="cno" id="cno" /><!--구매상품번호-->
+  </form>
+</body>
+
+<script>
+  function confirmEvent() {
+    window.name = "myOpener";
+    var win;
+    var iLeft = (window.screen.width / 2) - (Number(815) / 2);
+    var iTop = (window.screen.height / 2) - (Number(600) / 2);
+    var features = "menubar=no,toolbar=no,status=no,resizable=yes,scrollbars=no,location=no";
+    features += ",left=" + iLeft + ",top=" + iTop + ",width=" + 815 + ",height=" + 600;
+    win = window.open("", "pcPop", features);
+    win.focus();
+
+    $(".btn_pay").hide();
+    $(".btn_pay_loading").show();
+    $("#w_frm").submit();
+
+    var winLoop = setInterval(function() {
+      if (win.closed) {
+        clearInterval(winLoop);
+        location.href = "./cash-charge.html";
+      }
+    }, 1000);
+  }
+
+  $(document).ready(function() {
+    $(document).on("click", ".btm_bank_buy_cash", function() {
+      location.href = "./cash-charge.html";
+    });
+
+    // 복사하기 버튼 클릭
+    $('#account_copy').click(function() {
+      $('#account_number').prop("type", "text");
+      $('#account_number').select();
+      var copy = document.execCommand('copy');
+      $('#account_number').prop("type", "hidden");
+      if (copy) {
+        alert("계좌번호를 복사하였습니다.");
+      }
+    });
+  });
+
+  window.onload=function() {
+    document.addEventListener('touchstart', function(event) {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    })
+    var lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+      var now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 100) {
+        event.preventDefault();
+      }
+      lastTouchEnd=now;
+    }, false)
+  }
+</script>
+</html>

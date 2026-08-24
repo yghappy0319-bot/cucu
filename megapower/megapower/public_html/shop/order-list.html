@@ -1,0 +1,107 @@
+<?php
+$title = "미국복권 구매대행 메가파워몰 주문내역";
+include "../header.html";
+
+function 배송상태($obj){
+  if($obj==0){
+    return "배송준비중";
+  }else if($obj==1){
+    return "배송완료";
+  }
+}
+
+?>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">나의 주문내역</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>Mypage</p></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>나의 주문내역</p></li>
+            </ul>
+        </div>
+
+        <?
+          $page_num = 5;
+          $page = isset($_GET["page"])? $_GET["page"] : 1;
+
+          if($_GET['list_num']>0){
+        $list_num = $_GET['list_num'];
+        }else{
+        $list_num = 10;
+        }
+
+        $table = "lr_product_orders";
+        $where = " midx = {$member['idx']}  and view_status = 0 ";
+        include_once "../page_code.php";
+        ?>
+
+        <div class="board_inner">
+
+
+            <form id="searchFrm" >
+                <input type="hidden" name="page" id="page" value="<?=$page?>" >
+            </form>
+
+            <table class="board">
+                <thead>
+                <tr>
+                    <th>번호</th>
+                    <th>상품명</th>
+
+                    <th>구매금액</th>
+                    <th>구매자명</th>
+                    <th>받는곳주소</th>
+
+                    <th>상태</th>
+                    <th>구매일</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?
+              $result = db_query("select * from lr_product_orders where midx = {$member['idx']} and view_status = 1 order by regdate desc limit $start, $list_num ");
+              $no= $num - $list_num * ($page-1);
+              while($quiry=db_fetch($result)){
+              ?>
+                <tr>
+                    <td class="text-center" ><?=$no;?></td>
+
+                    <td class="text-center" ><?=$quiry['product_name']?></td>
+                    <td class="text-center" ><?=$quiry['order_price']?></td>
+                    <td class="text-center" ><?=$quiry['order_name']?></td>
+                    <td class="text-center" >
+                      <?=$quiry['order_zipcode']?>
+                      <?=$quiry['order_address1']?>
+                      <?=$quiry['order_address2']?>
+                    </td>
+
+
+                    <td class="text-center" ><?= 배송상태($quiry['status'])?></td>
+                    <td class="text-center"><?=date("y-m-d",strtotime($quiry['regdate']))?></td>
+                </tr>
+                <?
+              $no--;
+            } ?>
+                <? if($num ==0){?>
+                <tr>
+                    <td colspan="3">등록된 글이 없습니다.</td>
+                </tr>
+                <? } ?>
+                </tbody>
+            </table>
+
+            <div class="page" >
+                <?php include_once "../pager.php" ?>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<?php
+include "../footer_new.html";
+?>

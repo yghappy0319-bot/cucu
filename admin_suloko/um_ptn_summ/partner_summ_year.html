@@ -1,0 +1,190 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_UM_SUMMARY.php";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_UM_PARTNER.php";
+
+  F_admin_chk($S_login);
+
+  if (!$sdate) $sdate = date("Y");
+
+  $group_field_summary = 'LEFT(SUMM_DATE, 7)';
+  $where_field_summary = 'LEFT(SUMM_DATE, 4)';
+  $group_field_cash    = 'LEFT(REG_DATE, 7)';
+  $where_field_cash    = 'LEFT(REG_DATE, 4)';
+
+  if ($partner_id) {
+    $add_query = " AND PARTNER_ID= '".$partner_id."'";
+  } else {
+    $partner_id = "";
+  }
+
+  // tmadmin
+  if ($S_login['user_id'] == "tmadmin") $add_query .= " AND PARTNER_ID IN (SELECT PARTNER_ID FROM UM_PARTNER WHERE ROLE = 'TM_USER')";
+
+  // 파트너 목록
+  $ptn_op_list = F_UM_PARTNER_list(array(
+    "row"         => 999,
+    "page"        => 1,
+    "order"       => "",
+    "find_text"   => "",
+    "find_object" => "",
+    "add_query"   => " AND STATUS = 'Y' "
+  ));
+
+  if ($list['total'] == 0) {
+    $list['IDX'] = array();
+  }
+
+  $ptn_op = array();
+
+  for ($i = 0; $i < count($ptn_op_list["IDX"]); $i++) {
+    $ptn_op[$ptn_op_list["PARTNER_ID"][$i]] = "{$ptn_op_list["NAME"][$i]}({$ptn_op_list["PARTNER_ID"][$i]})";
+  }
+  unset($ptn_op_list);
+
+  // 날짜 목록
+  $date_op = array();
+  $start_month = "2023";
+  for ($i = 0; $i < 10; $i++) {
+    $ndate = date("Y", strtotime("{$start_month}-01 first day of +{$i} year"));
+    $date_op[$ndate] = $ndate;
+    if ($ndate == date("Y")) break;
+  }
+
+  // Summary 목록
+  $query  = "
+    SELECT
+      {$group_field_summary} AS GFIELD,
+      SUM(VISIT_CNT) AS VISIT_CNT,
+      SUM(MEMBER_CNT) AS MEMBER_CNT,
+      SUM(OMEMBER_CNT) AS OMEMBER_CNT,
+      SUM(CASH_CNT) AS CASH_CNT,
+      SUM(CCASH_CNT) AS CCASH_CNT
+    FROM UM_SUMMARY
+    WHERE
+      {$where_field_summary} = '{$sdate}'
+      {$add_query}
+    GROUP BY {$group_field_summary}
+    ORDER BY GFIELD ASC
+  ";
+  $list = $db->get_list($query);
+
+  // 첫결제금액 목록
+  $query = "
+    SELECT
+      {$group_field_cash} AS GFIELD,
+      SUM(PRICE) AS PRICE
+    FROM CASH
+    WHERE
+      LENGTH(PARTNER_ID) > 0
+      AND IS_USE = 'Y'
+      AND {$where_field_cash} = '{$sdate}'
+    GROUP BY {$group_field_cash}
+    ORDER BY GFIELD ASC
+  ";
+  $price_list = $db->get_list($query);
+?>
+
+<style>
+  #modal-subject {
+    text-align: center;
+    background: #F2F3F9;
+    vertical-align: middle;
+    width:25%;
+  }
+</style>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">파트너 월별 활동현황</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">언더마케팅</a></li>
+          <li class="breadcrumb-item active" aria-current="page">월별 현황</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="partner_id" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <option value="">파트너</option>
+                    <?=option_make($ptn_op, $partner_id)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select name="sdate" id="sdate" class="form-control form-select select2 auto-submit">
+                    <?=option_make($date_op, $sdate)?>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th>월</th>
+                    <th>방문자수</th>
+                    <th>가입수</th>
+                    <th>가입율</th>
+                    <th>결제수</th>
+                    <th>결제율</th>
+                    <th>첫결제금액</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                  if (is_array($list['GFIELD'])) {
+                    for ($i = 0; $i < count($list['GFIELD']); $i++) {
+                      $VISIT_CNT  = $list['VISIT_CNT'][$i];
+                      $MEMBER_CNT = $list['MEMBER_CNT'][$i] - $list['OMEMBER_CNT'][$i];
+                      $CASH_CNT   = $list['CASH_CNT'][$i] - $list['CCASH_CNT'][$i];
+                      $MEMBER_RETE= ($VISIT_CNT > 0) ? round($MEMBER_CNT / $VISIT_CNT * 100, 0)."%" : "-";
+                      $CASH_RETE  = ($MEMBER_CNT > 0) ? round($CASH_CNT / $MEMBER_CNT * 100, 0)."%" : "-";
+                      $price = 0;
+                      if (is_array($price_list['GFIELD'])) {
+                        for ($j = 0; $j < count($price_list['GFIELD']); $j++) {
+                          if ($price_list['GFIELD'][$j] == $list['GFIELD'][$i]) {
+                            $price = $price_list['PRICE'][$j];
+                            break;
+                          }
+                        }
+                      }
+                  ?>
+                  <tr class="text-center">
+                    <td><?=$list['GFIELD'][$i]?></td>
+                    <td><?=$VISIT_CNT?></td>
+                    <td><?=$MEMBER_CNT?></td>
+                    <td><?=$MEMBER_RETE?></td>
+                    <td><?=$CASH_CNT?></td>
+                    <td><?=$CASH_RETE?></td>
+                    <td><?=number_format($price)?>원</td>
+                  </tr>
+                  <?php
+                    }
+                  }
+                  ?>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>

@@ -1,0 +1,113 @@
+<?php
+  $page_title = "메가밀리언 소개 - 파워볼, 메가밀리언, 미국 복권, 슈로코";
+  $page_description = "메가밀리언 소개 및 미국 로또 구매 대행 신청 방법, 복권 당첨금 수령 안내";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  $menu_on['service'] = true;
+  $service_sub['mega'] = true;
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="service bg">
+        <div class="contents f_NotoSansKR">
+          <?php include "inc_top.html"; ?>
+          <section class="sec_service intro section">
+            <div class="wrap_com bg_white ls50">
+              <div class="top bb"><h3>메가밀리언 소개</h3></div>
+              <div class="pb40">
+                <div class="wrap_logo wrap_img">
+                  <img src="/common/images/logo_mega2.png" alt="logo" />
+                </div>
+                <div class="txt_type_b">
+                  미국에서 탑3 복권은 Power Ball, Mega Millions, Super Lotto입니다.
+                  Mega Millions은 미국과 전 세계인들에게 인기가 많은 복권 중 하나 입니다. <br>
+                  메가밀리언 최고 당첨금은 2023년 8월 9일 15억 8천만달러 (약 2조 3,000억원)입니다.
+                </div>
+              </div>
+            </div>
+            <div class="mt20 wrap_com bg_white section">
+              <h4 class="pt40 pb30">게임방식 안내</h4>
+              <div class="img_game wrap_img br10">
+                <img src="/common/images/mobile/img_intro_1<?=((getSecondDifference($new_megamillion_play_date) >= 0) ? "_new" : ""); ?>.jpg" alt="게임방식 안내" />
+              </div>
+              <div class="txt_type_b">
+                <p class="color_666 fs30"><strong>5(화이트볼)<span class="color_red2"> + 1(메가볼)</span></strong></p>
+                <span>총 6개의 번호를 선택 (화이트볼 5개 + 메가볼 1개)</span>
+                <ol class="pt40">
+                  <li>
+                    <p>1. 1 부터 70까지의 숫자 중 화이트볼 5개를 선택 합니다.</p>
+                  </li>
+                  <?php if (getSecondDifference($new_megamillion_play_date) >= 0) { ?>
+                  <li>
+                    <p>2. 1 부터 24까지의 숫자 중 메가볼 1개를 선택하여 </p>
+                    <p style="padding-left: 0.7rem;">총 6개의 번호를 선택합니다.</p>
+                  </li>
+                  <li>
+                    <p>3. 메가볼 숫자는 앞에서 선택한 5개 번호(화이트볼) 번호와</p>
+                    <p style="padding-left: 0.7rem;">중복 선택이 가능합니다.</p>
+                  </li>
+                  <li>
+                    <p>4. 모든 구매에 무작위 배수(Multiplier) 옵션이 기본으로</p>
+                    <p style="padding-left: 0.7rem;">내장됩니다.</p>
+                  </li>
+                  <li>
+                    <p>5. 1등 당첨은 무작위 배수(Multiplier) 적용에서 제외됩니다.</p>
+                  </li>
+                  <?php } else { ?>
+                  <li>
+                    <p>2. 1 부터 25까지의 숫자 중 메가볼 1개를 선택하여 </p>
+                    <p style="padding-left: 0.7rem;">총 6개의 번호를 선택합니다.</p>
+                  </li>
+                  <li>
+                    <p>3. 메가볼 숫자는 앞에서 선택한 5개 번호(화이트볼) 번호와</p>
+                    <p style="padding-left: 0.7rem;">중복 선택이 가능합니다.</p>
+                  </li>
+                  <?php } ?>
+                </ol>
+              </div>
+              <div class="txt_type_b"><div class="pt40 pb30">
+                <div class="pl25">
+                  <h4 class="pt40 pb30">무작위 배수(Multiplier) 옵션</h4>
+                  <div><img class="mm_sample" src="/common/images/img_mm2504_sample.jpg" alt="메가밀리언 무작위 배수 옵션 예시"></div>
+                  <div class="point">
+                    <span class="color_666 fs30">2X ~ 10X까지 무작위로 선정되는 새로운 배수 시스템</span>
+                    <p class="f_NotoSansKR pb20 color_red2">
+                      예시) 잭팟을 제외한 당첨금이 A 보드는 3배, B 보드는 10배, C 보드는 2배로 지급됩니다.
+                    </p>
+                    <ol>
+                      <li><span>ㆍ각 게임마다 무작위로 2X, 3X, 4X, 5X, 10X 중 하나의 배수가 선택됩니다</span></li>
+                      <li><span>ㆍ별도의 추가 비용 없이 기본 게임 가격에 포함되어 있습니다</span></li>
+                      <li><span>ㆍ잭팟(1등)을 제외한 모든 당첨 등수에 적용됩니다</span></li>
+                      <li><span>ㆍ메가볼만 맞추는 9등 당첨부터 화이트볼 5개를 맞추는 2등까지 모두 해당됩니다</span></li>
+                    </ol>
+                  </div>
+                </div>
+              </div></div>
+              <div class="img_game wrap_img br10">
+                <img src="/common/images/mobile/mega_win_info.jpg" alt="메가밀리언 당첨 정보" />
+              </div>
+            </div>
+            <div class="wrap_com mb50">
+              <h4 class="pt40 pb30">메가밀리언 추첨일시</h4>
+              <div>
+                <ul class="nation">
+                  <li class="ko add_before ico_ko"><span class="va_mid_text">매주 수요일, 토요일 <?=$draw_time?></span></li>
+                  <li class="us add_before ico_us"><span class="va_mid_text">매주 화요일, 금요일 20:00</span></li>
+                </ul>
+              </div>
+            </div>
+          </section>
+          <div class="wrap_com">
+            <?php include $_SERVER['DOCUMENT_ROOT']."/inc/quick.html"; ?>
+          </div>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+</html>

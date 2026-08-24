@@ -1,0 +1,183 @@
+<?php
+include_once "../adm/head.php";
+include_once $_SERVER['DOCUMENT_ROOT']."/lib/sms_server_function.php";
+
+if($member['mb_id']=="admin"){
+  $member_no_where = " 1=1 ";
+}else{
+  $member_no_where = " midx = {$member['mb_no']} ";
+}
+
+$a_count_where = isset($a_count_where) ? $a_count_where : '';
+$상태 = isset($상태) ? $상태 : '';
+$search_where = isset($search_where) ? $search_where : '';
+$site_where = isset($site_where) ? $site_where : '';
+
+?>
+
+  <?php include_once "../adm/nav.php";?>
+  <div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+    <div class="main-menu-header">
+      <form>
+        <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+      </form>
+    </div>
+    <?php include_once "../adm/menu.php";?>
+  </div>
+
+<style>
+.addbtn {    padding: 1px;}
+.pay-log-table-wrap {
+  -webkit-overflow-scrolling: touch;
+  overflow-x: auto;
+}
+.pay-log-table {
+  width: 100%;
+  min-width: 960px;
+  table-layout: auto;
+}
+.pay-log-table thead th,
+.pay-log-table tbody td,
+.pay-log-table tbody th[scope="row"] {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+</style>
+
+  <div class="app-content content container-fluid">
+    <div class="content-wrapper">
+
+      <div class="content-body"><!-- Basic Tables start -->
+        <div class="row">
+            <div class="col-xs-12">
+              <form id="searchFrm" >
+                <input type="hidden" name="page" id="page" value="<?=$page?>" >
+                <input type="hidden" name="status" value="<?=$status?>" >
+                <input type="hidden" name="site" id="site" value="<?=$site?>"  >
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">서비스 이용 결제내역</h4>
+                        <a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+
+                        <div class="heading-elements">
+                            <ul class="list-inline mb-0">
+                                <li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+                                <li><a data-action="reload"><i class="icon-reload"></i></a></li>
+                                <li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+                                <li><a data-action="close"><i class="icon-cross2"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive pay-log-table-wrap">
+                        <table class="table pay-log-table">
+                            <thead class="thead-inverse">
+                                <tr>
+                                  <th >No</th>
+                                  <th >상태</th>
+                                  <th >ID</th>
+                                  <th >내역</th>
+                                  <th >결제금액</th>
+                                  <th >이용기간</th>
+                                  <th >-</th>
+                                  <th >결제일</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    <?php
+                    $page_num = 5;
+                    $page = isset($_GET["page"])? $_GET["page"] : 1;
+
+                    if($_GET['list_num']>0){
+                      $list_num = $_GET['list_num'];
+                    }else{
+                      $list_num = 15;
+                    }
+
+                    $table = "tb_pay_log";
+                    $where = " {$member_no_where}  ";
+                    include_once "pager_count.php";
+
+                    $sql = "select * from tb_pay_log where {$member_no_where} {$a_count_where} {$상태} {$search_where} {$site_where} order by regdate desc limit $start, $list_num ";
+                    //echo $sql."<br />";
+
+                    $result = db_query($sql);
+
+                    $no= $num - $list_num * ($page-1);
+                    for($a=0;$row=db_fetch($result);$a++){
+                      $타입 = explode("/",$row['pay_value']);
+                    ?>
+                            <tr  >
+                              <th scope="row"><?=$no?></th>
+                              <td >
+                                <?= (int)$row['status'] === 1 ? '결제완료' : '미결제' ?>
+                                <? if((int)$row['status'] === 0){?>
+                                  <button type="button" class="btn btn-sm btn-warning" onclick="go_pay_cancel('<?=$row['idx']?>')">취소</button>
+                                <? } ?>                                
+                              </td>
+                              <td ><?=$row['userid']?></td>
+                              <td >
+                                <? if(isset($타입[1]) && $타입[1]=='panel_extend'){ ?>
+                                  패널캐시 연장
+                                <? } else if(isset($타입[0]) && $타입[0]=='수동연장' && isset($타입[1]) && $타입[1]=='panel'){ ?>
+                                  패널 수동연장
+                                <? } else if(isset($타입[0]) && $타입[0]=='수동연장'){ ?>
+                                  수동연장
+                                <? } else if($타입[5]=="card"){?>
+                                  카드결제
+                                <? }else{?>
+                                  계좌이체
+                                <? } ?>
+                                -
+                                  <?=$row['goodsname']?>
+                              </td>
+                              <td ><?=number_format($row['amt'])?>원</td>
+                              <td ><?= htmlspecialchars((string) ($row['memo'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td>
+                              <td >
+                                <? if((int)$row['receipt_type'] > 0){
+                                  $receipt_label = (int)$row['receipt_type'] === 1 ? '현금영수증' : '세금계산서';
+                                  $receipt_status_val = (isset($row['receipt_status']) && $row['receipt_status'] !== '' && $row['receipt_status'] !== null)
+                                    ? (int)$row['receipt_status'] : null;
+                                ?>
+                                  <? if($receipt_status_val === 1){ ?>
+                                    <?=$receipt_label?> 발급완료
+                                    <? if(!empty($row['approval_number'])){ ?>
+                                      <br><span class="text-muted" style="font-size:0.85rem;">발행번호 <?= htmlspecialchars((string) $row['approval_number'], ENT_QUOTES, 'UTF-8') ?></span>
+                                    <? } ?>
+                                  <? } else if($receipt_status_val === 0){ ?>
+                                    <?=$receipt_label?> 신청완료
+                                    <? if($member['mb_id']=="admin"){ ?>
+                                      <button type="button" class="btn btn-success" onclick="go_receipt_issue('<?=$row['idx']?>','<?=$row['receipt_type']?>')">발행</button>
+                                    <? } ?>
+                                  <? } else if((int)$row['status'] === 1){ ?>
+                                    <button type="button" class="btn btn-primary" onclick="go_cash_bill2('<?=$row['idx']?>','<?=$row['midx']?>','<?=$row['receipt_type']?>')">
+                                      <?=$receipt_label?> 신청</button>
+                                  <? } else { ?>
+                                    <span class="text-muted"><?=$receipt_label?> (입금 확인 후 신청)</span>
+                                  <? } ?>
+                                <? } ?>
+                              </td>
+                              <td ><?=$row['regdate']?></td>
+                            </tr>
+                    <?php
+                      $no--;
+                    } ?>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <?php include_once "pager.php" ?>
+                </div>
+                </form>
+            </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+<?php include_once "sms_js.php" ?>
+
+<?php include_once "../adm/footer.php";?>

@@ -1,0 +1,200 @@
+<?php
+  $page_title = "자주묻는질문 | 고객센터 - 파워볼, 메가밀리언, 미국 복권, 파메코";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_NOTICE.php";
+
+  // INJECTION
+  $page = xss_clean($page);
+  $limit = xss_clean($limit);
+  $order = xss_clean($order);
+  $find_text = xss_clean($find_text);
+  $find_object = xss_clean($find_object);
+  $qtype = xss_clean($qtype);
+
+  if (!is_numeric($page)) $page = 1;
+  if (!is_numeric($limit)) $limit = 20;
+
+  $add_query = " AND GUBUN='FAQ'";
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&qtype=$qtype&limit=$limit";
+
+  if ($find_object == 'all') {
+    $add_query  .= " AND (SUBJECT like '%".$find_text."%' OR CONTENT like '%".$find_text."%' OR REPLY like '%".$find_text."%')";
+    $find_object = '';
+  }
+
+  if ($qtype != '') {
+    $add_query .= " AND QNA_TYPE='".$qtype."'";
+  }
+
+  $find_op = array(
+    "all"     => "질문+답변",
+    "CONTENT" => "질문",
+    "REPLY"   => "답변"
+  );
+
+
+  $list = F_NOTICE_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => " REG_DATE DESC",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['BBS_NO'] = array();
+  }
+
+  $total = 0;
+  if ($list['total'] > 0) {
+    $total = ceil($list['total'] / $limit);
+  }
+
+  $gubun_cnt = F_get_op("SELECT QNA_TYPE, COUNT(*) AS cnt FROM NOTICE WHERE GUBUN='FAQ' GROUP BY QNA_TYPE");
+
+  foreach ($faq_op as $k => $v) {
+    if (!isset($gubun_cnt[$k])) {
+      $gubun_cnt[$k] = 0;
+    }
+  }
+
+  $total_cnt = array_sum($gubun_cnt);
+
+  $page_row_t = intval($list['total']/$limit) + 1; // 전체 페이지 수
+  if (($page_row_t - 1) == ($list['total'] / $limit)) $page_row_t--;
+
+  $menu_on['bbs'] = true;
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="cs bg_contents">
+        <div class="contents f_NotoSansKR">
+          <?php
+            $bbs_sub['faq'] = true;
+            include "inc_bbs.html";
+          ?>
+          <section class="sec_cs faq wrap_com section bg_white pb50">
+            <form role="form" name="topSearch" id="srForm" method="get" action="<?=$_SERVER['PHP_SELF']?>">
+              <div class="search_type1 flex align_center space" style="padding-top: 20px;">
+                <div class="select">
+                  <select id="find_object" name="find_object">
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input flex1">
+                  <input type="search" id="find_text" name="find_text" value="<?=$find_text?>" placeholder="검색어를 입력해주세요." />
+                  <input type="hidden" id="qtype" name="qtype" value="<?=$qtype?>" />
+                  <button type="button" class="btn searchBtn"><span class="hide">검색</span></button>
+                </div>
+              </div>
+            </form>
+            <div class="wrap_tab type2">
+              <ul class="tab_type2 flex wrap">
+                <li class="<?=($qtype == '') ? "on" : "" ?>">
+                  <a href="./faq.html">
+                    <p>전체</p>
+                    <strong><?=number_format($total_cnt)?></strong>
+                  </a>
+                </li>
+                <li class="<?=($qtype == 'FAQ1') ? "on" : "" ?>">
+                  <a href="./faq.html?qtype=FAQ1">
+                    <p>복권구매</p>
+                    <strong><?=number_format($gubun_cnt["FAQ1"])?></strong>
+                  </a>
+                </li>
+                <li class="<?=($qtype == 'FAQ2') ? "on" : "" ?>">
+                  <a href="./faq.html?qtype=FAQ2">
+                    <p>이용안내</p>
+                    <strong><?=number_format($gubun_cnt["FAQ2"])?></strong>
+                  </a>
+                </li>
+                <li class="<?=($qtype == 'FAQ3') ? "on" : "" ?>">
+                  <a href="./faq.html?qtype=FAQ3">
+                    <p>캐시</p>
+                    <strong><?=number_format($gubun_cnt["FAQ3"])?></strong>
+                  </a>
+                </li>
+                <li class="<?=($qtype == 'FAQ4') ? "on" : "" ?>">
+                  <a href="./faq.html?qtype=FAQ4">
+                    <p>마일리지, 포인트, 쿠폰</p>
+                    <strong><?=number_format($gubun_cnt["FAQ4"])?></strong>
+                  </a>
+                </li>
+                <li class="<?=($qtype == 'FAQ5') ? "on" : "" ?>">
+                  <a href="./faq.html?qtype=FAQ5">
+                    <p>당첨금</p>
+                    <strong><?=number_format($gubun_cnt["FAQ5"])?></strong>
+                  </a>
+                </li>
+                <li class="<?=($qtype == 'FAQ6') ? "on" : "" ?>">
+                  <a href="./faq.html?qtype=FAQ6">
+                    <p>기타</p>
+                    <strong><?=number_format($gubun_cnt["FAQ6"])?></strong>
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="wrap_board ls50">
+              <h3>궁금해요 FAQ</h3>
+              <ul class="list_faq" id="list_box">
+                <?php
+                  for ($i = 0; $i < count($list['BBS_NO']); $i++) {
+                    $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                ?>
+                <li>
+                  <a href="faq_detail.html?no=<?=$list["BBS_NO"][$i]?>">
+                    <div>
+                      <p>[<?=$faq_op[$list['QNA_TYPE'][$i]]?>]<?=$list['SUBJECT'][$i]?></p>
+                    </div>
+                  </a>
+                  <div>
+                    <div>
+                      <p><?=nl2br($list['CONTENT'][$i])?></p>
+                    </div>
+                  </div>
+                </li>
+                <?php } ?>
+                <?php if ($list['total'] <= 0) { ?>
+                <li>
+                  <a>
+                    <div class="txt_center">등록된 글이 없습니다.</div>
+                    <ul></ul>
+                  </a>
+                </li>
+                <?php } ?>
+              </ul>
+              <?php if ($list['total'] > 0) { ?>
+              <!-- 페이징 숫자 표시는 5개까지 -->
+              <div class="wrap_paging">
+                <?php
+                  $page_info['cur'] = $page;
+                  $page_info['row'] = $limit;
+                  $page_info['total'] = $list['total'];
+                  $list['page_string'] = print_page_num1($page_info);
+                  echo $list['page_string'];
+                ?>
+              </div>
+              <?php } ?>
+            </div>
+          </section>
+          <div class="wrap_com">
+            <?php include $_SERVER['DOCUMENT_ROOT']."/inc/quick.html"; ?>
+          </div>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script>
+  $('.searchBtn').click(function() {
+    $('#srForm').submit();
+  });
+</script>
+</html>

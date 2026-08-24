@@ -1,0 +1,255 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_NOTI_RESERVATION.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&status=$status";
+
+  $add_query = "";
+
+  if ($status != '') {
+    $add_query .= " AND STATUS = '{$status}'";
+  }
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND CREATED_AT BETWEEN '{$sDate}' AND '{$eDate}'";
+  }
+
+  // 예약내역
+  $list = F_NOTI_RESERVATION_LIST(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => 'RESERVED_AT DESC ',
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  $type_op = array(
+    "S" => "개별",
+    "M" => "전체"
+  );
+
+  $status_op = array(
+    "S" => "대기",
+    "P" => "진행중",
+    "E" => "완료",
+    "C" => "취소"
+  );
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">푸시예약내역</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">예약내역</a></li>
+          <li class="breadcrumb-item active" aria-current="page">푸시예약내역</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="status" id="status" class="form-control form-select select2 auto-submit">
+                    <option value="">--상태(전체)--</option>
+                    <?=option_make($status_op, $status)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select id="schdate" name="schdate" class="form-control form-select select2">
+                    <option value="">--기간--</option>
+                    <?=option_make($search_date_op, $schdate)?>
+                  </select>
+                </div>
+                <div class="form-group fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                    <span style="margin: 8px 5px 0 5px;">~</span>
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th>예약시간</th>
+                    <th>구분</th>
+                    <th>구독ID</th>
+                    <th>제목</th>
+                    <th>내용</th>
+                    <th>상태</th>
+                    <th>등록ID</th>
+                    <th>등록일시</th>
+                    <th>수정일시</th>
+                    <th>설정</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['IDX']); $i++) {
+                  ?>
+                  <tr>
+                    <td><?=$list['RESERVED_AT'][$i]?></td>
+                    <td><?=$type_op[$list['TYPE'][$i]]?></td>
+                    <td><?=$list['TOPIC'][$i]?></td>
+                    <td><?=$list['TITLE'][$i]?></td>
+                    <td><?=nl2br($list['CONTENT'][$i])?></td>
+                    <td><?=$status_op[$list['STATUS'][$i]]?></td>
+                    <td><?=$list['STAFF_ID'][$i]?></td>
+                    <td><?=$list['CREATED_AT'][$i]?></td>
+                    <td><?=$list['UPDATED_AT'][$i]?></td>
+                    <td>
+                      <button type="button" class="btn btn-success btn_update_form" data-no="<?=$i?>">수정</button>
+                      <button type="button" class="btn btn-danger btn_delete" data-no="<?=$list['IDX'][$i]?>">삭제</button>
+                    </td>
+                  </tr>
+                  <tr></tr>
+                  <form name="w_frm<?=$i?>" id="w_frm<?=$i?>">
+                    <input type="hidden" name="mode" value="update_push_reservation" />
+                    <input type="hidden" name="IDX" value="<?=$list['IDX'][$i]?>">
+                    <input type="hidden" name="USER_ID" value="<?=$list['USER_ID'][$i]?>">
+                    <input type="hidden" name="TOPIC" value="<?=$list['TOPIC'][$i]?>">
+                    <tr class="text-center" style="display: none;" id="view_w_frm<?=$i?>">
+                      <td>
+                        <div>
+                          <div class="form-group fl-left mr-3">
+                            <input class="form-control" placeholder="YYYY-MM-DD" name="r_date" id="r_date" type="text" size="10" value="<?=date("Y-m-d", strtotime($list['RESERVED_AT'][$i]))?>" />
+                          </div>
+                          <div class="form-group fl-left">
+                            <select name="r_hour" id="r_hour" class="form-control form-select select2">
+                            <?php
+                              for ($cnt = 0; $cnt < 24; $cnt++) {
+                                $tmp = substr("0".$cnt, -2);
+                                $selected_status = ($cnt == date("G", strtotime($list['RESERVED_AT'][$i]))) ? "selected" : "";
+                                echo "<option value='{$tmp}' {$selected_status}>{$tmp}</option>";
+                              }
+                            ?>
+                            </select> :
+                            <select name="r_min" id="r_min" class="form-control form-select select2">
+                            <?php
+                              for ($cnt = 0; $cnt < 60; $cnt+=10) {
+                                $tmp = substr("0".$cnt, -2);
+                                $selected_status = ($tmp == date("i", strtotime($list['RESERVED_AT'][$i]))) ? "selected" : "";
+                                echo "<option value='{$tmp}' {$selected_status}>{$tmp}</option>";
+                              }
+                            ?>
+                            </select>
+                          </div>
+                        </div>
+                      </td>
+                      <td></td>
+                      <td></td>
+                      <td><input type="text" class="form-control" name="TITLE" value="<?=$list['TITLE'][$i]?>" id="TITLE" maxlength="30" /></td>
+                      <td><textarea class="form-control" name="CONTENT" id="CONTENT" style="height:100px;"><?=$list['CONTENT'][$i]?></textarea></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td>
+                        <button class="btn btn-primary btn_update" type="button" data-no="<?=$i?>">저장</button>
+                        <button class="btn btn-dark btn_cancel_form" type="button" data-no="<?=$i?>">취소</button>
+                      </td>
+                    </tr>
+                  </form>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php #require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_push.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+  });
+
+  // 수정 view
+  $(document).on('click', '.btn_update_form', function() {
+    $('[id^=view_w_frm]').hide();
+    $('.btn_update_form').show();
+
+    let no = $(this).data('no');
+    $('#view_w_frm' + no).show();
+    $(this).hide();
+  });
+
+  // 수정 취소
+  $(document).on('click', '.btn_cancel_form', function() {
+    $('.btn_update_form').show();
+    let no = $(this).data('no');
+    $('#view_w_frm' + no).hide();
+  });
+
+  // 예약 수정
+  $(document).on('click', '.btn_update', function() {
+    let no = $(this).data('no');
+
+    if (confirm('수정하시겠습니까?')) {
+      $.post('./default.php', $('#w_frm' + no).serialize(), function(e) {
+        if (e.error) {
+          alert(e.msg);
+        } else {
+          $('#w_frm').submit();
+          window.location.reload();
+        }
+      }, 'json');
+    }
+  });
+
+  // 예약 삭제
+  $(document).on('click', '.btn_delete', function() {
+    let no = $(this).data('no');
+
+    if (confirm('삭제하시겠습니까?')) {
+      $.post('./default.php', {
+        mode: 'delete_push_reservation',
+        no: no
+      }, function(e) {
+        let res = JSON.parse(e);
+        if (!res.error) {
+          location.reload();
+        } else {
+          alert(res.msg);
+        }
+      });
+    }
+  });
+</script>

@@ -1,0 +1,77 @@
+<?php
+  $page_title = "파워볼 소개 - 파워볼, 메가밀리언, 미국 복권, 파메코";
+  $page_description = "파워볼 소개 및 미국 로또 구매 대행 신청 방법, 복권 당첨금 수령 안내";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  $menu_on['service'] = true;
+  $service_sub['power'] = true;
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="service bg">
+        <div class="contents f_NotoSansKR">
+          <?php include "inc_top.html"; ?>
+          <section class="sec_service intro section">
+            <div class="wrap_com bg_white ls50">
+              <div class="top bb"><h3>파워볼 소개</h3></div>
+              <div class="pb40">
+                <div class="wrap_logo wrap_img">
+                  <img src="/common/images/logo_power.png" alt="logo" />
+                </div>
+                <div class="txt_type_b">
+                  미국에서 탑3 복권은 Power Ball, Mega Millions, Super Lotto입니다.
+                  Power Ball은 미국과 전 세계인들에게 인기가 많은 복권 중 하나 입니다. <br>
+                  파워볼 최고 당첨금은 2022년 11월 8일 역대 최고 당첨금 19억 달러(약 2조 8,000억원)입니다.
+                </div>
+              </div>
+            </div>
+            <div class="mt20 wrap_com bg_white section">
+              <h4 class="pt40 pb30">게임방식 안내</h4>
+              <div class="img_game wrap_img br10">
+                <img src="/common/images/mobile/img_intro.jpg" alt="게임방식 안내" />
+              </div>
+              <div class="txt_type_b">
+                <p class="color_666 fs30"><strong>5(화이트볼)<span class="color_red2"> + 1(파워볼)</span></strong></p>
+                <span>총 6개의 번호를 선택 (화이트볼 5개 + 파워볼 1개)</span>
+                <ol class="pt40">
+                  <li>
+                    <p>1. 1 부터 69까지의 숫자 중 화이트볼 5개를 선택 합니다.</p>
+                  </li>
+                  <li>
+                    <p>2. 1 부터 26까지의 숫자 중 파워볼 1개를 선택하여</p>
+                    <p style="padding-left: 0.7rem;">총 6개의 번호를 선택합니다.</p>
+                  </li>
+                  <li>
+                    <p>3. 파워볼 숫자는 앞에서 선택한 5개 번호(화이트볼) 번호와</p>
+                    <p style="padding-left: 0.7rem;">중복 선택이 가능합니다.</p>
+                  </li>
+                </ol>
+              </div>
+              <div class="img_game wrap_img br10">
+                <img src="/common/images/mobile/power_win_info.jpg" alt="파워볼 당첨 정보" />
+              </div>
+            </div>
+            <div class="wrap_com mb50">
+              <h4 class="pt40 pb30">파워볼 추첨일시</h4>
+              <div>
+                <ul class="nation">
+                  <li class="ko add_before ico_ko"><span class="va_mid_text">매주 화요일, 목요일, 일요일 <?=$draw_time?></span></li>
+                  <li class="us add_before ico_us"><span class="va_mid_text">매주 월요일, 수요일, 토요일 20:00</span></li>
+                </ul>
+              </div>
+            </div>
+          </section>
+          <div class="wrap_com">
+            <?php include $_SERVER['DOCUMENT_ROOT']."/inc/quick.html"; ?>
+          </div>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+</html>

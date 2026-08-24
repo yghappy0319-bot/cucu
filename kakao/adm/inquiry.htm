@@ -1,0 +1,73 @@
+<?php
+include_once __DIR__ . '/head.php';
+?>
+<?php include_once __DIR__ . '/nav.php'; ?>
+<div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+  <div class="main-menu-header">
+    <input type="text" placeholder="Search" class="menu-search form-control round"/>
+  </div>
+  <?php include_once __DIR__ . '/menu.php'; ?>
+</div>
+
+<div class="app-content content container-fluid">
+  <div class="content-wrapper">
+    <div class="content-header row">
+      <div class="content-header-left col-md-10 col-xs-12 mb-1">
+        <h2 class="content-header-title">문의하기</h2>
+        <p class="text-muted mb-0">럭키뱅크 이용 중 궁금한 점이 있으시면 아래 채널로 문의해 주세요.</p>
+      </div>
+    </div>
+
+    <div class="content-body">
+      <div class="row">
+        <div class="col-xl-6 col-md-8 col-sm-12">
+          <div class="card">
+            <div class="card-body">
+              <div class="card-block">
+                <h4 class="card-title">1:1 문의</h4>
+                <h6 class="card-subtitle text-muted">럭키뱅크 아이디 혹은 운영중인 웹사이트 주소를 말씀해주세요!</h6>
+              </div>
+
+              <div class="card-block">
+                <div class="form-body mb-2">
+                  <a href="<?=$카카오링크?>" target="_blank" style="
+                    display: inline-block;
+                    background-color: #fee500;
+                    color: #000;
+                    font-weight: bold;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    text-decoration: none;
+                    font-family: 'Arial', sans-serif;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                  ">
+                    💬 카카오톡으로 문의하기
+                  </a>
+                </div>
+              </div>
+
+              <div class="card-block">
+                <div class="form-body mb-2">
+                  <a href="<?=$텔레그램링크?>" target="_blank" style="
+                    display: inline-block;
+                    background-color: #0088CC;
+                    color: #000;
+                    font-weight: bold;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    text-decoration: none;
+                    font-family: 'Arial', sans-serif;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                  ">
+                    💬 텔레그램으로 문의하기
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<?php include_once __DIR__ . '/footer.php'; ?>

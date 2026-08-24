@@ -1,0 +1,71 @@
+<?php
+$page_title = "로그인 - 파워볼, 메가밀리언, 미국 복권, ".$사이트명1;
+
+include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main">
+        <div class="contents">
+          <div class="title_sub bb border_dcdcdc">
+            <h2 class="title">로그인</h2>
+          </div>
+          <section class="sec_login f_NotoSansKR">
+            <div class="login_super">
+              <div class="mainlogo"><strong class="ls25 f_Montserrat" style="color: #444;">powermegakorea</strong></div>
+              <form name="login_frm" method="post" autocomplete="off">
+                <ul>
+                  <li class="id add_after">
+                    <input type="email" name="user_id" id="user_id" class="check_on"
+                           value="<?=(isset($_COOKIE['c_user_id'])) ? $_COOKIE['c_user_id'] : ""?>"
+                           placeholder="아이디를 입력해주세요." alt="아이디를 입력해주세요." autocomplete="off" />
+                  </li>
+                  <li class="pw add_after">
+                    <input type="password" name="user_pwd" id="user_pwd" class="check_on"
+                          placeholder="비밀번호를 입력해주세요." alt="비밀번호를 입력해주세요." autocomplete="new-password" />
+                  </li>
+                </ul>
+                <div class="wrap_chk ls25 pt10">
+                  <input type="checkbox" name="rememberme" id="rememberme"
+                         class="chk_type1" <?=(isset($_COOKIE['c_user_id'])) ? "checked" : ""?> value="Y" />
+                  <label for="rememberme" class="add_before">아이디 기억하기</label>
+                </div>
+                <button type="button" class="btn_login login_btn">로그인</button>
+                <button type="button" class="btn_login loading" style="display: none;">
+                  <img src="/common/images/loading.gif" width="20">
+                </button>
+              </form>
+              <h3 class="hide">회원가입 및 회원정보 찾기</h3>
+              <ul class="list_find">
+                <li><a href="/signup.html">회원가입</a></li>
+                <li><a href="/find-id.html">아이디 찾기</a></li>
+                <li><a href="/find-pw.html">비밀번호 찾기</a></li>
+              </ul>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </idv>
+</body>
+
+<script src="/common/js/login.js?version=<?=$version?>" charset="utf-8"></script>
+<script src="/common/js/config.js?version=<?=$version?>" charset="utf-8"></script>
+
+<script>
+  $(function() {
+    $(document).keydown(function(e) {
+      if (e.keyCode == 13) {
+        if ($(':focus').attr('id') == 'user_id' || $(':focus').attr('id') == 'user_pwd') {
+          $('.login_btn').click();
+        }
+      }
+    });
+  });
+</script>
+
+</html>

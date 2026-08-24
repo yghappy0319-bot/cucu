@@ -1,0 +1,234 @@
+/* 우리방 사용설명서 — 모바일 우선 */
+:root {
+  --bg: #f4f6f9;
+  --card: #fff;
+  --text: #1a1d26;
+  --muted: #6b7280;
+  --line: #e8ecf2;
+  --accent: #4f6ef7;
+  --accent-soft: #eef2ff;
+  --chip-bg: #f0f4ff;
+  --chip-text: #334155;
+  --radius: 14px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+  font-size: 15px;
+  padding-bottom: calc(24px + var(--safe-bottom));
+}
+
+.guide-wrap {
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.guide-hero {
+  background: linear-gradient(145deg, #4f6ef7 0%, #6b4fd9 100%);
+  color: #fff;
+  padding: 28px 18px 22px;
+  border-radius: 0 0 22px 22px;
+}
+
+.guide-hero h1 {
+  margin: 0 0 6px;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.guide-hero p {
+  margin: 0;
+  opacity: 0.92;
+  font-size: 0.92rem;
+}
+
+.guide-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(244, 246, 249, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 10px 0 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.guide-nav-inner {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 14px 4px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.guide-nav-inner::-webkit-scrollbar { display: none; }
+
+.guide-nav a {
+  flex: 0 0 auto;
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--chip-text);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.guide-nav a:active,
+.guide-nav a:focus {
+  background: var(--accent-soft);
+  border-color: #c7d2fe;
+  color: var(--accent);
+}
+
+.guide-main {
+  padding: 14px 14px 0;
+}
+
+.guide-section {
+  margin-bottom: 12px;
+}
+
+.guide-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.guide-card > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 16px 44px 16px 16px;
+  font-weight: 700;
+  font-size: 1rem;
+  position: relative;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.guide-card > summary::-webkit-details-marker { display: none; }
+
+.guide-card > summary::after {
+  content: '＋';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 1.1rem;
+  font-weight: 400;
+  transition: transform 0.2s;
+}
+
+.guide-card[open] > summary::after {
+  content: '−';
+}
+
+.guide-card[open] > summary {
+  border-bottom: 1px solid var(--line);
+  background: #fafbfe;
+}
+
+.guide-body {
+  padding: 14px 16px 18px;
+}
+
+.guide-body h3 {
+  margin: 16px 0 8px;
+  font-size: 0.88rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.guide-body h3:first-child { margin-top: 0; }
+
+.guide-body p,
+.guide-body li {
+  margin: 0 0 8px;
+  color: #374151;
+  font-size: 0.92rem;
+}
+
+.guide-body ul {
+  margin: 0 0 10px;
+  padding-left: 1.1rem;
+}
+
+.guide-body li { margin-bottom: 6px; }
+
+.guide-note {
+  background: var(--accent-soft);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  color: #4338ca;
+  margin: 10px 0 0;
+}
+
+.cmd {
+  display: inline-block;
+  background: var(--chip-bg);
+  color: #1e3a8a;
+  border: 1px solid #dbe4ff;
+  border-radius: 8px;
+  padding: 3px 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.84rem;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.cmd-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 12px;
+}
+
+.guide-links {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.guide-links a {
+  display: block;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.guide-links a:active {
+  background: var(--accent-soft);
+}
+
+.guide-footer {
+  text-align: center;
+  padding: 20px 14px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}

@@ -1,0 +1,321 @@
+<?php
+  require_once $_SERVER["DOCUMENT_ROOT"]."/inc/meta.html";
+  require_once $_SERVER["DOCUMENT_ROOT"]."/inc/header.html";
+  require_once $_SERVER["DOCUMENT_ROOT"]."/_library/function_CASH_RECEIPT.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if ($S_login['limit']) $limit = $S_login['limit'];
+  if (!isset($receiptSt)) $receiptSt = "N";
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&schdate=$schdate&sdate=$sdate&edate=$edate&limit=$limit";
+  $PARAM .= "&receiptSt=$receiptSt";
+
+  $add_query = "";
+  $order_query = "";
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND R.REG_DATE BETWEEN '{$sDate}' AND '{$eDate}'";
+  }
+
+  $find_text = preg_replace("/\s+/", "", $find_text);
+
+  if ($find_object == "all" && $find_text != "") {
+    $add_query .= " AND (R.USER_ID = '{$find_text}' OR M.NAME LIKE '%{$find_text}%' OR M.HP LIKE '%{$find_text}%')";
+    $find_object = "";
+  }
+
+  if ($receiptSt) {
+    $add_query .= " AND R.STATUS = '{$receiptSt}'";
+  }
+
+  if ($orderIdx) {
+    $columns = array("", "NAME", "USER_ID", "HP", "CASH_REG_DATE", "PRICE", "STATUS", "REG_DATE", "UPDATE_DATE", "");
+    $orderBy = $columns[$orderIdx];
+    $order_query .= $orderBy." ".$orderDir;
+  }
+
+  $list = F_CASH_RECEIPT_LIST(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order_query,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list["total"] <= 0) {
+    $list["CASH_NO"] = array();
+  }
+
+  $find_op = array(
+    "all"       => "전체",
+    "R.USER_ID" => "아이디",
+    "M.NAME"    => "성명",
+    "M.HP"      => "휴대폰번호",
+  );
+
+  $status_op = array(
+    ""  => "--전체--",
+    "Y" => "발급 완료",
+    "N" => "발급 신청",
+  );
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">현금영수증 신청</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">구매내역</a></li>
+          <li class="breadcrumb-item active" aria-current="page">현금영수증 신청</li>
+        </ol>
+      </div>
+      <div>
+        <button class="btn btn-info btn-icon all-cash-receipt">선택 발급완료</button>
+        <a href="./cash_receipt_excel.html?find_text=<?=$find_text?>&find_object=<?=$_GET['find_object']?>&sdate=<?=$sdate?>&edate=<?=$edate?>&receiptSt=<?=$receiptSt?>"
+           target="_blank" class="btn btn-icon btn-primary">
+          <span>
+            <i class="fa fa-file-excel-o"></i>
+          </span> Excel Download
+        </a>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="receiptSt" id="receiptSt" class="form-control form-select select2 auto-submit">
+                    <?=option_make($status_op, $receiptSt)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select name="schdate" id="schdate" class="form-control form-select select2">
+                    <option value="">--기간선택--</option>
+                    <?=option_make($search_date_op, $schdate)?>
+                  </select>
+                </div>
+                <input type="hidden" name="find_object" value="PLAYDATE" />
+                <div class="form-group mr-3 fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                    <span style="margin: 8px 5px 0 5px;">~</span>
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                  </div>
+                </div>
+                <div class="form-group fl-left">
+                  <select name="find_object" id="select-beast" class="form-control form-select select2">
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control auto-submit" name="find_text" value="<?=$find_text?>" />
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+                <div class="form-group fl-left" style="float: right;">
+                  <select name="limit" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <?=option_make($limit_op, $limit)?>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th data-orderable="false"><input type="checkbox" id="chkAll" /></th>
+                    <th data-orderable="false">NO</th>
+                    <th>성명</th>
+                    <th>아이디</th>
+                    <th>휴대폰번호</th>
+                    <th>결제일시</th>
+                    <th>신청금액</th>
+                    <th>상태</th>
+                    <th>신청일시</th>
+                    <th>발급일시</th>
+                    <th data-orderable="false">발급처리</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list["CASH_NO"]); $i++) {
+                      $no = $list["total"] - (($page-1) * $list[row]) - $i;
+
+                      $btn_receipt = "<a style='color: #fff;' class='btn btn-danger cash-receipt' data-no='{$list["CASH_NO"][$i]}'>발급 완료</a>";
+                      $btn_receipt .= " <a style='color: #fff;' class='btn btn-secondary cash-receipt-del' data-no='{$list["CASH_NO"][$i]}'>삭제</a>";
+
+                      if ($list["STATUS"][$i] == "N") {
+                        $status = "신청";
+                      } else {
+                        $status = "완료";
+                        $btn_receipt = "<a style='color: #fff;' class='btn btn-secondary cash-receipt-del' data-no='{$list["CASH_NO"][$i]}'>삭제</a>";
+                      }
+
+                      $reg_date = $list["REG_DATE"][$i];
+                      $update_date = $list["UPDATE_DATE"][$i];
+                      if ($reg_date == $update_date) {
+                        $update_date = "-";
+                      }
+
+                      $NAME = $list['NAME'][$i];
+                      $HP   = $list['HP'][$i];
+                      $linethrough = "";
+
+                      // 탈퇴 회원 정보 추가
+                      if (empty($NAME)) {
+                        $out  = $db->get_data("SELECT NAME, HP FROM OUT_MEMBER WHERE USER_ID='{$list['USER_ID'][$i]}' LIMIT 1");
+                        $NAME = $out['NAME'];
+                        $HP   = $out['HP'];
+                        $linethrough = "line-through";
+                      }
+                  ?>
+                  <tr>
+                    <td><input type="checkbox" name="noChk[]" value="<?=$list['CASH_NO'][$i]?>" /></td>
+                    <td><?=$no?></td>
+                    <td style="text-decoration: <?=$linethrough?>"><?=$NAME?></td>
+                    <td><?=$list["USER_ID"][$i]?><i class="modal-effect fa fa-search checkUser"
+                        title="상세정보"
+                        style="cursor: pointer; margin-left: 3px;"
+                        data-bs-effect="effect-scale"
+                        data-bs-target="#memberModal"
+                        data-bs-toggle="modal"
+                        data-no="<?=$list['USER_ID'][$i]?>">
+                      </i></td>
+                    <td><?=$HP?></td>
+                    <td><?=$list["CASH_REG_DATE"][$i]?></td>
+                    <td class="text-end"><?=number_format($list["PRICE"][$i])?></td>
+                    <td><?=$status?></td>
+                    <td><?=$reg_date?></td>
+                    <td><?=$update_date?></td>
+                    <td><?=$btn_receipt?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list["page_string"]?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER["DOCUMENT_ROOT"]."/inc/footer.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_member.html"; ?>
+
+<script>
+  $(function() {
+    // setDataTable Start
+    let dataTable = setDataTable(7);
+    setTableOrder(dataTable);
+
+    $('#table-list th').on('click', function() {
+      let isSorting = $(this).hasClass('sorting');
+
+      if (isSorting) {
+        let orderIdx = dataTable.column(this).index();
+        let orderDir = dataTable.order()[0][1];
+        dataTable.clear().draw();
+
+        setReloadToOrder(orderIdx, orderDir);
+      }
+    });
+
+    $('.page-link').click(function(event) {
+      event.preventDefault();
+
+      let currentOrder = dataTable.order();
+      let href = $(this).attr('href');
+
+      setReloadToPagination(currentOrder, href);
+    });
+    // setDataTable End
+  });
+
+  // 삭제 처리
+  $(document).on('click', '.cash-receipt-del', function() {
+    let no = $(this).data('no');
+    if (confirm('해당 현금영수증 신청을 삭제하시겠습니까?')) {
+      $.post('./default.php', {
+        mode: 'delete_cash_receipt',
+        no: no
+      }, function(e) {
+        if (e.error) {
+          alert(e.msg);
+          location.reload();
+        } else {
+          alert(e.msg);
+        }
+      }, 'json');
+    }
+  });
+
+  // 발급 완료 처리
+  $('.cash-receipt').click(function() {
+    let no = $(this).data('no');
+    if (confirm('발급완료 처리 하시겠습니까?')) {
+      $.post('/Popbill/cash_receipt.php', {
+        mode: 'apply_cash_receipt',
+        no: no
+      }, function(e) {
+        console.log(e);
+        if (e.status=="success") {
+          alert("발행완료");
+          location.reload();
+        } else {
+          alert(e.message);
+        }
+      }, 'json');
+    }
+  });
+
+  // 선택 발급 완료 처리
+  $('.all-cash-receipt').click(function() {
+    let chk_no = '';
+    let i = 0;
+    $('[name="noChk[]"]:checked').each(function() {
+      if (chk_no != "") chk_no += ",";
+      chk_no += $(this).val();
+      i++;
+    });
+
+    if (confirm('선택된 건을 발급완료 처리 하시겠습니까?(이미 완료된 건은 처리에서 제외됩니다.)')) {
+      $.post('./default.php', {
+        mode: 'all_apply_cash_receipt',
+        chk_no: chk_no
+      }, function(e) {
+        if (e.error) {
+          $('#srForm').submit();
+        } else {
+          alert(e.msg);
+        }
+      }, 'json');
+    }
+  });
+</script>

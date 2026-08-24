@@ -1,0 +1,168 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  if ($M_login['user_id'] == "") {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $user_pwd = xss_clean($_POST['pwd']);
+
+  if ($user_pwd == "" && $M_login['hp'] != "") {
+    alert_print("비밀번호를 정확히 입력해 주세요.");
+    meta_go("./my-info.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}' AND PASSWD=PASSWORD('{$user_pwd}')");
+
+  if ($mb['USER_ID'] == "" && $M_login['hp'] != "") {
+    alert_print("비밀번호를 정확히 입력해 주세요.");
+    meta_go("./my-info.html");
+    exit;
+  }
+
+  if ($M_login['hp'] == "") {
+    $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}'");
+  }
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+  <main id="main">
+    <div class="wrap_mypage clear wrap_com">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/nav-mypage.html"; ?>
+      <div class="right">
+        <section class="sec_myinfo">
+          <div class="wrap_title bb">
+            <h3 class="heading">회원정보수정</h3>
+          </div>
+          <form class="f_NotoSansKR fm_info" name="w_frm" id="w_frm" method="post" action="./myinfo-info-action.php">
+            <fieldset>
+              <legend class="hide">회원정보수정 입력 폼</legend>
+              <ul class="list_reg">
+                <li>
+                  <label for="re_id"><span>아이디</span></label>
+                  <div class="bx_input gray">
+                    <input type="email" id="reg_id" name="USER_ID" value="<?=$mb['USER_ID']?>" readonly />
+                  </div>
+                </li>
+                <li class="required">
+                  <label for="reg_country"><span>국적</span></label>
+                  <input type="hidden" id="reg_country" name="COUNTRY" value="<?=$mb['COUNTRY']?>">
+                  <div class="bx_input <?=($mb['COUNTRY'] == "kr" ? "on" : "")?>" style="border-radius: 0.2rem 0 0 0.2rem; border-right: 0px;">
+                    <input type="button" class="selector country <?=($mb['COUNTRY'] == "kr" ? "button_on" : "")?>" value="내국인" data-value="kr" />
+                  </div>
+                  <div class="bx_input <?=($mb['COUNTRY'] == "os" ? "on" : "")?>" style="border-radius: 0 0.2rem 0.2rem 0;">
+                    <input type="button" class="selector country <?=($mb['COUNTRY'] == "os" ? "button_on" : "")?>" value="외국인" data-value="os" />
+                  </div>
+                </li>
+                <li class="required">
+                  <label for="reg_name"><span>이름</span></label>
+                  <div class="bx_input">
+                    <input type="text" id="reg_name" name="NAME" value="<?=$mb['NAME']?>" maxlength="30" placeholder="당첨금 수령을 위해 정확한 본인 이름을 입력해주세요." />
+                  </div>
+                </li>
+                <li class="required" style="flex-basis: auto;">
+                  <label for="birth" style="flex-basis: 21.7%;"><span>생년월일</span></label>
+                  <div class="bx_input" style="flex-basis: 9.3rem;">
+                    <input type="text" id="birth" name="BIRTH" value="<?=str_replace('-', '', $mb['BIRTH'])?>" maxlength="8" placeholder="예) 20000101" />
+                  </div>
+                  <label for="reg_name" style="flex-basis: 11%; margin-left: 1.5rem;"><span>성별</span></label>
+                  <input type="hidden" id="reg_gender" name="GENDER" value="<?=$mb['GENDER']?>">
+                  <div class="bx_input <?=($mb['GENDER'] == "M" ? "on" : "")?>" style="border-radius: 0.2rem 0 0 0.2rem; padding: 0 0 0 0; border-right: 0px;">
+                    <input type="button" class="selector gender <?=($mb['GENDER'] == "M" ? "button_on" : "")?>" value="남성" data-value="M" />
+                  </div>
+                  <div class="bx_input <?=($mb['GENDER'] == "F" ? "on" : "")?>" style="border-radius: 0 0.2rem 0.2rem 0; padding: 0 0 0 0;">
+                    <input type="button" class="selector gender <?=($mb['GENDER'] == "F" ? "button_on" : "")?>" value="여성" data-value="F" />
+                  </div>
+                </li>
+                <li class="required" style="display: none;">
+                  <label for="ename"><span>영문이름</span></label>
+                  <div class="bx_input">
+                    <input type="text" id="ename" NAME="ENAME" maxlength="50" value="<?=$mb['ENAME']?>" placeholder="영문 이름을 입력해주세요." />
+                  </div>
+                </li>
+                <li class="required">
+                  <label for="email"><span>이메일</span></label>
+                  <div class="bx_input">
+                    <input type="text" id="email" NAME="EMAIL" maxlength="50" value="<?=$mb['EMAIL']?>" placeholder="이메일을 입력해주세요." />
+                  </div>
+                </li>
+                <li class="required">
+                  <label for="user_phone"><span>휴대폰 번호</span></label>
+                  <div>
+                    <div class="wrap_type1 flex align_center">
+                      <div class="bx_tel type1 bx_input">
+                        <input type="text" id="user_phone" name="USER_PHONE" maxlength="13" value="<?=$mb['HP']?>" />
+                      </div>
+                      <button type="button" class="btn_gray auth_btn">인증번호요청</button>
+                    </div>
+                    <p class="txt_type1">서비스 이용 및 아이디, 비밀번호 찾기에서 사용되므로 인증이 필요합니다.</p>
+                    <div class="wrap_type1 flex align_center auth_chk" style="display: none;">
+                      <div class="bx_num bx_input">
+                        <input type="text" id="auth_num" name="AUTH_NUM" />
+                        <input type="hidden" id="auth_phone" name="AUTH_PHONE" />
+                        <p><span class="hide">남은시간</span><span class="time count_down">03:00</span></p>
+                      </div>
+                      <button type="button" class="btn_gray auth_chk_btn">인증번호확인</button>
+                    </div>
+                  </div>
+                </li>
+                <li>
+                  <label for="pwd"><span>신규 비밀번호</span></label>
+                  <div>
+                    <div class="bx_input">
+                      <input type="password" id="pwd" name="PWD" maxlength="20" autocomplete="new-password" placeholder="비밀번호를 입력해주세요." />
+                    </div>
+                    <p class="txt_type1">비밀번호는 8~20자의 영문과 숫자를 섞어주세요. (단, &,',<,> 특수문자 사용불가)</p>
+                  </div>
+                </li>
+                <li>
+                  <label for="pwd_chk"><span>비밀번호 확인</span></label>
+                  <div class="wrap_type1 flex">
+                    <div class="bx_input">
+                      <input type="password" id="pwd_chk" name="PWD_CHK" maxlength="20" autocomplete="new-password" placeholder="동일한 비밀번호를 입력해주세요." />
+                      <p>비밀번호가 일치하지 않습니다. 다시 입력해주세요.</p>
+                    </div>
+                    <button type="button" class="btn_gray" id="pwd_btn">비밀번호 변경</button>
+                  </div>
+                </li>
+                <li>
+                  <label><span class="hide">약관동의</span></label>
+                  <div class="bx_agree">
+                    <div class="bx_input pb15">
+                      <input type="checkbox" class="chk_type1" id="chk_agree" name="IS_MARKETING" value="Y" <?php if ($mb['IS_MARKETING'] == "Y") echo 'checked'; ?> />
+                      <label class="add_before" for="chk_agree" style="display: flex; align-items: center;">
+                        <span class="color_blue ml5 mr5">[선택]</span> 마케팅 활용을 위한 개인정보 수집/이용 동의
+                      </label>
+                    </div>
+                    <p class="txt_type1">거래정보와 관련된 내용은 수신동의 여부와 관계없이 발송됩니다.</p>
+                  </div>
+                </li>
+              </ul>
+              <div class="wrap_btn type2 flex align_center space">
+                <a class="btn btn_gray ok_btn" style="width: 100%;">저장</a>
+              </div>
+            </fieldset>
+          </form>
+          <div class="secession bx_gray bx_padding space_btm flex align_center space">
+            <div class="left">
+              <strong class="color_000">회원 탈퇴를 원하시나요?</strong>
+              <p>탈퇴하시면 그동안 적립하신 캐시 및 마일리지, 모든 혜택 등을 받으실 수 없습니다.</p>
+            </div>
+            <a href="/contents/mypage/delete.html" class="btn_gray radius5">회원탈퇴</a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+</body>
+
+<script src="/common/js/time.js?version=<?=$version?>" charset="utf-8"></script>
+<script src="/common/js/member_update.js?version=<?=date('his')?>" charset="utf-8"></script>
+<script src="/common/js/member_common.js?version=<?=date('his')?>" charset="utf-8"></script>
+
+</html>

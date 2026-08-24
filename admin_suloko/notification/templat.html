@@ -1,0 +1,142 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_SMSTEMPLET.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 20;
+
+  $list = F_SMSTEMPLET_LIST(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['TEMPLET_NO'] = array();
+  }
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">알림템플릿관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">알림관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">알림템플릿관리</li>
+        </ol>
+      </div>
+      <div class="ms-auto pageheader-btn">
+        <a href="./templat_add.html" class="btn btn-primary btn-icon text-white me-2">
+          <span><i class="fe fe-plus"></i></span> Add Templet
+        </a>
+        <a href="<?=admin_url('./replace_templet_url.php')?>" class="btn btn-warning me-2" onclick="return confirm('템플릿의 https://www.sulokolink.com 을 https://surokolink.com 으로 모두 바꿀까요?');">도메인 일괄변경</a>
+        <a href="#" class="btn btn-danger allDelChk">선택삭제</a>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div></div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="chkAll" /></th>
+                    <th>NO</th>
+                    <th>종류(num)</th>
+                    <th>제목</th>
+                    <th>설명</th>
+                    <th>SMS발송</th>
+                    <th>사용여부</th>
+                    <th>등록ID</th>
+                    <th>등록일시</th>
+                    <th>관리</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['TEMPLET_NO']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                  ?>
+                  <tr>
+                    <td><input type="checkbox" name="noChk[]" value="<?=$list['TEMPLET_NO'][$i]?>"></td>
+                    <td><?=$no?></td>
+                    <td><?=$codesk_op[$list['CODESK'][$i]]?> (<?=$list['TEMPLET_NO'][$i]?>)</td>
+                    <td class="text-start"><?=$list['SUBJECT'][$i]?></td>
+                    <td class="text-start"><?=$list['GUBUN'][$i]?></td>
+                    <td><?=$must_op[$list['MUST'][$i]]?></td>
+                    <td><?=$stop_op[$list['STOPYN'][$i]]?></td>
+                    <td><?=$list['STAFFID'][$i]?></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                    <td><a href="./templat_add.html?mode=update&no=<?=$list['TEMPLET_NO'][$i]?>" class="btn btn-success">View</a></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+    // 선택 삭제
+    $(document).on('click', '.allDelChk', function() {
+      let chk_no = new Array();
+      let i = 0;
+      $('[name="noChk[]"]:checked').each(function() {
+        chk_no[i] = $(this).val();
+        i++;
+      });
+
+      if (i > 0) {
+        if (confirm('선택한 항목을 삭제하시겠습니까?')) {
+          $.post('./common.php', {
+            mode: 'all_del',
+            gubun: 'SMSTEMPLET',
+            chk_no: chk_no
+          }, function(e) {
+            if (e.error) {
+              alert(e.msg);
+            } else {
+              alert(e.msg);
+            }
+            window.location.reload();
+          }, 'json');
+        }
+      } else {
+        alert('삭제할 항목을 선택하세요');
+      }
+    });
+
+    let getHeight = $('.table-wrapper').css('max-height');
+    let setHeight = Number(getHeight.slice(0, -2)) + 50;
+
+    // 해상도에 따라 높이 조절
+    $('.table-wrapper').css('max-height', setHeight);
+  });
+</script>

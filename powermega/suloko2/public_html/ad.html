@@ -1,0 +1,32 @@
+<?php
+// cp_id가 없으면 파트너 처리 없이 바로 메인으로 이동
+if (empty($_GET['cp_id'])) {
+  $domain = "https://".$_SERVER['HTTP_HOST']."/index.html";
+  if (!headers_sent()) {
+    header("Location: ".$domain, true, 302);
+    exit;
+  }
+  echo "<script>location.replace('".$domain."');</script>";
+  echo '<meta http-equiv="refresh" content="0;url='.$domain.'">';
+  exit;
+}
+
+require_once $_SERVER['DOCUMENT_ROOT']."/_common/config.php";
+
+exec_partner($_GET['cp_id'], 'PC');
+
+$domain = "https://".$_SERVER['HTTP_HOST']."/index.html";
+
+if (ob_get_length()) {
+  @ob_end_clean();
+}
+
+if (!headers_sent()) {
+  header("Location: ".$domain, true, 302);
+  exit;
+}
+
+echo "<script>location.replace('".$domain."');</script>";
+echo '<meta http-equiv="refresh" content="0;url='.$domain.'">';
+exit;
+?>

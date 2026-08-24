@@ -1,0 +1,251 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_PATNER.php";
+  F_admin_chk($S_login);
+
+  if ($mode == 'update') {
+    $info  =  F_PATNER(array("mode"=>"read", "PATNER_NO"=>$no));
+    $sql = "
+      SELECT
+        *,
+        (select COUNT(*) AS TCNT from COUPON_LOG where COUPON_NO = COUPON.COUPON_NO) as TCNT
+      FROM
+        COUPON
+      WHERE
+        PATNER_ID='".$info['USER_ID']."' AND
+        GUBUN='D'
+      ORDER BY
+        REG_DATE DESC
+      ";
+    $list = $db->get_list($sql);
+  } else {
+    $info = array();
+  }
+
+  if (!isset($mode)) $mode = "insert";
+  if (!isset($info['STOPYN'])) $info['STOPYN'] = "";
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">파트너관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">파트너관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">파트너관리</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <div class="row">
+      <div class="col-lg-12 col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">파트너등록/수정</h3>
+          </div>
+          <div class="card-body">
+            <form class="needs-validation" novalidate method="post" name="w_frm" action="partner_action.php" enctype='multipart/form-data' onsubmit="return checkForm()">
+              <input type="hidden" name="PATNER_NO" value="<?php echo (isset($info['PATNER_NO']))? $info['PATNER_NO'] : ""; ?>">
+              <input type="hidden" name="mode" id="sub_mode" value="<?php echo $mode; ?>">
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom01">ID</label>
+                  <input type="text" class="form-control" id="validationCustom01" value="<?php echo (isset($info['USER_ID']))? $info['USER_ID'] : ""; ?>" name="USER_ID" required <?php echo ($mode == 'update')? "readonly" : ""; ?>>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please provide a valid ID.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom02">Password</label>
+                  <input type="password" class="form-control" id="validationCustom02" value="<?php echo (isset($info['PASSWD']))? $info['PASSWD'] : ""; ?>" name="PASSWD" required>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please provide a valid Password.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom03">Company</label>
+                  <input type="text" class="form-control" name="COMPANY" value="<?php echo (isset($info['COMPANY']))? $info['COMPANY'] : ""; ?>" id="validationCustom03">
+                  <div class="invalid-feedback">Please provide a valid Company.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom04">사업자등록번호 or 주민등록번호</label>
+                  <input type="text" class="form-control" name="BIZNUM" value="<?php echo (isset($info['BIZNUM']))? $info['BIZNUM'] : ""; ?>" id="validationCustom04">
+                  <div class="invalid-feedback">Please provide a valid BIZNUM.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom04">성명</label>
+                  <input type="text" class="form-control" name="CEO" value="<?php echo (isset($info['CEO']))? $info['CEO'] : ""; ?>" id="validationCustom04" required>
+                  <div class="invalid-feedback">Please provide a valid 성명.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom05">은행명</label>
+                  <input type="text" class="form-control" name="BANK" value="<?php echo (isset($info['BANK']))? $info['BANK'] : ""; ?>" id="validationCustom05">
+                  <div class="invalid-feedback">Please provide a valid 은행명.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom04">계좌번호</label>
+                  <input type="text" class="form-control" name="BANK2" value="<?php echo (isset($info['BANK2']))? $info['BANK2'] : ""; ?>" id="validationCustom04">
+                  <div class="invalid-feedback">Please provide a valid 계좌번호.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom05">예금주</label>
+                  <input type="text" class="form-control" name="BANK3" value="<?php echo (isset($info['BANK3']))? $info['BANK3'] : ""; ?>" id="validationCustom05">
+                  <div class="invalid-feedback">Please provide a valid 예금주.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom06">HP </label>
+                  <input type="text" class="form-control" name="HP" value="<?php echo (isset($info['HP']))? $info['HP'] : ""; ?>" id="validationCustom06" required>
+                  <div class="invalid-feedback">Please provide a valid HP.</div>
+                </div>
+                <div class="col-md-6 mb-3"></div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-12 mb-3">
+                  <label for="validationCustom08">ADDRESS</label>
+                  <input type="text" class="form-control" name="ADDRESS" value="<?php echo (isset($info['ADDRESS']))? $info['ADDRESS'] : ""; ?>" id="validationCustom08">
+                  <div class="invalid-feedback">Please provide a valid ADDRESS.</div>
+                </div>
+              </div>
+              <button class="btn btn-primary" type="submit">Submit form</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ROW CLOSED -->
+    <?php if ($mode == 'update') { ?>
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div></div>
+            <div class="table-responsive">
+              <table class="table border text-nowrap table-striped" id="table-list">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>쿠폰번호</th>
+                    <th>구분</th>
+                    <th>제목</th>
+                    <th>금액</th>
+                    <th>등록일</th>
+                    <th>사용횟수</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['COUPON_NO']); $i++) {
+                      $no = $list['total'] - (($page-1)*$list['row']) - $i;
+                      $list['TCNT'][$i] = ($list['TCNT'][$i])?$list['TCNT'][$i]:0;
+                      $NUM = substr($list["NUM"][$i], 0, 4)." ".substr($list["NUM"][$i], 4, 4)." ".substr($list["NUM"][$i], 8, 4)." ".substr($list["NUM"][$i], 12, 4);
+                  ?>
+                  <tr>
+                    <td><?php echo $no; ?></td>
+                    <td><?php echo $NUM; ?></td>
+                    <td><?php echo $coupon_op[$list['GUBUN'][$i]]; ?></td>
+                    <td><?php echo $list['TITLE'][$i]; ?></td>
+                    <td><?php echo number_format($list['PRICE'][$i]); ?></td>
+                    <td><?php echo $list['REG_DATE'][$i]; ?></td>
+                    <td><?php echo $list['TCNT'][$i]."/".$list['TIME_CNT'][$i]; ?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?php echo $list['page_string']; ?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+    <?php } ?>
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script language="javascript">
+  $(document).ready(function() {
+    //왼쪽 메뉴 처리
+    let slide_title = $('.breadcrumb-item').find("a").text();
+    let title = $('.page-title').text();
+    let is_active = false;
+    $(".slide").each(function(slide_idx,slide_itm) {
+      $(slide_itm).find(".slide-menu").find("li").each(function(slide_menu_idx,slide_menu_itm) {
+        is_active = false;
+        if ($(slide_menu_itm).find("a").text().indexOf(title) != -1) {
+          $(slide_menu_itm).addClass("active");
+          $(slide_menu_itm).find("a").addClass("active");
+          is_active = true;
+        }
+        if (is_active && $(slide_itm).find('.side-menu__label').text() == slide_title) $(slide_itm).find(".side-menu__item").addClass("active");
+      });
+    });
+    side_menu_scroll();
+
+    $(document).on("click", "#creat_add_coupon",function() {
+      $("#coupon_box").show();
+    });
+  });
+
+  function checkForm() {
+    var reg_id = $('[name="USER_ID"]').val();
+    var pwd = $('[name="PASSWD"]').val();
+    var pattern1 = /[0-9]/;
+    var pattern2 = /[a-zA-Z]/;
+    var pattern4 = /[~!@\#$%<>^&*]/;// 원하는 특수문자 추가 제거
+
+    if (reg_id.length < 5) {
+      alert("아이디를 정확히 입력해 주세요.");
+      $('[name="USER_ID"]').val("");
+      return false;
+    }
+
+    if (pattern4.test(reg_id) == true) {
+      alert("아이디를 정확히 입력해 주세요.");
+      $('[name="USER_ID"]').val("");
+      return false;
+    }
+
+    if (pwd.length < 8 || pwd.length > 12) {
+      alert("비밀번호는 8~12자입니다.");
+      $('[name="PASSWD"]').val("");
+      return false;
+    }
+
+    if (!pattern1.test(pwd) || !pattern2.test(pwd)) {
+      if (pattern1.test(pwd) && pattern2.test(pwd)) {
+      } else if (pattern1.test(pwd) && pattern4.test(pwd)) {
+      } else if (pattern2.test(pwd) && pattern4.test(pwd)) {
+      } else {
+        alert("비밀번호를 정확히 입력해주세요.");
+        $('[name="PASSWD"]').val("");
+        return false;
+      }
+    }
+
+    if ($("#sub_mode").val() == "update") {
+      if (confirm("변경 사항을 저장 하시겠습니까?")) {
+        return true;
+      }
+      return false;
+    }
+    return true;
+  }
+</script>

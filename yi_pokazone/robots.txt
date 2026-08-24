@@ -1,0 +1,27 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /proc/
+Disallow: /include/
+Disallow: /lib/
+Disallow: /sql/
+Disallow: /uploads/*.php$
+Disallow: /logout.php
+Disallow: /page/community_write.php
+Disallow: /trade/trade_write.php
+Disallow: /page/mypage.php
+Disallow: /page/member_info.php
+Disallow: /*?*page=
+Disallow: /*?*utm_
+Disallow: /*?*fbclid=
+Disallow: /*?*gclid=
+
+# 이미지 크롤링 허용
+User-agent: Googlebot-Image
+Allow: /uploads/
+Allow: /assets/img/
+
+# 검색엔진용 사이트맵
+Sitemap: /sitemap.xml
+
+# 공지 RSS 피드(구독): /rss.xml

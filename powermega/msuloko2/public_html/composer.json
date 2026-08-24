@@ -1,0 +1,7 @@
+{
+    "require": {
+        "aws/aws-sdk-php": "^3.316",
+        "google/apiclient": "^2.6",
+        "kreait/firebase-php": "^4.39"
+    }
+}

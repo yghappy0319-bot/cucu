@@ -1,0 +1,357 @@
+<?php
+include $_SERVER['DOCUMENT_ROOT'] . "/admin/lib/function.php";
+include $_SERVER['DOCUMENT_ROOT'] . "/admin/_chk.php";
+
+if($admin['grade']==2){
+  if (strpos($_SERVER['REQUEST_URI'], '/admin/manage/ad_member.html') !== false) {
+    // 해당 경로가 URL에 포함된 경우
+    //echo "ad_member.html 페이지입니다.";
+  }else{
+    echo "<script>alert('접근할 수 없는 권한 입니다.');location.href='/admin/manage/ad_member.html';</script>";
+  }
+}
+
+?>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ADMIN</title>
+
+    <script
+            src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Summernote CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote.min.css" rel="stylesheet">
+
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="/admin/assets/bpopup.js"></script>
+
+    <!-- Bootstrap Bundle JS -->
+    <!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>-->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+    <!-- Summernote JS -->
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote.min.js"></script>
+    <link rel="stylesheet" href="/admin/assets/admin.css?ver=<?= date('his') ?>">
+
+    <!-- NICE -->
+
+    <!-- Favicons -->
+    <link href="/admin/assets_nice/img/favicon.png" rel="icon">
+    <link href="/admin/assets_nice/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+          rel="stylesheet">
+
+    <!-- Vendor CSS Files -->
+    <link href="/admin/assets_nice/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/admin/assets_nice/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="/admin/assets_nice/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link href="/admin/assets_nice/vendor/quill/quill.snow.css" rel="stylesheet">
+    <link href="/admin/assets_nice/vendor/quill/quill.bubble.css" rel="stylesheet">
+    <link href="/admin/assets_nice/vendor/remixicon/remixicon.css" rel="stylesheet">
+    <link href="/admin/assets_nice/vendor/simple-datatables/style.css" rel="stylesheet">
+
+    <!-- Template Main CSS File -->
+    <link href="/admin/assets_nice/css/style.css" rel="stylesheet">
+
+    <!-- =======================================================
+    * Template Name: NiceAdmin
+    * Template URL: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/
+    * Updated: Apr 20 2024 with Bootstrap v5.3.3
+    * Author: BootstrapMade.com
+    * License: https://bootstrapmade.com/license/
+    ======================================================== -->
+
+    <!-- NICE end -->
+</head>
+<body>
+<style>
+    a {
+        text-decoration: none;
+    }
+
+    .nav .menu {
+        font-size: 18px;
+        color: #333;
+        font-weight: bold;
+        margin: 6px;
+        display: inline-block;
+    }
+
+    .nav .sub_menu li {
+        padding-left: 12px;
+        margin: 3px 0px;
+    }
+    .cnt{color:red;}
+      .d-none {
+          display: unset !important;
+      }
+</style>
+
+<?php if ($admin['idx']) { ?>
+    <header id="header" class="header fixed-top d-flex align-items-center">
+        <div class="d-flex align-items-center justify-content-between">
+            <a href="/admin/manage/" class="logo d-flex align-items-center">
+              <img src="assets/img/logo.png" alt="">
+                <span class="d-none d-lg-block">ADMIN</span>
+            </a>
+            <i class="bi bi-list toggle-sidebar-btn"></i>
+        </div><!-- End Logo -->
+
+        <nav class="header-nav ms-auto">
+            <ul class="d-flex align-items-center">
+                <div id="right_part" class="d-flex align-items-center ms-auto gap-3"> <!-- 클래스 추가 -->
+                    <? if ($admin['grade'] == 99) { ?>
+                        <a href="https://megapower.world" target="_blank">SITE</a>
+                    <? } ?>
+                    <a href="javascript:go_logout();">LOGOUT</a>
+                    <a href="javascript:go_show_menu();" class="mobile_menu_btn d-md-none">MENU</a>
+                    <!-- d-md-none 추가 -->
+                </div>
+            </ul>
+        </nav><!-- End Icons Navigation -->
+    </header>
+
+    <!-- ======= Sidebar ======= -->
+    <aside id="sidebar" class="sidebar" >
+    <? if($admin['grade']==2){?>
+      <ul class="sidebar-nav" id="sidebar-nav">
+            <li class="nav-item">
+                <a class="nav-link collapsed" data-bs-target="#main-nav1" data-bs-toggle="collapse" href="#">
+                    <i class="bi bi-menu-button-wide"></i><span>회원관리</span><i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="main-nav1" class="nav-content collapse show" data-bs-parent="#sidebar-nav">
+                  <li><a href="/admin/manage/ad_member.html"><i class="bi bi-circle"></i><span>광고유입</span></a></li>
+                </ul>
+            </li>
+      </ul>
+    <? }else{
+      $_sidebar_badges = 관리자사이드바카운트();
+      $_문의 = array('cnt' => (int) $_sidebar_badges['cnt_inquiry']);
+      $_입금신청건 = array('cnt' => (int) $_sidebar_badges['cnt_deposit_pending']);
+      $_당첨금출금 = array('cnt' => (int) $_sidebar_badges['cnt_prize_pending']);
+    ?>
+      <ul class="sidebar-nav" id="sidebar-nav">
+        <li class="nav-item">
+            <a class="nav-link collapsed" data-bs-target="#main-nav1" data-bs-toggle="collapse" href="#">
+                <i class="bi bi-menu-button-wide"></i><span>쇼핑몰관리</span><i class="bi bi-chevron-down ms-auto"></i>
+            </a>
+            <ul id="main-nav1" class="nav-content collapse show" data-bs-parent="#sidebar-nav">
+                <li><a href="/admin/manage/shop/order_list.html"><i class="bi bi-circle"></i><span>주문내역</span></a></li>
+                <li><a href="/admin/manage/shop/product.html"><i class="bi bi-circle"></i><span>상품관리</span></a></li>
+            </ul>
+        </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" data-bs-target="#main-nav1" data-bs-toggle="collapse" href="#">
+                    <i class="bi bi-menu-button-wide"></i><span>회원관리1</span><i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="main-nav1" class="nav-content collapse show" data-bs-parent="#sidebar-nav">
+                  <li><a href="/admin/manage/manager.html"><i class="bi bi-circle"></i>관리자 계정 관리</a></li>
+                  <li><a href="/admin/manage/member.html"><i class="bi bi-circle"></i><span>회원관리</span></a></li>
+                  <li><a href="/admin/manage/member_no_charge.html"><i class="bi bi-circle"></i><span>충전미이용</span></a></li>
+
+                  <li><a href="/admin/manage/ad_member.html"><i class="bi bi-circle"></i><span>광고유입</span></a></li>
+
+                  <li><a href="/admin/manage/out_member.html"><i class="bi bi-circle"></i><span>탈퇴회원</span></a></li>
+                    <li>
+                      <a href="/admin/manage/contact.html"><i class="bi bi-circle"></i>
+                      1:1문의&nbsp;<?= $_문의['cnt'] ? "<span class='cnt'>(".$_문의['cnt'].")</span>":"" ?>
+                    </a>
+                    </li>
+                    <!-- <li><a href="/admin/manage/sms.html"><i class="bi bi-circle"></i><span>SMS발송</span></a></li> -->
+                    <li><a href="/admin/manage/sms_log.html"><i class="bi bi-circle"></i><span>SMS</span></a></li>
+                    <li><a href="/admin/manage/point_log.html"><i class="bi bi-circle"></i><span>전체사용내역</span></a></li>
+                    <li><a href="/admin/manage/chart.html"><i class="bi bi-circle"></i><span>추천인</span></a></li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" data-bs-target="#main-nav3" data-bs-toggle="collapse" href="#">
+                    <i class="bi bi-menu-button-wide"></i><span>매출관리</span><i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="main-nav3" class="nav-content collapse show" data-bs-parent="#sidebar-nav">
+                  <li><a href="/admin/manage/cardlog.html"><i class="bi bi-circle"></i><span>카드결제</span></a></li>
+                  <li><a href="/admin/manage/point.html"><i class="bi bi-circle"></i>
+                    계좌이체&nbsp;<?= $_입금신청건['cnt'] ? "<span class='cnt'>(".$_입금신청건['cnt'].")</span>":"" ?>
+                  </a>
+                </li>
+
+                  <li><a href="/admin/manage/prize.html"><i class="bi bi-circle"></i><span>당첨자</span></a></li>
+
+                  <li><a href="/admin/manage/withdraw.html"><i class="bi bi-circle"></i>
+                      출금신청 <?= $_당첨금출금['cnt'] ? "<span class='cnt'>(".$_당첨금출금['cnt'].")</span>":"" ?>
+                    </a>
+                  </li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" data-bs-target="#main-nav2" data-bs-toggle="collapse" href="#">
+                    <i class="bi bi-menu-button-wide"></i><span>회원관리2</span><i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="main-nav2" class="nav-content collapse show" data-bs-parent="#sidebar-nav">
+                  <li><a href="/admin/manage/order.html"><i class="bi bi-circle"></i><span>티켓구매내역</span></a></li>
+                  <li><a href="/admin/manage/scan.html"><i class="bi bi-circle"></i><span>스캔본현황</span></a></li>
+                  <li><a href="/admin/manage/coupon.html"><i class="bi bi-circle"></i><span>쿠폰발급</span></a></li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" data-bs-target="#main-nav4" data-bs-toggle="collapse" href="#">
+                    <i class="bi bi-menu-button-wide"></i><span>사이트관리</span><i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="main-nav4" class="nav-content collapse show" data-bs-parent="#sidebar-nav">
+                  <li><a href="/admin/manage/board.html?gubun=notice"><i class="bi bi-circle"></i><span>공지사항</span></a></li>
+                  <li><a href="/admin/manage/board.html?gubun=news"><i class="bi bi-circle"></i><span>뉴스</span></a></li>
+                  <li><a href="/admin/manage/qna.html"><i class="bi bi-circle"></i><span>자주묻는질문</span></a></li>
+                  <li><a href="/admin/manage/config.html"><i class="bi bi-circle"></i><span>사이트관리</span></a></li>
+                  <li><a href="/admin/manage/ad_config.html"><i class="bi bi-circle"></i><span>광고스크립트관리</span></a></li>
+                  <li><a href="/admin/manage/popup.html"><i class="bi bi-circle"></i><span>팝업관리</span></a></li>
+                  <li><a href="/admin/manage/result.html"><i class="bi bi-circle"></i><span>추첨결과반영</span></a></li>
+                  <li><a href="/admin/manage/pointmng.html"><i class="bi bi-circle"></i><span>캐시-충전설정</span></a></li>
+                  <li><a href="/admin/manage/cardmng.html"><i class="bi bi-circle"></i><span>카드-충전설정</span></a></li>
+                  <li><a href="/admin/manage/ticket.html?ticket=pb"><i class="bi bi-circle"></i><span>티켓출력-파워볼</span></a></li>
+                  <li><a href="/admin/manage/ticket.html?ticket=mm"><i class="bi bi-circle"></i><span>티켓출력-메가밀리언</span></a></li>
+
+                  <li><a href="/admin/manage/send_sms2.html"><i class="bi bi-circle"></i><span>문자발송</span></a></li>
+
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link collapsed" data-bs-target="#main-nav5" data-bs-toggle="collapse" href="#">
+                    <i class="bi bi-menu-button-wide"></i><span>통계기록</span><i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="main-nav5" class="nav-content collapse show" data-bs-parent="#sidebar-nav">
+                  <li><a href="/admin/manage/daily_charge.html"><i class="bi bi-circle"></i><span>일별 충전횟수</span></a></li>
+                  <li><a href="/admin/manage/daily.html"><i class="bi bi-circle"></i><span>일매출</span></a></li>
+                  <li><a href="/admin/manage/sales.html"><i class="bi bi-circle"></i><span>월매출</span></a></li>
+                </ul>
+            </li>
+
+              <!-- /admin/manage/result.html -->
+              <!-- <li class="nav-item">
+                  <a class="nav-link" data-bs-target="#main-nav"
+                     data-bs-toggle="collapse" href="#">
+                      <i class="bi bi-menu-button-wide"></i><span>관리</span><i class="bi bi-chevron-down ms-auto"></i>
+                  </a>
+                  <ul id="main-nav" class="nav-content collapse"
+                      data-bs-parent="#sidebar-nav">
+
+                      <li><a href="/admin/manage/category.html"><i class="bi bi-circle"></i><span>카테고리관리</span></a></li>
+                      <li><a href="/admin/manage/expense.html"><i class="bi bi-circle"></i><span>지출관리</span></a></li>
+                      <li><a href="/admin/manage/ads.html"><i class="bi bi-circle"></i><span>광고유입현황</span></a></li>
+                      <li><a href="/admin/manage/bank.html"><i class="bi bi-circle"></i><span>입금현황</span></a></li>
+                  </ul>
+              </li> -->
+
+
+              <!-- <li class="nav-item">
+                  <a class="nav-link collapsed" data-bs-target="#구매관리-nav" data-bs-toggle="collapse"
+                     href="#">
+                      <i class="bi bi-menu-button-wide"></i><span>구매 관리</span><i
+                              class="bi bi-chevron-down ms-auto"></i>
+                  </a>
+                  <ul id="구매관리-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+
+                      <li><a href="/admin/manage/ticket.html?ticket=pb"><i class="bi bi-circle"></i><span>티켓출력-파워볼</span></a></li>
+                      <li><a href="/admin/manage/ticket.html?ticket=mm"><i class="bi bi-circle"></i><span>티켓출력-메가밀리언</span></a></li>
+
+
+
+                      <li><a href="/admin/manage/scan_log.html?type=ocr"><i class="bi bi-circle"></i><span>스캔본로그(OCR)</span></a></li>
+                      <li><a href="/admin/manage/upload_file.html"><i class="bi bi-circle"></i><span>스캔본로그(파일)</span></a></li>
+                      <li><a href="/admin/manage/range.html">인식범위조절</a></li>
+                  </ul>
+              </li> -->
+
+              <!-- <li class="nav-item">
+                  <a class="nav-link collapsed" data-bs-target="#매출현황-nav" data-bs-toggle="collapse"
+                     href="#">
+                      <i class="bi bi-menu-button-wide"></i><span>매출현황</span><i
+                              class="bi bi-chevron-down ms-auto"></i>
+                  </a>
+                  <ul id="매출현황-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+
+                      <li><a href="/admin/manage/daily_sales1.html"><i
+                                      class="bi bi-circle"></i><span>일별-판매현황(USD)</span></a></li>
+                      <li><a href="/admin/manage/month_sales1.html"><i
+                                      class="bi bi-circle"></i><span>월별-판매현황(USD)</span></a></li>
+                      <li><a href="/admin/manage/daily_sales2.html"><i
+                                      class="bi bi-circle"></i><span>일별-판매현황(KRW)</span></a></li>
+                      <li><a href="/admin/manage/month_sales2.html"><i
+                                      class="bi bi-circle"></i><span>월별-판매현황(KRW)</span></a></li>
+                  </ul>
+              </li> -->
+      </ul>
+    <? } ?>
+
+
+    </aside>
+<? } ?>
+
+<script>
+    function go_show_menu() {
+        $("nav").toggle();
+        $(".nav").toggle();
+    }
+
+    function go_logout() {
+        $.ajax({
+            type: "POST",
+            url: "/admin/ajax/ajax_logout.php",
+            success: function (result) {
+                var r = result.trim();
+                console.log(r);
+                if (r == 1) {
+                    location.reload();
+                }
+            },
+            error: function (e) {
+                alert(e.responseText);
+            }
+        });
+    }
+
+    <? if($_SERVER['QUERY_STRING']){?>
+    $(function () {
+        $(".nav-content a").each(function () {
+
+            let href = $(this).attr("href");  // "/admin/manage/board.html?gubun=notice"
+            let path = href.split('?')[0];    // "/admin/manage/board.html"
+
+            if (href == '<?= $_SERVER['PHP_SELF']?>?<?=$_SERVER['QUERY_STRING']?>') {
+                $(this).addClass('active');
+                $(this).parents("ul").addClass('show');
+            }
+        })
+    })
+    <?}else{?>
+    $(function () {
+        $(".nav-content a").each(function () {
+
+            let href = $(this).attr("href");  // "/admin/manage/board.html?gubun=notice"
+            let path = href.split('?')[0];    // "/admin/manage/board.html"
+
+            if (path == '<?= $_SERVER['PHP_SELF']?>') {
+                $(this).addClass('active');
+                $(this).parents("ul").addClass('show');
+                $(this).parents("ul").siblings("a.nav-link").removeClass("collapsed");
+            }
+        })
+    })
+    <?}?>
+
+</script>

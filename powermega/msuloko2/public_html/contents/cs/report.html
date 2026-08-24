@@ -1,0 +1,89 @@
+<?php
+  $page_title = "제보 | 고객센터 - 파워볼, 메가밀리언, 미국 복권, 파메코";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_common/config.php";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_TIP_OFF.php";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $menu_on['bbs'] = true;
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="cs mypage">
+        <div class="contents f_NotoSansKR">
+          <?php
+            $bbs_sub['report'] = true;
+            include "inc_bbs.html";
+          ?>
+          <section class="sec_direct" style="margin-bottom:30px;">
+            <div class="bx_gray txt_type1 wrap_com bx_padding lh16" style="padding-top: 20px;">
+              <ul class="list_bul">
+                <li>
+                  <p>한번 등록한 제보 내용은 수정이 불가능합니다.</p>
+                </li>
+              </ul>
+              <a href="/contents/cs/report-apply.html" class="dp_b btn_navy type2 mt40">제보하기</a>
+            </div>
+            <div class="wrap_com section mt30 bg_white">
+              <h3 class="h_type4 pt10">나의 보이스피싱 제보 내역</h3>
+              <div id="list_box"></div>
+              <button type="button" class="btn_more btn_center bg_navy add_after br5 mb20 type_btn_more">
+                <span class="va_mid">더보기</span>
+              </button>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script>
+  $(function() {
+    let page = 1;
+    list_read(page);
+
+    $(document).on('click', '.type_btn_more', function() {
+      page++;
+      list_read(page);
+    });
+
+    $(document).on('click', '.detail_on', function() {
+      if ($(this).is('.open')) {
+        $(this).removeClass('open');
+        $(this).parent().parent().parent().parent().find('.bx_answer').slideUp();
+      } else {
+        $(this).addClass('open');
+        $(this).parent().parent().parent().parent().find('.bx_answer').slideDown();
+      }
+    });
+  });
+
+  function list_read(page) {
+    $.post('./mode.php', {
+      mode: 'getReport',
+      page: page
+    }, function(e) {
+      $('#list_box').append(e.html);
+
+      if (e.html == '') {
+        $('.type_btn_more').hide();
+      }
+
+      if ($('#list_box').find('tbody').length <= 0 && page == 1) {
+        let html = `<p style="text-align: center; margin-top: 10px; font-size: var(--px25);">등록된 글이 없습니다.</p> `;
+        $('#list_box').html(html);
+      }
+    }, 'json');
+  }
+</script>
+</html>

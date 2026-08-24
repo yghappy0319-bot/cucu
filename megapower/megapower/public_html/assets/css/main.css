@@ -1,0 +1,615 @@
+body {
+  font-family: 'Pretendard',
+  sans-serif; color: #222;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+header {width: 1100px; margin: 0px auto; margin-bottom: 20px;;}
+main {width: 900px; margin: 0px auto 20px;}
+
+nav {}
+.header_top {padding: 20px 0px; display: flex; justify-content: space-between;}
+.logo {width: 100px;margin-top: 18px;}
+a {color: #333;}
+/* 메뉴 스타일 설정 */
+#menu { overflow: hidden; font-size: 18px; font-weight: bold; }
+.ftw200 {font-size: 1.2rem;}
+#menu a {
+  float: left;
+  display: block;
+  color: black;
+  text-align: center;
+  padding: 24px 15px;
+  text-decoration: none;
+}
+
+/* 마우스 호버 시 메뉴 스타일 변경 */
+#menu a:hover {
+  /* background-color: #555; */
+}
+.header_login a {    padding: 26px 0px; display: inline-block;}
+.header_btn::before {
+    content: "|";
+    margin: 10px;
+    color:#ccc;
+  }
+
+.flex_between {
+  display: flex;
+  justify-content: space-between;
+}
+
+.top_slide{ margin-top: 15px; }
+.top_slide_title {font-weight: 600; color: #333333; margin-left: 10px;}
+
+.mgr12 {margin-right: 12px;}
+.mgr20 {margin-right: 14px;}
+.mgr15 {margin-right: 15px;}
+.mgb15 {margin-bottom: 15px;}
+.mgb20 {margin-bottom: 20px;}
+
+
+.l-color1 {color:#CC1F3B};
+
+.ftw200 {font-weight: 200;}
+
+.swiper { width: 100%; }
+
+.swiper-slide {
+  background-position: center;
+  background-size: cover;
+}
+.swiper-pagination {margin-bottom: 15px;}
+.swiper-slide img {
+  display: block;
+}
+
+.main_pb_title{font-size: 24px; border: 1px solid #CC1F3B; border-radius: 10px 10px 0px 0px;}
+.main_pb_title .title {font-weight: bold; color: #CC1F3B; text-align: center;    padding: 10px;}
+.main_mm_title{font-size: 24px; border: 1px solid #194A9C; border-radius: 10px 10px 0px 0px;}
+.main_mm_title .title {font-weight: bold; color: #194A9C; text-align: center;    padding: 10px;}
+
+.main_pb_game{background-color: #CC1F3B; color: #fff; padding: 10px 0px; text-align: center;     font-weight: bold;}
+.main_mm_game{background-color: #194A9C; color: #fff;  padding: 10px 0px; text-align: center;     font-weight: bold;}
+.main_banner {
+  /* width: 1100px;  */
+  margin: 0px auto; display: flex;    justify-content: center;}
+.main_banner .main_index_slider img {width:100%;}
+.main_game_draw_pop {position: absolute; top: 0px; text-align: center;
+    background-color: #fff;
+    padding: 10px;
+    width:100%;
+  }
+.inner_center_bar {text-align: center; padding: 22px 0px 8px;}
+.inner_center_bar h2 {font-size: 24px; font-weight: 800; line-height: 2;}
+
+.main_center_bar {text-align: center; padding: 22px 0px 8px;}
+.main_center_bar h2 {font-size: 24px; font-weight: 800; line-height: 2;}
+
+.quick_title {font-size: 18px; font-weight: 600; margin: 10px 10px 0px; border-bottom: 2px solid; padding-bottom: 10px;}
+
+.quick_icon_box { text-align: center; margin: 20px 12px; font-weight: 700; width:62px; position: relative;}
+.free_point
+{    position: absolute;
+    top: -19px;
+    background-color: #F35B46;
+    color: #fff;
+    border-radius: 12px;
+    padding: 5px 4px;
+    z-index: -1;
+    font-weight: 300;
+    width: 76px;
+    left: -11px;}
+
+.box { box-shadow: 0px 0px 12px 0px #00000040;}
+.box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 10px 20px 2px rgba(0, 0, 0, 0.25);
+}
+.box2 {
+  box-shadow: inset 0px 5px 10px 0px rgba(0, 0, 0, 0.2);
+}
+.box2:hover {
+  transform: translateY(5px);
+  box-shadow: inset 0px 10px 20px 2px rgba(0, 0, 0, 0.25);
+}
+.login .site_url {font-weight: bold; font-size: 16px;}
+.priz {text-align: center; }
+.priz p:nth-child(1) {font-size: 18px; font-weight: bold;color: #666;}
+.priz p:nth-child(2) {font-size: 2.5rem; font-weight: bold;}
+
+.priz .issue {font-size: 18px; font-weight: bold; color: #333 !important;}
+.priz2 {text-align: center;}
+.priz2 .next_issue {font-size: 14px !important; font-weight: bold; color: #666 !important;}
+.priz2 .next_total {font-size: 26px !important; font-weight: bold; color: #ccc !important;}
+
+
+.priz_info {color:#fff; display: flex; justify-content: center; align-items: center;margin: 10px 0px;}
+.priz_info div:nth-child(1){font-size: 16px; font-weight: 600; margin-right: 10px;}
+.priz_info div:nth-child(2) {font-size: 28px;font-weight: bold; }
+
+.priz_info_next {color: #666; position: relative;    display: flex; justify-content: center;}
+.priz_info_next .prize_days {font-size: 16px; line-height: 2; display:none;}
+
+.priz_info_next div {font-size: 18px; }
+.priz_info_next .end_time {text-align: center;font-size: 1.3rem;
+  font-weight: bold;
+  color: #333;}
+.priz_info_next p span{margin-right: 10px;}
+
+.buy_right_event1 {background-color: #666; font-size: 18px; padding: 5px; border-radius: 10px; margin-bottom: 10px;}
+.buy_right_event1 a {color:#fff;}
+
+.pb_game_time_out {display: inline-block; width: 6px; height: 6px; background-color: red; border-radius: 50%; position: absolute;bottom: 9px;
+    left: 65px;}
+.mm_game_time_out {display: inline-block; width: 6px; height: 6px; background-color: red; border-radius: 50%; position: absolute;bottom: 9px;
+    left: 65px;}
+
+
+.game_box_buy_box{    text-align: center; padding: 10px 0px 18px;}
+.draw_lots_box{text-align: center; padding: 10px 0px 18px; }
+.draw_pb_top_title {background-color: #CC1F3B; color: #fff; padding: 14px 0px 6px; text-align: center; border-radius: 10px 10px 0px 0px;}
+.draw_pb_top_title div:nth-child(2){line-height: 1.8;}
+.draw_mm_top_title {background-color: #194A9C;color: #fff;  padding: 14px 0px 6px; text-align: center;    border-radius: 10px 10px 0px 0px;}
+.draw_mm_top_title div:nth-child(2){line-height: 1.8;}
+
+.buy_btn { background-color: #FEDC00; font-size: 20px; padding: 4px; border-radius: 20px; font-weight: 700; display: inline-block; width: 230px; text-align: center;}
+.detail_btn1 {background-color: #fff; font-size: 18px; padding: 4px; border-radius: 20px; font-weight: 700; display: inline-block; width: 140px; text-align: center; margin: 0px 6px;color: #333;}
+.detail_btn2 {font-size: 18px; padding: 4px; border-radius: 20px; display: inline-block; width: 140px; text-align: center;color: #fff; border: 1px solid;}
+
+.box_sha {box-shadow: 0px 0px 12px 0px #00000040;}
+
+.quick_content { }
+.center_line {margin-top: 22px;}
+.flex-wrap {flex-wrap: wrap;}
+
+.quick_form {display: flex; flex-wrap: wrap; }
+
+
+
+
+.section_inner {display: flex; justify-content: space-between;}
+.lotto { border-radius: 10px; transition: all ease 0.2s; width:440px;}
+.game_box {margin-top: 10px; border-radius: 10px; position: relative;}
+.game_box .game_logo {height: 80px;display: flex; align-items: center; justify-content: center; position: relative;}
+.game_box .game_logo img {}
+
+.result_box {border-radius: 6px; }
+
+.pbb {background-color: #CC1F3B;}
+.mmb {background-color: #194A9C;}
+
+.right_box {padding: 28px 10px; margin-top: 10px; border-radius: 6px; }
+
+.flex {display:flex;}
+.jusc {justify-content: center;}
+.jusc_between {justify-content: space-between;}
+.jusc_right {justify-content: right;}
+.clear_left {clear: left;}
+.clear_both {clear: both;}
+.float_left {float: left;}
+.float_right {float: right;}
+.text_left {text-align: left;}
+.margin20 {margin: 20px 0px;}
+.mb4 {margin-bottom: 4px;}
+
+
+.top_line { border-top: 1px solid #ccc; margin-top: 5px; padding-top: 5px;}
+
+.board_box .bbox{ width: 284px; box-shadow: 0px 0px 12px 0px #00000040; border-radius: 10px 10px 0px 0px; position: relative;}
+.board_box .news {background-color: #F2F2F2;}
+.board_box .qna {background-color: #FFE68F;}
+.board_box .notice {background-color: #FFEDB4;}
+
+.board_box .title {font-size: 18px; font-weight: 600; padding: 20px 0px; border-bottom: 2px solid; margin: 0px 20px;}
+.bbox .inner {padding: 0px 20px;}
+.bbox .inner li {border-bottom:2px solid #7C7C7C;}
+.bbox .inner li:last-child {border-bottom: 0px;}
+
+.ball_list div{background-color: #fff; border-radius: 50%; font-weight: bold; text-align: center; margin: 0px 6px;}
+.ball_list div:last-child {background-color: #FEDC00}
+.ball_list div span{ padding: 5px 0px; width: 35px; display: block; height: 35px; font-size: 20px;}
+
+footer {margin: 0px auto; background-color: #F8F8F8;}
+footer .inner_box { width: 900px; overflow: hidden; margin: 0px auto; padding-top: 1rem; padding-bottom: 1rem; clear: both; }
+footer .logo { color: #fff; font-size: 24px; font-weight: bold; width: 80px;}
+footer .footer_menu_form {overflow: hidden; margin: 35px 100px;}
+footer .notice {text-align: center; margin-bottom: 20px; color:#CC1F3B;}
+
+.footer_link {    display: flex; justify-content: space-evenly;}
+.footer_link li {font-size: 15px;}
+.footer_link li a{ color:#999999;    font-weight: 600; font-size: 15px;}
+.footer_right {width: 800px;}
+.footer_info {line-height: 1.9;text-align: center;}
+.sitename {color:#999}
+.sitename b {   font-weight: 500;}
+
+.board_content {    width: 900px; margin: 20px auto 80px;}
+.board_content .board_line {font-weight: 400; width: 100%; padding: 10px 0px;}
+.board_content .board_list_date {padding-top: 6px; color: #999; }
+.bo_text {text-overflow: ellipsis;white-space: nowrap; overflow: hidden;}
+
+
+.more_box {text-align: center; padding: 20px;}
+.more_btn {display: inline-block; padding: 12px; width: 100%; background-color: #fff; border: 1px solid #DDD;font-weight: 800;}
+
+.business_footer {border-top: 1px solid #EEEEEE;  text-align: center;  padding: 10px; position: relative;}
+.business_footer span{font-size: 22px; font-weight: 400; position: absolute; margin-left: 8px; top: 8px;}
+.business_confirm{color:#666666;}
+
+.lh2{line-height: 2.2;}
+.po-l {position: relative;}
+.won { position: absolute; right: 4px; top: 7px;}
+.lp {position: absolute; right: 3px; top: 7px;}
+
+
+/* 레이어 popup */
+.b-close{font-size: 50px; color: #fff;font-weight: 100;}
+.bpopup_amount_info {text-align: center;}
+.bpopup_content {width: 100%; border-radius: 10px; background-color: #fff;border: 1px solid #AAA;}
+.bpopup_title {font-size: 20px; font-weight: 700; text-align: center; padding: 12px; border-bottom: 1px solid #ccc; margin: 0px 12px;}
+.bank_company {font-size: 20px; text-align: center; font-weight: 600;}
+
+.m_tab_bar {display: none;}
+.m_tab_bar {text-align: center;}
+.m_tab_bar .btn {font-size: 22px; font-weight: bold; display: inline-block; width: 49%; color:#999;}
+.btn_active {color:#333 !important; display: block;}
+.m_main_banner{display: none !important;}
+.swiper-slide {
+  font-size: 18px;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius:100px;
+}
+
+.swiper-slide {font-size:  14px !important; justify-content:left !important;}
+.swiper-button-prev {left: unset !important; right:18px !important; justify-content: unset !important;}
+.hamburger {display: none;}
+.mobile_right_icon {display: none;}
+nav {position: relative;}
+
+.bbox .arrow_btn {position: absolute; right: 22px; display: none;}
+.a_active {display: inline-block !important;}
+
+.regster_title {    text-align: left;
+    margin: 3px;
+    font-size: 16px;
+    font-weight: bold;}
+
+
+/* 당첨인증  */
+.main_banner .swiper-slide img {width : 550px; justify-content: space-between;}
+.main_banner .swiper {    width: 550px; margin: 0;}
+.prize_box {width:100%;}
+.prize_user {box-shadow: 0px 0px 12px 0px #00000040; border-radius: 20px; padding: 0px 14px; margin-top: 7px;}
+
+.prize_user .prize {color: #CC1F3B; font-weight: bold; font-size: 18px;}
+.prize_user .nick_name {    color: #777; font-size: 14px;}
+.prize_user .prize_title {display:flex; justify-content: space-between; padding: 17px 0px;align-items: center; position: relative;}
+.prize_user .prize_title p{    font-size: 1.4rem; font-weight: bold;}
+.prize_title .prize_more:after{content: "\003E";     font-weight: bold; font-size: 17px;}
+.prize_user .prize_list { height: 230px !important; }
+
+.prize_info {font-size: 15px; line-height: 1.4;}
+.prize_sub_info {text-align: right; padding: 5px;    font-size: 13px; color: #666;}
+
+.prize_swiper .like_btn {}
+.prize_swiper .like_btn a{  background-color: #CC1F3B; color: #fff;   font-size: 16px; padding: 6px 6px;    border-radius: 16px;display: flex; align-items: center;}
+.prize_swiper .like_btn a img{   width:18px;    margin-left: 4px;}
+
+#news-container ul {width:100%;    height: 230px; overflow: hidden;}
+
+/* 추첨일  */
+.prize_day {position: relative;}
+.prize_day .pb{background-color: #FFF0F2; text-align: center; color:#CC1F3B;     font-weight: bold; font-size: 16px; padding: 10px;position: absolute; width: 100%; z-index: 9;}
+.prize_day .mm{background-color: #F0F6FF; text-align: center; color:#194A9C;     font-weight: bold; font-size: 16px; padding: 10px;position: absolute; width: 100%; z-index: 9;}
+.prize_day .close{position: absolute; right: 10px; font-weight: 400;    z-index: 9;}
+.prize_game_img {width:120px;}
+@keyframes blink-effect {
+  50% {
+    opacity: 0;
+  }
+}
+
+.blink { animation: blink-effect 1s step-end infinite;}
+
+
+/* 혜택 이벤트 */
+.main_event {display:flex; justify-content: space-around; margin-top: 20px;}
+.main_event .item {text-align: center; background-color: #F2F2F2; padding: 10px; width: 200px; height: 200px;
+  border-radius: 50%;box-shadow: 0px 0px 10px gray; display: flex; justify-content: center; align-items: center; position: relative;
+}
+.main_event .item .title {font-size: 1.2rem; font-weight: 600;}
+.main_event .item .more{position: absolute; bottom: 22px; font-size: 1rem; font-weight: bold; background-color: #F35B46; color: #fff; padding: 5px 14px; border-radius: 16px;}
+.main_event .item.event_inner ul {margin-top: 60px;}
+.main_event .item.event_inner .event_box_icon {    top: 35px;}
+
+.ready{ background-color: #ccc !important; color: #666!important;}
+#game_youtube {width: 100%; text-align: center;}
+#youtube {width: 500px; margin: 0px auto;}
+.event_box_icon {position: absolute; top: 18px;}
+.top_banner { position: relative; background-color: #CC1F3B; text-align: center;     padding: 4px 0px;}
+.top_banner .swiper {width:900px; }
+.top_banner .swiper-slide {background-color: #CC1F3B !important;}
+.top_banner .swiper-wrapper{text-align: left; background-color: #CC1F3B !important;}
+.top_banner .top_slide_title {
+      color: #fff;
+      font-weight: 500;
+      display: inline-block;
+      font-size: 15px;}
+.top_banner a {
+      color: #fff;
+      font-weight: 500;
+      display: inline-block;
+      font-size: 17px;
+    }
+.pc_topSwiper {position: relative;}
+
+.dot {    width: 6px;
+    height: 6px;
+    background-color: red;
+    display: inline-block;
+    border-radius: 50%;
+    margin-right: 6px;
+    position: absolute;}
+
+.wdot {width: 6px;
+    height: 6px;
+    background-color: #fff;
+    display: inline-block;
+    border-radius: 50%;
+    margin-right: 6px;
+    position: absolute;
+        top: 7px;
+  }
+
+  @keyframes blink2 {
+    0% { color: gray; }
+    50% { color: black; }
+    100% { color: gray; }
+  }
+  .blinking2 {
+    animation: blink2 0.8s step-end infinite;
+  }
+
+  @keyframes blink3 {
+    0% { color: white; }
+    50% { color: black; }
+    100% { color: white; }
+  }
+  .blinking3 {
+    animation: blink3 0.8s step-end infinite;
+  }
+
+  @keyframes blink4 {
+    0% { color: gray; }
+    50% { color: #CC1F3B; font-weight: bold;}
+    100% { color: #CC1F3B; }
+  }
+  .blinking4 {
+    animation: blink4 0.8s step-end infinite;
+  }
+
+
+@media screen and (max-width: 768px) {
+  #youtube {width: 300px;}
+  .member_buy .inner {}
+  .prize_user .like_btn a{    font-size: 14px; padding: 4px 4px; border-radius: 16px;display: flex; align-items: center;}
+  .prize_info {font-size: 0.8rem; line-height: 1.4;}
+  .prize_game_img {width: 90px;}
+  .prize_box {width: 100%;}
+  .main_banner .swiper {width:100%;}
+  .main_banner .swiper-slide img {width: 100%;}
+  .main_banner{display: unset !important;}
+  .font-wb {font-weight: bold;}
+  .hidden {display:none;}
+  .header {padding: 0px 10px; }
+  #lotto-2 {display: none;}
+  .pc_menu {display: none !important;}
+  .hmenu{}
+  header {
+    width:100% !important;
+    position: sticky;
+    top: 0px; /* 도달했을때 고정시킬 위치 */
+    background-color: #fff;
+    z-index: 10;
+    margin : 0px;
+  }
+  .wrap {}
+
+
+  .top_slide {display:none;}
+  .main_banner{width:100%;padding: 0px 10px; margin-bottom: 20px;}
+  .m_tab_bar {display: block;}
+  .m_customer_exchange {display: block !important;padding: 0px 10px; }
+  .swiper-button-next {color:#333 !important;}
+  .swiper-button-prev {color:#333 !important;}
+
+  #menu a{padding: 10px 12px;}
+  .header_login a {padding: 10px 12px; margin-right: 6px;}
+  #menu {display: none !important;}
+  .header_login {display: none !important;}
+  /* .header-sub-menu-buy {margin-left: 12px;} */
+
+  .mobile_menu {
+    position: fixed;
+    background-color: #fff;
+    z-index: 9;
+    width: 100%;
+    padding-top: 80px;
+    height:100%;
+        overflow: scroll;
+  }
+  .mobile_menu p {font-size: 1.3rem; font-weight: bold;}
+  .mobile_menu p span {color:#194A9C;}
+  .mobile_menu .mbtn {font-size: 26px; font-weight: 800; color: #999; position: absolute; right: 30px; top: 6px; background-color: #fff; border: 0px;}
+
+  main {width:100%; padding:10px;}
+  .game_box {padding: 0;}
+  .lotto{width:100% !important;}
+  .right_box {width:100%;}
+  .power_img {    width: 200px;}
+  .mega_img {}
+
+
+  .game_box {width: 100%;}
+
+  .login .inner{width:100% !important; padding: 20px;}
+  .reg_inner {display: block !important;line-height: 2;}
+  .board_box { display: unset;}
+  .board_box .news{width:100%; }
+  .board_box .qna{width:100%;}
+  .board_box .notice{width:100%;}
+
+  //footer{display: none;}
+  footer .inner_box {width:100%;}
+
+  .mobile_logo {display: block !important;text-align: center;}
+  .mobile_logo img {width: 70px; margin: 20px 0px;}
+
+  .mobile_right_icon { display: block; position: absolute;    right: 0px; margin: 18px;z-index: 9;    display: flex;
+    align-items: center;
+    font-size: 18px;}
+  .mobile_right_icon img {width:30px;}
+
+  .hamburger {display: block;     position: absolute; margin: 18px 0px;z-index: 9;}
+  .hamburger .line {
+  	width: 30px;
+  	height: 3px;
+  	background-color: #333;
+  	display: block;
+  	margin: 5px auto;
+  	-webkit-transition: all 0.3s ease-in-out;
+  	-o-transition: all 0.3s ease-in-out;
+  	transition: all 0.3s ease-in-out;
+  }
+  .quick_form {  }
+  .center {justify-content: space-around;}
+
+  .footer_info p span{display: block;}
+  footer .notice {font-size: 0.8rem;}
+  footer .notice span{    display: block;}
+  footer .footer_menu_form {margin: 15px 0px;}
+  .footer_link li a {font-size: 0.8rem;}
+
+  .hamburger:hover {
+  	cursor: pointer;
+  }
+    #hamburger-1.is-active .line:nth-child(2) {
+  	opacity: 0;
+  }
+
+  #hamburger-1.is-active .line:nth-child(1) {
+  	-webkit-transform: translateY(8px) rotate(45deg);
+  	-ms-transform: translateY(8px) rotate(45deg);
+  	-o-transform: translateY(8px) rotate(45deg);
+  	transform: translateY(8px) rotate(45deg);
+  }
+
+  #hamburger-1.is-active .line:nth-child(3) {
+  	-webkit-transform: translateY(-8px) rotate(-45deg);
+  	-ms-transform: translateY(-8px) rotate(-45deg);
+  	-o-transform: translateY(-8px) rotate(-45deg);
+  	transform: translateY(-8px) rotate(-45deg);
+  }
+  .board_content {width:unset; margin: unset;}
+  .bbox.news p a:nth-child(2){display: inline-block;}
+  .bbox.qna p a:nth-child(1){display: inline-block;}
+  .bbox.qna .title {border: 0px;margin: 0px 20px;}
+  .bbox.notice p a:nth-child(1){display: inline-block;}
+  .bbox.notice .title {border: 0px;margin: 0px 20px;}
+
+  .bo_text {width:unset;}
+  .quick_icon_box {    margin: 20px 8px;}
+
+  .priz .issue {font-size: 16px !important;}
+  .priz2 p:nth-child(2) {font-size: 32px !important; }
+  .priz2 .next_issue {font-size: 14px !important; font-weight: bold; color: #666 !important;}
+  .priz2 .next_total {font-size: 24px !important; font-weight: bold; color: #ccc !important;}
+  .priz_info_next .end_time{display: inherit; }
+
+  /* 혜택 이벤트  */
+  .section_inner { display: flex; flex-direction: column; justify-content: space-between;}
+  .main_event {display: block !important;}
+  .main_event .item {
+    width: 100% !important;
+    height: unset !important;
+    border-radius: 10px !important;
+    margin-bottom: 10px;
+    box-shadow: 0px 0px 6px gray !important;
+    justify-content: space-around !important;
+  }
+  .main_event .item .title{    font-size: 1rem !important;}
+  .main_event .item .more {right: 10px; width: 100px; bottom: unset !important; position: unset !important;}
+  .main_event a {  }
+  .free_point{font-size: 12px; font-weight: bold; width: 60px; left: -6px; top: -17px; }
+  .event_box_icon {display: none;}
+  .main_event .item.event_inner ul {margin-top: 0px;}
+  .top_banner .swiper {width:100%; }
+  .quick_content {width: unset; margin: 10px 0px;}
+  .priz p:nth-child(2) {font-size: 2.2rem;}
+  .priz2 p:nth-child(2) {font-size: 1.5rem !important;}
+  .my_login_id {font-size: 14px;}
+  .main_right_box {width: unset !important; margin-top: 10px !important;}
+}
+
+@media screen and (max-width: 398px) {
+
+  .prize_user .like_btn a{    font-size: 12px; padding: 4px 4px; border-radius: 16px;display: flex; align-items: center;}
+  .prize_info {font-size: 0.6rem; line-height: 1.4;}
+  .liketext {display: none;}
+  .member_buy {}
+  .member_buy .inner {}
+  .ball_list div span {    padding: 5px 0px;
+    width: 35px;
+    display: block;
+    height: 35px;
+    font-size: 20px;}
+  .prize_swiper .swiper-slide {width:250px !important;}
+  .review_pop_wrap .review_pop_content .point_new_acount{display: block !important;}
+
+}
+
+
+
+
+
+
+.review_bk_bg_wrap{ display: none; position: fixed; z-index: 99; top:0; left:0; width: 100%; height: 100%;}
+.review_bk_bg{ display: flex; justify-content: center; align-items: center; padding: 20px; width: 100%; height: 100%; background: rgba(0 0 0/70%);}
+
+.review_pop_wrap{ position: relative; padding: 30px; max-width: 500px; width: 100%; border-radius: 20px; background: #FFF;}
+.review_pop_wrap .review_pop_btn{ display: flex; justify-content: center; align-items: center; position: absolute; top: -15px; right: -15px; width: 40px; height: 40px; border-radius: 50%; background: #F00; font-size: 14px; color: #FFF; cursor: pointer; transition: all .2s;}
+.review_pop_wrap .review_pop_btn:hover{ transform: scale(.95) rotate(180deg);}
+.review_pop_wrap .review_pop_content{}
+.review_pop_wrap .review_pop_content .row{ display: flex; justify-content: space-between; align-items: center; grid-gap: 0 10px; padding: 15px 0; border-top: 1px solid #e5e5e5;}
+
+.review_pop_wrap .review_pop_content .point_new_acount{grid-gap: 0 160px !important;}
+
+.review_pop_wrap .review_pop_content .row:first-child{ border: 0;}
+.review_pop_wrap .review_pop_content .row p{ display: flex; align-items: center; line-height: 1.2; font-size: 14px; color: #666;}
+.review_pop_wrap .review_pop_content .row p font{ flex: 0 0 60px;}
+.review_pop_wrap .review_pop_content .row span{ font-size: 16px; font-weight: 600; color: #000;}
+.review_pop_wrap .review_pop_content .row input{ padding: 0 15px; width: 100% !important; border-radius: 10px; height: 50px; border: 1px solid #e5e5e5; background: #fafafa; text-align: center; font-size: 16px; color: #000;}
+.review_pop_wrap .review_pop_content .row select{ margin: 10px 0 0 0; padding: 0 15px; width: 100% !important; border-radius: 10px; height: 34px; border: 1px solid #e5e5e5; background: #fafafa; text-align: center; font-size: 16px; color: #000;}
+
+.review_pop_wrap .review_pop_content .row button{ display: flex; justify-content: center; align-items: center; margin: 10px 0 0 0; width: 100% !important; height: 50px; border-radius: 10px; background: #317f70; font-size: 16px; font-weight: 600; color: #FFF; cursor: pointer;}
+.review_pop_wrap .review_pop_content .row button.copy{ width: auto; padding: 0 15px; height: 35px; border-radius: 5px; background: #000; font-size: 14px; font-weight: 400;}
+.review_pop_wrap .review_pop_content .row:last-child{ display: block; width: 100%;}
+.review_pop_wrap .review_pop_content .row:last-child p{ color: #F00;}
+
+.review_pop_wrap .review_pop_content .row .cardp {color: #333 !important; font-weight: bold; font-size: 1rem;}
+
+.review_pop_wrap .fb{ margin: 15px 0 0 0;}
+.review_pop_wrap .fb .tit{ font-size: 16px; font-weight: 500; color: #F00;}
+.review_pop_wrap .fb .txt{}
+.review_pop_wrap .fb .txt p{ position: relative; margin: 8px 0 0 0; padding: 0 0 0 10px; line-height: 1.4; font-size: 14px; color: #333;}
+.review_pop_wrap .fb .txt p:before{ content: ""; position: absolute; top: 7px; left: 0; width: 4px; height: 4px; background: #F00;}
+.review_pop_wrap .fb button{ display: flex; justify-content: center; align-items: center; margin: 20px 0 0 0; width: 100%; height: 50px; border-radius: 10px; background: #F00; font-size: 16px; font-weight: 600; color: #FFF; cursor: pointer;}
+.review_pop_wrap .tit_ok{ margin: 0 0 20px 0; font-size: 18px; font-weight: 600; color: #000;}
+.review_pop_wrap button.ok{ display: flex; justify-content: center; align-items: center; margin: 20px 0 0 0; width: 100%; height: 50px; border-radius: 10px; background: #317f70; font-size: 16px; font-weight: 600; color: #FFF; cursor: pointer;}
+@media(max-width: 345px){
+  .review_pop_wrap .fb button{ font-size: 14px;}
+}

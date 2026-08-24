@@ -1,0 +1,196 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_common/config.php";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}' LIMIT 1");
+
+  if ($mb['USER_ID'] == '') {
+    alert_print("존재하지 않는 회원입니다.");
+    meta_go("/logout.php");
+    exit;
+  }
+
+  $s_date = date("Y-m-01")." 00:00:01";
+  // $e_date = date("Y-m-d", strtotime($s_date." +1 month -1 day"))." 23:59:59";
+  $list_MM = $db->get_data("SELECT COUNT(*) AS cnt FROM ORDERS WHERE USER_ID='{$M_login['user_id']}' AND REG_DATE >= '{$s_date}' AND GUBUN='MM'");
+  $list_PB = $db->get_data("SELECT COUNT(*) AS cnt FROM ORDERS WHERE USER_ID='{$M_login['user_id']}' AND REG_DATE >= '{$s_date}' AND GUBUN='PB'");
+  $list    = $db->get_data("SELECT COUNT(*) AS cnt FROM ORDERS WHERE USER_ID='{$M_login['user_id']}' AND REG_DATE >= '{$s_date}' AND WIN_MONEY > 0");
+
+  if ($list_MM['cnt'] <= 0 || $list_MM['cnt'] == '') {
+    $list_MM['cnt'] = 0;
+  }
+
+  if ($list_PB['cnt'] <= 0 || $list_PB['cnt'] == '') {
+    $list_PB['cnt'] = 0;
+  }
+
+  if ($list['cnt'] <= 0 || $list['cnt'] == '') {
+    $list['cnt'] = 0;
+  }
+
+  // 환급진행
+  $sprice = $db->get_data("SELECT SUM(MONEY) AS money FROM INVOCE WHERE USER_ID='{$M_login['user_id']}' AND STATUS='N'");
+  if (!isset($sprice['money'])) $sprice['money'] = 0;
+
+  // 최근 접속시간 업데이트
+  $db->query("UPDATE MEMBER SET LASTDATE=NOW(), REG_IP='{$ip_address}' WHERE USER_ID='{$M_login['user_id']}'");
+
+  // 알림 동의 마일리지 지급
+  if ($M_login['user_id']) {
+    $is_noti_ok = exec_token_mileage($M_login['user_id']);
+  }
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage">
+        <div class="contents f_NotoSansKR">
+          <section class="sec_mycash bg_navy wrap_com bx_padding ls50">
+            <h3 class="hide">MY 캐시/마일리지/쿠폰 현황</h3>
+            <div class="clear wrap_title fw300">
+              <div class="left">
+                <b>
+                  <img src="<?=$mlevel_image_op[$mb['LEVEL']]?>" class="mr3" style="width: 0.85rem;" />
+                  <?=$mb['NAME']?><span class="color_red"> [<?=$mlevel_op[$mb['LEVEL']]?>]</span>
+                </b> 회원님 반갑습니다.
+              </div>
+              <div class="right"><a href="/logout.php" style="text-decoration: underline; color: #fff;">로그아웃</a></div>
+            </div>
+            <div>
+              <ul class="list_bul2">
+                <li>
+                  <strong>캐시현황</strong>
+                </li>
+                <li>
+                  <p>My캐시</p>
+                  <div>
+                    <span class="color_red"><span class="color_red"><?=number_format($mb['CASH'])?></span> 캐시</span>
+                    <a href="/contents/mypage/cash-charge.html" class="btn btn_red" style="border: 2px solid #f00; margin-left: 20px;">충전하기</a>
+                  </div>
+                </li>
+                <li>
+                  <p>출금 예정 당첨금</p>
+                  <div>
+                    <span><span><?=number_format($sprice['money'])?></span> 원</span>
+                  </div>
+                </li>
+                <li id="possibleWithdraw">
+                  <p>출금 가능한 당첨금</p>
+                  <div>
+                    <span><span><?=number_format($mb['WINCASH'])?></span> 원</span>
+                  </div>
+                </li>
+                <li>
+                  <p>마일리지</p>
+                  <div>
+                    <span><span><?=number_format($mb['IPOINT'])?> M</span></span>
+                  </div>
+                </li>
+                <li>
+                  <p>보너스포인트</p>
+                  <div>
+                    <span><span ><?=number_format($mb['POINT'])?> P</span></span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </section>
+          <div class="nav_mypage ls75 lh10" style="padding-bottom: 2px;">
+            <nav>
+              <ul class="wrap_com">
+                <li class="link_main" style="font-size: 0.9rem;"><a>마이페이지</a></li>
+                <li class="link_sub"><a href="history.html">구매 · 당첨 내역</a></li>
+                <li class="link_sub"><a href="history-image.html">스캔본 확인</a></li>
+<?
+/**
+                <li class="link_sub"><a href="non-winning.html">낙첨(실물) 복권 받기</a></li>
+**/
+?>
+                <li class="link_sub"><a href="coupon.html">쿠폰 등록</a></li>
+                <li class="link_sub"><a href="mynumber.html">자주쓰는 번호 관리</a></li>
+                <li class="link_sub"><a href="direct.html">1:1 문의 내역</a></li>
+                <li class="link_sub"><a href="notification.html">알림 설정</a></li>
+              </ul>
+              <ul class="wrap_com">
+                <li class="link_main"><a>캐시관리</a></li>
+                <li><a href="cash-history.html">충전내역</a></li>
+                <li><a href="cash-history-use.html">사용내역</a></li>
+              </ul>
+              <ul class="wrap_com">
+                <li class="link_main"><a>당첨금관리</a></li>
+                <li><a href="wcash-history.html">적립 · 사용내역</a></li>
+                <li><a href="cash-refund-apply.html">출금신청</a></li>
+                <li><a href="cash-history-refund.html">출금내역</a></li>
+              </ul>
+              <ul class="wrap_com">
+                <li class="link_main"><a>마일리지관리</a></li>
+                <li><a href="mileage-history.html">적립 · 사용내역</a></li>
+              </ul>
+              <ul class="wrap_com">
+                <li class="link_main"><a>보너스포인트관리</a></li>
+                <li><a href="point-history.html">적립 · 사용내역</a></li>
+              </ul>
+              <ul class="wrap_com">
+                <li class="link_main"><a>MY정보</a></li>
+                <li><a href="my-info.html">회원정보수정</a></li>
+                <li><a href="delete.html">회원탈퇴</a></li>
+              </ul>
+            </nav>
+          </div>
+          <section class="sec_recent wrap_com bx_padding ls75" style="padding-top: 0.625rem;">
+            <div class="wrap_title clear">
+              <div class="right"></div>
+            </div>
+            <p style="display: flex; justify-content: space-between;">
+              <strong>최근 구매/당첨 내역</strong>
+              <span class="fs20">
+                <a href="history.html" class="add_after underline">자세히보기</a>
+              </span>
+            </p>
+            <div>
+              <ol class="ls75 clear">
+                <li class="active left">
+                  <div>
+                    <p><span class="underline add_after"><?=number_format($list_MM['cnt'])?>게임</span></p>
+                    <span class="txt_type1">메가밀리언</span>
+                  </div>
+                </li>
+                <li class="left add_before">
+                  <div>
+                    <p><span class="underline add_after"><?=number_format($list_PB['cnt'])?>게임</span></p>
+                    <span class="txt_type1">파워볼</span>
+                  </div>
+                </li>
+                <li class="left add_before">
+                  <div>
+                    <p><span class="underline add_after"><?=number_format($list['cnt'])?>게임</span></p>
+                    <span class="txt_type1">당첨</span>
+                  </div>
+                </li>
+              </ol>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script src="/common/js/config.js?version=<?=$version?>" charset="utf-8"></script>
+<script src="/common/js/token.js?version=<?=$version?>" charset="utf-8"></script>
+
+<?php if ($is_noti_ok) { // 알림동의 마일리지 지급 안내 ?>
+<script>
+  alert("[<?=$M_login['name']?>] 회원님!<br><br>알림 동의로 [6,000 마일리지]가 지급되었습니다.<br><br>마일리지는 즉시 사용 가능합니다.");
+</script>
+<?php } ?>
+
+</html>

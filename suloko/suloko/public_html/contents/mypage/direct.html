@@ -1,0 +1,147 @@
+<?php
+
+header("Location: /contents/cs/direct.html");
+exit;
+
+include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+include $_SERVER['DOCUMENT_ROOT']."/_library/function_BBS.php";
+
+if ($M_login['user_id'] == '') {
+  meta_go("/login.html");
+  exit;
+}
+
+if (!$page) $page = 1;
+if (!$limit) $limit = 20;
+$add_query = " AND GUBUN='QNA' AND USER_ID='".$M_login['user_id']."'";
+$PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit";
+
+$list = F_BBS_list(array(
+  "row"         => $limit,
+  "page"        => $page,
+  "order"       => $order,
+  "find_text"   => $find_text,
+  "find_object" => $find_object,
+  "add_query"   => $add_query,
+));
+
+if ($list['total'] == 0) {
+  $list['BBS_NO'] = array();
+}
+
+$find_op = array(
+  "SUBJECT" => "질문",
+  "REPLY"   => "답변내용"
+);
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html";?>
+  <main id="main">
+    <div class="wrap_mypage clear wrap_com mb100">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/nav-mypage.html";?>
+      <div class="right">
+        <section class="sec_direct ">
+          <div class="wrap_title bb">
+            <h3 class="heading">1:1 문의</h3>
+          </div>
+          <ul class="list_bul gray ls50 bx_padding">
+            <li><span>한번 등록한 상담내용은 수정이 불가능합니다. 수정을 원하시는 경우, 삭제 후 재등록 하셔야 합니다.</span></li>
+            <li><span>1:1 상담은 24시간 신청가능하며 접수된 내용은 빠른 시간 내에 답변을 드리도록 하겠습니다.</span></li>
+            <li><span>문의하신 1:1 상담은 고객님의 메일로도 확인하실 수 있습니다.</span></li>
+          </ul>
+          <div class="bx_search bx_gray" style="display:none;">
+            <div class="clear">
+              <div class="left flex align_center">
+                <p>조회기간</p>
+                <ul class="list_sel">
+                  <li><button>1주일</button></li>
+                  <li><button>1개월</button></li>
+                  <li><button>3개월</button></li>
+                  <li><button>6개월</button></li>
+                </ul>
+              </div>
+              <div class="right">
+                <span><input type="date"> ~ <input type="date"></span>
+                <button class="btn_gray">조회</button>
+              </div>
+            </div>
+          </div>
+          <div class="wrap_list">
+            <div class="clear">
+              <a href="direct-apply.html" class="right btn_red2 radius5 f_NotoSansKR">새 문의 등록</a>
+            </div>
+            <h3 class="hide">1:1문의 내역 리스트</h3>
+            <div class="table thead bg_navy ">
+              <div class="tr">
+                <div>NO</div>
+                <div>분류</div>
+                <div>제목</div>
+                <div>등록일자</div>
+                <div>상태</div>
+              </div>
+            </div>
+            <ol class="list_type5 tbody">
+              <?php
+                for ($i = 0; $i < count($list['BBS_NO']); $i++) {
+                  $no = $list['total'] - (($page - 1) * $list['row']) - $i;
+                  $tp = "답변대기";
+                  if ($list['REPLY'][$i] != '') {
+                    $tp = "<p class='color_red'>답변완료</p>";
+                  }
+              ?>
+              <li>
+                <div class="table bx_data">
+                  <div class="tr">
+                    <div><?=$no?></div>
+                    <div><?=$list['QNA_TYPE'][$i]?></div>
+                    <div class="td_click text-left fw600"><a href=""><?=$list['SUBJECT'][$i]?></a></div>
+                    <div><?=$list['REG_DATE'][$i]?></div>
+                    <div><strong><?=$tp?></strong></div>
+                  </div>
+                </div>
+                <div class="bx_answer bx_light_gray bx_padding f_NotoSansKR">
+                  <div>
+                    <div class="text mb30">
+                      <?=nl2br($list['CONTENT'][$i])?>
+                    </div>
+                  </div>
+                  <?php if ($list['REPLY'][$i] != '') { ?>
+                  <div class="border-qt">
+                    <div class="text pt20">
+                      <p class="color_red fw500">질문에 대한 답변입니다.</p>
+                      <?=nl2br($list['REPLY'][$i])?>
+                    </div>
+                  </div>
+                  <?php } ?>
+                </div>
+              </li>
+              <?php } ?>
+            </ol>
+          </div>
+        </section>
+        <?php if ($list['total'] <= 0) { ?>
+        <div class="nohistory">
+          <div class="wrap_img"><img src="/common/images/img_nohistory.jpg" alt=""></div>
+          <p>문의 내역이 없습니다.</p>
+        </div>
+        <?php } else { ?>
+        <!-- 페이징 숫자 표시는 5개까지 -->
+        <div class="wrap_paging">
+          <?php
+            $page_info['cur'] = $condition['page'];
+            $page_info['row'] = $condition['row'];
+            $page_info['total'] = $list['total'];
+            $list['page_string'] = print_page_num1($page_info);
+            echo $list['page_string'];
+          ?>
+        </div>
+        <?php } ?>
+      </div>
+    </div>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html";?>
+</body>
+
+</html>

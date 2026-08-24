@@ -1,0 +1,201 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+  if ($year == "") {
+    $year = date("Y");
+  }
+
+  if ($month == "") {
+    $month = date("m");
+  }
+
+  $sdate = $year."-".$month;
+
+  // 이번달일 경우 오늘만
+  if ($sdate == date("Y-m")) {
+    $lastday = date("d");
+  } else {
+    $lastday = date('d', strtotime($sdate."-01 +1 month -1 day"));
+  }
+
+  $s_year = date("Y");
+  $e_year = date("Y", strtotime(" -1 year"));
+?>
+
+<style>
+  .table thead tr {
+    display: block;
+  }
+  .table tbody {
+    display: block;
+    height: 600px;
+    overflow: auto;
+  }
+  .table thead tr:first-child th:first-child {
+    width: 3%;
+    text-align: center;
+  }
+  .table thead tr:first-child th {
+    width: 5%;
+    text-align: center;
+  }
+  .table th {
+    width: 7%;
+    text-align: center;
+  }
+  .table th:first-child {
+    width: 0%;
+  }
+  .table td {
+    width: 4.8%;
+  }
+  .table td:first-child {
+    width: 3%;
+  }
+</style>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">일별 매출 - 당첨금사용</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">매출현황 (당첨금사용)</a></li>
+          <li class="breadcrumb-item active" aria-current="page">일별 매출 - 당첨금사용</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+              <div class="input-group" style="padding-bottom: 10px;">
+                <select name="year" id="year" class="form-control form-select">
+                  <option value="">--기간선택(년)--</option>
+                  <?php for ($i = $s_year; $i >= $e_year; $i--) { ?>
+                  <option value="<?=$i?>" <?=($year==$i) ? "selected" : ""?>><?=$i?></option>
+                  <?php } ?>
+                </select>
+                <select name="month" id="month" class="form-control form-select">
+                  <option value="">--기간선택(월)--</option>
+                  <option value="01" <?=($month=="01") ? "selected" : ""?>>01</option>
+                  <option value="02" <?=($month=="02") ? "selected" : ""?>>02</option>
+                  <option value="03" <?=($month=="03") ? "selected" : ""?>>03</option>
+                  <option value="04" <?=($month=="04") ? "selected" : ""?>>04</option>
+                  <option value="05" <?=($month=="05") ? "selected" : ""?>>05</option>
+                  <option value="06" <?=($month=="06") ? "selected" : ""?>>06</option>
+                  <option value="07" <?=($month=="07") ? "selected" : ""?>>07</option>
+                  <option value="08" <?=($month=="08") ? "selected" : ""?>>08</option>
+                  <option value="09" <?=($month=="09") ? "selected" : ""?>>09</option>
+                  <option value="10" <?=($month=="10") ? "selected" : ""?>>10</option>
+                  <option value="11" <?=($month=="11") ? "selected" : ""?>>11</option>
+                  <option value="12" <?=($month=="12") ? "selected" : ""?>>12</option>
+                </select>
+                <div class="input-group-text btn btn-primary" id="btn-search" style="padding: 10px;">
+                  <i class="fa fa-search" aria-hidden="true"></i>
+                </div>
+              </div>
+            </form>
+            <div class="table-responsive">
+              <table class="table border text-nowrap table-striped" id="table-list">
+                <thead>
+                  <tr style="text-align: center; background: #F2F3F9;">
+                    <td style="text-align: center;">총금액<br><font size="1pt">(<span id="total_price">0</span>)</th>
+                    <td style="text-align: center;">전체금액
+                      <i data-bs-placement="top" data-bs-toggle="tooltip" title="전체금액 / 사용당첨금 사용액">
+                        <svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" data-tip="true" data-for="subs-rank" currentItem="false">
+                          <circle cx="8" cy="8" r="6" stroke="#8B8B8B" stroke-width="1.5"></circle>
+                          <path d="M8.75 11.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" fill="#8B8B8B"></path>
+                          <path d="M8 9v-.5c0-.552.462-.983.979-1.177C9.512 7.123 10 6.726 10 6c0-1.2-1.333-1.5-2-1.5S6 4.8 6 6" stroke="#8B8B8B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="bevel"></path>
+                        </svg>
+                      </i><br><font size="1pt">(사용 당첨금)
+                    </td>
+                    <td style="text-align: center;">전체건수
+                      <i data-bs-placement="top" data-bs-toggle="tooltip" title="전체건수 / 사용당첨금 건수">
+                        <svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" data-tip="true" data-for="subs-rank" currentItem="false">
+                          <circle cx="8" cy="8" r="6" stroke="#8B8B8B" stroke-width="1.5"></circle>
+                          <path d="M8.75 11.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" fill="#8B8B8B"></path>
+                          <path d="M8 9v-.5c0-.552.462-.983.979-1.177C9.512 7.123 10 6.726 10 6c0-1.2-1.333-1.5-2-1.5S6 4.8 6 6" stroke="#8B8B8B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="bevel"></path>
+                        </svg>
+                      </i>
+                      <br><font size="1pt">(사용 당첨금 건수)
+                    </td>
+                  </tr>
+                </thead>
+                <tbody style="height: 100%;">
+                  <?php
+                    $total_price = array();
+                    $total_cnt = array();
+                    $i = 0;
+
+                    for ($s = 1; $s <= $lastday; $s++) {
+                      $day = $s;
+
+                      if ($day < 10) {
+                        $day = "0".$day;
+                      }
+
+                      $date  = $sdate."-".$day;
+                      $sDate = $date." 00:00:01";
+                      $eDate = $date." 23:59:59";
+                      $style = "";
+
+                      if ($date == date("Y-m-d")) {
+                        $style = 'background: #F8E5D0;';
+                      }
+                  ?>
+                  <tr style="<?=$style?>">
+                    <td><?=date("Y-m-d", strtotime($date))?></td>
+                    <?php
+                      $total = 0;
+                      $ctotal = 0;
+
+                      $price = $db->get_data("SELECT SUM(PRICE) AS PRICE FROM CASH WHERE REG_DATE BETWEEN '".$sDate."' AND '".$eDate."' AND IS_USE='Y'");
+                      $cnt = $db->get_data("SELECT COUNT(*) AS CNT FROM CASH WHERE REG_DATE BETWEEN '".$sDate."' AND '".$eDate."' AND IS_USE='Y'");
+                      $price_ipoint = $db->get_data("SELECT SUM(IPOINT) AS IPOINT FROM ORDERS WHERE REG_DATE BETWEEN '".$sDate."' AND '".$eDate."'");
+                      $cnt_ipoint = $db->get_data("SELECT COUNT(IPOINT) AS CNT FROM ORDERS WHERE IPOINT > 0 AND REG_DATE BETWEEN '".$sDate."' AND '".$eDate."'");
+
+                      $total = $price['PRICE'] + $price_ipoint['IPOINT'];
+                      $ctotal = $cnt['CNT'] + $cnt_ipoint['CNT'];
+
+                      $all_price = $all_price + $total;
+                      $all_cnt = $all_cnt + $ctotal;
+                    ?>
+                    <td style="text-align: center;">₩ <?=number_format($total)?><br><font size="1pt">(₩ <?=number_format($price_ipoint['IPOINT'])?>)</td>
+                    <td style="text-align: center;"><?=number_format($ctotal)?><br><font size="1pt">(<?=number_format($cnt_ipoint['CNT'])?>)</font></td>
+                  </tr>
+                  <?php } ?>
+                  <tr>
+                    <td>합계</td>
+                    <td style="text-align: center;">₩ <?=number_format($all_price)?></td>
+                    <td style="text-align: center;"><?=number_format($all_cnt)?></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+    let price = $('#table-list').find('tbody').find('tr:last').find('td:eq(1)').text();
+    $('#total_price').html(price);
+  });
+</script>

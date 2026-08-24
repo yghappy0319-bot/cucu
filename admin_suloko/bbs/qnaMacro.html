@@ -1,0 +1,109 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+
+  F_admin_chk($S_login);
+
+  $add_query = "";
+
+  if ($find_object_type != "") $add_query .= " AND category = '${find_object_type}'";
+  if ($find_text != "") $add_query .= " AND title LIKE '%{$find_text}%'";
+
+  $list = $db->get_list(" SELECT * FROM `BBS_MACRO_DIRECT` {$add_query} ORDER BY `idx` DESC ");
+  $list['total'] = $db->get_data(" SELECT count(idx) as idx FROM `BBS_MACRO_DIRECT` {$add_query} ORDER BY `idx` DESC ")['idx'];
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">1:1문의 매크로 관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">게시판관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">1:1문의 매크로 관리</li>
+        </ol>
+      </div>
+      <?php if ($S_login['user_id'] != "admin216") { ?>
+      <div class="ms-auto pageheader-btn">
+        <a href="#" class="btn btn-success macroAdd" onClick="location.href='./qnaMacroAction.html?mode=insert'">매크로 추가</a>
+      </div>
+      <?php } ?>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group fl-left">
+                  <select name="find_object_type" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <option value="">-- 구분(전체) --</option>
+                    <?=option_make($qna_category_op, $find_object_type)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control" name="find_text" value="<?=$find_text?>" placeholder="제목 검색" />
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>구분</th>
+                    <th>제목</th>
+                    <th>내용 (간략한 정보)</th>
+                    <th>상태</th>
+                    <th>비고</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['idx']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+
+                      switch($list['state'][$i]) {
+                        case "0": $state = '<span style="color: #09AD95;">사용중</span>'; break;
+                        case "1": $state = '<span style="color: #FB6B25;">사용중지</span>'; break;
+                      }
+                  ?>
+                  <tr>
+                    <td><?=$no?></td>
+                    <td><?=$list['category'][$i]?></td>
+                    <td class="text-start" style="max-width: 200px; white-space: normal; word-break: keep-all;"><?=$list['title'][$i]?></td>
+                    <td class="text-start" style="max-width: 400px; white-space: normal; word-break: keep-all;"><?=str_han_cut_utf(strip_tags($list['contents'][$i]), 80)?></td>
+                    <td><?=$state?></td>
+                    <td>
+                      <a href="./qnaMacroAction.html?mode=update&no=<?=$list['idx'][$i];?>" class="btn btn-radius btn-secondary btn-read"><font color="#fff">수정</font></a>
+                      <?php if ($S_login['user_id'] != "admin216") { ?>
+                      <a href="./qnaMacroAction.html?mode=delete&no=<?=$list['idx'][$i];?>" class="btn btn-radius btn-danger btn-read"><font color="#fff">삭제</font></a>
+                      <?php } ?>
+                    </td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>

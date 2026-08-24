@@ -1,0 +1,271 @@
+<?php
+  $page_title = "당첨번호 통계 - 파워볼, 메가밀리언, 미국 복권, 파메코";
+  $page_description = "메가밀리언, 파워볼 등 과거 당첨 번호 통계 정보 제공";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  $menu_on['stats'] = true;
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html";?>
+  <main id="main">
+    <div class="location ls50">
+      <div class="wrap_com">
+        <ol class="clear">
+          <li><a href="/index.html" class="add_before"><span class="hide">홈</span></a></li>
+          <li><a href="">당첨번호 통계</a></li>
+          <li><a href="">번호별 통계</a></li>
+        </ol>
+      </div>
+    </div>
+    <section class="sec_stats wrap_com">
+      <h2 class="h_type4">당첨번호 통계</h2>
+      <div class="stats_layout">
+        <div class="layout layout01">
+          <ul class="tab_type1">
+            <li><button class="mm">메가밀리언</button></li>
+            <li><button class="pb">파워볼</button></li>
+          </ul>
+        </div>
+        <div class="layout layout02">
+          <div class="bx_search">
+            <p class="tit">기간별 조회</p>
+            <div class="clear">
+              <div class="right">
+                <input type="text" autocomplete="off" name="sdate" id="smonthpicker" class="monthpicker" /> ~
+                <input type="text" autocomplete="off" name="edate" id="emonthpicker" class="monthpicker" />
+                <button class="btn_gray">조회</button>
+              </div>
+            </div>
+            <p class="info"><i class="material-icons">new_releases</i><span></span>의 번호별 당첨 횟수와 점유율(%) 입니다.</p>
+          </div>
+        </div>
+        <img src="/common/images/logo_mega.png" alt="logo" class="logo">
+      </div>
+      <div class="stats cont">
+        <div class="stats_layout">
+          <ul class="cont_nav layout layout01">
+            <li class="on"><a href="frequency.html"><i class="material-icons num">123</i>번호별 통계</a></li>
+            <li><a href="lastdrawn.html"><i class="material-icons">free_cancellation</i>번호별 미출현 횟수</a></li>
+          </ul>
+          <div class="stats_wrap mega layout layout02">
+            <table class="type1 stats_numbers">
+              <colgroup>
+                <col width="10%">
+                <col width="90%">
+              </colgroup>
+              <tbody class="wball_list">
+                <tr>
+                  <th colspan="2">화이트볼</th>
+                </tr>
+              </tbody>
+            </table>
+            <table class="type1 stats_numbers pball mega">
+              <colgroup>
+                <col width="10%">
+                <col width="90%">
+              </colgroup>
+              <tbody class="pball_list">
+                <tr>
+                  <th colspan="2" class="gubun">메가볼</th>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+    <?php include $_SERVER['DOCUMENT_ROOT']."/inc/quick-sub.html";?>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html";?>
+</body>
+
+<script>
+  $(function() {
+    const type = localStorage.getItem('type');
+    if (type) {
+      $(`.${type}`).trigger('click');
+    } else {
+      $('.mm').trigger('click');
+    }
+
+    let currentYear = new Date().getFullYear();
+    options = {
+      pattern: 'yyyy-mm',
+      selectedYear: currentYear,
+      startYear: 2015,
+      finalYear: 2030,
+      monthNames: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
+    };
+
+    $('.monthpicker').monthpicker(options);
+  });
+
+  $('.mm').click(function() {
+    getStatisticData('mm');
+  });
+
+  $('.pb').click(function() {
+    getStatisticData('pb');
+  });
+
+  $('.btn_gray').click(function() {
+    let isOn = $('ul.tab_type1 li.on');
+    let type = isOn.find('button').attr('class');
+
+    let yyyyMM = new Date().toISOString().slice(0, 7);
+    let sdate = $('#smonthpicker').val();
+    let edate = $('#emonthpicker').val();
+
+    let validationDate = false;
+
+    if (!sdate && !edate) {
+      validationDate = true;
+    } else if (!sdate || !edate) {
+      alert('시작일과 종료일 중 하나만 입력했습니다.');
+    } else if (sdate > edate) {
+      alert('시작일은 종료일보다 이전이어야 합니다.');
+    } else if (sdate > yyyyMM || edate > yyyyMM) {
+      alert('현재일 보다 이후 일은 입력할 수 없습니다.');
+    } else {
+      validationDate = true;
+    }
+
+    if (validationDate) {
+      let sdateParts = sdate.split('-');
+      let edateParts = edate.split('-');
+
+      if (sdate && edate) {
+        let message = `${sdateParts[0]}년 ${sdateParts[1]}월부터 ${edateParts[0]}년 ${edateParts[1]}월까지`;
+        $('p.info span').text(message);
+      }
+
+      $('.wball_list .numbers').closest('tr').remove();
+      $('.pball_list .numbers').closest('tr').remove();
+
+      getFrequency(type);
+    }
+  });
+
+  function getStatisticData(type) {
+    localStorage.removeItem('type');
+    localStorage.setItem('type', type);
+
+    $('.monthpicker').val('');
+
+    let gubun = (type === 'mm') ? 'mega' : 'power';
+    let oldGubun = (type === 'mm') ? 'power' : 'mega';
+    let oldType = (type === 'mm') ? 'pb' : 'mm';
+    (type === 'mm') ? $('p.info span').text('2017년 10월 31일부터 현재까지') : $('p.info span').text('2015년 10월 7일부터 현재까지');
+    (type === 'mm') ? $('.gubun').html('메가볼') : $('.gubun').html('파워볼');
+
+    $('.stats_wrap').removeClass(oldGubun);
+    $('.stats_wrap').addClass(gubun);
+    $('.stats_numbers.pball').removeClass(oldGubun);
+    $('.stats_numbers.pball').addClass(gubun);
+    $(`.${oldType}`).parent().removeClass('on');
+    $(`.${type}`).parent().addClass('on');
+    $('.logo').attr('src', `/common/images/logo_${gubun}.png`);
+
+    $('.wball_list .numbers').closest('tr').remove();
+    $('.pball_list .numbers').closest('tr').remove();
+
+    getFrequency(type);
+  };
+
+  function getFrequency(type) {
+    let sdate = $('#smonthpicker').val();
+    let edate = $('#emonthpicker').val();
+
+    if (sdate) {
+      sdate = `${sdate}-01`;
+      edate = `${edate}-01`;
+    }
+
+    $.post('./mode.php', {
+      mode: 'getPrequency',
+      gubun: type,
+      sdate: sdate,
+      edate: edate
+    }, function(e) {
+      makeBall(e);
+    }, 'json');
+  };
+
+  function makeBall(res) {
+    let data = null;
+
+    for (const key in res) {
+      if (key === 'winfo') {
+        data = res.winfo;
+      } else if (key === 'pinfo') {
+        data = res.pinfo;
+      }
+
+      if (data) {
+        const maxNumber = Math.max(...data.count.map(str => parseFloat(str)));
+        const inputArray = data.number;
+        const allNumbers = Array.from({ length: data.max[0] }, (_, index) => index + 1);
+
+        allNumbers.forEach((number) => {
+          let cnt = 0;
+          if (inputArray.includes(number.toString())) {
+            cnt = parseInt(data.count.shift());
+          }
+
+          let listItem = makeHtml(number, cnt, data.rowcount[0], maxNumber);
+
+          if (data.max[0] > 30) {
+            $('.wball_list').append(listItem);
+          } else {
+            $('.pball_list').append(listItem);
+          }
+        });
+        setTextPosition();
+      }
+    }
+  };
+
+  function makeHtml(number, cnt, rowcount, maxNumber) {
+    let roundedNumber = 0;
+    let styleRatio = 0;
+    if (cnt > 0) {
+      let ratio = (cnt / rowcount) * 100;
+      styleRatio = (cnt / maxNumber) * 100;
+      roundedNumber = ratio.toFixed(1);
+    }
+
+    let html = `
+      <tr class="numbers">
+        <td>
+          <p class="num">${number}</p>
+        </td>
+        <td>
+          <div class="bar">
+            <div class="frequency" style="width: ${styleRatio}%">
+              <span class="bar_num">${cnt}회(${roundedNumber}%)</span>
+            </div>
+          </div>
+        </td>
+      </tr>
+    `;
+    return html;
+  };
+
+  function setTextPosition() {
+    $('.bar').each(function() {
+      let frequencyWidth = $(this).find('.frequency').width();
+      let $bar_num = $(this).find('.bar_num');
+      let bar_numWidth = $bar_num.width();
+
+      if (frequencyWidth < bar_numWidth) {
+        $bar_num.css('left', '0');
+      } else {
+        $bar_num.css('right', '0');
+      }
+    });
+  };
+</script>
+</html>

@@ -1,0 +1,130 @@
+<?php
+include $_SERVER['DOCUMENT_ROOT']."/admin/lib/function.php";
+$이미지경로 = "ticket";
+
+function random_numeric_code(int $length = 8): string {
+    // 길이 검증 (원하면 제한 걸기)
+    if ($length < 1) { throw new InvalidArgumentException('length must be >= 1'); }
+
+$num = (string) random_int(0, (10 ** $length) - 1);
+return str_pad($num, $length, '0', STR_PAD_LEFT);
+}
+
+$BACK_CODE = "6".random_numeric_code(8);
+
+?>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <link rel="stylesheet" type="text/css" href="<?=$이미지경로?>/css/swiper.min.css" />
+    <link rel="stylesheet" type="text/css" href="<?=$이미지경로?>/css/base.css" />
+    <link rel="stylesheet" type="text/css" href="<?=$이미지경로?>/css/grid.css" />
+    <link rel="stylesheet" type="text/css" href="<?=$이미지경로?>/css/common.css" />
+    <link rel="stylesheet" type="text/css" href="<?=$이미지경로?>/css/new.css?date=<?=date('his')?>" />
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="/admin/assets/new_ticket/swiper.min.js"></script>
+    <script src="/admin/assets/new_ticket/common1.js?date=<?=date('his')?>"></script>
+    <script src="/admin/assets/new_ticket/common2.js?date=<?=date('his')?>"></script>
+</head>
+<style>
+    .popup-lotto .lotto-box .lotto-date .text-left {width:unset;}
+    .t_number{width: 14px; height: 26px; margin-right: 1px;}
+
+    .backcodeleft {margin-left: 97px !important;}
+
+    .backcode_t1 {margin-top: 100px !important; }
+    .backcode_b1 {margin-top: 315px !important; }
+
+    .backcode_t2 {margin-top: 52px !important; }
+    .backcode_b2 {margin-top: 320px !important; }
+
+    .backcode_t3 {margin-top: 360px !important; }
+    .backcode_b3 {margin-top: 320px !important; }
+
+    .backcode_t4 {margin-top: 300px !important; }
+    .backcode_b4 {margin-top: 320px !important; }
+
+    .backcode_t5 {margin-top: 190px !important; }
+    .backcode_b5 {margin-top: 320px !important; }
+
+    .backcode_t6 {margin-top: 190px !important; }
+    .backcode_b6 {margin-top: 320px !important; }
+
+    .backcode_t7 {margin-top: 295px !important; }
+    .backcode_b7 {margin-top: 315px !important; }
+
+    .backcode_t8 {margin-top: 75px !important; }
+    .backcode_b8 {margin-top: 320px !important; }
+
+    .backcode_t9 {margin-top: 210px !important; }
+    .backcode_b9 {margin-top: 316px !important; }
+
+    .backcode_t10 {margin-top: 295px !important; }
+    .backcode_b10 {margin-top: 320px !important; }
+
+    .backcode_t11 {margin-top: 95px !important; }
+    .backcode_b11 {margin-top: 320px !important; }
+
+</style>
+
+<?
+$number = rand(1, 11);
+$backcode = $number;
+?>
+<body style="background: #ffffff !important" >
+
+<div data-name="popup04"  >
+    <div class="box" id="popup-box-new" style="max-width: 400px; float: left;">
+        <div class="popup-lotto">
+            <div class="lotto-box" style="">
+
+                <img src="<?=$이미지경로?>/back/b<?=$backcode?>.png?date=<?=date('his')?>" />
+                <div class="inner">
+                    <div class="lotto-date last backcodeleft backcode_t<?=$backcode?>" style="">
+                        <div class="text-left">
+
+                            <?php
+                  function generateImageTagsFromNumber($number, $이미지경로) {
+                      // 숫자를 문자열로 변환하여 각 자릿수를 배열로 나눔
+                      $number_str = strval($number);
+                      $img_tags = '';
+
+                      // 각 자릿수를 반복하여 img 태그 생성
+                      for ($i = 0; $i < strlen($number_str); $i++) {
+                          $digit = $number_str[$i]; // 현재 자릿수 (0~9)
+
+                          $imageSrc = $이미지경로."/back_number/{$digit}.png?date=".date('his');
+                          $img_tags .= "<img src='{$imageSrc}' alt='{$digit}' class='t_number' />";
+                            }
+
+                            // 이미지 태그 문자열 반환
+                            return $img_tags;
+                            }
+                            echo generateImageTagsFromNumber($BACK_CODE, $이미지경로);
+                            ?>
+                        </div>
+                    </div>
+
+                    <div class="lotto-date last backcodeleft backcode_b<?=$backcode?>" style="">
+                        <div class="text-left">
+                            <?php
+                  echo generateImageTagsFromNumber($BACK_CODE + 1, $이미지경로);
+                  ?>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- <div  style="float: left;">
+  <div class="box" style="max-width: 400px">
+    <img src="/admin/assets/power.jpg" style="width:100%;" />
+  </div>
+</div> -->
+
+</body>
+
+</html>

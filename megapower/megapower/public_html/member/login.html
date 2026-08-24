@@ -1,0 +1,47 @@
+<?php
+  include "../header_login.html";
+?>
+<style>
+.page_login_form {width:500px;margin: 0px auto;}
+footer{display:none;}
+.new_footer {display:none;}
+</style>
+
+<div class="new_login page_login_form" style="display: flex; justify-content: center; align-items: center; position: fixed; top: 0; right: 0; bottom: 0; left: 0;">
+    <div class="wrap" style="margin-top: -100px; border: 1px solid #e5e5e5; box-shadow: 0 10px 30px 0 rgba(0 0 0/2%);">
+
+        <a class="logo" href="/"><img src="/images/logo.gif"></a>
+        <div class="in">
+            <form id="login_frm" method="post"  >
+                <input type="hidden" name="rurl" value="<?=$rurl?>" />
+                <input type="text" name="member_id" class="login_id" placeholder="아이디 / 이메일 / 휴대폰번호" />
+                <input type="password" name="member_pass" class="login_id" id="login_password" placeholder="비밀번호" />
+            </form>
+        </div>
+        <div class="autologin">
+            <div class="check">
+                <input type="checkbox" id="chk1" class="auto_login" />
+                <label for="chk1" ></label>
+                <p>자동로그인</p>
+            </div>
+            <a href="/member/idpass.html" >아이디/비밀번호 찾기</a>
+        </div>
+        <button type="button" class="login_btn" onclick="go_login()" >로그인</button>
+        <div class="text">
+            <p class="tit">아직 메가파워월드 회원이 아니신가요?</p>
+            <p class="txt">지금 가입하면 무료 쿠폰 및 다양한 <br>혜택이 시작됩니다.</p>
+        </div>
+
+        <div class="btn">
+            <a href="/member/join.html">회원가입</a>
+            <? if($kakao){?>
+            <button type="button" class="kakao_btn" onclick="kakaoLogin('')">카카오 로그인</button>
+            <? } ?>
+        </div>
+
+
+    </div>
+</div>
+<?php
+  include "../footer_new.html";
+?>

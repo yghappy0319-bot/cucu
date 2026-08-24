@@ -1,0 +1,222 @@
+<?php
+require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+
+F_admin_chk($S_login);
+
+if ($_POST['act'] == 'ok') {
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/_check-auth-readonly.php"; // 권한체크
+  switch($_POST['mode']) {
+    case "insert" :
+      $result = $db->query("
+          INSERT INTO `BBS_MACRO_DIRECT` SET
+              `state` = 0,
+              `category` = '".$_POST['category']."',
+              `title` = '".$_POST['title']."',
+              `contents` = '".addslashes($_POST['content'])."',
+              `regdate` = UNIX_TIMESTAMP()
+      ");
+
+      if ($result) {
+        alert_print("정상등록 되었습니다");
+        meta_go("./qnaMacro.html");
+      }
+      break;
+    case "update" :
+      $result = $db->query("
+          UPDATE `BBS_MACRO_DIRECT` SET
+              `category` = '".$_POST['category']."',
+              `title` = '".$_POST['title']."',
+              `contents` = '".addslashes($_POST['content'])."'
+          WHERE
+              `idx` = '".$_POST['idx']."'
+      ");
+
+      if ($result) {
+        alert_print("정상수정 되었습니다");
+        meta_go("./qnaMacro.html");
+      }
+      exit;
+      break;
+    case "delete" :
+      $result = $db->query("
+          DELETE FROM `BBS_MACRO_DIRECT`
+          WHERE
+              `idx` = '".$_POST['idx']."'
+      ");
+
+      if ($result) {
+        alert_print("정상삭제 되었습니다");
+        meta_go("./qnaMacro.html");
+      }
+      exit;
+      break;
+  }
+  exit;
+}
+
+$mode = xss_clean($_GET['mode']);
+$idx = xss_clean($_GET['no']);
+
+if ($mode == 'update') {
+  $macroInfo = $db->get_data(" SELECT * FROM `BBS_MACRO_DIRECT` WHERE `idx` = '".$idx."' ");
+} else if ($mode == 'delete') {
+?>
+<form method="post" name="w_frm" id="w_frm" action="qnaMacroAction.html">
+<input type="hidden" name="act" value="ok" />
+<input type="hidden" name="idx" value="<?=$idx?>" />
+<input type="hidden" name="mode" value="<?=$mode?>" />
+</form>
+<script>
+  document.getElementById("w_frm").submit();
+</script>
+<?php
+ exit;
+}
+?>
+<script type="text/javascript" src="/nse/js/HuskyEZCreator.js" charset="utf-8"></script>
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">1:1문의 매크로 관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">게시판관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">1:1문의 매크로 관리</li>
+        </ol>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12 col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">1:1문의 매크로 <?=(($mode == 'update')?"수정":"추가")?></h3>
+          </div>
+          <div class="card-body">
+            <form class="needs-validation" novalidate method="post" name="w_frm" action="qnaMacroAction.html" enctype='multipart/form-data' onsubmit="return contentIn()">
+              <input type="hidden" name="act" value="ok" />
+              <input type="hidden" name="idx" value="<?=$idx?>" />
+              <input type="hidden" name="mode" value="<?=$mode?>" />
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom01">카테고리 선택</label>
+                  <select name="category" id="validationCustom01" class="form-control form-select select2 firstCate">
+                    <option value="">--카테고리--</option>
+                    <?=option_make($qna_category_op, $macroInfo['category'])?>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom03">제목</label>
+                  <input type="text" class="form-control" name="title" value="<?=$macroInfo['title']?>" id="validationCustom03">
+                  <div class="invalid-feedback">Please provide a valid subject.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+
+                </div>
+              </div>
+              <div class="form-row" style="width:766px;">
+                <div class="col-md-6 mb-3" style="max-width:100%;flex:none;width:100%;">
+                  <label for="content">내용</label>
+                  <textarea class="form-control is-invalid h-415" id="content" name="content" placeholder="Required example textarea" style="display:none;"  required><?=nl2br($macroInfo['contents'])?></textarea>
+                  <!-- div class="invalid-feedback">Please enter a message in the content.</div -->
+                </div>
+                <div class="col-md-6 mb-3">
+
+                </div>
+              </div>
+              <div class="form-row">
+                <button class="btn btn-success me-3" type="button" onClick="history.go(-1);" style="width:100px">목록</button>
+                <? if ($S_login['user_id'] != "admin216") { ?>
+                <button class="btn btn-primary" type="submit" style="width:100px">저장</button>
+                <? } ?>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+      <!-- ROW CLOSED -->
+  </div>
+</div>
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script type="text/javascript">
+var oEditors = [];
+nhn.husky.EZCreator.createInIFrame({
+  oAppRef: oEditors,
+  elPlaceHolder: "content",
+  sSkinURI: "/nse/SmartEditor2Skin.html",
+  htParams : {bUseToolbar : true,
+    fOnBeforeUnload : function() {
+      //alert("아싸!");
+    }
+  }, //boolean
+  fOnAppLoad : function() {
+    //예제 코드
+    //oEditors.getById["content"].exec("PASTE_HTML", [""]);
+  },
+  fCreator: "createSEditor2"
+});
+
+function pasteHTML() {
+  var sHTML = "<span style='color:#FF0000;'>이미지도 같은 방식으로 삽입합니다.<\/span>";
+  oEditors.getById["content"].exec("PASTE_HTML", [sHTML]);
+}
+
+function showHTML() {
+  var sHTML = oEditors.getById["content"].getIR();
+  alert(sHTML);
+}
+
+function submitContents() {
+  oEditors.getById["content"].exec("UPDATE_CONTENTS_FIELD", []);  // 에디터의 내용이 textarea에 적용됩니다.
+
+  // 에디터의 내용에 대한 값 검증은 이곳에서 document.getElementById("content").value를 이용해서 처리하면 됩니다.
+
+  /*try {
+    elClickedObj.form.submit();
+  } catch(e) {}*/
+}
+
+function setDefaultFont() {
+  var sDefaultFont = '돋움';
+  var nFontSize = 24;
+  oEditors.getById["content"].setDefaultFont(sDefaultFont, nFontSize);
+}
+
+function contentIn() {
+  submitContents();
+
+  return true;
+}
+</script>
+<script language="javascript">
+$(document).ready(function() {
+  //왼쪽 메뉴 처리
+  let slide_title = $('.breadcrumb-item').find("a").text();
+  let title = $('.page-title').text();
+  let is_active = false;
+  $(".slide").each(function(slide_idx,slide_itm) {
+    $(slide_itm).find(".slide-menu").find("li").each(function(slide_menu_idx,slide_menu_itm) {
+      is_active = false;
+      if ($(slide_menu_itm).find("a").text().indexOf(title) != -1) {
+        $(slide_menu_itm).addClass("active");
+        $(slide_menu_itm).find("a").addClass("active");
+        is_active = true;
+      }
+      if (is_active && $(slide_itm).find('.side-menu__label').text() == slide_title) $(slide_itm).find(".side-menu__item").addClass("active");
+    });
+  });
+  side_menu_scroll();
+
+});
+</script>

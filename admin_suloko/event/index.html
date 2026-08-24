@@ -1,0 +1,281 @@
+<?php
+require_once $_SERVER['DOCUMENT_ROOT']."/config.php";
+
+/* 도메인 설정 */
+$mobile = "";
+if (isMobile()) {
+  $mobile = "m.";
+}
+
+if (!isset($_GET['cp_id'])) {
+  //SLK-734
+  $cp_id = "애드티브";
+}
+
+/* 환율 */
+$won = $db->get_data("SELECT * FROM EXCHANGE WHERE DATE = '".date("Y-m-d")."' LIMIT 1");
+if (!isset($won['WON'])) {
+  $won = $db->get_data("SELECT * FROM EXCHANGE WHERE 1 ORDER BY DATE DESC LIMIT 1");
+}
+
+/* 게임번호 */
+//Powerball
+//예상당첨금
+$query   = "SELECT DRAWNUM,PRIZ1 FROM WININFO WHERE GUBUN = 'PB' AND PRIZ1 > 0 ORDER BY PLAYDATE DESC LIMIT 1";
+$info    = $db->get_data($query);
+$pb_info = $info;
+
+//지난당첨 게임번호
+$query   = "SELECT BALL1,BALL2,BALL3,BALL4,BALL5,BALLP FROM WININFO WHERE GUBUN = 'PB' AND BALL1 > 0 ORDER BY PLAYDATE DESC LIMIT 1";
+$info    = $db->get_data($query);
+$pb_ball = $info;
+
+//Megamillion
+//예상당첨금
+$query   = "SELECT DRAWNUM,PRIZ1 FROM WININFO WHERE GUBUN = 'MM' AND PRIZ1 > 0 ORDER BY PLAYDATE DESC LIMIT 1";
+$info    = $db->get_data($query);
+$mm_info = $info;
+
+//지난당첨 게임번호
+$query   = "SELECT BALL1,BALL2,BALL3,BALL4,BALL5,BALLP FROM WININFO WHERE GUBUN = 'MM' AND BALL1 > 0 ORDER BY PLAYDATE DESC LIMIT 1";
+$info    = $db->get_data($query);
+$mm_ball = $info;
+
+unset($info);
+
+?>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<head>
+	<meta charset="UTF-8">
+	<!--meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1"-->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi">
+	<!--meta http-equiv="imagetoolbar" content="no"-->
+	<meta name="HandheldFriendly" content="true">
+	<meta name="format-detection" content="telephone=no">
+
+	<title>슈로코 회원가입하고 로또1게임 무료받기</title>
+
+	<link rel="stylesheet" href="./css/font.css?version=<?=$version?>">
+	<link rel="stylesheet" href="./css/style.css?version=<?=$version?>">
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="wrapper">
+    <div id="header">
+      <!--a href="#" alt="이벤트 페이지" class="float_left"><img src="./img/gyemyoYear.png" alt="계묘년 행운대박 미국로또"></a-->
+      <a href="https://<?=$mobile?>suloko.com/" target="_blank" class="float_right"><img src="./img/logo.png" class="logo_img" alt="슈로코 로고"></a>
+    </div>
+
+    <div id="container">
+
+      <div class="wrap_block visual_wrapper cont_box_01">
+        <div class="visual_item">
+          <img src="./img/Banner_object01.png" alt="슈로코 회원가입하고 로또1게임 무료받기!" class="pc_img">
+          <img src="./img/Banner_object01_m.png" alt="슈로코 회원가입하고 로또1게임 무료받기!" class="m_img">
+        </div>
+
+        <div class="announce_period font_24">
+          <p>행사기간: 2023. 4. 10(월) ~ 5. 31(수)</p>
+        </div>
+
+        <div class="in_movie">
+          <!--iframe width="980" height="100%" src="https://www.youtube.com/embed/8bQbnu9usmE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe-->
+          <div id="player" style="width: 100%; height: 100%;"></div>
+        </div>
+
+      </div>
+
+      <div class="wrap_block cont_box_02">
+        <div class="back_shape cont_checkevent">
+
+          <div class="numder_box megaInfo">
+            <img class="" src="./img/mega_millions_logo.png" alt="mega millions 로고">
+            <div>
+              <h2 class="font_26"><?=$mm_info['DRAWNUM']?>회차</h2>
+              <h3 class="font_aqua font_37">1등 당첨금 <span class="font_yellow font_59"><?=getNumberStringKorean(substr($mm_info['PRIZ1'] * $won['WON'],0,-8))?></span> 원</h3>
+            </div>
+
+            <ul class="balls">
+              <li><span class="ball_num"><?=$mm_ball['BALL1']?></span></li>
+              <li><span class="ball_num"><?=$mm_ball['BALL2']?></span></li>
+              <li><span class="ball_num"><?=$mm_ball['BALL3']?></span></li>
+              <li><span class="ball_num"><?=$mm_ball['BALL4']?></span></li>
+              <li><span class="ball_num"><?=$mm_ball['BALL5']?></span></li>
+              <li><span class="ball_num"><?=$mm_ball['BALLP']?></span></li>
+            </ul>
+
+          </div>
+
+          <div class="numder_box powerInfo">
+            <img class="" src="./img/power_ball_logo.png" alt="powerball 로고">
+            <div>
+              <h2 class="font_26"><?=$pb_info['DRAWNUM']?>회차</h2>
+              <h3 class="font_aqua font_37">1등 당첨금 <span class="font_yellow font_59"><?=getNumberStringKorean(substr($pb_info['PRIZ1'] * $won['WON'],0,-8))?></span> 원</h3>
+            </div>
+
+            <ul class="balls">
+              <li><span class="ball_num"><?=$pb_ball['BALL1']?></span></li>
+              <li><span class="ball_num"><?=$pb_ball['BALL2']?></span></li>
+              <li><span class="ball_num"><?=$pb_ball['BALL3']?></span></li>
+              <li><span class="ball_num"><?=$pb_ball['BALL4']?></span></li>
+              <li><span class="ball_num"><?=$pb_ball['BALL5']?></span></li>
+              <li><span class="ball_num"><?=$pb_ball['BALLP']?></span></li>
+            </ul>
+
+            <div><img src="./img/power_play_label.png" alt="power play 상표"></div>
+          </div>
+
+          <p class="green_label font_27">슈로코 이용 후 미화 100만불<span class="font_yellow font_31">(약 13억원, 실질적 2등)</span>당첨시 <span class="font_yellow font_31">당첨금을</span> <span class="font_yellow font_31">선지급</span> 합니다.</p>
+
+          <p class="middle_line_white">참여방법</p>
+
+          <div class="how_participate">
+
+            <div class="process_box">
+              <span>1</span>
+              <div>
+                <div>
+                  <img src="./img/process_icon1.png" alt="회원가입 아이콘">
+                  <ul>
+                    <li>슈로코</li>
+                    <li class="font_red">회원가입</li>
+                  </ul>
+                </div>
+                <p><?=$mobile?>suloko.com</p>
+              </div>
+            </div>
+            <div class="process_box">
+              <span>2</span>
+              <div>
+                <img src="./img/process_icon2.png" alt="회원가입 아이콘">
+                <ul>
+                  <li>미국로또</li>
+                  <li class="font_red">1게임무료증정</li>
+                  <li class="font_red">및 참여</li>
+                </ul>
+              </div>
+            </div>
+            <div class="process_box">
+              <span>3</span>
+              <div>
+                <img src="./img/process_icon3.png" alt="회원가입 아이콘">
+                <ul>
+                  <li>결제시</li>
+                  <li class="font_red">최대 8% 캐시백</li>
+                  <li>혜택받기</li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+
+          <a href="https://<?=$mobile?>suloko.com/signup1-agree.html?cp_id=<?=$cp_id?>&adpx_be_cd=<?=$_GET['adpx_be_cd']?>" target="_blank" class="event_participation_btn">
+            <img src="./img/btn_bg.png" alt="버튼 배경">
+            <p><span class="font_aqua font_41">회원가입</span><span class="font_35"> 하고</span><br><span class="font_light_yellow font_47">로또 1게임</span><span class="font_47"> 무료받기</span></p>
+          </a>
+
+        </div>
+      </div>
+
+      <div class="wrap_block cont_box_03">
+        <div class="goto_logopage">
+          <div>
+            <a href="https://<?=$mobile?>suloko.com/?cp_id=<?=$cp_id?>&adpx_be_cd=<?=$_GET['adpx_be_cd']?>" target="_blank"><img src="./img/uperlottokorea_logo.png" alt="superlottokorea 로고"><span>홈페이지 바로가기</span></a>
+          </div>
+          <div>
+            <a href="https://www.youtube.com/@superlottokorea633" target="_blank"><img src="./img/youtube_logo.png" alt="youtube 로고"><span>공식유튜브 바로가기</span></a>
+          </div>
+          <div>
+            <a href="https://play.google.com/store/apps/details?id=com.sulotko" target="_blank"><img src="./img/google_play.png" alt="구글 플레이스토어 바로가기"><span> </span></a>
+          </div>
+        </div>
+
+        <div class="go_playstore"></div>
+
+        <ul class="precautions">
+          <li>※ 본 이벤트 참여는 해당 이벤트 페이지를 통해 가입된 회원에 한하여 <span class="font_light_yellow">1인 1회 참여 가능</span>합니다.</li>
+          <li>※ 해당 이벤트는 무료증정 소진완료시 <span class="font_light_yellow">조기 종료</span> 될 수 있습니다.</li>
+          <li>※ 문의사항은 슈로코 공식홈페이지를 통해 문의 바랍니다.</li>
+        </ul>
+
+      </div>
+
+    </div>
+
+    <div id="footer"></div>
+  </div>
+</body>
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script>
+  window.addEventListener(`resize`, asd);
+  function asd() {
+    var a = document.body.offsetWidth;
+    var b = document.getElementsByClassName('ball_num');
+    var c = document.getElementsByClassName('balls');
+
+    if (a < 1005) {
+      var n = a / 10;
+      var m = a / 20;
+      for ( var i = 0; i < b.length; i++ ) {
+        b[i].style.width = n + "px";
+        b[i].style.height = n + "px";
+        b[i].style.lineHeight = n + "px";
+        b[i].style.fontSize = m + "px";
+      }
+      for ( var i = 0; i < c.length; i++ ) {
+        c[i].style.height = n + "px";
+      }
+    }
+  }asd();
+</script>
+<script>
+  var tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  var firstScriptTag = document.getElementsByTagName('script')[0];
+  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+  var player;
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player('player', {
+      videoId: '8bQbnu9usmE',
+      playerVars: {
+            'autoplay': 1,
+            'rel': 0,
+            'modestbranding': 1,
+            'playsinline': 1,
+            'rel': 0,
+            'controls': 0,
+            'color':'white',
+            'loop': 1,
+            'mute':1
+      },
+      events: {
+        'onReady': onPlayerReady,
+        'onStateChange': onPlayerReady //onPlayerStateChange
+      }
+    });
+  }
+  function onPlayerReady(event) {
+    player.playVideo();
+    player.mute();
+  }
+  var done = false;
+  function onPlayerStateChange(event) {
+    if (event.data == YT.PlayerState.PLAYING && !done) {
+      setTimeout(stopVideo, 6000);
+      done = true;
+    }
+  }
+  function stopVideo() {
+    player.stopVideo();
+  }
+</script>
+<script>
+  $(function(){
+    let pb_price = parseInt(<?=$pb_info['PRIZ1']?>);
+    let mm_price = parseInt(<?=$mm_info['PRIZ1']?>);
+    if (pb_price > mm_price) $(".megaInfo").insertAfter(".powerInfo");
+  });
+</script>
+</html>

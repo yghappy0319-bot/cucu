@@ -1,0 +1,88 @@
+<? include_once "header.php";
+
+$page_num = 10;
+$page = isset($_GET["page"])? $_GET["page"] : 1;
+
+if($_GET['list_num']>0){
+  $list_num = $_GET['list_num'];
+}else{
+  $list_num = 15;
+}
+
+if($search){
+  $_search = " and (name like '%{$search}%' or phone like '%{$search}%' or id like '%{$search}%') ";
+}
+
+$countSql = "select count(*) as totalRecords from lr_member a where 1=1 {$_search} and recommender = '{$member['code']}' ";
+include_once "pager_result.php";
+
+$sql = "select * from lr_member where 1 {$_search} and recommender = '{$member['code']}' order by regdate desc limit $start, $list_num";
+$_data = db_query($sql);
+function maskPhoneNumber($phoneNumber) {
+    // "-"를 기준으로 전화번호를 분리
+    $parts = explode('-', $phoneNumber);
+
+    // 중간 번호를 ****로 대체
+    $maskedNumber = $parts[0] . '-' . '****' . '-' . $parts[2];
+
+    return $maskedNumber;
+}
+?>
+      <div class="content">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title"> 회원관리</h4>
+              </div>
+
+              <form id="searchFrm" >
+                <input type="hidden" name="page" id="page" value="<?=$page?>" >
+              </form>
+
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead class=" text-primary">
+                      <th>아이디</th>
+                      <th>이름</th>
+                      <th>연락처</th>
+                      <th>캐시</th>
+                      <th>누적캐시</th>
+                      <th>마일리지</th>
+                      <th>추천인코드</th>
+                      <th>최근로그인</th>
+                      <th >가입일</th>
+                    </thead>
+                    <tbody
+                      <? foreach($_data as $mdata){ ?>
+                      <tr>
+                        <td><?=$mdata['id']?></td>
+                        <td><?=$mdata['name']?></td>
+                        <td>
+                          <? if($mdata['phone']){?>
+                          <?= maskPhoneNumber($mdata['phone'])?>
+                          <? } ?>
+                        </td>
+                        <td><?=number_format($mdata['point'])?></td>
+                        <td><?=number_format($mdata['cash'])?></td>
+                        <td><?=number_format($mdata['lucky_point'])?></td>
+                        <td><?=$mdata['recommender']?></td>
+                        <td><?= date("y-m-d H:i:s", strtotime($mdata['last_login_date'])); ?></td>
+                        <td><?= date("y-m-d H:i:s", strtotime($mdata['regdate'])); ?></td>
+                      </tr>
+                      <? } ?>
+                    </tbody>
+                  </table>
+                </div>
+                <?php include_once "pager.php" ?>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+<? include_once "footer.php";?>
+<script>
+  $(".nav li").removeClass('active');
+  $(".nav li").eq(1).addClass('active');
+</script>

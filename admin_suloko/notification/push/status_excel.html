@@ -1,0 +1,97 @@
+<?php
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/config.php";
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/export.php";
+  include $_SERVER["DOCUMENT_ROOT"]."/_library/function_MEMBER_TOKEN.php";
+
+  F_admin_chk($S_login);
+
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/_check-auth-readonly.php"; // 권한체크
+
+  error_reporting(E_ERROR);
+  ini_set("display_errors", 1);
+  ini_set("memory_limit", $csv_memory);
+
+  // file name
+  $file_name = "notification_status_".date("Ymd").".csv";
+  $page_name = "푸시구독현황";
+
+  // 데이터 조회
+  $find_text = $_GET["find_text"];
+  $find_object = $_GET["find_object"];
+  $topic = $_GET["topic"];
+  $gender = $_GET["gender"];
+  $level = $_GET["level"];
+  $marketing = $_GET["marketing"];
+  $sdate = $_GET["sdate"];
+  $edate = $_GET["edate"];
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND MT.CREATED_AT BETWEEN '{$sDate}' AND '{$eDate}'";
+  }
+
+  if ($find_object == "all" && $find_text != "") {
+    $add_query .= " AND (M.USER_ID LIKE '%{$find_text}%' OR replace(M.NAME, ' ', '') LIKE '%{$find_text}%')";
+    $find_object = "";
+  }
+
+  if ($topic != "") {
+    $add_query .= " AND T.IDX = '{$topic}'";
+  }
+
+  if ($gender != "") {
+    $add_query .= " AND M.GENDER = '{$gender}'";
+  }
+
+  if ($level != "") {
+    $add_query .= " AND M.LEVEL = '{$level}'";
+  }
+
+  if ($marketing != "") {
+    $add_query .= " AND M.IS_MARKETING = '{$marketing}'";
+  }
+
+  $list = F_TOKEN_MEMBER_LIST(array(
+    "row"         => $csv_max_row,
+    "page"        => 1,
+    "order"       => "",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  // default
+  $csv_dump = "";
+
+  // 컬럼명
+  $titles = array("NO", "구독ID", "제목", "회원ID", "성명", "토큰", "성별", "회원등급", "마케팅여부", "구독일시");
+  $csv_dump .= implode(",", $titles);
+  $csv_dump .= "\r\n";
+
+  // 데이터 삽입
+  for ($i = 0; $i < count($list["IDX"]); $i++) {
+    $cnt = $i + 1;
+
+    $gender = "";
+    if ($list["GENDER"][$i] == "M") {
+      $gender = "남";
+    } else if ($list["GENDER"][$i] == "F") {
+      $gender = "여";
+    }
+
+    $csv_dump .= $cnt.",";
+    $csv_dump .= $list["TOPIC_NAME"][$i].",";
+    $csv_dump .= $list["TOPIC_TITLE"][$i].",";
+    $csv_dump .= $list["USER_ID"][$i].",";
+    $csv_dump .= $list["USER_NAME"][$i].",";
+    $csv_dump .= $list["USER_TOKEN"][$i].",";
+    $csv_dump .= $gender.",";
+    $csv_dump .= $mlevel_op[$list["LEVEL"][$i]].",";
+    $csv_dump .= $list["MARKETING"][$i].",";
+    $csv_dump .= $list["CREATED_AT"][$i];
+    $csv_dump .= "\r\n";
+  }
+
+  export_csv($file_name, $csv_dump, $cnt, $page_name);
+?>

@@ -1,0 +1,47 @@
+<?php
+$title = "미국복권 구매대행 이용약관";
+include "../header.html";
+?>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">이용약관</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>이용약관</p></li>
+            </ul>
+        </div>
+
+        <div class="clause">
+            <?
+            $originalString = $config['이용약관'];
+            $replacements = array(
+            "{사이트명}" => $config['사이트명'],
+            "{회사명}" => $config['회사명'],
+            "{사업자등록번호}" => $config['사업자등록번호'],
+            "{주소}" => $config['주소'],
+            "{대표자}" => $config['대표자'],
+            "{개인정보담당자}" => $config['개인정보담당자']
+            );
+            foreach ($replacements as $wordToReplace => $newValue) {
+            $originalString = str_replace($wordToReplace, $newValue, $originalString);
+            }
+            ?>
+            <?=$originalString?>
+        </div>
+        <style>
+            .clause{ padding: 50px; border-radius: 20px; border: 1px solid #e5e5e5;}
+            .clause *{ line-height: 1.8; font-size: 14px; color: #000;}
+            @media(max-width: 769px){
+                .clause{ padding: 30px 20px;}
+            }
+        </style>
+
+    </div>
+</div>
+
+<?php
+include "../footer_new.html";
+?>

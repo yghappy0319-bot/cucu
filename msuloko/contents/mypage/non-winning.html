@@ -1,0 +1,148 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+  meta_go("/");
+
+  if (!$page) $page = 1;
+  $limit       = 10;
+  $find_text   = "";
+  $find_object = "";
+  $add_query   = " AND USER_ID='".$M_login['user_id']."' AND WIN_YN='N' AND HIDE_YN IS NULL ";
+
+  $condition = array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => " REG_DATE DESC",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  );
+
+  $list = F_ORDERS_list($condition);
+
+  if ($list['total'] <= 0) {
+    $list['ORDERS_NO'] = array();
+  }
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub bb border_dcdcdc" style="margin-bottom: 0;">
+            <h2 class="title">낙첨 (실물)복권 받기</h2>
+            <a href="/contents/mypage/" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <section class="sec_nonwin">
+            <div class="bx_gray txt_type1 wrap_com bx_padding lh16">
+              <p>고객께서 구매하신 티켓 중 낙첨으로 분류된 티켓에 한하여, 실물티켓 배송 <br>요청이 가능합니다. 요청시 항공우편으로 배송됩니다. </p>
+              <p>낙첨티켓 해외배송(EMS) 비용은 20,000캐시입니다.</p>
+              <p>해외배송(EMS) 신청 후 수령까지 최대 4~5주 소요될 수 있습니다.</p>
+            </div>
+          </section>
+          <section class="sec_history wrap_com section mt30 bg_white pb40">
+            <!--<div class="bx_search mb30">
+              <div class="wrap_sel">
+                <ul class="list_sel flex align_center">
+                  <li class="on"><button>1주일</button></li>
+                  <li><button>1개월</button></li>
+                  <li><button>3개월</button></li>
+                  <li><button>6개월</button></li>
+                </ul>
+              </div>
+              <div class="wrap_date flex align_center space">
+                <div class="flex space">
+                  <input type="date"> ~ <input type="date">
+                </div>
+                <button class="btn_navy btn">검색</button>
+              </div>
+            </div>-->
+            <div class="wrap_tbls50 lh10 section">
+              <h3 class="h_type4">신청내역</h3>
+              <table class="tb_type2 bt">
+                <caption>
+                  <div class="hide">
+                    최근 신청내역에 대한 정보를 제공하는 표
+                  </div>
+                </caption>
+                <colgroup>
+                  <col width="40%">
+                  <col width="">
+                </colgroup>
+                <?php
+                  for ($i = 0; $i < count($list['ORDERS_NO']); $i++) {
+                    $gubun = "파워볼";
+                    // $type = "신청";
+                    if ($list['GUBUN'][$i] == 'MM') {
+                      $gubun = "메가밀리언";
+                    }
+
+                    if ($list['NON_MAIL'][$i] == 'Y') {
+                      $non = $db->get_data("SELECT * FROM NON_WINING WHERE ORDERS_NO='{$list['ORDERS_NO'][$i]}'");
+                      if (isset($non['STATUS'])) {
+                        $type = $mail_status_op[$non['STATUS']];
+                      }
+                    }
+                ?>
+                <tbody>
+                  <tr>
+                    <th>게임명 </th>
+                    <td><?=$gubun?></td>
+                  </tr>
+                  <tr>
+                    <th>구매일자</th>
+                    <td><?=date("Y년 m월 d일 H:i", strtotime($list['REG_DATE'][$i]))?></td>
+                  </tr>
+                  <tr>
+                    <th>추첨일시</th>
+                    <td><?=date("Y년 m월 d일", strtotime($list['PLAYDATE'][$i]))?></td>
+                  </tr>
+                  <tr>
+                    <th>해외배송(EMS)신청</th>
+                    <td>
+                    <?php if ($list['NON_MAIL'][$i] == 'Y') { ?>
+                      <?=$type?>
+                    <?php } else { ?>
+                      <a href="./non-winning-apply.html?no=<?=$list["ORDERS_NO"][$i]?>" class="color_red">낙첨복권 배송신청</a>
+                    <?php } ?>
+                    </td>
+                  </tr>
+                </tbody>
+                <?php } ?>
+                <?php if ($list['total'] <= 0) { ?>
+                <tbody>
+                  <tr>
+                    <td class="txt_center">신청가능한 티켓이 없습니다.</td>
+                  </tr>
+                </tbody>
+                <?php } ?>
+              </table>
+            </div>
+            <!--<button class="btn_more btn_center bg_navy add_after br5"><span class="va_mid">더보기</span></button>-->
+            <?php if ($list['total'] > 0) { ?>
+            <!-- 페이징 숫자 표시는 5개까지 -->
+            <div class="wrap_paging">
+              <?php
+                $page_info['cur'] = $page;
+                $page_info['row'] = $limit;
+                $page_info['total'] = $list['total'];
+                $list['page_string'] = print_page_num1($page_info);
+                echo $list['page_string'];
+              ?>
+            </div>
+            <?php } ?>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+</html>

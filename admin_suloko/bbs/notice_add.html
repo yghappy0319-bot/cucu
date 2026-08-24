@@ -1,0 +1,250 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_BBS.php";
+  F_admin_chk($S_login);
+
+  if ($mode == 'update') {
+    $info = F_BBS(array("mode" => "read", "BBS_NO" => $no));
+  } else {
+    $info = array();
+    $info['STATUS'] = "Y";
+  }
+
+  if (!isset($mode)) $mode = "insert";
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">공지사항</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">게시판관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">공지사항</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <div class="row">
+      <div class="col-lg-12 col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">공지사항등록/수정</h3>
+          </div>
+          <div class="card-body">
+            <form class="was-validated" novalidate method="post" name="w_frm" action="notice_action.php" enctype='multipart/form-data' onsubmit="return contentIn()">
+              <input type="hidden" name="BBS_NO" value="<?=(isset($info['BBS_NO'])) ? $info['BBS_NO'] : ""?>" />
+              <input type="hidden" name="USER_ID" value="<?=(isset($info['USER_ID'])) ? $info['USER_ID'] : $S_login['user_id']?>" />
+              <input type="hidden" name="NAME" value="<?=(isset($info['NAME'])) ? $info['NAME'] : $S_login['name']?>" />
+              <input type="hidden" name="mode" value="<?=$mode?>" />
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom03">제목</label>
+                  <input type="text" class="form-control" name="SUBJECT" value="<?=(isset($info['SUBJECT'])) ? $info['SUBJECT'] : ""?>" id="validationCustom03" required />
+                  <div class="invalid-feedback">Please provide a valid subject.</div>
+                </div>
+                <div class="col-md-6 mb-3"></div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom06">이미지출력사이즈</label>
+                  <div>
+                    <input type="number" class="form-control" name="FWIDTH" value="<?=(isset($info['FWIDTH'])) ? $info['FWIDTH'] : ""?>" id="validationCustom06" style="width: 30%; float: left; margin-right: 10px;" />
+                    <select name="FWIDTH_TYPE" class="form-control form-select select2"  style="width: 10%; float: left; cursor: pointer;">
+                      <option value="%">%</option>
+                      <option value="px" <?=($info['FWIDTH_TYPE']=='px') ? "selected" : ""?>>PX</option>
+                    </select>
+                    <div style="clear: both;"></div>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3"></div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom03">출력여부</label>
+                  <div class="d-flex">
+                    <div class="custom-control custom-radio me-4">
+                      <input type="radio" class="custom-control-input" id="customControlValidation2" name="STATUS" value='Y' <?=($info['STATUS']!='N') ? "checked" : ""?>  required />
+                      <label class="custom-control-label" for="customControlValidation2">Y</label>
+                    </div>
+                    <div class="custom-control custom-radio mb-3">
+                      <input type="radio" class="custom-control-input" id="customControlValidation3" name="STATUS" value='N' <?=($info['STATUS']=='N') ? "checked" : ""?> required />
+                      <label class="custom-control-label" for="customControlValidation3">N</label>
+                    </div>
+                  </div>
+                  <div class="invalid-feedback">Please provide a valid IS HIDE.</div>
+                </div>
+                <div class="col-md-6 mb-3"></div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom07">상단공지지정</label>
+                  <div>
+                    <input type="number" class="form-control" name="PIN" value="<?=(isset($info['PIN'])) ? $info['PIN'] : 0?>" id="validationCustom07" style="width: 30%; float: left; margin-right: 10px;" />
+                    <div style="clear:both;color:blue">1이상의 숫자를 입력하면 상단에 고정됩니다. 숫자가 높을수록 상단에 노출됩니다. (0 입력시 초기화)</div>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3"></div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-10 mb-3" style="max-width: 100%; flex: none; width: 1200px;">
+                  <label for="content">내용</label>
+                  <textarea class="form-control is-invalid h-415" id="content" name="content" style="display: none;" required><?=(isset($info['CONTENT'])) ? nl2br($info['CONTENT']) : ""?></textarea>
+                  <div class="invalid-feedback">Please enter a message in the content.</div>
+                </div>
+                <div class="col-md-2 mb-3">
+                  <br><br>
+                  <label for="validationTextarea">사용설명</label>
+                  <div>
+                    <p style="color: red;">{{이미지출력위치}}</p>
+                    <p>위의 빨간글 전체를 내용중 출력하려는 위치에 기입하시면 사용자화면에서 해당 위치에 출력이 됩니다.</p>
+                    <p>
+                      <div style="float: left; width: 150px;">사용 예:)</div><br><br>
+                      <div style="float: left;">
+                        내용<br />
+                        <span style="color:red;">{{이미지출력위치}}</span><br />
+                        내용
+                      </div>
+                      <div style="clear: both;"></div>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3 form-file">
+                  <label for="validationTextarea">첨부파일</label>
+                  <input type="file" class="form-file-input" name="file1" id="validatedCustomFile" />
+                  <label class="form-file-label" for="validatedCustomFile">Choose file...</label>
+                  <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-6 mb-3"></div>
+              </div>
+              <?php
+                if ($mode == 'update' && $info['FILE1'] != '') {
+                  $file    = explode(".", $info['FILE1']);
+                  $ext     = strtolower(end($file));
+                  $ext_arr = array("jpg", "jpeg", "gif", "png", "powerball");
+
+                  if (in_array($ext, $ext_arr)) {
+              ?>
+              <div class="form-row">
+                <div class="col-md-6 mb-3 form-file" style="height: auto;">
+                  <label for="validationTextarea">첨부된 파일 : </label>
+                  <img src="/upload/BBS/<?=$info['FILE1']?>">
+                </div>
+                <div class="col-md-6 mb-3"></div>
+              </div>
+              <?php } else { ?>
+              <div class="form-row">
+                <div class="col-md-6 mb-3 form-file">
+                  <label for="validationTextarea">첨부된 파일 : </label>
+                  <?=$info['FILE1']?>
+                </div>
+                <div class="col-md-6 mb-3"></div>
+              </div>
+              <?php
+                  }
+                }
+              ?>
+            </div>
+            <div class="card-footer">
+              <div class="form-row">
+                <button class="btn btn-success me-3" type="button" onClick="history.go(-1);" style="width: 100px;">목록</button>
+                <?php if ($S_login['user_id'] != "admin216") { ?>
+                <button class="btn btn-primary" type="submit" style="width: 100px;">저장</button>
+                <?php } ?>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ROW CLOSED -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script type="text/javascript" src="/nse/js/HuskyEZCreator.js" charset="utf-8"></script>
+
+<script type="text/javascript">
+  var oEditors = [];
+  nhn.husky.EZCreator.createInIFrame({
+    oAppRef: oEditors,
+    elPlaceHolder: "content",
+    sSkinURI: "/nse/SmartEditor2Skin.html",
+    htParams: { bUseToolbar: true,
+      fOnBeforeUnload: function() {}
+    }, // boolean
+    fOnAppLoad: function() {
+       // oEditors.getById["content"].exec("PASTE_HTML", ["로딩이 완료된 후에 본문에 삽입되는 text입니다."]);
+    },
+    fCreator: "createSEditor2"
+  });
+
+  function pasteHTML() {
+    var sHTML = "<span style='color:#FF0000;'>이미지도 같은 방식으로 삽입합니다.<\/span>";
+    oEditors.getById["content"].exec("PASTE_HTML", [sHTML]);
+  }
+
+  function showHTML() {
+    var sHTML = oEditors.getById["content"].getIR();
+    alert(sHTML);
+  }
+
+  function submitContents() {
+    oEditors.getById["content"].exec("UPDATE_CONTENTS_FIELD", []); // 에디터의 내용이 textarea에 적용됩니다.
+    // 에디터의 내용에 대한 값 검증은 이곳에서 document.getElementById("content").value를 이용해서 처리하면 됩니다.
+    /*try {
+      elClickedObj.form.submit();
+    } catch(e) {}*/
+  }
+
+  function setDefaultFont() {
+    var sDefaultFont = '돋움';
+    var nFontSize = 24;
+    oEditors.getById["content"].setDefaultFont(sDefaultFont, nFontSize);
+  }
+
+  function contentIn() {
+    submitContents();
+    return true;
+  }
+</script>
+
+<script language="javascript">
+  $(document).ready(function() {
+    // 왼쪽 메뉴 처리
+    let slide_title = $('.breadcrumb-item').find("a").text();
+    let title = $('.page-title').text();
+    let is_active = false;
+    $(".slide").each(function(slide_idx, slide_itm) {
+      $(slide_itm).find(".slide-menu").find("li").each(function(slide_menu_idx, slide_menu_itm) {
+        is_active = false;
+        if ($(slide_menu_itm).find("a").text().indexOf(title) != -1) {
+          $(slide_menu_itm).addClass("active");
+          $(slide_menu_itm).find("a").addClass("active");
+          is_active = true;
+        }
+        if (is_active && $(slide_itm).find('.side-menu__label').text() == slide_title) $(slide_itm).find(".side-menu__item").addClass("active");
+      });
+    });
+    side_menu_scroll();
+
+    // 대표이미지 미리보기
+    $(document).on("change", '[name="file1"]', function() {
+      var val = $(this)[0].files[0];
+      var reader = new FileReader();
+      reader.readAsDataURL(val);
+      reader.onload = function() {
+        //파일주소
+        $(".form-file-label").html(val.name);
+      }
+    });
+  });
+</script>

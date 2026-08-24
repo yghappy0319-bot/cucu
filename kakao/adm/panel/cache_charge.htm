@@ -1,0 +1,39 @@
+<?php include_once __DIR__ . '/../head.php'; ?>
+<?php include_once __DIR__ . '/../nav.php'; ?>
+<div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+  <div class="main-menu-header">
+    <form>
+      <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+    </form>
+  </div>
+  <?php include_once __DIR__ . '/../menu.php'; ?>
+</div>
+
+<div class="app-content content container-fluid">
+  <div class="content-wrapper">
+    <div class="content-header row">
+      <div class="content-header-left col-md-8 col-xs-12 mb-1">
+        <h2 class="content-header-title">캐시 충전</h2>
+        <p class="text-muted mb-0">대메뉴 「캐시 충전」에서 이용하는 화면입니다. 패널 이용 캐시(포인트) 충전을 진행할 수 있습니다.</p>
+      </div>
+    </div>
+    <div class="content-body">
+      <div class="row">
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">충전</h4>
+            </div>
+            <div class="card-body collapse in">
+              <div class="card-block">
+                <p class="card-text">충전 수단·금액·연동 API는 추후 연결할 수 있도록 비워 두었습니다. 필요하시면 요구사항을 알려 주세요.</p>
+                <a href="/adm/panel/list.html" class="btn btn-secondary btn-sm">패널 목록</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<?php include_once __DIR__ . '/../footer.php'; ?>

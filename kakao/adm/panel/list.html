@@ -1,0 +1,625 @@
+<?php include_once __DIR__ . '/../head.php'; ?>
+<?php
+$is_admin = ($member['mb_id'] === 'admin');
+$admin_cash = $is_admin && isset($member['mb_cash']) ? (int)$member['mb_cash'] : 0;
+?>
+<style>
+.panel-list-table-wrap {
+  -webkit-overflow-scrolling: touch;
+  overflow-x: auto;
+}
+.panel-list-table {
+  width: 100%;
+  min-width: 800px;
+  table-layout: auto;
+}
+.panel-list-table thead th,
+.panel-list-table tbody td {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.panel-list-table tbody td.allow-wrap {
+  white-space: normal;
+  max-width: 14rem;
+}
+.panel-list-table tbody td[colspan] {
+  white-space: normal;
+  text-align: center;
+}
+.panel-list-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+}
+.panel-list-filter {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0;
+}
+.panel-list-filter-title {
+  margin-bottom: 0;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.panel-list-filter .custom-control {
+  margin-right: 0.25rem;
+}
+.panel-list-toolbar-register {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.panel-temp-url-loading { color: #6b6b6b; }
+.panel-temp-url-loading .icon-spin { margin-right: 0.25rem; }
+.panel-row-deleted > th,
+.panel-row-deleted > td {
+  background-color: #f0f0f0 !important;
+  color: #9e9e9e;
+}
+.panel-row-deleted a {
+  color: #888;
+}
+.panel-row-deleted a:hover {
+  color: #666;
+}
+.panel-extend-plan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+.panel-extend-plan-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  padding: 0.85rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 0.35rem;
+  background: #fff;
+}
+.panel-extend-plan-btn:hover:not(:disabled) {
+  border-color: #00bcd4;
+  background: #f7fdfe;
+}
+.panel-extend-plan-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.panel-extend-plan-days {
+  font-weight: 600;
+  font-size: 1rem;
+}
+.panel-extend-plan-price {
+  text-align: right;
+}
+.panel-extend-plan-price .origin {
+  display: block;
+  color: #999;
+  font-size: 0.82rem;
+  text-decoration: line-through;
+}
+.panel-extend-plan-price .final {
+  font-weight: 700;
+  color: #00838f;
+}
+.panel-extend-cash-box {
+  background: #f5f7fa;
+  border-radius: 0.35rem;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.5rem;
+}
+.panel-extend-cash-box strong {
+  color: #00838f;
+  font-size: 1.1rem;
+}
+</style>
+<?php include_once __DIR__ . '/../nav.php'; ?>
+<div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+  <div class="main-menu-header">
+    <form>
+      <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+    </form>
+  </div>
+  <?php include_once __DIR__ . '/../menu.php'; ?>
+</div>
+
+<div class="app-content content container-fluid">
+  <div class="content-wrapper">
+    <div class="content-header row">
+      <div class="content-header-left col-md-8 col-xs-12 mb-1">
+        <h2 class="content-header-title">패널 목록</h2>
+        <p class="text-muted mb-0">등록한 패널 정보와 이용 기간을 확인할 수 있습니다.</p>
+      </div>
+    </div>
+    <div class="content-body">
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">패널 관리</h4>
+              <a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+              <div class="heading-elements">
+                <ul class="list-inline mb-0">
+                  <li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+                  <li><a data-action="reload"><i class="icon-reload"></i></a></li>
+                  <li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+                  <li><a data-action="close"><i class="icon-cross2"></i></a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="card-body collapse in">
+              <?php
+              $panel_filter = isset($_GET['filter']) ? trim($_GET['filter']) : 'active';
+              if ($panel_filter !== 'deleted') {
+                  $panel_filter = 'active';
+              }
+              $panel_member_where = $is_admin ? '' : (' and member_no = ' . (int)$member['mb_no']);
+              $panel_active_where = ' and COALESCE(status, 1) != 2';
+              $panel_active_where .= ' and (COALESCE(db_delete, 0) = 0 OR (COALESCE(db_delete, 0) = 1 AND delete_time IS NOT NULL AND delete_time > NOW()))';
+              $panel_active_where .= $panel_member_where;
+              $panel_deleted_where = ' and COALESCE(status, 1) = 2' . $panel_member_where;
+              $panel_active_cnt_row = db_select("select count(*) as cnt from tb_panel where 1=1 {$panel_active_where} ");
+              $panel_deleted_cnt_row = db_select("select count(*) as cnt from tb_panel where 1=1 {$panel_deleted_where} ");
+              $panel_active_cnt = ($panel_active_cnt_row && isset($panel_active_cnt_row['cnt'])) ? (int)$panel_active_cnt_row['cnt'] : 0;
+              $panel_deleted_cnt = ($panel_deleted_cnt_row && isset($panel_deleted_cnt_row['cnt'])) ? (int)$panel_deleted_cnt_row['cnt'] : 0;
+              ?>
+              <div class="card-block panel-list-toolbar">
+                <form method="get" action="/adm/panel/list.html" class="panel-list-filter" id="panel_list_filter_form">
+                  <span class="panel-list-filter-title">조회</span>
+                  <label class="display-inline-block custom-control custom-radio ml-1 mb-0">
+                    <input type="radio" name="filter" class="custom-control-input panel-list-filter-radio" value="active"<?= $panel_filter === 'active' ? ' checked' : '' ?> />
+                    <span class="custom-control-indicator"></span>
+                    <span class="custom-control-description ml-0">활성 패널 <span class="text-muted">(<?= (int)$panel_active_cnt ?>)</span></span>
+                  </label>
+                  <label class="display-inline-block custom-control custom-radio mb-0">
+                    <input type="radio" name="filter" class="custom-control-input panel-list-filter-radio" value="deleted"<?= $panel_filter === 'deleted' ? ' checked' : '' ?> />
+                    <span class="custom-control-indicator"></span>
+                    <span class="custom-control-description ml-0">삭제 완료 <span class="text-muted">(<?= (int)$panel_deleted_cnt ?>)</span></span>
+                  </label>
+                </form>
+                <a href="/adm/panel/register.htm" class="btn btn-primary btn-sm panel-list-toolbar-register">패널 등록</a>
+              </div>
+            </div>
+            <div class="table-responsive panel-list-table-wrap">
+              <table class="table panel-list-table">
+                <thead class="thead-inverse">
+                  <tr>
+                    <th>#</th>
+                    <th>상태</th>
+                    <?php if ($member['mb_id'] === 'admin') { ?>
+                    <th>회원번호</th>
+                    <?php } ?>
+                    <th>패널명(한글)</th>
+                    <th>패널명(영문)</th>
+                    <th>임시 도메인</th>
+                    <th>담당자 연락처</th>
+                    <th>등록일</th>
+                    <th>종료일</th>
+                    <th>삭제 예정</th>
+                    <th>서비스 연장</th>
+                    <th>수정</th>
+                    <?php if ($is_admin) { ?>
+                    <th>복원</th>
+                    <?php } ?>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                  if ($panel_filter === 'deleted') {
+                      $panel_where = $panel_deleted_where;
+                  } else {
+                      $panel_where = $panel_active_where;
+                  }
+                  $panel_empty_msg = ($panel_filter === 'deleted') ? '삭제 완료된 패널이 없습니다.' : '등록된 패널이 없습니다.';
+                  $panel_result = db_query("select * from tb_panel where 1=1 {$panel_where} order by idx desc ");
+                  $panel_cnt = 0;
+                  $colspan = $is_admin ? 13 : 12;
+                  if ($panel_result) {
+                      while ($row = db_fetch($panel_result)) {
+                          $panel_cnt++;
+                          $reg = isset($row['regdate']) && $row['regdate'] ? date('Y-m-d H:i', strtotime($row['regdate'])) : '—';
+                          $end_raw = isset($row['enddate']) ? trim($row['enddate']) : '';
+                          $end_disp = $end_raw !== '' ? date('Y-m-d H:i', strtotime($end_raw)) : '—';
+                          $end_ts = ($end_raw !== '') ? strtotime($end_raw) : null;
+                          $expired = ($end_ts !== null && $end_ts < time());
+                          $del_raw = isset($row['delete_time']) ? trim($row['delete_time']) : '';
+                          $row_st = isset($row['status']) ? (int)$row['status'] : 1;
+                          $is_deleted = ($row_st === 2);
+                          if (!$is_deleted && $row_st !== 0) {
+                              $row_st = 1;
+                          }
+                          $pending_delete = (!$is_deleted && $del_raw !== '');
+                          $del_disp = ($pending_delete || $is_deleted) && $del_raw !== '' ? date('Y-m-d H:i', strtotime($del_raw)) : '—';
+                          $temp_panel_url = isset($row['test_panel_url']) ? trim($row['test_panel_url']) : '';
+                          $temp_url_poll = ($temp_panel_url === '' && !$is_deleted);
+                          $owner_cash = isset($member['mb_cash']) ? (int)$member['mb_cash'] : 0;
+                          if ($is_admin && (int)$row['member_no'] !== (int)$member['mb_no']) {
+                              $owner_mem = db_select('select mb_cash from member where mb_no = ' . (int)$row['member_no'] . ' limit 1 ');
+                              $owner_cash = ($owner_mem && isset($owner_mem['mb_cash'])) ? (int)$owner_mem['mb_cash'] : 0;
+                          }
+                  ?>
+                  <tr<?= $pending_delete ? ' class="panel-row-pending-delete"' : ($is_deleted ? ' class="panel-row-deleted"' : '') ?>>
+                    <th scope="row"><?= (int)$row['idx'] ?></th>
+                    <td>
+                      <?php if ($is_deleted) { ?>
+                      <span class="tag tag-danger">삭제 완료</span>
+                      <?php } elseif ($pending_delete) { ?>
+                      <span class="tag tag-warning">삭제 예정</span>
+                      <?php } elseif ($row_st === 1) { ?>
+                      <span class="tag tag-success">정상</span>
+                      <?php } else { ?>
+                      <span class="tag tag-default">중지</span>
+                      <?php } ?>
+                    </td>
+                    <?php if ($is_admin) { ?>
+                    <td><?= (int)$row['member_no'] ?></td>
+                    <?php } ?>
+                    <td><?= htmlspecialchars($row['panel_name_ko']) ?></td>
+                    <td><?= htmlspecialchars($row['panel_name_en']) ?></td>
+                    <td class="panel-temp-url-cell" data-idx="<?= (int)$row['idx'] ?>" data-poll="<?= $temp_url_poll ? '1' : '0' ?>">
+                      <?php if ($temp_panel_url !== '') { ?>
+                      <a href="<?= htmlspecialchars($temp_panel_url) ?>" target="_blank" rel="noopener noreferrer"><?= htmlspecialchars($temp_panel_url) ?></a>
+                      <?php } elseif ($is_deleted) { ?>
+                      <span class="text-muted">—</span>
+                      <?php } else { ?>
+                      <span class="panel-temp-url-loading"><span class="icon-spinner9 icon-spin"></span> 생성 중…</span>
+                      <?php } ?>
+                    </td>
+                    <td><?= htmlspecialchars($row['contact_phone']) ?></td>
+                    <td><?= htmlspecialchars($reg) ?></td>
+                    <td>
+                      <?= htmlspecialchars($end_disp) ?>
+                      <?php if ($expired && !$pending_delete && !$is_deleted) { ?>
+                      <span class="tag tag-danger ml-1">만료</span>
+                      <?php } ?>
+                    </td>
+                    <td>
+                      <?php if ($pending_delete) { ?>
+                      <span class="text-warning"><?= htmlspecialchars($del_disp) ?></span>
+                      <?php } elseif ($is_deleted && $del_raw !== '') { ?>
+                      <span class="text-muted"><?= htmlspecialchars($del_disp) ?></span>
+                      <?php } else { ?>
+                      <span class="text-muted">—</span>
+                      <?php } ?>
+                    </td>
+                    <td>
+                      <?php if (!$pending_delete && !$is_deleted) { ?>
+                      <button type="button" class="btn btn-sm btn-outline-info panel-btn-extend"
+                        data-idx="<?= (int)$row['idx'] ?>"
+                        data-name="<?= htmlspecialchars((string)$row['panel_name_ko'], ENT_QUOTES, 'UTF-8') ?>"
+                        data-owner-cash="<?= (int)$owner_cash ?>">
+                        서비스 연장하기
+                      </button>
+                      <?php } else { ?>
+                      <span class="text-muted">—</span>
+                      <?php } ?>
+                    </td>
+                    <td><a href="/adm/panel/register.htm?idx=<?= (int)$row['idx'] ?>"><?= $is_deleted ? '보기' : '수정' ?></a></td>
+                    <?php if ($is_admin) { ?>
+                    <td>
+                      <?php if ($pending_delete) { ?>
+                      <button type="button" class="btn btn-sm btn-outline-success panel-btn-restore"
+                        data-idx="<?= (int)$row['idx'] ?>"
+                        data-name="<?= htmlspecialchars((string)$row['panel_name_ko'], ENT_QUOTES, 'UTF-8') ?>">
+                        복원
+                      </button>
+                      <?php } else { ?>
+                      <span class="text-muted">—</span>
+                      <?php } ?>
+                    </td>
+                    <?php } ?>
+                  </tr>
+                  <?php
+                      }
+                  }
+                  if (!$panel_result || $panel_cnt === 0) {
+                      $err_hint = '';
+                      if (!$panel_result) {
+                          $err_hint = ' (DB에 <code>tb_panel</code> 테이블이 없을 수 있습니다. <code>adm/panel/schema_tb_panel.sql</code> 을 실행해 주세요.)';
+                      }
+                  ?>
+                  <tr>
+                    <td colspan="<?= (int)$colspan ?>" class="text-muted"><?= htmlspecialchars($panel_empty_msg) ?><?= $err_hint ?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade text-xs-left" id="panelExtendModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">서비스 연장</h4>
+      </div>
+      <div class="modal-body">
+        <p class="mb-1" id="panelExtendTargetName"></p>
+        <div class="panel-extend-cash-box">
+          <div><span id="panelExtendCashLabel">보유 럭키캐시</span> <strong id="panelExtendCashAmount">0</strong>원</div>
+          <div id="panelExtendAdminCashRow" style="display:none; margin-top:0.35rem;">관리자 럭키캐시 <strong id="panelExtendAdminCashAmount">0</strong>원</div>
+          <p class="text-muted mb-0 mt-1" id="panelExtendCashHint" style="font-size:0.85rem; display:none;">소유자 잔액이 부족하면 관리자 캐시로 차감됩니다.</p>
+        </div>
+        <p class="text-muted mb-0" style="font-size:0.9rem;">연장 기간을 선택하면 종료일이 해당 일수만큼 늘어납니다.</p>
+        <div class="panel-extend-plan-list">
+          <button type="button" class="panel-extend-plan-btn" data-days="30" data-cost="30000">
+            <span class="panel-extend-plan-days">30일 연장</span>
+            <span class="panel-extend-plan-price"><span class="final">30,000원</span></span>
+          </button>
+          <button type="button" class="panel-extend-plan-btn" data-days="180" data-cost="174600">
+            <span class="panel-extend-plan-days">180일 연장 <small class="text-success">3% 할인</small></span>
+            <span class="panel-extend-plan-price">
+              <span class="origin">180,000원</span>
+              <span class="final">174,600원</span>
+            </span>
+          </button>
+          <button type="button" class="panel-extend-plan-btn" data-days="360" data-cost="342000">
+            <span class="panel-extend-plan-days">360일 연장 <small class="text-success">5% 할인</small></span>
+            <span class="panel-extend-plan-price">
+              <span class="origin">360,000원</span>
+              <span class="final">342,000원</span>
+            </span>
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var ajaxUrl = '/adm/panel/ajax/_ajax_panel_extend_service.php';
+  var tempUrlAjax = '/adm/panel/ajax/_ajax_panel_temp_url.php';
+  var PANEL_IS_ADMIN = <?= $is_admin ? 'true' : 'false' ?>;
+  var PANEL_ADMIN_CASH = <?= (int)$admin_cash ?>;
+  var filterRadios = document.querySelectorAll('.panel-list-filter-radio');
+  for (var f = 0; f < filterRadios.length; f++) {
+    filterRadios[f].addEventListener('change', function () {
+      var form = document.getElementById('panel_list_filter_form');
+      if (form) {
+        form.submit();
+      }
+    });
+  }
+
+  function renderListTempUrl(cell, url) {
+    cell.setAttribute('data-poll', '0');
+    var a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = url;
+    cell.textContent = '';
+    cell.appendChild(a);
+  }
+
+  function pollListTempUrl(cell) {
+    if (!cell || cell.getAttribute('data-poll') !== '1') {
+      return;
+    }
+    var idx = parseInt(cell.getAttribute('data-idx'), 10) || 0;
+    if (idx <= 0) {
+      return;
+    }
+    window.fetch(tempUrlAjax + '?idx=' + encodeURIComponent(String(idx)), { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        var url = res && res.url ? String(res.url).trim() : '';
+        if (url) {
+          renderListTempUrl(cell, url);
+          return;
+        }
+        setTimeout(function () { pollListTempUrl(cell); }, 5000);
+      })
+      .catch(function () {
+        setTimeout(function () { pollListTempUrl(cell); }, 5000);
+      });
+  }
+
+  var tempCells = document.querySelectorAll('.panel-temp-url-cell[data-poll="1"]');
+  for (var i = 0; i < tempCells.length; i++) {
+    pollListTempUrl(tempCells[i]);
+  }
+
+  var extendModal = document.getElementById('panelExtendModal');
+  var extendTargetName = document.getElementById('panelExtendTargetName');
+  var extendCashAmount = document.getElementById('panelExtendCashAmount');
+  var extendCashLabel = document.getElementById('panelExtendCashLabel');
+  var extendAdminCashAmount = document.getElementById('panelExtendAdminCashAmount');
+  var extendAdminCashRow = document.getElementById('panelExtendAdminCashRow');
+  var extendCashHint = document.getElementById('panelExtendCashHint');
+  var extendPlanButtons = document.querySelectorAll('.panel-extend-plan-btn');
+  var extendCurrentIdx = 0;
+  var extendCurrentOwnerCash = 0;
+  var extendCurrentAdminCash = 0;
+  var extendShowAdminCash = false;
+
+  function formatCash(n) {
+    return Number(n || 0).toLocaleString('ko-KR');
+  }
+
+  function parseCashValue(v) {
+    var n = parseInt(String(v == null ? '' : v).replace(/[^\d-]/g, ''), 10);
+    return isNaN(n) ? 0 : n;
+  }
+
+  function extendUsableCash() {
+    return Math.max(extendCurrentOwnerCash, extendCurrentAdminCash);
+  }
+
+  function extendPayerLabel(cost) {
+    if (extendCurrentOwnerCash >= cost) {
+      return '소유자';
+    }
+    if (extendCurrentAdminCash >= cost) {
+      return '관리자';
+    }
+    return '';
+  }
+
+  function updateExtendPlanButtons() {
+    for (var p = 0; p < extendPlanButtons.length; p++) {
+      var btn = extendPlanButtons[p];
+      var cost = parseInt(btn.getAttribute('data-cost'), 10) || 0;
+      btn.disabled = extendUsableCash() < cost;
+    }
+  }
+
+  function submitPanelExtend(days, cost) {
+    if (!extendCurrentIdx) {
+      return;
+    }
+    var fd = new FormData();
+    fd.append('idx', String(extendCurrentIdx));
+    fd.append('days', String(days));
+    for (var p = 0; p < extendPlanButtons.length; p++) {
+      extendPlanButtons[p].disabled = true;
+    }
+    window.fetch(ajaxUrl, { method: 'POST', body: fd, credentials: 'same-origin' })
+      .then(function (r) { return r.text(); })
+      .then(function (t) {
+        var s = (t || '').trim();
+        if (s.indexOf('1|') === 0) {
+          var rest = s.substring(2);
+          if (window.jQuery) {
+            window.jQuery('#panelExtendModal').modal('hide');
+          }
+          window.alert('서비스가 연장되었습니다.\n변경된 종료일: ' + (rest || '—'));
+          window.location.reload();
+          return;
+        }
+        window.alert(s || '처리에 실패했습니다.');
+        updateExtendPlanButtons();
+      })
+      .catch(function () {
+        window.alert('통신 오류가 발생했습니다.');
+        updateExtendPlanButtons();
+      });
+  }
+
+  for (var p = 0; p < extendPlanButtons.length; p++) {
+    extendPlanButtons[p].addEventListener('click', function () {
+      var days = parseInt(this.getAttribute('data-days'), 10) || 0;
+      var cost = parseInt(this.getAttribute('data-cost'), 10) || 0;
+      if (extendUsableCash() < cost) {
+        window.alert(
+          '보유 럭키캐시가 부족합니다.\n필요: ' + formatCash(cost) + '원\n' +
+          (extendShowAdminCash ? '소유자' : '보유') + ': ' + formatCash(extendCurrentOwnerCash) + '원' +
+          (extendShowAdminCash ? ' / 관리자: ' + formatCash(extendCurrentAdminCash) + '원' : '')
+        );
+        return;
+      }
+      var payer = extendPayerLabel(cost);
+      var confirmMsg = days + '일 연장에 ' + formatCash(cost) + ' 럭키캐시가 차감됩니다.';
+      if (payer) {
+        confirmMsg += '\n차감 대상: ' + payer + ' 캐시';
+      }
+      confirmMsg += '\n계속하시겠습니까?';
+      if (!window.confirm(confirmMsg)) {
+        return;
+      }
+      submitPanelExtend(days, cost);
+    });
+  }
+
+  function openPanelExtend(idx, nameKo, ownerCash) {
+    extendCurrentIdx = parseInt(idx, 10) || 0;
+    extendCurrentOwnerCash = parseCashValue(ownerCash);
+    // 관리자 캐시는 행별 인자가 아니라 페이지 전역값 사용 (특정 패널명으로 인자 깨짐 방지)
+    extendCurrentAdminCash = PANEL_IS_ADMIN ? PANEL_ADMIN_CASH : 0;
+    extendShowAdminCash = PANEL_IS_ADMIN;
+    if (extendTargetName) {
+      extendTargetName.textContent = nameKo ? ('[' + nameKo + '] 패널 서비스 연장') : '패널 서비스 연장';
+    }
+    if (extendCashLabel) {
+      extendCashLabel.textContent = extendShowAdminCash ? '소유자 럭키캐시' : '보유 럭키캐시';
+    }
+    if (extendCashAmount) {
+      extendCashAmount.textContent = formatCash(extendCurrentOwnerCash);
+    }
+    if (extendAdminCashRow) {
+      extendAdminCashRow.style.display = extendShowAdminCash ? '' : 'none';
+    }
+    if (extendAdminCashAmount) {
+      extendAdminCashAmount.textContent = formatCash(extendCurrentAdminCash);
+    }
+    if (extendCashHint) {
+      extendCashHint.style.display = extendShowAdminCash ? '' : 'none';
+    }
+    updateExtendPlanButtons();
+    if (window.jQuery && extendModal) {
+      window.jQuery('#panelExtendModal').modal('show');
+    }
+  }
+
+  window.panelExtendService = openPanelExtend;
+
+  function runPanelRestore(idx, nameKo) {
+    var label = nameKo ? ('[' + nameKo + '] ') : '';
+    var msg = label + '삭제 예정을 취소하고 패널을 복원하시겠습니까?';
+    if (!window.confirm(msg)) {
+      return;
+    }
+    var fd = new FormData();
+    fd.append('idx', String(idx));
+    window.fetch('/adm/panel/ajax/_ajax_panel_restore.php', { method: 'POST', body: fd, credentials: 'same-origin' })
+      .then(function (r) { return r.text(); })
+      .then(function (t) {
+        var s = (t || '').trim();
+        if (s === '1') {
+          window.alert('패널이 복원되었습니다.');
+          window.location.reload();
+          return;
+        }
+        window.alert(s || '복원에 실패했습니다.');
+      })
+      .catch(function () {
+        window.alert('통신 오류가 발생했습니다.');
+      });
+  }
+
+  window.panelRestore = runPanelRestore;
+
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    while (t && t !== document) {
+      if (t.classList && t.classList.contains('panel-btn-extend')) {
+        e.preventDefault();
+        openPanelExtend(
+          t.getAttribute('data-idx'),
+          t.getAttribute('data-name') || '',
+          t.getAttribute('data-owner-cash')
+        );
+        return;
+      }
+      if (t.classList && t.classList.contains('panel-btn-restore')) {
+        e.preventDefault();
+        runPanelRestore(
+          t.getAttribute('data-idx'),
+          t.getAttribute('data-name') || ''
+        );
+        return;
+      }
+      t = t.parentNode;
+    }
+  });
+})();
+</script>
+<?php include_once __DIR__ . '/../footer.php'; ?>

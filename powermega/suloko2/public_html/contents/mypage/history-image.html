@@ -1,0 +1,283 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  if (!$page) $page = 1;
+  $limit = 6;
+  $find_text = "";
+  $find_object = "";
+
+  ## 데이터 리스트업의 기준을 스캔본만이 아닌 전체 구매내역으로 표기 (SLK-477)
+  $add_query = " AND USER_ID = '{$M_login['user_id']}' AND HIDE_YN IS NULL ";
+
+  if ($_GET['gubun'] != '') {
+    $find_object = "GUBUN";
+    $find_text = $_GET['gubun'];
+  }
+
+  if ($_GET['order'] == '') {
+    $_GET['order'] = " REG_DATE DESC";
+  }
+
+  // 취소 건 제외
+  $add_query .= " AND SIGN_YN != 'C'";
+
+  $condition = array(
+    "row"         => $limit,
+"page"        => $page,
+"order"       => $_GET['order'],
+"find_text"   => $find_text,
+"find_object" => $find_object,
+"add_query"   => $add_query,
+);
+$list = F_ORDERS_list($condition);
+
+if ($list['total'] <= 0) {
+$list['ORDERS_NO'] = array();
+}
+?>
+
+<body>
+<a href="#main" class="skip">본문 바로가기</a>
+<?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+<main id="main">
+  <div class="wrap_mypage clear wrap_com">
+    <?php include $_SERVER['DOCUMENT_ROOT']."/inc/nav-mypage.html"; ?>
+    <div class="right">
+      <section>
+        <div class="wrap_title">
+          <h3 class="heading">스캔본 확인</h3>
+        </div>
+        <div>
+          <ul class="list_search list_bul2">
+            <li>
+              <p>복권유형</p>
+              <div>
+                <ul class="list_sel">
+                  <li style="margin-right: 1px;">
+                    <button data-tp="all" class='gubun <?php if ($_GET['gubun'] == '') { echo "on"; } ?>'>전체</button>
+                  </li>
+                  <li style="margin-right: 1px;">
+                    <button data-tp="MM" class='gubun <?php if ($_GET['gubun'] == 'MM') { echo "on"; } ?>'>메가밀리언</button>
+                  </li>
+                  <li>
+                    <button data-tp="PB" class='gubun <?php if ($_GET['gubun'] == 'PB') { echo "on"; } ?>'>파워볼</button>
+                  </li>
+                </ul>
+              </div>
+            </li>
+            <!-- <li>
+              <p>조회결과순서</p>
+              <div>
+                <ul class="list_sel">
+                  <li>
+                    <button data-tp=" REG_DATE DESC" class='order <?php if ($_GET['order'] != ' REG_DATE ASC') { echo "on"; } ?>'>최근순</button>
+                  </li>
+                  <li>
+                    <button data-tp=" REG_DATE ASC" class='order <?php if ($_GET['order'] == ' REG_DATE ASC') { echo "on"; } ?>'>과거순</button>
+                  </li>
+                </ul>
+              </div>
+            </li> -->
+          </ul>
+        </div>
+      </section>
+      <section class="sec_history">
+        <div class="wrap_title">
+          <h3 class="heading">스캔본</h3>
+        </div>
+        <div class="wrap_tb">
+          <div class="wrap_list">
+            <ul class="list_type5 clear">
+              <?php
+                  for ($i = 0; $i < sizeof($list['ORDERS_NO']); $i++) {
+                    // 데이터 리스트업의 기준을 스캔본만이 아닌 전체 구매내역으로 표기 (SLK-477)
+                    if ($list['PRINT'][$i] == 1) {
+                      $ticketImg = $list['IMG_PATH'][$i];
+                      $ticketImgDate = $list['IMG_DATE'][$i];
+
+                      // 앞뒷면 구분 로직 추가 (3Dsystem)
+                      if (substr(pathinfo($ticketImg, PATHINFO_FILENAME),-1,1) == "a") {
+                        $ticketBackImg = (substr(pathinfo($ticketImg, PATHINFO_FILENAME),0,-1)) . "b.jpg";
+                      } else {
+                        $ticketBackImg = (pathinfo($ticketImg, PATHINFO_FILENAME) + 1).".jpg";
+                      }
+
+                      if (strpos($ticketImg, "/") === false) {
+                        $ticketTime = strtotime($ticketImgDate);
+                        $ticketDir = date("ymd", $ticketTime);
+                        $ticketUrl = $ticketImageURI.$ticketDir."/".$ticketImg;
+                        $ticketBackUrl = $ticketImageURI.$ticketDir."/back/".$ticketBackImg;
+                      } else {
+                        $ticketDir = "";
+                        $ticketUrl = $ticketImageURI."/". $ticketImg."";
+                        $ticketBackUrl = $ticketImageURI."/back/".$ticketBackImg;
+                      }
+
+                      $ticketUrlInfo = "
+                        <div>
+              <img class='btn_popup btn_scanImg bb frontScanImg' id='btn_scanImg' style='width: 100%; height: 313px;' src='{$ticketUrl}' onerror=\"this.style.display='none';\" />
+              <img class='btn_popup btn_scanImg bb backScanImg' id='btn_scanImg' style='width: 100%; height: 313px;' src='{$ticketBackUrl}' onerror=\"this.style.display='none';\" />
+          </div>
+          ";
+
+          } else {
+          $ticketUrl = "";
+          $ticketUrlInfo = "<img style='width: 100%; height: 313px;' src='/common/images/img_no_scan.jpg' />";
+          }
+
+          $cla = ($list['GUBUN'][$i] == 'MM') ? "mega" : "power";
+          $multi = ["MULTI_1" => "", "MULTI_2" => "","MULTI_3" => "","MULTI_4" => "","MULTI_5" => ""];
+
+          if ($list['GUBUN'][$i] == 'MM' && $list["DRAWNUM"][$i] >= 2066) {
+          $multi_data = $db->get_data("SELECT MULTI_A as MULTI_1, MULTI_B as MULTI_2, MULTI_C as MULTI_3, MULTI_D as MULTI_4, MULTI_E as MULTI_5 FROM ORDER_MULTIPLIER WHERE ORDERS_NO = '{$list['ORDERS_NO'][$i]}' LIMIT 1");
+          if (is_array($multi)) {
+          $multi = array_map(function($num) {
+          return $num > 0 ? "<div class='multi'>{$num}X</div>" : "";
+          }, $multi_data);
+          }
+          }
+
+          $html = "";
+          for ($s = 1; $s < 6; $s++) {
+          if ($list['BALL'.$s][$i] != '') {
+          $ball = explode(",", $list['BALL'.$s][$i]);
+
+          $html .= '
+          <div class="wrap_ball" style="margin-bottom: 2px;">
+            <ul class="list_ball clear">
+              <li><span>'.$ball[0].'</span></li>
+              <li><span>'.$ball[1].'</span></li>
+              <li><span>'.$ball[2].'</span></li>
+              <li><span>'.$ball[3].'</span></li>
+              <li><span>'.$ball[4].'</span></li>
+              <li class="'.$cla.'"><span>'.$ball[5].'</span></li>
+            </ul>
+            '. ($list['PRINT'][$i]==1 ? $multi["MULTI_".$s]:"" ) .'
+          </div>
+          ';
+          }
+          }
+          ?>
+          <li style="width: 30%;" class="ticketImg">
+            <a><!--draw-winners-details.html-->
+              <div class="wrap_img" style="min-height: 12.15rem; height: auto;">
+                <?=$ticketUrlInfo?>
+              </div>
+              <div class="wrap_txt" style="height: 210px;">
+                <p class="mb20"><?=$ball_op[$list['GUBUN'][$i]]." ".$list["DRAWNUM"][$i]." 회차"?></p>
+                <?=$html?>
+              </div>
+            </a>
+          </li>
+          <?php } ?>
+          </ul>
+        </div>
+    </div>
+    <?php if ($list['total'] <= 0) { ?>
+    <div class="nohistory">
+      <div class="wrap_img"><img src="/common/images/img_nohistory.jpg" alt=""></div>
+      <p>주문하신 내역이 없습니다.</p>
+    </div>
+    <?php } else { ?>
+    <!-- 페이징 숫자 표시는 5개까지 -->
+    <div class="wrap_paging mb60">
+      <?php
+              $page_info['cur'] = $condition['page'];
+              $page_info['row'] = $condition['row'];
+              $page_info['total'] = $list['total'];
+              $list['page_string'] = print_page_num1($page_info);
+              echo $list['page_string'];
+            ?>
+    </div>
+    <?php } ?>
+    </section>
+  </div>
+  </div>
+</main>
+<?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+<form role="form" name="topSearch" id="srForm" method="get" action="<?=$_SERVER['PHP_SELF']?>">
+  <input type="hidden" name="gubun" value="<?=$_GET['gubun']?>" class="s_gubun" />
+  <input type="hidden" name="win_yn" value="<?=$_GET['win_yn']?>" class="s_win_yn" />
+  <input type="hidden" name="order" value="<?=$_GET['order']?>" class="s_order" />
+</form>
+</body>
+
+<script>
+  $(function() {
+    let firstHighest = 0;
+    let secondHighest = 0;
+
+    // ticket 높이 값 추출
+    $('.ticketImg', this).each(function(index, item) {
+      if (index < 3) {
+        if ($(this).height() > firstHighest) {
+          firstHighest = $(this).height();
+        }
+      } else {
+        if ($(this).height() > secondHighest) {
+          secondHighest = $(this).height();
+        }
+      }
+    });
+
+    // ticket 높이 값 적용
+    $('.ticketImg', this).each(function(index, item) {
+      if (index < 3) {
+        $(this).height(firstHighest);
+      } else {
+        $(this).height(secondHighest);
+      }
+    });
+  });
+
+  // 복권 유형별 조회
+  $('.gubun').click(function() {
+    let tp = $(this).data('tp');
+    if (tp != 'all') {
+      $('.s_gubun').val(tp);
+    } else {
+      $('.s_gubun').val('');
+    }
+    $('#srForm').submit();
+  });
+
+  // 복권 최신/과거순 조회
+  $('.order').click(function() {
+    let tp = $(this).data('tp');
+    if (tp != 'all') {
+      $('.s_order').val(tp);
+    } else {
+      $('.s_order').val('');
+    }
+    $('#srForm').submit();
+  });
+
+  // 스캔본 이미지 클릭 - front
+  $('.frontScanImg').click(function() {
+    let url = $(this).attr('src');
+    let backurl = $(this).siblings().attr('src');
+
+    if (typeof backurl === 'undefined') {
+      $('.scanImg').find('#frontScanImg').attr('src', url);
+      $('.scanImg').find('#backScanImg').removeAttr('src');
+    } else {
+      $('.scanImg').find('#frontScanImg').attr('src', url);
+      $('.scanImg').find('#backScanImg').attr('src', backurl);
+    }
+  });
+
+  // 스캔본 이미지 클릭 - back
+  $('.backScanImg').click(function() {
+    let backurl = $(this).attr('src');
+    let url = $(this).siblings().attr('src');
+    $('.scanImg').find('#frontScanImg').attr('src', url);
+    $('.scanImg').find('#backScanImg').attr('src', backurl);
+  });
+</script>
+</html>

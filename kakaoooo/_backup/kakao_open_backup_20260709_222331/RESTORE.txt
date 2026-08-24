@@ -1,0 +1,19 @@
+복원 방법 (2026-07-09 22:23 백업 — 금액 int 오버플로 수정 직전/진행 중 스냅샷)
+
+위치:
+  /Users/jangyounggwan/cursor/kakao_open/_backup/kakao_open_backup_20260709_222331/
+  /Users/jangyounggwan/cursor/kakao_open/_backup/kakao_open_backup_20260709_222331.tar.gz
+
+1) 폴더에서 복원 (api/shop/seotda/page/lib):
+   cd /Users/jangyounggwan/cursor/kakao_open
+   rsync -a _backup/kakao_open_backup_20260709_222331/api/ api/
+   rsync -a _backup/kakao_open_backup_20260709_222331/shop/ shop/
+   rsync -a _backup/kakao_open_backup_20260709_222331/seotda/ seotda/
+   rsync -a _backup/kakao_open_backup_20260709_222331/page/ page/
+   rsync -a _backup/kakao_open_backup_20260709_222331/lib/ lib/
+
+2) tar 풀기:
+   cd /Users/jangyounggwan/cursor/kakao_open/_backup
+   tar -xzf kakao_open_backup_20260709_222331.tar.gz
+
+주의: shop/data/gifticon 이미지·vendor·node_modules는 제외됨.

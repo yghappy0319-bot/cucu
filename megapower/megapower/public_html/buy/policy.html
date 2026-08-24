@@ -1,0 +1,54 @@
+<?php
+$title = "미국복권 구매대행 개인정보취급방침";
+include "../header.html";
+?>
+
+<style>
+  .policy .plist {background: #fff;border-top: 2px solid #555;border-bottom: 1px solid #979797;}
+</style>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">개인정보취급방침</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>개인정보취급방침</p></li>
+            </ul>
+        </div>
+
+        <div class="policy">
+            <div>
+                <?
+                $originalString = $config['개인정보처리방침'];
+                $replacements = array(
+                "{사이트명}" => $config['사이트명'],
+                "{회사명}" => $config['회사명'],
+                "{사업자등록번호}" => $config['사업자등록번호'],
+                "{주소}" => $config['주소']
+                );
+                foreach ($replacements as $wordToReplace => $newValue) {
+                $originalString = str_replace($wordToReplace, $newValue, $originalString);
+                }
+                ?>
+                <?=$originalString?>
+            </div>
+        </div>
+        <style>
+            .policy{ padding: 50px; border-radius: 20px; border: 1px solid #e5e5e5;}
+            .policy *{ line-height: 1.8; font-size: 14px; color: #000;}
+            .policy .info{ margin: 10px 0; padding: 30px; border-radius: 10px;}
+            .policy table{ margin: 10px 0;}
+            @media(max-width: 769px){
+                .policy{ padding: 30px 20px;}
+                .policy .info{ padding: 15px;}
+            }
+        </style>
+
+    </div>
+</div>
+
+<?php
+include "../footer_new.html";
+?>

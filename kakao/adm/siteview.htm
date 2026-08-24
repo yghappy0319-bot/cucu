@@ -1,0 +1,110 @@
+<?php
+include_once "../adm/head.php";
+
+$data = db_select("select * from site where idx = {$idx} ");
+?>
+
+<?php include_once "../adm/nav.php";?>
+<div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+  <div class="main-menu-header">
+    <form>
+      <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+    </form>
+  </div>
+  <?php include_once "../adm/menu.php";?>
+</div>
+
+<div class="app-content content container-fluid">
+  <div class="content-wrapper">
+
+    <div class="content-body"><!-- Basic Tables start -->
+      <div class="row">
+
+        <div class="col-xs-12">
+          <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">사이트 스크립트</h4>
+                <a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+
+                <div class="heading-elements">
+                    <ul class="list-inline mb-0">
+                        <li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+                        <li><a data-action="reload"><i class="icon-reload"></i></a></li>
+                        <li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+                        <li><a data-action="close"><i class="icon-cross2"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div>
+              <xmp>
+                <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+                <link rel="stylesheet" type="text/css" href="https://luckybank.kr/css/cashform.css">
+                <script src="https://luckybank.kr/js/cashform.js"></script>
+
+                <div class="luckybank" ></div>
+                <script>
+                var USER_ID = "{{ user['username'] }}";
+                var USER_PHONE = "{{ user['phone'] }}";
+                var 고유값 = "<?=$data['member_no']?>";
+                var 사이트아이디 = "<?=$data['idx']?>";
+                var 주소 = "<?=$data['site']?>";
+                //위 내용 바꾸지마세요
+
+                //아래 내용 변경하세요
+                var 은행명 = "<?=$data['bank']?>";
+                var 예금주 = "<?=$data['acount_name']?>";
+                var 계좌번호 = "<?=$data['o_acount']?>";
+                var 부가세여부 = 0; // 0 = 부가세기능 on / 1 = 부가세 사용안함
+                var 오천원여부 = 1; // 0 = 5천원 사라지고 100만원버튼 활성화됨 / 1 = 100만원버튼 사라지고 5천원 버튼 활성화
+                var 카드 = 0;
+                var 카드URL = "";
+                luckybank(USER_ID,USER_PHONE,고유값,사이트아이디,주소,은행명,예금주,계좌번호,부가세여부,오천원여부,카드,카드URL);
+                </script>
+              </xmp>
+            </div>
+
+
+            <div>
+              <xmp>
+                <script src="https://luckybank.kr/js/new_cash_form.js"></script>
+
+                <div class="luckybank" ></div>
+                <script>
+                var USER_ID = "{{ user['username'] }}";
+                var USER_PHONE = "{{ user['phone'] }}";
+                var 고유값 = "<?=$data['member_no']?>";
+                var 사이트아이디 = "<?=$data['idx']?>";
+                var 주소 = "<?=$data['site']?>";
+                //위 내용 바꾸지마세요
+                let newArray = [
+                 {
+                   "은행명":'<?=$data['bank']?>',
+                   "예금주":'<?=$data['acount_name']?>',
+                   "계좌번호":'<?=$data['o_acount']?>',
+                   "부가세여부":'0', // 0 = 부가세기능 on / 1 = 부가세 사용안함
+                   "오천원여부":'1', // 0 = 5천원 사라지고 100만원버튼 활성화됨 / 1 = 100만원버튼 사라지고 5천원 버튼 활성화
+                   "카드":'0',
+                   "현금영수증": 1,
+                   "세금계산서": 0,
+                   "세금버튼여부":'1', // 부가세여부를 0으로 하고 세금버튼여부 1로 하면 사용안함시 부가세 안붙음
+                   "custom_header": '',
+                   "custom_bankinfo" : '',
+                   "card_url" : '',
+                }
+                ];
+                luckybank(USER_ID,USER_PHONE,고유값,사이트아이디,주소,newArray);
+                </script>
+
+              </xmp>
+            </div>
+          </div>
+        </div>
+
+
+
+      </div>
+    </div>
+
+  </div>
+</div>

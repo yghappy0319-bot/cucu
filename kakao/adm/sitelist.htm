@@ -1,0 +1,410 @@
+<?php
+include_once "../adm/head.php";
+include_once $_SERVER['DOCUMENT_ROOT']."/lib/sms_server_function.php";
+$page = 1;
+
+if($member['mb_id']=="admin"){
+  $member_where = " ";
+}else{
+  $member_where = " and member_no = {$member['mb_no']} ";
+}
+?>
+<style>
+.tong_number{font-weight: bold;
+    text-align: center;
+    text-decoration: underline;
+    margin-bottom: 10px;
+    font-size: 18px;
+    color: blue;}
+.text-center {text-align: center;}
+/* 모바일: 표는 가로 스크롤, 셀 안 텍스트는 한 줄 유지(세로로 쌓이지 않게) */
+.site-list-table-wrap {
+  -webkit-overflow-scrolling: touch;
+  overflow-x: auto;
+}
+.site-list-table {
+  width: 100%;
+  min-width: 720px;
+  table-layout: auto;
+}
+.site-list-table thead th,
+.site-list-table tbody td {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.site-list-table tbody td[colspan] {
+  white-space: normal;
+  text-align: center;
+}
+</style>
+<?php include_once "../adm/nav.php";?>
+  <div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+    <div class="main-menu-header">
+      <form>
+        <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+      </form>
+    </div>
+    <?php include_once "../adm/menu.php";?>
+  </div>
+
+  <div class="app-content content container-fluid">
+    <div class="content-wrapper">
+      <!-- <div class="content-header row">
+        <div class="content-header-left col-md-6 col-xs-12 mb-1">
+          <h2 class="content-header-title">사이트 리스트</h2>
+        </div>
+
+      </div> -->
+      <div class="content-body"><!-- Basic Tables start -->
+        <div class="row">
+            <div class="col-xs-12">
+              <form id="searchFrm" >
+                <input type="hidden" name="page" id="page" value="<?=$page?>" >
+                <input type="hidden" name="status" value="<?=$status?>" >
+                <input type="hidden" name="site" id="site" value="<?=$site?>"  >
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">웹사이트 리스트</h4>
+                        <a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+
+                        <div class="heading-elements">
+                            <ul class="list-inline mb-0">
+                                <li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+                                <li><a data-action="reload"><i class="icon-reload"></i></a></li>
+                                <li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+                                <li><a data-action="close"><i class="icon-cross2"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+<style>
+.card-body { display: flex !important; justify-content: flex-end; }
+</style>
+                    <div class="card-body collapse in">
+                        <div class="">
+                          <!-- <a href="sitereg.htm" class="btn btn-info mb-1 mt-1 mr-1">등록하기</a> -->
+                          <button type="button" class="btn btn-info mb-1 mt-1 mr-1 ml-1" data-toggle="modal" data-target="#iconModal">
+                            등록하기
+                          </button>
+                        </div>
+                    </div>
+
+
+                    <div class="table-responsive site-list-table-wrap">
+                        <table class="table site-list-table">
+                            <thead class="thead-inverse">
+                                <tr>
+                                  <th>서비스 상태</th>
+                                  <th>주소</th>
+                                  <th>은행</th>
+                                  <th>계좌번호</th>
+                                  <th>예금주</th>
+                                  <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                              <?php
+
+                              $page_url = "/page/add_site.php";
+                              $countSql = "select count(*) as totalRecords from site where 1=1 {$member_where} ";
+                              $countResult = db_select($countSql);
+                              include_once "pager_count.php";
+
+                              if(!$search){
+                                $orderby = " status desc, regdate desc";
+                              }else{
+                                $orderby = " regdate desc ";
+                              }
+
+                                $sql = "select * from site where 1=1 {$member_where} order by {$orderby} ";
+                                $result = db_query($sql);
+                                $allcnt = mysqli_num_rows($result);
+                                for($a=0;$row=db_fetch($result);$a++){
+                                        $sitename = explode("//",$row['site']);
+
+                                //서비스 상태는 매일 11시에 갱신함
+                              ?>
+                              <tr>
+                                <td>
+                                  <?=문자_서비스_이용상태($row['status'],$row['idx'])?>
+                                </td>
+                                <td>
+                                  <? if($member['mb_id']=="admin"){ ?>
+                                  <a href="siteview.htm?idx=<?=$row['idx']?>">
+                                      <?= idn_to_utf8($sitename[1])?>
+                                  </a>
+                                <? }else{ ?>
+                                  <a href="https://<?= idn_to_utf8($sitename[1])?>" target="_blank"><?= idn_to_utf8($sitename[1])?></a>
+                                <? } ?>
+
+                                </td>
+                                <td><?=$row['bank']?></td>
+                                <td><?=$row['o_acount']?></td>
+                                <td><?=$row['acount_name']?></td>
+
+                                <td><a href="/adm/sitereg.htm?idx=<?=$row['idx']?>">수정</a></td>
+                              </tr>
+                              <? } ?>
+
+                              <? if($allcnt==0){?>
+                                <tr>
+                                  <td colspan="6" >
+                                    내역이 없습니다.
+                                  </td>
+                                </tr>
+                              <? } ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                </div>
+                </form>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal fade text-xs-left" id="iconModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+        <h4 class="modal-title" id="myModalLabel2"><i class="icon-lightbulb-o"></i> 계좌 등록</h4>
+        </div>
+
+        <div class="modal-body">
+          <form method="POST" id="acount_info_frm" action="/adm/sitereg.htm">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="projectinput5">은행</label>
+                  <select name="bank" id="bank" class="form-control" onchange="go_bank_acount_chk(this.value)">
+                    <option value="">은행 선택</option>
+                      <?
+                        $result = 무통장서비스_통보가능은행();
+                        foreach($result as $bank){
+                      ?>
+                      <option value="<?=$bank['bank_name']?>" <?=$bank['bank_name']==$data['bank'] ? "selected":"" ?> ><?=$bank['bank_name']?></option>
+                    <? } ?>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="projectinput3">예금주명</label>
+                  <input type="text" id="projectinput3" class="form-control" placeholder="예금주명" name="acount_name" value="<?=$data['acount_name']?>">
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="projectinput3">계좌번호(-포함)</label>
+                  <input type="text" class="form-control" placeholder="계좌번호" name="o_acount" id="user_acount" value="<?=$data['o_acount']?>">
+                </div>
+              </div>
+              <div class="col-md-6" >
+                <div class="form-group">
+                  <? if($idx){?>
+                  <label for="projectinput3">마킹 계좌 - 수정금지</label>
+                  <? } ?>
+                  <input type="<?=$idx ? 'text':'hidden' ?>" class="form-control" placeholder="계좌번호 재입력" name="acount" id="o_acount" value="<?=$data['acount']?>">
+                </div>
+              </div>
+            </div>
+
+          <hr>
+            <div class="row">
+<?
+  $입금통보번호 = "010-3964-3966";
+?>
+              <div class="send_number_box" style="display:none;" >
+                <div class="col-md-12 alram_number text-xs-center" style="display:none;">
+                  <div class="form-group">
+                    <p><b>1. 은행 웹사이트에 접속합니다. 은행앱 또는 웹사이트(추천)</b></p>
+                    <p><b>   (토스 / 카카오뱅크 불가)</b></p>
+                    <p><b>2. SMS입금알람 or SMS입금통보 메뉴를 찾습니다.</b></p>
+                    <p><b>3. <?=$입금통보번호?> 번호를 등록/추가해주세요.</b></p>
+                    <p><b>4. 입금건, 잔액이 안나오도록 설정해주세요.</b></p>
+                  </div>
+
+                  <div class="form-group">
+                    <label><b>아래 번호를 SMS입금통보 번호로 등록해주세요!</b></label>
+                    <input type="text" class="form-control text-xs-center" placeholder="주소" name="errorlist_number" id="errorlist_number" value="<?=$입금통보번호?>">
+                  </div>
+                </div>
+
+                <div class="auth_code" style="display:none;" >인증번호를 수신중 입니다...</div>
+
+                <div class="col-md-12 tong_bo_btn">
+                  <input type="hidden" id="alram_box_status" value="<?= $data['errorlist_number'] ? "false":"true"; ?>" />
+                  <button type="button" class="btn mb-1 btn-primary btn-lg btn-block" onclick="go_alram_number_show()" id="hp_number_btn" >입금내역 통보번호 발급받기</button>
+                </div>
+
+                <div class="col-md-12 no_tong_bo_btn" style="display:none;" >
+                  <button type="button" class="btn mb-1 btn-primary btn-lg btn-block" onclick="go_no_submit()"  >확인</button>
+                </div>
+              </div>
+
+            </div>
+
+          </form>
+
+          <div class="card-text bankinfo" style="display:none;" >
+            <p>✓ <span class="bankname"></span> 인터넷뱅킹 또는 앱 알림설정에 SMS입금통보, 입금내역통보 메뉴를 찾아주세요.</p>
+            <p>✓ 입금내역을 럭키뱅크에서도 수신할 수 있도록 SMS통보설정이 선진행 돼어야 합니다.</p>
+            <p>✓ 입금 건만 오도록 해주시고 잔액이 안나오도록 설정 부탁드립니다.</p>
+          </div>
+
+          <!-- <div class="alert alert-success" role="alert">
+            <span class="text-bold-600">Well done!</span> You successfully read this important alert message.
+          </div> -->
+        </div>
+
+        <!-- <div class="modal-footer">
+        <button type="button" class="btn grey btn-outline-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-outline-primary">Save changes</button>
+        </div> -->
+      </div>
+    </div>
+  </div>
+  <script>
+  function go_no_submit(){
+    $("#acount_info_frm").submit();
+  }
+
+  function go_bank_acount_chk(obj){
+  console.log(obj);
+  $(".bankname").html(obj);
+    if(obj=="기타"){
+      $(".send_number_box").css("display","none");
+    }else if(obj=="국민은행" || obj=="하나은행"){
+      clearTimeout(pollingTimer);
+    }
+    $(".send_number_box").show();
+  }
+
+  function go_alram_number_show(){
+    if(login_id=="testuser"){
+      alert("테스트 아이디는 수정/삭제가 불가 합니다.");
+      return false;
+    }
+    var bank = $("#bank").val();
+    if(!bank){
+      alert("은행을 선택해주세요.");
+      return false;
+    }
+    var bank_name = $("#projectinput3").val();
+    var bank_acount = $("#user_acount").val();
+
+    if(!bank_name){
+      alert("예금주명을 입력해주세요.");
+      return false;
+    }
+    if(!bank_acount){
+      alert("계좌번호를 입력해주세요.");
+      return false;
+    }
+
+
+    $(".alram_number").toggle();
+    $(".auth_code").show();
+
+    if(bank=="하나은행" || bank=="국민은행"){
+
+      alert(bank+"은 인증절차가 없으므로 통보번호만 등록해주시면 됩니다.");
+      $(".auth_code").html("<div><div class='text-center'>"+bank+"은 별도의 인증절차가 없습니다!</div><div class='text-center'>국민은행 웹사이트에 위 통보번호를 등록 후 아래 확인버튼을 눌러주세요.</div></div>");
+      $(".tong_bo_btn").css("display","none");
+      $(".no_tong_bo_btn").show();
+      return false;
+    }else if(bank=="기타"){
+      $(".auth_code").html("<div class='tong_number'>통보번호를 등록 후 아래 확인버튼을 눌러주세요.</div>");
+      $(".tong_bo_btn").css("display","none");
+      $(".no_tong_bo_btn").show();
+      return false;
+    }else{
+      $(".tong_bo_btn").show();
+      go_auth_number(); // 인증번호 체크
+    }
+    $("#hp_number_btn").css("display","none");
+  }
+
+
+  let pollingTimer;
+  function go_auth_number(){
+    var bank = $("#bank").val();
+    $.ajax({
+       type : "POST",
+       url: "/ajax/_ajax_bank_code_chk.php",
+       async: false,
+       data: {
+         bank : bank
+       },
+       dataType: 'json',
+       success: function(result) {
+         console.log(result);
+         if(result.code>0){
+           var html = "<div class='text-xs-center'>";
+           html += "<div >3. 아래 인증번호를 은행 웹사이트에 입력해주세요!</div>";
+           html += "<div style='font-size:22px;'>인증번호 : <font color='red'>"+result.code+"</font></div>";
+           html += "<div class='col-md-12'><button type='button' class='btn btn-info btn-block' onclick='go_chk("+ result.idx +")' >확인</button></div>";
+           html += "</div>";
+           $(".auth_code").html(html);
+         }else{
+           $(".auth_code").html("<div class='text-xs-center'><p>2. 통보 번호가 등록되면 인증번호가 수신됩니다.</p><p>잠시만 기다려 주세요.</p></div>");
+         }
+
+       },
+       error:function(e) {
+          alert(e.responseText);
+       },
+       complete: function() {
+          // 5초 후에 다시 폴링을 실행합니다.
+           pollingTimer = setTimeout(go_auth_number, 5000);
+       }
+    });
+  }
+
+  function go_chk(obj){
+    clearTimeout(pollingTimer);
+    if(confirm("인증번호를 확인 하셨습니까?")){
+      var bank = $("#bank").val();
+      var bank_name = $("#projectinput3").val();
+      var bank_acount = $("#user_acount").val();
+
+      if(!bank_name){
+        alert("예금주명을 입력해주세요.");
+        return false;
+      }
+      if(!bank_acount){
+        alert("계좌번호를 입력해주세요.");
+        return false;
+      }
+
+      $.ajax({
+         type : "POST",
+         url: "/ajax/_ajax_bank_code_ok.php",
+         async: false,
+         data: {
+           idx : obj,
+           bank : bank,
+           acount : bank_acount
+         },
+         success: function(result) {
+            var r = result.trim();
+            $("#o_acount").val(r);
+            $("#acount_info_frm").submit();
+         },
+         error:function(e) {
+            alert(e.responseText);
+         }
+      });
+    }
+  }
+  </script>
+<?php include_once "../adm/footer.php";?>

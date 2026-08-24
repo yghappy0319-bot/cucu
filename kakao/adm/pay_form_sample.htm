@@ -1,0 +1,55 @@
+<?php
+include_once "../adm/head.php";
+
+if(!$member['mb_email']){
+  echo "<script>alert('마이페이지로 이동하여 이메일 정보를 등록/수정해주세요.');location.href='/adm/mypage.htm';</script>";
+  exit;
+}
+?>
+<!-- <?=$member['mb_8']?> -->
+<!-- <?=$member['mb_10']?> -->
+  <?php include_once "../adm/nav.php";?>
+
+    <!-- main menu-->
+    <div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+      <!-- main menu header-->
+      <div class="main-menu-header">
+        <input type="text" placeholder="Search" class="menu-search form-control round"/>
+      </div>
+      <?php include_once "../adm/menu.php";?>
+    </div>
+    <!-- / main menu-->
+
+    <div class="app-content content container-fluid">
+      <div class="content-wrapper">
+
+        <div class="content-body"><!-- Basic example section start -->
+
+          <div class="col-md-6">
+
+            <div>
+              해당 무통장 입금 폼은 샘플 입니다.
+            </div>
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+            <link rel="stylesheet" type="text/css" href="https://pay.luckybank.kr/css/cashform.css?data=1">
+            <script src="https://pay.luckybank.kr/js/cash_form_v1.js"></script>
+
+            <div class="luckybank" ></div>
+            <script>
+            let siteinfo = [{
+            "USER_ID":"{{ user['username'] }}",
+            "USER_PHONE":"{{ user['phone'] }}",
+            "code":"uayrlmKgSfiffc5"
+            }];
+            luckybank(siteinfo);
+            </script>
+          </div>
+          </div>
+
+
+      </div>
+    </div>
+
+
+
+  <?php include_once "../adm/footer.php";?>

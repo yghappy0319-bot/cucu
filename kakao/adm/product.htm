@@ -1,0 +1,361 @@
+<?php
+if(isset($_COOKIE['redirect'])) { //리다이렉트쿠키가 있는경우
+  $cookie_name = "redirect";
+  setcookie($cookie_name, "", time() - 3600, "/");
+  //쿠키 삭제
+}
+include_once "../adm/head.php";
+
+  $service3 = array(
+    array("0","0","0", 300000, 0)
+  );
+
+function calculateDiscountRate($originalPrice, $discountedPrice) {
+    // 할인된 금액 계산
+    $discountAmount = $originalPrice - $discountedPrice;
+
+    // 할인율 계산
+    $discountRate = ($discountAmount / $originalPrice) * 100;
+
+    // 할인율 반환
+    return $discountRate;
+}
+if(!$member['mb_email']){
+  echo "<script>alert('마이페이지로 이동하여 이메일 정보를 등록/수정해주세요.');location.href='/adm/mypage.htm';</script>";
+  exit;
+}
+?>
+<!-- <?=$member['mb_8']?> -->
+<!-- <?=$member['mb_10']?> -->
+  <?php include_once "../adm/nav.php";?>
+
+    <!-- main menu-->
+    <div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+      <!-- main menu header-->
+      <div class="main-menu-header">
+        <input type="text" placeholder="Search" class="menu-search form-control round"/>
+      </div>
+      <?php include_once "../adm/menu.php";?>
+    </div>
+    <!-- / main menu-->
+
+    <div class="app-content content container-fluid">
+      <div class="content-wrapper">
+        <div class="content-header row">
+          <div class="content-header-left col-md-6 col-xs-12 mb-1">
+            <h2 class="content-header-title">기능 구매</h2>
+          </div>
+        </div>
+        <div class="content-body"><!-- Basic example section start -->
+
+          <section id="basic-examples">
+          	<div class="row match-height">
+                <div class="col-xl-3 col-md-6 col-sm-12">
+            			<div class="card">
+            				<div class="card-body">
+            					<!-- <img class="card-img-top img-fluid" src="../../app-assets/images/carousel/06.jpg" alt="Card image cap"> -->
+            					<div class="card-block">
+            						<h4 class="card-title">신용카드로 포인트 충전</h4>
+                        <p class="card-text"></p>
+                        <div class="form-group">
+                          PG사 심사가 진행되어야만 도입이 가능합니다.
+                          PG사 심사가 가능한 업체를 소개해드리며
+                          도입시 아래 하단 문의버튼으로 문의주시면
+                          자세히 말씀드리겠습니다.
+                        </div>
+                        <!-- <button type="button" class="btn btn-outline-deep-orange bnt_s3 mb-1" onclick="pay_popup_btn(this)"
+                        data-toggle="modal" data-target="#default1" data-content="<?=number_format($data3[3])?>원을 신용카드 결제합니다."
+                        data-pay="0/0/<?=$data3[3]?>" >결제하기</button> -->
+
+                        <button type="button" class="btn btn-outline-deep-orange bnt_s3 mb-1" onclick="go_kakao()" >도입 문의</button>
+            					</div>
+            				</div>
+            			</div>
+            		</div>
+
+                <div class="col-xl-3 col-md-6 col-sm-12">
+                  <div class="card">
+                    <div class="card-body">
+                      <!-- <img class="card-img-top img-fluid" src="../../app-assets/images/carousel/06.jpg" alt="Card image cap"> -->
+                      <div class="card-block">
+                        <h4 class="card-title">리뷰 관리</h4>
+                        <p class="card-text"></p>
+                        <div class="form-group">
+                          패널 회원들이 직접 리뷰기능을 활용할 수 있도록 기능 제작해드립니다.
+                        </div>
+                        <!-- <button type="button" class="btn btn-outline-deep-orange bnt_s3 mb-1" onclick="pay_popup_btn(this)"
+                        data-toggle="modal" data-target="#default1" data-content="<?=number_format($data3[3])?>원을 신용카드 결제합니다."
+                        data-pay="0/0/<?=$data3[3]?>" >결제하기</button> -->
+                        <button type="button" class="btn btn-outline-deep-orange bnt_s3 mb-1" onclick="go_kakao()" >도입 문의</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 col-sm-12">
+                  <div class="card">
+                    <div class="card-body">
+                      <!-- <img class="card-img-top img-fluid" src="../../app-assets/images/carousel/06.jpg" alt="Card image cap"> -->
+                      <div class="card-block">
+                        <h4 class="card-title">카카오 로그인/회원가입</h4>
+                        <p class="card-text"></p>
+                        <div class="form-group">
+                          카카오 로그인 및 회원가입 기능을 연동해드립니다.
+                        </div>
+                        <!-- <button type="button" class="btn btn-outline-deep-orange bnt_s3 mb-1" onclick="pay_popup_btn(this)"
+                        data-toggle="modal" data-target="#default1" data-content="<?=number_format($data3[3])?>원을 신용카드 결제합니다."
+                        data-pay="0/0/<?=$data3[3]?>" >결제하기</button> -->
+                        <button type="button" class="btn btn-outline-deep-orange bnt_s3 mb-1" onclick="go_kakao()" >도입 문의</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 col-sm-12">
+                  <div class="card">
+                    <div class="card-body">
+                      <!-- <img class="card-img-top img-fluid" src="../../app-assets/images/carousel/06.jpg" alt="Card image cap"> -->
+                      <div class="card-block">
+                        <h4 class="card-title">기타 추가기능</h4>
+                        <p class="card-text"></p>
+                        <div class="form-group">
+                          원하시는 기능이 있으신경우
+                        </div>
+                        <!-- <button type="button" class="btn btn-outline-deep-orange bnt_s3 mb-1" onclick="pay_popup_btn(this)"
+                        data-toggle="modal" data-target="#default1" data-content="<?=number_format($data3[3])?>원을 신용카드 결제합니다."
+                        data-pay="0/0/<?=$data3[3]?>" >결제하기</button> -->
+                        <button type="button" class="btn btn-outline-deep-orange bnt_s3 mb-1" onclick="go_kakao()" >도입 문의</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+          		</div>
+          </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade text-xs-left" id="default1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel1" style="display: none;" aria-hidden="true">
+		  <div class="modal-dialog" role="document">
+			<div class="modal-content">
+			  <div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				  <span aria-hidden="true">×</span>
+				</button>
+				<h4 class="modal-title" id="myModalLabel1">기능 구매</h4>
+			  </div>
+			  <div class="modal-body">
+				<h5 class="popup_title"></h5>
+			  </div>
+			  <div class="modal-footer">
+				<button type="button" class="btn grey btn-outline-secondary" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-outline-primary" onclick="go_innopay()">결제하기</button>
+			  </div>
+			</div>
+		  </div>
+		</div>
+
+<form name="forderform" id="forderform">
+  <input type="hidden" name="PayMethod" value="CARD" >  <!-- 신용카드 -->
+  <input type="hidden" name="MID" value="pgerrormam" > <!-- (발급받은 상점MID를 입력) -->
+  <input type="hidden" name="MerchantKey" value="UiT8d25EpHP2nSXJfQS009tE3fDPnL7u3neVCod6JG1yEPg6ieEsThbL6iX3E8lmvj63Dfk0Tsg7IKwGl2601g=="> <!-- 발급된 가맹점키 -->
+  <input type="hidden" name="GoodsName" id="GoodsName" value="" >
+  <input type="hidden" name="Amt" id="inno_amt" value="1000" >
+
+  <input type="hidden" name="BuyerName" value="<?=$member['mb_id']?>" >
+  <input type="hidden" name="BuyerTel" value="<?=$member['mb_hp']?>" >
+  <input type="hidden" name="BuyerEmail" value="<?=$member['mb_email']?>" >
+  <input type="hidden" name="ResultYN" value="Y" > <!-- (N:결제결과창 없음, 가맹점 ReturnURL로 결과전송) -->
+  <input type="hidden" name="ReturnURL" value="" >
+  <input type="hidden" name="resultcode" id="resultcode" value="" >
+  <input type="hidden" name="idata" id="idata" >
+  <input type="hidden" name="midx" id="midx" value="<?=$member['mb_no']?>" >
+  <input type="hidden" name="userid" id="userid" value="<?=$member['mb_id']?>" >
+  <input type="hidden" name="_moid" id="moid" >
+</form>
+
+<form method="post" name="frmData" id="auto_bill_frm">
+  <input type="hidden" name="paydata" id="paydata" />
+  <input type="hidden" name="type_status" id="type_status" />
+</form>
+<script>
+  function go_kakao(){
+    window.open('https://open.kakao.com/o/soV2H3gf');
+  }
+</script>
+<script type="text/javascript" src="https://pg.innopay.co.kr/ipay/js/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="https://pg.innopay.co.kr/ipay/js/innopay-2.0.js" charset="utf-8"></script>
+<script type="text/javascript">
+
+function pay_popup_btn(obj){
+  const str = obj.getAttribute('data-pay');
+  const content = obj.getAttribute('data-content')
+  console.log(str);
+  const parts = str.split('/');
+  var amount = parts[2];
+  var popup_title = "";
+  //console.log(amount);
+  $("#idata").val(str);
+
+  popup_title = content;
+
+  $(".popup_title").html(popup_title);
+  $("#GoodsName").val("웹사이트 기능 구매");
+  $("#inno_amt").val(amount);
+}
+
+function getCurrentTimestamp() {
+    var now = new Date();
+
+    var year = now.getFullYear();
+    var month = ('0' + (now.getMonth() + 1)).slice(-2); // 0부터 시작하므로 +1
+    var day = ('0' + now.getDate()).slice(-2);
+    var hour = ('0' + now.getHours()).slice(-2);
+    var minute = ('0' + now.getMinutes()).slice(-2);
+    var second = ('0' + now.getSeconds()).slice(-2);
+
+    var timestamp = year + month + day + hour + minute + second;
+    return timestamp;
+}
+
+function go_innopay(){
+  var userid = $("#userid").val();
+  var pv = $("#idata").val();
+  var moid = userid+getCurrentTimestamp();
+  $("#moid").val(moid);
+  console.log(moid);
+  // 결제요청 함수
+  innopay.goPay({
+    //// 필수 파라미터
+    PayMethod: forderform.PayMethod.value,		// 결제수단(CARD,BANK,VBANK,CARS,CSMS,DSMS,EPAY,EBANK)
+    MID: forderform.MID.value,							// 가맹점 MID
+    MerchantKey:forderform.MerchantKey.value,	// 가맹점 라이센스키
+    GoodsName:forderform.GoodsName.value,		// 상품명
+    Amt:forderform.Amt.value,							// 결제금액(과세)
+    BuyerName:forderform.BuyerName.value,		// 고객명
+    BuyerTel:forderform.BuyerTel.value,				// 고객전화번호
+    BuyerEmail:forderform.BuyerEmail.value,			// 고객이메일
+    ResultYN:forderform.ResultYN.value,				// 결제결과창 출력유뮤
+
+    Moid:moid,			// 가맹점에서 생성한 주문번호 셋팅
+    //// 선택 파라미터
+    ReturnURL:forderform.ReturnURL.value,			// 결제결과 전송 URL(없는 경우 아래 innopay_result 함수에 결제결과가 전송됨)
+//			ArsConnType:'02', 							///* ARS 결제 연동시 필수 01:호전환, 02(가상번호), 03:대표번호 */
+
+//			FORWARD:'',									// 결제창 연동방식 (X:레이어, 기본값)
+//			GoodsCnt:'',									// 상품갯수 (가맹점 참고용)
+//			MallReserved:'',								// 가맹점 데이터
+//			OfferingPeriod:'',								// 제공기간
+//			DutyFreeAmt:'',								// 결제금액(복합과세/면세 가맹점의 경우 금액설정)
+//			EncodingType:'utf-8',						// 가맹점 서버 인코딩 타입 (utf-8, euc-kr)
+//			MallIP:'',											// 가맹점 서버 IP
+//			UserIP:'',											// 고객 PC IP
+//			mallUserID:'',									// 가맹점 고객ID
+//			User_ID:'',										// Innopay에 등록된 영업사원ID
+    Currency:''										// 통화코드가 원화가 아닌 경우만 사용(KRW/USD)
+    });
+    go_pay_log(); //결제시도로그
+}
+
+function go_pay_log(){
+
+  var params = jQuery("#forderform").serialize();
+  $.ajax({
+    type : "POST",
+    url: "/ajax/_ajax_pay_log.php",
+    async: false,
+    data: params,
+    success: function(result) {
+      console.log(result);
+      var r = result.trim();
+      if(r!=1){
+        alert("관리자에게 문의해주세요.");
+        return false;
+      }
+    },
+    error:function(e) {
+      alert(e.responseText);
+    }
+  });
+
+}
+
+/**
+ * 결제결과 수신 Javascript 함수
+ * ReturnURL이 없는 경우 아래 함수로 결과가 리턴됩니다 (함수명 변경불가!)
+ */
+	function innopay_result(data){
+		var a = JSON.stringify(data);
+		// Sample
+		var mid = data.MID;					// 가맹점 MID
+		var tid = data.TID;					// 거래고유번호
+		var amt = data.Amt;					// 금액
+		var moid = data.MOID;				// 주문번호
+		var authdate = data.AuthDate;		// 승인일자
+		var authcode = data.AuthCode;		// 승인번호
+		var resultcode = data.ResultCode;	// 결과코드(PG)
+		var resultmsg = data.ResultMsg;		// 결과메세지(PG)
+		var errorcode = data.ErrorCode;		// 에러코드(상위기관)
+		var errormsg = data.ErrorMsg;		// 에러메세지(상위기관)
+		var EPayCl   = data.EPayCl;
+    var resultcode = $("#resultcode").val(resultcode);
+    $("#moid").val(moid);
+		alert("["+resultcode+"]"+resultmsg);
+    go_service_update();
+	}
+
+
+function go_service_update(){
+  //$("#idata").val("1/30/10000"); //test
+  var params = jQuery("#forderform").serialize();
+  $.ajax({
+    type : "POST",
+    url: "/ajax/_ajax_pay.php",
+    async: false,
+    data: params,
+    success: function(result) {
+      console.log(result);
+    var r = result.trim();
+    if(r==1){
+      alert("결제가 완료 되었습니다. 감사합니다.");
+      location.reload();
+      return false;
+    }
+    if(r=="0000"){
+      alert("결제가 완료되어 서비스 기간이 연장 되었습니다. 감사합니다.");
+      location.reload();
+    }
+    console.log(r);
+    },
+    error:function(e) {
+      alert(e.responseText);
+    }
+  });
+}
+
+function tax(value){
+  var increasedValue = value * 1.10; // 10% 증가
+  increasedValue = parseFloat(increasedValue.toFixed(2));
+  console.log(increasedValue);
+  return increasedValue;
+}
+
+function go_service1(obj,obj2){
+  $(".bnt_s"+obj2).attr("data-pay",obj);
+  const str = obj;
+  const parts = str.split('/');
+
+  var value = parseFloat(parts[2]); // 값을 숫자로 변환
+  if (!isNaN(value)) { // 값이 유효한 숫자인지 확인
+      var increasedValue = tax(value);
+       var formattedValue = increasedValue.toLocaleString(); // 천 단위 콤마 추가
+       console.log(formattedValue); // 포맷된 값을 콘솔에 출력
+       $(".bnt_s"+obj2).html(formattedValue + "원 결제하기"); // 포맷된 값을 HTML 요소에 삽입
+   }
+}
+
+</script>
+
+  <?php include_once "../adm/footer.php";?>

@@ -1,0 +1,137 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_EMAILTEMPLET.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit";
+
+  $list = F_EMAILTEMPLET_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['TEMPLET_NO'] = array();
+  }
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">이메일템플릿관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">알림관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">이메일템플릿관리</li>
+        </ol>
+      </div>
+      <div class="ms-auto pageheader-btn">
+        <a href="./templat_add.html" class="btn btn-primary btn-icon text-white me-2">
+          <span><i class="fe fe-plus"></i></span> Add Templet
+        </a>
+        <a href="#" class="btn btn-danger allDelChk">선택삭제</a>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div></div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="chkAll" /></th>
+                    <th>No</th>
+                    <th>제목</th>
+                    <th>상태</th>
+                    <th>등록ID</th>
+                    <th>등록일시</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['TEMPLET_NO']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                  ?>
+                  <tr class="text-center">
+                    <td><input type="checkbox" name="noChk[]" value="<?=$list['TEMPLET_NO'][$i]?>"></td>
+                    <td><?=$no?></td>
+                    <td><?=$list['SUBJECT'][$i]?></td>
+                    <td><?=$stop_op[$list['STOPYN'][$i]]?></td>
+                    <td><?=$list['STAFFID'][$i]?></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                    <td><a href="./templat_add.html?mode=update&no=<?=$list['TEMPLET_NO'][$i]?>" class="btn btn-success">수정</a></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+    let getHeight = $('.table-wrapper').css('max-height');
+    let setHeight = Number(getHeight.slice(0, -2)) - 50;
+
+    // 해상도에 따라 높이 조절
+    $('.table-wrapper').css('max-height', setHeight);
+  });
+
+  // 선택 삭제
+  $(document).on('click', '.allDelChk', function() {
+    let chk_no = new Array();
+    let i = 0;
+    $('[name="noChk[]"]:checked').each(function() {
+      chk_no[i] = $(this).val();
+      i++;
+    });
+
+    if (i > 0) {
+      if (confirm('선택한 항목을 삭제하시겠습니까?')) {
+        $.post('../common.php', {
+          mode: 'all_del',
+          gubun: 'EMAILTEMPLET',
+          chk_no: chk_no
+        }, function(e) {
+          if (e.error) {
+            alert(e.msg);
+          } else {
+            alert(e.msg);
+          }
+          location.reload();
+        }, 'json');
+      }
+    } else {
+      alert('삭제할 항목을 선택하세요');
+    }
+  });
+</script>

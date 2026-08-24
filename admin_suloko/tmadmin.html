@@ -1,0 +1,154 @@
+<?php
+require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+include $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+?>
+<script type="text/javascript">
+<!--
+  var agent = navigator.userAgent.toLowerCase();
+  if ( (navigator.appName == 'Netscape' && agent.indexOf('trident') != -1) || (agent.indexOf("msie") != -1)) {
+    alert("관리자페이지는 ie 11 에서 정상동작하지 않습니다.  엣지 또는 크롬,사파리 등 다른 브라우저를 이용해주세요")
+     // ie일 경우
+  } else {
+     // ie가 아닐 경우
+  }
+//-->
+</script>
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- ROW-1 -->
+    <div class="row" style="padding-top: 15px">
+      <div class="col-lg-12 col-md-12 col-sm-12 col-xl-12">
+        <div class="row">
+          <?php
+          $add_query = "PARTNER_ID IN (SELECT PARTNER_ID FROM UM_PARTNER WHERE ROLE = 'TM_USER')";
+          $um_comm_array = array("A=>0, W=>0, C=0, Y=0, P=0, D=0"); //A:전체, W:대기, C:취소, Y:완료, P:보류, D:삭제
+          //파트너 누적 결제금액 조회
+          $um_price = $db->get_data("SELECT SUM(PRICE) AS PRICE FROM CASH WHERE IS_USE = 'Y' AND {$add_query}");
+          $um_comm_array['A'] = $um_price['PRICE'];
+          unset($um_price);
+          //파트너 누적 정산신청금액 조회
+          $um_comm = $db->get_list("SELECT STATUS, SUM(AMOUNT) AS AMOUNT FROM UM_COMM WHERE {$add_query} GROUP BY STATUS");
+          for ($i = 0; $i < count($um_comm['STATUS']); $i++) {
+            $um_comm_array[$um_comm['STATUS'][$i]] = $um_comm['AMOUNT'][$i];
+          }
+          unset($um_comm);
+          ?>
+          <div class="col-lg-6 col-md-12 col-sm-12 col-xl-4">
+            <div class="card overflow-hidden">
+              <div class="card-header">
+                <h3 class="card-title">파트너 총 수익금 현황</h3>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-6">
+                    <div style="font-size:9pt">총 누적 수익금</div>
+                    <h6 class="mb-2 number-font">₩ <?=number_format($um_comm_array['A'])?></h6>
+                  </div>
+                  <div class="col-6">
+                    <div style="font-size:9pt">출금 된 수익금</div>
+                    <h6 class="mb-2 number-font">₩ <?=number_format($um_comm_array['Y'])?></h6>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-6">
+                    <div style="font-size:9pt">출금 대기 수익금</div>
+                    <h6 class="mb-2 number-font">₩ <?=number_format($um_comm_array['W'])?> </h6>
+                  </div>
+                  <div class="col-6">
+                    <div style="font-size:9pt">출금 보류 수익금</div>
+                    <h6 class="mb-2 number-font">₩ <?=number_format($um_comm_array['P'])?></h6>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <?php
+          //파트너 summary 조회
+          $query = "
+            SELECT
+              SUM(VISIT_CNT) AS VISIT_CNT,
+              SUM(MEMBER_CNT) AS MEMBER_CNT,
+              SUM(OMEMBER_CNT) AS OMEMBER_CNT,
+              SUM(CASH_CNT) AS CASH_CNT,
+              SUM(CCASH_CNT) AS CCASH_CNT
+            FROM UM_SUMMARY
+            WHERE LEFT(SUMM_DATE,7) = '".date("Y-m")."' AND {$add_query}
+          ";
+          $summary = $db->get_data($query);
+          //파트너 수
+          $partner_cnt = $db->get_data("SELECT COUNT(*) AS CNT FROM UM_PARTNER WHERE REG_DATE >= '{$sdate0}' AND {$add_query}");
+
+          $um_comm_array = array("A=>0, W=>0, C=0, Y=0, P=0, D=0");  //A:전체, W:대기, C:취소, Y:완료, P:보류, D:삭제
+          //파트너 이번달 결제금액 조회
+          $um_price = $db->get_data("SELECT SUM(PRICE) AS PRICE FROM CASH WHERE {$add_query} AND IS_USE ='Y' AND REG_DATE >= '{$sdate0}'");
+          $um_comm_array['A'] = $um_price['PRICE'];
+          unset($um_price);
+          //파트너 이번달 정산신청금액 조회
+          $um_comm = $db->get_list("SELECT STATUS, SUM(AMOUNT) AS AMOUNT FROM UM_COMM WHERE {$add_query} AND REG_DATE >= '{$sdate0 }' GROUP BY STATUS");
+          for ($i = 0; $i < count($um_comm['STATUS']); $i++) {
+            $um_comm_array[$um_comm['STATUS'][$i]] = $um_comm['AMOUNT'][$i];
+          }
+          unset($um_comm);
+          ?>
+          <div class="col-lg-6 col-md-12 col-sm-12 col-xl-4">
+            <div class="card overflow-hidden">
+              <div class="card-header">
+                <h3 class="card-title">이번달 파트너 활동 현황</h3>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-6">
+                    <div style="font-size:9pt">방문자수(회)</div>
+                    <h6 class="mb-2 number-font"><?=number_format($summary['VISIT_CNT'])?>회</h6>
+                  </div>
+                  <div class="col-6">
+                    <div style="font-size:9pt">가입자수(명)</div>
+                    <h6 class="mb-2 number-font"><?=number_format($summary['MEMBER_CNT'] - $summary['OMEMBER_CNT'])?>명</h6>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-6">
+                    <div style="font-size:9pt">결제수(건)</div>
+                    <h6 class="mb-2 number-font"><?=number_format($summary['CASH_CNT'] - $summary['CCASH_CNT'])?>건</h6>
+                  </div>
+                  <div class="col-6">
+                    <div style="font-size:9pt">파트너수(명)</div>
+                    <h6 class="mb-2 number-font"><?=number_format($partner_cnt['CNT'])?>명</h6>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-6">
+                    <div style="font-size:9pt">누적 수익금</div>
+                    <h6 class="mb-2 number-font">₩ <?=number_format($um_comm_array['A'])?></h6>
+                  </div>
+                  <div class="col-6">
+                    <div style="font-size:9pt">출금 된 수익금</div>
+                    <h6 class="mb-2 number-font">₩ <?=number_format($um_comm_array['Y'])?></h6>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-6">
+                    <div style="font-size:9pt">출금 대기 수익금</div>
+                    <h6 class="mb-2 number-font">₩ <?=number_format($um_comm_array['W'])?> </h6>
+                  </div>
+                  <div class="col-6">
+                    <div style="font-size:9pt">출금 보류 수익금</div>
+                    <h6 class="mb-2 number-font">₩ <?=number_format($um_comm_array['P'])?></h6>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW-1 END -->
+  </div>
+</div>
+<!-- CONTAINER END -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>

@@ -1,0 +1,182 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  if ($M_login['user_id'] == "") {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $user_pwd = xss_clean($_POST['pwd']);
+
+  if ($user_pwd == "" && $M_login['hp'] != "") {
+    alert_print("비밀번호를 정확히 입력해 주세요.");
+    meta_go("./my-info.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}' AND PASSWD=PASSWORD('{$user_pwd}')");
+
+  if ($mb['USER_ID'] == "" && $M_login['hp'] != "") {
+    alert_print("비밀번호를 정확히 입력해 주세요.");
+    meta_go("./my-info.html");
+    exit;
+  }
+
+  if ($M_login['hp'] == "") {
+    $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}'");
+  }
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub bb border_dcdcdc" style="margin-bottom: 0;">
+            <h2 class="title">MY정보</h2>
+            <a href="./my-info.html" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <section class="sec_myinfo pb40">
+            <div class="bx_gray txt_type1 wrap_com bx_padding lh16">
+              <ul class="list_bul">
+                <li><p>슈로코는 회원님의 개인정보를 신중하게 취급하며, 회원님의 동의 없이는 기재하신 회원 정보 공개 및 변경하지 않습니다.</p></li>
+              </ul>
+            </div>
+            <div class="section wrap_com">
+              <h3 class="h_type4 pt20">회원정보수정</h3>
+              <div class="wrap_tab">
+                <ul class="tab_type1 flex">
+                  <li class="on"><a href="my-info.html">회원정보수정</a></li>
+                  <li><a href="delete.html">회원탈퇴</a></li>
+                </ul>
+              </div>
+              <div class="wrap_form">
+                <form class="f_NotoSansKR" name="w_frm" id="w_frm" method="post" action="./myinfo-info-action.php">
+                  <fieldset>
+                    <legend class="hide">회원정보 수정 입력 양식</legend>
+                    <ul class="list_form">
+                      <li>
+                        <label for="reg_id"><span>아이디</span></label>
+                        <div class="bx_input gray">
+                          <input type="email" id="re_id" name="USER_ID" value="<?=$mb['USER_ID']?>" readonly />
+                        </div>
+                      </li>
+                      <li class="required">
+                        <label for="reg_country"><span>국적</span></label>
+                        <div class="flex">
+                        <input type="hidden" id="reg_country" name="COUNTRY" value="<?=$mb['COUNTRY']?>">
+                        <div class="bx_input <?=($mb['COUNTRY'] == "kr" ? "on" : "")?>" style="border-radius: 0.2rem 0 0 0.2rem; width: 50%; padding-right: 0px;">
+                          <input type="button" class="selector country <?=($mb['COUNTRY'] == "kr" ? "button_on" : "")?>" value="내국인" data-value="kr" />
+                        </div>
+                        <div class="bx_input <?=($mb['COUNTRY'] == "os" ? "on" : "")?>" style="border-radius: 0 0.2rem 0.2rem 0; width:50%;">
+                          <input type="button" class="selector country <?=($mb['COUNTRY'] == "os" ? "button_on" : "")?>" value="외국인" data-value="os" />
+                        </div>
+                        </div>
+                      </li>
+                      <li class="required">
+                        <label for="reg_name"><span>이름</span></label>
+                        <div class="bx_input">
+                          <input type="text" inputmode="text" id="reg_name" name="NAME" value="<?=$mb['NAME']?>" maxlength="30" placeholder="당첨금 수령을 위해 정확한 본인이름을 입력해주세요." />
+                        </div>
+                      </li>
+                      <li class="required">
+                        <label for="birth"><span>생년월일</span></label>
+                        <div style="display: flex;">
+                          <div class="bx_input" style="width: 50%; margin-right: 0.2rem;">
+                            <input type="text" inputmode="numeric" id="birth" name="BIRTH" value="<?=str_replace('-', '', $mb['BIRTH'])?>" maxlength="8" placeholder="예) 20001101" />
+                          </div>
+                          <div class="bx_input <?=($mb['GENDER'] == "M" ? "on" : "")?>" style="border-radius: 0.2rem 0 0 0.2rem; padding: 0 0 0 0; width: 24%; padding-right: 0px;">
+                            <input type="button" class="selector gender <?=($mb['GENDER'] == "M" ? "button_on" : "")?>" value="남성" data-value="M" />
+                          </div>
+                          <div class="bx_input <?=($mb['GENDER'] == "F" ? "on" : "")?>" style="border-radius: 0 0.2rem 0.2rem 0; padding: 0 0 0 0; width: 24%;">
+                            <input type="button" class="selector gender <?=($mb['GENDER'] == "F" ? "button_on" : "")?>" value="여성" data-value="F" />
+                          </div>
+                          <input type="hidden" id="reg_gender" name="GENDER" value="<?=$mb['GENDER']?>">
+                        </div>
+                      </li>
+                      <li class="required none">
+                        <label for="ename"><span>영문이름</span></label>
+                        <div class="bx_input">
+                          <input type="text" inputmode="text" id="ename" name="ENAME" maxlength="50" value="<?=$mb['ENAME']?>" placeholder="영문 이름을 입력해주세요." />
+                        </div>
+                      </li>
+                      <li class="required">
+                        <label for="email"><span>이메일</span></label>
+                        <div class="bx_input">
+                          <input type="text" inputmode="email" id="email" name="EMAIL" maxlength="50" value="<?=$mb['EMAIL']?>" placeholder="이메일을 입력해주세요." />
+                        </div>
+                      </li>
+                      <li class="required">
+                        <label for="reg_tel"><span>휴대폰 번호</span></label>
+                        <div>
+                          <div class="wrap_type1 flex align_center mb10">
+                            <div class="bx_tel type1 bx_input">
+                              <input type="text" inputmode="tel" id="user_phone" name="USER_PHONE" maxlength="13" value="<?=$mb['HP']?>" />
+                            </div>
+                            <button type="button" class="btn_navy btn auth_btn">인증번호요청</button>
+                          </div>
+                          <div class="wrap_type1 flex align_center auth_chk" style="display: none;">
+                            <div class="bx_num bx_input">
+                              <input type="number" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" id="auth_num" name="AUTH_NUM" />
+                              <input type="hidden" id="auth_phone" name="AUTH_PHONE" />
+                              <p><span class="hide">남은시간</span><span class="time count_down">03:00</span></p>
+                            </div>
+                            <button type="button" class="btn_navy btn auth_chk_btn">인증번호확인</button>
+                          </div>
+                          <input type="text" style="width:1px; height:1px">
+                        </div>
+                      </li>
+                      <li>
+                        <label for="pwd"><span>신규 비밀번호</span></label>
+                        <div>
+                          <div class="bx_input">
+                            <input type="password" id="pwd" name="PWD" maxlength="20" autocomplete="new-password" placeholder="비밀번호를 입력해주세요." />
+                          </div>
+                          <p class="txt_type1">비밀번호는 8~20자의 영문과 숫자를 섞어주세요. (단, &,',<,> 특수문자 사용불가)</p>
+                        </div>
+                      </li>
+                      <li>
+                        <label for="pwd_chk"><span>비밀번호 확인</span></label>
+                        <div class="wrap_type1 flex align_center">
+                          <div class="bx_num bx_input ">
+                            <input type="password" id="pwd_chk" name="PWD_CHK" maxlength="20" autocomplete="new-password" placeholder="동일한 비밀번호를 입력해주세요." />
+                          </div>
+                          <button type="button" class="btn_navy btn" id="pwd_btn">비밀번호 변경</button>
+                        </div>
+                      </li>
+                      <li>
+                        <label for="chk_agree"><span>마케팅 동의 [선택]</span></label>
+                        <div class="bx_agree ls75">
+                          <input type="checkbox" class="chk_type1" id="chk_agree" name="IS_MARKETING" value="Y" <?php if ($mb['IS_MARKETING'] == "Y") echo 'checked'; ?> />
+                          <label for="chk_agree">
+                            <span class="color_red">[선택]</span>
+                            <span>마케팅 활용을 위한 개인정보 수집/이용 동의</span>
+                          </label>
+                        </div>
+                        <p class="txt_type1">※ 거래정보와 관련된 내용은 수신동의 여부와 관계없이 발송됩니다.</p>
+                      </li>
+                    </ul>
+                  </fieldset>
+                  <fieldset>
+                    <div class="wrap_btn flex align_center space">
+                      <button class="btn_prev" type="button" onclick="javascript:location.href='./';">취소</button>
+                      <a class="btn_navy ok_btn">저장</a>
+                    </div>
+                  </fieldset>
+                </form>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script src="/common/js/time.js?version=<?=$version?>" charset="utf-8"></script>
+<script src="/common/js/member_update.js?version=<?=$version?>" charset="utf-8"></script>
+<script src="/common/js/member_common.js?version=<?=$version?>" charset="utf-8"></script>
+
+</html>

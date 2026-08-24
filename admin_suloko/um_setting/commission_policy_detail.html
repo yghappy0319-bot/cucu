@@ -1,0 +1,341 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_UM_COMM_POLICY.php";
+
+  F_admin_chk($S_login);
+
+  if (isset($idx)) {
+    $info = F_UM_COMM_POLICY(array("mode"=>"read", "IDX"=>$idx));
+    $list = F_UM_COMM_UNIT_list($idx);
+  } else {
+    $info = F_UM_COMM_POLICY(array("mode"=>"read", "IDX"=>1));
+    $list = F_UM_COMM_UNIT_list(1);
+    $info['IDX']  = "";
+    $info['NAME'] = "";
+    $info['DEFAULT_YN'] = "N";
+  }
+?>
+
+<style>
+  #custom_th {
+    text-align: center;
+    background-color: #F2F3F9;
+    vertical-align: middle;
+    width: 25%;
+  }
+</style>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">커미션 설정</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">파트너</a></li>
+          <li class="breadcrumb-item active" aria-current="page">커미션 설정</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- PAGE-HEADER END -->
+    <form novalidate name="w_frm" id="w_frm" method="post" action="default.php">
+      <input type="hidden" name="IDX" value="<?=$info['IDX']?>" />
+      <input type="hidden" name="mode" value="comm_policy_submit" />
+      <div class="row">
+        <div class="col-lg-12 col-md-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">커미션 등록/수정</h3>
+            </div>
+            <div class="card-body">
+              <div class="form-row">
+                <div class="col-md-8 table-responsive">
+                  <label>커미션 정보</label>
+                  <table class="table border text-nowrap table-bordered" id="table-list">
+                    <tbody>
+                      <tr>
+                        <th id="custom_th">커미션 그룹명</th>
+                        <td><input type="text" class="form-control" name="NAME" value="<?=$info['NAME']?>" required /></td>
+                      </tr>
+                      <tr>
+                        <th id="custom_th">정책 사용 여부</th>
+                        <td>
+                          <div class="form-inline">
+                            <div class="custom-control custom-radio me-4">
+                              <input type="radio" class="custom-control-input" id="customControlValidation0" name="STATUS" value='N' <?=(($info['STATUS'] == 'N') ? "checked" : "")?> />
+                              <label class="custom-control-label" for="customControlValidation0">사용안함</label>
+                            </div>
+                            <div class="custom-control custom-radio me-4">
+                              <input type="radio" class="custom-control-input" id="customControlValidation1" name="STATUS" value='Y' <?=(($info['STATUS'] != 'N') ? "checked" : "")?> />
+                              <label class="custom-control-label" for="customControlValidation1">사용</label>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th id="custom_th">기본 설정</th>
+                        <td>
+                          <div class="form-inline">
+                            <div class="custom-control custom-radio me-4">
+                              <input type="radio" class="custom-control-input" id="customControlValidation2" name="DEFAULT_YN" value='N' <?=(($info['DEFAULT_YN'] == 'N') ? "checked" : "")?> />
+                              <label class="custom-control-label" for="customControlValidation2">적용안함</label>
+                            </div>
+                            <div class="custom-control custom-radio me-4">
+                              <input type="radio" class="custom-control-input" id="customControlValidation3" name="DEFAULT_YN" value='Y' <?=(($info['DEFAULT_YN'] != 'N') ? "checked" : "")?> />
+                              <label class="custom-control-label" for="customControlValidation3">적용</label>
+                            </div>
+                            <div>* 파트너 가입 시 자동으로 적용 할 커미션</div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th id="custom_th">첫결제 기준</th>
+                        <td >
+                          <div class="form-inline">
+                            <div class="custom-control custom-radio me-4">
+                              <input type="radio" class="custom-control-input" id="customControlValidation12" name="FIRST_SALE_YN" value='N' <?=(is_null($info['FIRST_SALE']) ? "checked" : "")?> />
+                              <label class="custom-control-label" for="customControlValidation12">적용안함</label>
+                            </div>
+                            <div class="custom-control custom-radio me-4">
+                              <input type="radio" class="custom-control-input" id="customControlValidation13" name="FIRST_SALE_YN" value='Y' <?=(is_null($info['FIRST_SALE']) ? "" : "checked")?> />
+                              <label class="custom-control-label" for="customControlValidation13">적용</label>
+                            </div>
+                            <div class="me-4">
+                              <input type="text" class="form-control" name="FIRST_SALE" value="<?=$info['FIRST_SALE']?>" <?=(is_null($info['FIRST_SALE']) ? "readonly" : "")?> />
+                            </div>
+                            <div> 일 (* '적용안함'시 당일만)</div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th id="custom_th">가입시 마일리지 지급</th>
+                        <td >
+                          <div class="form-inline">
+                            <div class="custom-control custom-radio me-4">
+                              <input type="radio" class="custom-control-input" id="customControlValidation14" name="MILEAGE_YN" value='N' <?=(is_null($info['MILEAGE']) ? "checked" : "")?> />
+                              <label class="custom-control-label" for="customControlValidation14">적용안함</label>
+                            </div>
+                            <div class="custom-control custom-radio me-4">
+                              <input type="radio" class="custom-control-input" id="customControlValidation15" name="MILEAGE_YN" value='Y' <?=(is_null($info['MILEAGE']) ? "" : "checked")?> />
+                              <label class="custom-control-label" for="customControlValidation15">적용</label>
+                            </div>
+                            <div class="me-4">
+                              <input type="text" class="form-control" name="MILEAGE" value="<?=$info['MILEAGE']?>" <?=(is_null($info['MILEAGE']) ? "readonly" : "")?> />
+                            </div>
+                            <div> 마일리지</div>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="col-md-4 mb-3">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-8 table-responsive">
+                  <label>출금신청 설정</label>
+                  <table class="table border text-nowrap table-bordered" id="table-list">
+                    <thead>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th id="custom_th">최소 결제율</th>
+                        <td>
+                          <div class="form-inline">
+                            <div class="custom-control custom-radio me-4">
+                              <input type="radio" class="custom-control-input" id="customControlValidation4" name="PAYMENT_RATE_YN" value='N' <?=(is_null($info['PAYMENT_RATE']) ? "checked" : "")?> />
+                              <label class="custom-control-label" for="customControlValidation4">적용안함</label>
+                            </div>
+                            <div class="custom-control custom-radio me-4">
+                              <input type="radio" class="custom-control-input" id="customControlValidation5" name="PAYMENT_RATE_YN" value='Y' <?=(is_null($info['PAYMENT_RATE']) ? "" : "checked")?> />
+                              <label class="custom-control-label" for="customControlValidation5">적용</label>
+                            </div>
+                            <div class="me-4">
+                              <input type="text" class="form-control" name="PAYMENT_RATE" value="<?=$info['PAYMENT_RATE']?>" <?=(is_null($info['PAYMENT_RATE']) ? "readonly" : "")?> />
+                            </div>
+                            <div> % 이상</div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th id="custom_th">신규 가입자 (누적)</th>
+                        <td>
+                          <div class="form-inline">
+                            <div class="custom-control custom-radio me-4">
+                              <input type="radio" class="custom-control-input" id="customControlValidation6" name="SUBSCRIBER_YN" value='N' <?=(is_null($info['SUBSCRIBER']) ? "checked" : "")?> />
+                              <label class="custom-control-label" for="customControlValidation6">적용안함</label>
+                            </div>
+                            <div class="custom-control custom-radio me-4">
+                              <input type="radio" class="custom-control-input" id="customControlValidation7" name="SUBSCRIBER_YN" value='Y' <?=(is_null($info['SUBSCRIBER']) ? "" : "checked")?> />
+                              <label class="custom-control-label" for="customControlValidation7">적용</label>
+                            </div>
+                            <div class="me-4">
+                              <input type="text" class="form-control" name="SUBSCRIBER" value="<?=$info['SUBSCRIBER']?>" <?=(is_null($info['SUBSCRIBER']) ? "readonly" : "")?> />
+                            </div>
+                            <div> 명 이상</div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th id="custom_th">하루 평균 신규 가입자</th>
+                        <td>
+                          <div class="form-inline">
+                            <div class="custom-control custom-radio me-4">
+                              <input type="radio" class="custom-control-input" id="customControlValidation8" name="AVERAGE_SUBSCRIBER_YN" value='N' <?=(is_null($info['AVERAGE_SUBSCRIBER']) ? "checked" : "")?> />
+                              <label class="custom-control-label" for="customControlValidation8">적용안함</label>
+                            </div>
+                            <div class="custom-control custom-radio me-4">
+                              <input type="radio" class="custom-control-input" id="customControlValidation9" name="AVERAGE_SUBSCRIBER_YN" value='Y' <?=(is_null($info['AVERAGE_SUBSCRIBER']) ? "" : "checked")?> />
+                              <label class="custom-control-label" for="customControlValidation9">적용</label>
+                            </div>
+                            <div class="me-4">
+                              <input type="text" class="form-control" name="AVERAGE_SUBSCRIBER" value="<?=$info['AVERAGE_SUBSCRIBER']?>" <?=(is_null($info['AVERAGE_SUBSCRIBER']) ? "readonly" : "")?> />
+                            </div class="me-4">
+                            <div> 명 이상</div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th id="custom_th">신청 최소 금액</th>
+                        <td>
+                          <div class="form-inline">
+                            <div class="custom-control custom-radio me-4">
+                              <input type="radio" class="custom-control-input" id="customControlValidation10" name="AMOUNT_YN" value='N' <?=(is_null($info['AMOUNT']) ? "checked" : "")?> />
+                              <label class="custom-control-label" for="customControlValidation10">적용안함</label>
+                            </div>
+                            <div class="custom-control custom-radio me-4">
+                              <input type="radio" class="custom-control-input" id="customControlValidation11" name="AMOUNT_YN" value='Y' <?=(is_null($info['AMOUNT']) ? "" : "checked")?> />
+                              <label class="custom-control-label" for="customControlValidation11">적용</label>
+                            </div>
+                            <div class="me-4">
+                              <input type="text" class="form-control" name="AMOUNT" value="<?=$info['AMOUNT']?>" <?=(is_null($info['AMOUNT']) ? "readonly" : "")?> />
+                            </div>
+                            <div> 원 이상</div>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="col-md-4 mb-3">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-8 table-responsive">
+                  <label>커미션 금액 설정 (달성결제율 대비 건당 금액)</label>
+                  <table class="table border text-nowrap table-bordered" id="table-list">
+                    <tbody>
+                      <?php for ($i = 0; $i < (count($list['IDX'])/2); $i++) { ?>
+                      <tr>
+                        <th id="custom_th">
+                          <div class="form-inline">
+                            <div class="me-4">
+                              <input type="hidden" name="UNIT_IDX[]" value="<?=$list['IDX'][$i]?>" />
+                              <input type="text" class="form-control" name="UNIT_PAYMENT_RATE[]" value="<?=$list['PAYMENT_RATE'][$i]?>" <?=($list['PAYMENT_RATE'][$i] == 0 ? "readonly" : "")?> style="width: 50px;" />
+                            </div>
+                            <div> <?=($list['PAYMENT_RATE'][$i] == 0 ? "기본" : "% 이상")?></div>
+                          </div>
+                        </th>
+                        <td>
+                          <div class="form-inline">
+                            <div class="me-4">
+                              <input type="text" class="form-control" name="UNIT_PRICE[]" value="<?=$list['UNIT_PRICE'][$i]?>" style="width: 100px;" />
+                            </div>
+                            <div> 원</div>
+                          </div>
+                        </td>
+                        <th id="custom_th">
+                          <div class="form-inline">
+                            <div class="me-4">
+                              <input type="hidden" name="UNIT_IDX[]" value="<?=$list['IDX'][($i+6)]?>" />
+                              <input type="text" class="form-control" name="UNIT_PAYMENT_RATE[]" value="<?=$list['PAYMENT_RATE'][($i+6)]?>" style="width: 50px;" />
+                            </div>
+                            <div> % 이상</div>
+                          </div>
+                        </th>
+                        <td>
+                          <div class="form-inline">
+                            <div class="me-4">
+                              <input type="text" class="form-control" name="UNIT_PRICE[]" value="<?=$list['UNIT_PRICE'][($i+6)]?>" style="width: 100px;" />
+                            </div>
+                            <div> 원</div>
+                          </div>
+                        </td>
+                      </tr>
+                      <?php } ?>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="col-md-4 mb-3">
+                </div>
+              </div>
+              <div class="modal-footer col-md-8">
+                <button class="btn btn-secondary btn-go-list" type="button" style="width: 100px;">목록</button>
+                <button class="btn btn-primary" id="btn-submit" type="button" style="width: 100px;">저장</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+    <!-- ROW CLOSED -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(document).ready(function() {
+    // 왼쪽 메뉴 처리
+    let slide_title = $('.breadcrumb-item').find("a").text();
+    let title = $('.page-title').text();
+    let is_active = false;
+    $(".slide").each(function(slide_idx,slide_itm) {
+      $(slide_itm).find(".slide-menu").find("li").each(function(slide_menu_idx,slide_menu_itm) {
+        is_active = false;
+        if ($(slide_menu_itm).find("a").text().indexOf(title) != -1) {
+          $(slide_menu_itm).addClass("active");
+          $(slide_menu_itm).find("a").addClass("active");
+          is_active = true;
+        }
+        if (is_active && $(slide_itm).find('.side-menu__label').text() == slide_title) $(slide_itm).find(".side-menu__item").addClass("active");
+      });
+    });
+    side_menu_scroll();
+
+    // readonly 상태변경
+    $(document).on("change", "[name$=YN]", function() {
+      let name       = $(this).attr('name');
+      let name_input = name.replace('_YN','');
+      let control    = $(this).val() == "Y" ?  false : true;
+
+      if (name != "DEFAULT") {
+        $('input[name='+name_input+']').attr('readonly', control);
+        $('input[name='+name_input+']').focus();
+      }
+    });
+
+    $(document).on("click", ".btn-go-list", function() {
+      history.go(-1);
+    });
+
+    $(document).on("click", "#btn-submit", function(e) {
+      e.preventDefault();
+      $.post("default.php",$('#w_frm').serialize(),function(e) {
+        alert(e.msg);
+        if (e.error) {
+          if (typeof e.focus != undefined) {
+            $('input[name='+e.focus+']').focus();
+          }
+        } else {
+          location.href="commission_policy.html";
+        }
+      } ,"json");
+    });
+  });
+</script>

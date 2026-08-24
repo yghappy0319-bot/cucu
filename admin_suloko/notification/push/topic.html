@@ -1,0 +1,317 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_TOPIC.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&basic=$basic&status=$status";
+
+  $add_query = "";
+
+  if ($basic != '') {
+    $add_query .= " AND T.BASIC = '{$basic}'";
+  }
+
+  if ($status != '') {
+    $add_query .= " AND T.STATUS = '{$status}'";
+  }
+
+  $list = F_TOPIC_LIST(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => 'T.SORT IS NULL ASC, T.SORT ASC ',
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">푸시구독관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">알림관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">푸시구독관리</li>
+        </ol>
+      </div>
+      <div class="ms-auto pageheader-btn">
+        <a class="btn btn-primary btn-icon text-white me-2" id="btn_add_active">
+          <span><i class="fe fe-plus"></i>Add Topic</span>
+        </a>
+        <a data-bs-target="#webPushModal" data-bs-toggle="modal" class="btn btn-secondary text-white sms-send-all">알림 발송</a>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- ADD Row -->
+    <div class="row row-sm add_form" style="display: none;">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-header" style="display: none;">
+            <h3 class="card-title">구독 추가</h3>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table border table-center text-nowrap table-striped" id="table-list">
+                <thead>
+                  <tr class="text-center">
+                    <th width="10%">ID</th>
+                    <th width="25%">제목</th>
+                    <th>설명</th>
+                    <th width="10%">사용여부</th>
+                    <th width="5%">출력순서</th>
+                    <th width="10%">설정</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <form name="w_frm" id="w_frm">
+                    <input type="hidden" name="mode" value="add_topic" />
+                    <tr>
+                      <td>
+                        <input type="text" class="form-control" name="NAME" id="validationCustom03" maxlength="10" />
+                      </td>
+                      <td>
+                        <input type="text" class="form-control" name="TITLE" id="TITLE" maxlength="20" />
+                      </td>
+                      <td>
+                        <div>
+                          <input type="text" class="form-control" name="DESCRIPTION" id="DESCRIPTION" maxlength="40" />
+                        </div>
+                      </td>
+                      <td>
+                        <select class="form-select select2 form-control" name="STATUS" id="STATUS">
+                          <?=option_make($use_op, "Y")?>
+                        </select>
+                      </td>
+                      <td>
+                      <input type="text" class="form-control" name="SORT" id="SORT" maxlength="2" />
+                      </td>
+                      <td>
+                        <button class="btn btn-primary btn_add" type="button">저장</button>
+                        <button class="btn btn-dark btn_cancel" type="button">취소</button>
+                      </td>
+                    </tr>
+                  </form>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End ADD Row -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="basic" id="basic" class="form-control form-select select2 auto-submit">
+                    <option value="">--기본(전체)--</option>
+                    <?=option_make($yn_op, $basic)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select name="status" id="status" class="form-control form-select select2 auto-submit">
+                    <option value="">--상태(전체)--</option>
+                    <?=option_make($use_op, $status)?>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th width="4%">NO</th>
+                    <th width="8%">ID</th>
+                    <th width="17%">제목</th>
+                    <th>설명</th>
+                    <th width="3%">기본</th>
+                    <th width="3%">상태</th>
+                    <th width="5%">출력순서</th>
+                    <th width="5%">구독자수</th>
+                    <th width="10%">생성일시</th>
+                    <th width="10%">수정일시</th>
+                    <th width="10%">설정</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['IDX']); $i++) {
+                      $STATUS = "사용";
+                      if ($list['STATUS'][$i] == "N") {
+                        $STATUS = "중지";
+                      }
+                  ?>
+                  <tr>
+                    <td><?=$list['IDX'][$i]?></td>
+                    <td><?=$list['NAME'][$i]?></td>
+                    <td><?=$list['TITLE'][$i]?></td>
+                    <td><?=$list['DESCRIPTION'][$i]?></td>
+                    <td><?=$list['BASIC'][$i]?></td>
+                    <td><?=$STATUS?></td>
+                    <td><?=$list['SORT'][$i]?></td>
+                    <td><?=number_format($list['TOKEN_CNT'][$i])?></td>
+                    <td><?=$list['CREATED_AT'][$i]?></td>
+                    <td><?=$list['UPDATED_AT'][$i]?></td>
+                    <td>
+                      <button type="button" class="btn btn-success btn_update_form" data-no="<?=$i?>">수정</button>
+                      <button type="button" class="btn btn-danger btn_delete" data-no="<?=$list['IDX'][$i]?>">삭제</button>
+                    </td>
+                  </tr>
+                  <tr></tr>
+                  <form name="w_frm<?=$i?>" id="w_frm<?=$i?>">
+                    <input type="hidden" name="mode" value="update_topic" />
+                    <tr class="text-center" style="display: none;" id="view_w_frm<?=$i?>">
+                      <td><input type="hidden" name="IDX" value="<?=$list['IDX'][$i]?>"></td>
+                      <td>
+                        <input type="text" class="form-control" name="NAME" id="NAME" value="<?=$list['NAME'][$i]?>" maxlength="10" />
+                      </td>
+                      <td>
+                        <input type="text" class="form-control" name="TITLE" value="<?=$list['TITLE'][$i]?>" id="TITLE" maxlength="20" />
+                      </td>
+                      <td>
+                        <input type="text" class="form-control" name="DESCRIPTION" value="<?=$list['DESCRIPTION'][$i]?>" id="DESCRIPTION" maxlength="40" />
+                      </td>
+                      <td></td>
+                      <td>
+                        <select class="form-select select2 form-control" name="STATUS" id="STATUS">
+                          <option value="Y" <?php if ($list['STATUS'][$i] == "Y") echo "selected";?>>사용</option>
+                          <option value="N" <?php if ($list['STATUS'][$i] == "N") echo "selected";?>>중지</option>
+                        </select>
+                      </td>
+                      <?php if ($list['BASIC'][$i] == 'Y') { ?>
+                      <td></td>
+                      <?php } else {
+                              if ($list['SORT'][$i] != '-') {
+                      ?>
+                        <td>
+                          <input type="text" class="form-control" name="SORT" value="<?=$list['SORT'][$i]?>" id="SORT" maxlength="2" />
+                        </td>
+                      <?php   } else { ?>
+                      <td>
+                        <input type="text" class="form-control" name="SORT" id="SORT" maxlength="2" />
+                      </td>
+                      <?php   }
+                            } ?>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td>
+                        <button class="btn btn-primary btn_update" type="button" data-no="<?=$i?>">저장</button>
+                        <button class="btn btn-dark btn_cancel_form" type="button" data-no="<?=$i?>">취소</button>
+                      </td>
+                    </tr>
+                  </form>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_push.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+    // 구독 추가 view
+    $(document).on('click', '#btn_add_active', function() {
+      $(this).hide();
+      $('.add_form').show();
+    });
+
+    // 구독 추가
+    $(document).on('click', '.btn_add', function() {
+      $.post('./default.php', $('#w_frm').serialize(), function(e) {
+        if (!e.error) {
+          $('#w_frm').submit();
+          location.reload();
+        } else {
+          alert(e.msg);
+        }
+      }, 'json');
+    });
+
+    // 구독 추가 취소
+    $(document).on('click', '.btn_cancel', function() {
+      $('#btn_add_active').show();
+      $('#w_frm')[0].reset();
+      $('.add_form').hide();
+    });
+
+    // 구독 수정 view
+    $(document).on('click', '.btn_update_form', function() {
+      $('[id^=view_w_frm]').hide();
+      $('.btn_update_form').show();
+
+      let no = $(this).data('no');
+      $('#view_w_frm' + no).show();
+      $(this).hide();
+    });
+
+    // 구독 수정 취소
+    $(document).on('click', '.btn_cancel_form', function() {
+      $('.btn_update_form').show();
+      let no = $(this).data('no');
+      $('#view_w_frm' + no).hide();
+    });
+
+    // 구독 수정
+    $(document).on('click', '.btn_update', function() {
+      let no = $(this).data('no');
+
+      if (confirm('수정하시겠습니까?')) {
+        $.post('./default.php', $('#w_frm' + no).serialize(), function(e) {
+          if (e.error) {
+            alert(e.msg);
+          } else {
+            $('#w_frm').submit();
+            window.location.reload();
+          }
+        }, 'json');
+      }
+    });
+
+    // 구독 삭제
+    $(document).on('click', '.btn_delete', function() {
+      let no = $(this).data('no');
+
+      if (confirm('삭제하시겠습니까?')) {
+        $.post('./default.php', {
+          mode: 'delete_topic',
+          no: no
+        }, function(e) {
+          let res = JSON.parse(e);
+          if (!res.error) {
+            location.reload();
+          } else {
+            alert(res.msg);
+          }
+        });
+      }
+    });
+  });
+</script>

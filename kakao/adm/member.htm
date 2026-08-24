@@ -1,0 +1,241 @@
+<?php
+include_once "../adm/head.php";
+include_once $_SERVER['DOCUMENT_ROOT']."/lib/sms_server_function.php";
+$page = 1;
+
+접근권한($member['mb_level']);
+
+if($member['mb_id'] != "admin"){
+  echo "asdf";
+}
+
+?>
+<?php include_once "../adm/nav.php";?>
+  <div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+    <div class="main-menu-header">
+      <form>
+        <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+      </form>
+    </div>
+    <?php include_once "../adm/menu.php";?>
+  </div>
+
+<style>
+.service_status { list-style: none; margin: 0px; padding: 0px;display: flex; }
+.service_status li { margin-right: 10px; }
+</style>
+  <div class="app-content content container-fluid">
+    <div class="content-wrapper">
+      <!-- <div class="content-header row">
+        <div class="content-header-left col-md-6 col-xs-12 mb-1">
+          <h2 class="content-header-title">사이트 리스트</h2>
+        </div>
+
+      </div> -->
+      <div class="content-body">
+        <div class="row">
+            <div class="col-xs-12">
+              <form id="searchFrm" >
+                <input type="hidden" name="page" id="page" value="<?=$page?>" >
+                <input type="hidden" name="status" value="<?=$status?>" >
+                <input type="hidden" name="site" id="site" value="<?=$site?>"  >
+                <input type="hidden" name="order" value="<?=$order?>"  >
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">회원 관리</h4>
+                        <a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+
+                        <div class="heading-elements">
+                            <ul class="list-inline mb-0">
+                                <li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+                                <li><a data-action="reload"><i class="icon-reload"></i></a></li>
+                                <li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+                                <li><a data-action="close"><i class="icon-cross2"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card-body collapse in">
+                        <div class="card-block">
+                          <div class="row">
+                            <a href="sitereg.htm" class="btn btn-info mb-1">등록</a>
+                            <a href="/adm/member.htm?order=1" class="btn btn-info mb-1">이용중</a>
+                            <a href="/adm/member.htm?order=0" class="btn btn-info mb-1">종료</a>
+                            <a href="/adm/member.htm?order=auto" class="btn btn-info mb-1">자동결제</a>
+                            <a href="/adm/member.htm?order=point" class="btn btn-info mb-1">포인트많은</a>
+                          </div>
+                          <?
+                            $전체계정 = db_select("select count(*) as cnt from member ");
+                            $서비스업체수 = db_select("select count(*) as cnt from member where mb_10 != ''  ");
+                            $예상결제금액 = db_select("select sum(auto_money) as total from member where mb_10 != ''  ");
+                            $자동결제설정수 = db_select("select count(*) as cnt from member where IFNULL(billKey,'') != ''  ");
+                          ?>
+                          <ul class="service_status" >
+                            <li>전체 계정 : <?=$전체계정['cnt'] ?></li>
+                            <li>활성화 계정 수 : <?=$서비스업체수['cnt']?></li>
+                            <li>자동결제 등록 : <?=$자동결제설정수['cnt']?></li>
+                            <li>예상 결제금액 : <?= number_format($예상결제금액['total'])?>원</li>
+                          </ul>
+
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead class="thead-inverse">
+                                <tr>
+                                  <th>no</th>
+                                  <th>아이디</th>
+                                  <th>이름</th>
+                                  <th>연락처</th>
+                                  <th>포인트</th>
+                                  <th>보유 캐시</th>
+                                  <th>서비스기간</th>
+                                  <th>자동결제</th>
+                                  <th>로그인</th>
+                                  <th>가입일</th>
+                                  <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <?php
+                            $member_where = "";
+                            $orderby = " mb_datetime DESC ";
+                            if($order=="1"){
+                              $member_where = " and mb_10 != '' ";
+                              $orderby = "
+                              CASE WHEN mb_10 IS NULL OR mb_10 = ''
+                                THEN 1
+                                ELSE 0
+                                END, mb_10 ASC  ";
+                            }
+
+                            if($order=="0"){
+                              $member_where = " and mb_10 = '' ";
+                            }
+
+                            if($order=="auto"){
+                              $member_where = " and IFNULL(billKey,'') != '' ";
+                              $orderby = "
+                              CASE WHEN IFNULL(billKey,'') = ''
+                                THEN 1
+                                ELSE 0
+                                END, IFNULL(auto_start_day, '1970-01-01') DESC, mb_datetime DESC  ";
+                            }
+
+                            if($order=="point"){
+                              $orderby = " mb_point DESC ";
+                            }
+
+
+                              $page_url = "/page/add_site.php";
+                              $countSql = "select count(*) as totalRecords from member where 1=1 {$member_where} ";
+                              $countResult = db_select($countSql);
+                              include_once "pager_count.php";
+
+                              $member_sql = "select * from member where 1=1 {$member_where} ORDER BY {$orderby}";
+                              //echo $member_sql;
+                              $result = db_query($member_sql);
+                              $allcnt = mysqli_num_rows($result);
+                              for($a=0;$row=db_fetch($result);$a++){
+                                $sitecnt = db_select("select count(*) as cnt from site where member_no = {$row['mb_no']} ");
+                              ?>
+                              <tr>
+                                <td><?=$row['mb_no']?></td>
+                                <td>
+                                  <button type="button" onclick="go_adm_login('<?=$row['mb_id']?>')">login</button>
+                                  (<?=$sitecnt['cnt']?>)
+                                  <a href="javascript:go_sitelist('<?=$row['mb_no']?>')"><?=$row['mb_id']?></a>
+                                </td>
+
+                                <td>
+                                  <?=$row['mb_name']?>
+                                </td>
+                                <td><?=$row['mb_hp']?></td>
+                                <td>
+                                  <div><?=$row['mb_point']?></div>
+                                  <div><?= $row['mb_10'] ? "(".$row['auto_money'].")":""; ?></div>
+                                </td>
+                                <td><?= number_format((int)($row['mb_cash'] ?? 0)) ?>원</td>
+                                <td>
+                                  <?= $row['mb_10'] ? $row['mb_10']:'<font color="red">종료</font>'; ?>
+                                </td>
+                                <td>
+                                  <? if(!empty($row['billKey'])){ ?>
+                                    <span class="tag tag-success">등록</span>
+                                    <? if((int)($row['auto_payment_status'] ?? 0) === 1){ ?><small class="text-muted">사용중</small><? } ?>
+                                    <? if(!empty($row['auto_money'])){ ?><div><small><?= number_format((int)$row['auto_money']) ?>원/회</small></div><? } ?>
+                                  <? } else { ?>
+                                    <span class="text-muted">—</span>
+                                  <? } ?>
+                                </td>
+                                <td><?= date("Y-m-d", strtotime($row['mb_today_login'])) ?></td>
+                                <td><?= date("Y-m-d", strtotime($row['mb_datetime'])) ?></td>
+                                <td><a href="/adm/member_update.htm?idx=<?=$row['mb_no']?>">수정</a></td>
+                              </tr>
+                                <?
+                                $site_result = db_query("select * from site where member_no = {$row['mb_no']} ");
+                                  foreach($site_result as $site){
+                                        $sitename = explode("//",$site['site']);
+                                ?>
+                                <tr class="sitelist sitelist<?=$site['member_no']?>">
+                                  <td></td>
+                                  <td colspan="7">
+                                    <?= idn_to_utf8($sitename[1]) ?>
+                                  </td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                </tr>
+                                <? } ?>
+
+                              <? } ?>
+
+                              <? if($allcnt==0){?>
+                                <tr>
+                                  <td colspan="11" >
+                                    내역이 없습니다.
+                                  </td>
+                                </tr>
+                              <? } ?>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                </form>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+<?php include_once "../adm/footer.php";?>
+<script>
+  function go_sitelist(obj){
+    $(".sitelist").css("display","none");
+    $(".sitelist"+obj).toggle();
+  }
+  function go_adm_login(obj){
+    if(confirm("로그인 하시겠습니까?")){
+      $.ajax({
+         type : "POST",
+         url: "/ajax/_ajax_adm_login.php",
+         async: false,
+         data: {
+           mb_id : obj
+         },
+         success: function(result) {
+            var r = result.trim();
+            top.location.href="/adm/index.php";
+         },
+         error:function(e) {
+            alert(e.responseText);
+         }
+      });
+    }
+  }
+</script>

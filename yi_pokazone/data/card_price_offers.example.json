@@ -1,0 +1,24 @@
+{
+  "updated_at": "2026-05-17T12:00:00+09:00",
+  "products": [
+    {
+      "id": "sv8-booster-kr",
+      "name": "포켓몬 카드게임 확장팩 「초전설의 빛」",
+      "set_label": "SV8",
+      "emoji": "📦",
+      "image": "",
+      "offers": [
+        {
+          "site_id": "partner-shop-a",
+          "site_name": "연동 쇼핑몰 A",
+          "co_type": "",
+          "product_url": "https://example.com/item/sv8",
+          "price_won": 55000,
+          "stock_qty": 42,
+          "buy_enabled": 1,
+          "fetched_at": "2026-05-17T11:30:00+09:00"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,274 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_SMSCONFIG.php";
+
+  F_admin_chk($S_login);
+
+  $list = F_SMSCONFIG_list(array());
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">문자발신번호관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">알림관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">문자발신번호관리</li>
+        </ol>
+      </div>
+      <div class="ms-auto pageheader-btn">
+        <a class="btn btn-primary btn-icon text-white me-2" id="btn_add_active">
+          <span><i class="fe fe-plus"></i></span> 발신번호 추가</a>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- ADD Row -->
+    <div class="row row-sm add_form" style="display: none;">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-header" style="display: none;">
+            <h3 class="card-title">발신번호 추가</h3>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table border table-center text-nowrap table-striped">
+                <thead>
+                  <tr>
+                    <th width="15%">제공업체</th>
+                    <th>발신번호</th>
+                    <th width="10%">홈페이지 사용지정</th>
+                    <th width="10%">사용여부</th>
+                    <th width="5%">관리</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <form name="w_frm" id="w_frm">
+                    <input type="hidden" name="mode" value="sms_add_sender" />
+                    <tr>
+                      <td>
+                        <select class="form-select select2 form-control" name="SENDER" id="SENDER">
+                          <?=option_make($smssender_op, "")?>
+                        </select>
+                        <div class="small">(제공업체 추가는 개발진행 후 가능)</div>
+                      </td>
+                      <td>
+                        <input type="text" class="form-control" name="HP" id="HP" style="90%" required />
+                        <div class="small">(발신번호로 승인된 전화번호)</div>
+                      </td>
+                      <td class="align-middle">
+                        <input type="checkbox" name="HOMEPAGE_USE" value="Y" id="HOMEPAGE_USE" />
+                        <div class="small">(홈페이지 대표번호 여부)</div>
+                      </td>
+                      <td>
+                        <select class="form-select select2 form-control" name="IS_USE" id="IS_USE" required>
+                          <?=option_make($use_op, "Y")?>
+                        </select>
+                        <div class="small">(사용여부)</div>
+                      </td>
+                      <td>
+                        <button class="btn btn-primary btn_add" type="button">저장</button>
+                        <button class="btn btn-dark btn_add_cancel" type="button">취소</button>
+                      </td>
+                    </tr>
+                  </form>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End ADD Row -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              * <span style="color: red;">홈페이지 사용여부</span>는 홈페이지에서 발송하는 대표번호이며, 한 개의 번호만 지정할 수 있습니다.
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th width="5%">NO</th>
+                    <th width="15%">제공업체</th>
+                    <th>발신번호</th>
+                    <th width="10%">홈페이지사용여부</th>
+                    <th width="13%">사용여부</th>
+                    <th width="13%">최종수정일시</th>
+                    <th width="10%">관리</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['SMS_NO']); $i++) {
+                      //$no = $list['total'] - (($page-1)*$list['row'])  - $i;
+                  ?>
+                  <tr>
+                    <td><?=$list['SMS_NO'][$i]?></td>
+                    <td><?=$smssender_op[$list['SENDER'][$i]]?></td>
+                    <td><?=$list['HP'][$i]?></td>
+                    <td><?php if ($list['HOMEPAGE_USE'][$i] == "Y") echo "<span style='color: red; font-weight: bold;'>";?><?=$use_op[$list['HOMEPAGE_USE'][$i]]?></span></td>
+                    <td><?=$use_op[$list['IS_USE'][$i]]?></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                    <td>
+                      <button type="button" class="btn btn-success btn_update_form" data-no="<?=$i?>">수정</button>
+                      <button type="button" class="btn btn-danger btn_delete" data-no="<?=$list['SMS_NO'][$i]?>">삭제</button>
+                    </td>
+                  </tr>
+                  <tr></tr>
+                  <form name="w_frm<?=$i?>" id="w_frm<?=$i?>">
+                    <input type="hidden" name="mode" value="sms_update_sender" />
+                    <tr style="text-align:center; display:none" id="view_w_frm<?=$i?>">
+                      <td><input type="hidden" name="SMS_NO" value="<?=$list['SMS_NO'][$i]?>"></td>
+                      <td>
+                        <select class="form-select select2 form-control" name="SENDER" id="SENDER" required>
+                          <?=option_make($smssender_op, $list['SENDER'][$i])?>
+                        </select>
+                      </td>
+                      <td>
+                        <input type="text" class="form-control" name="HP" value="<?=$list['HP'][$i]?>" id="HP" style="90%" required />
+                      </td>
+                      <td>
+                        <input type="checkbox" name="HOMEPAGE_USE" value="Y" id="HOMEPAGE_USE" <?php if ($list['HOMEPAGE_USE'][$i] == "Y") echo "checked";?> />
+                      </td>
+                      <td>
+                        <select class="form-select select2 form-control" name="IS_USE" id="IS_USE" required>
+                          <?=option_make($use_op, "Y")?>
+                        </select></td>
+                      <td></td>
+                      <td>
+                        <button class="btn btn-primary btn_update" type="button" data-no="<?=$i?>">저장</button>
+                        <button class="btn btn-dark btn_cancel_form" type="button" data-no="<?=$i?>">취소</button>
+                      </td>
+                    </tr>
+                  </form>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+    // 선택 삭제
+    $(document).on('click', '.allDelChk', function() {
+      let chk_no = new Array();
+      let i = 0;
+      $('[name="noChk[]"]:checked').each(function() {
+        chk_no[i] = $(this).val();
+        i++;
+      });
+
+      if (i > 0) {
+        if (confirm("선택한 항목을 삭제하시겠습니까?")) {
+          $.post('./default.php', {
+            mode: 'all_del',
+            gubun: 'SMSTEMPLET',
+            chk_no: chk_no
+          }, function(e) {
+            if (e.error) {
+              alert(e.msg);
+            } else {
+              alert(e.msg);
+            }
+            window.location.reload();
+          }, 'json');
+        }
+      } else {
+        alert('삭제할 항목을 선택하세요');
+      }
+    });
+
+    $(document).on('click', '#btn_add_active', function() {
+      $('.add_form').show();
+    });
+
+    $(document).on('click', '.btn_add_cancel', function() {
+      $('.add_form').hide();
+    });
+
+    // 추가
+    $(document).on('click', '.btn_add', function() {
+      $.post('./default.php', $('#w_frm').serialize(), function(e) {
+        if (e.error) {
+          $('#w_frm').submit();
+          window.location.reload()
+        } else {
+          alert(e.msg);
+        }
+      }, 'json');
+    });
+
+    $(document).on('click', '.btn_update_form', function() {
+      let no = $(this).data('no');
+      $('#view_w_frm'+no).show();
+    });
+
+    $(document).on('click', '.btn_cancel_form', function() {
+      let no = $(this).data('no');
+      $('#view_w_frm'+no).hide();
+    });
+
+    // 수정
+    $(document).on('click', '.btn_update', function() {
+      let no = $(this).data('no');
+
+      $.post('./default.php', $('#w_frm' + no).serialize(), function(e) {
+        if (e.error) {
+          $('#w_frm').submit();
+          window.location.reload();
+        } else {
+          alert(e.msg);
+        }
+      }, 'json');
+    });
+
+    // 삭제
+    $(document).on('click', '.btn_delete', function() {
+      let no = $(this).data('no');
+
+      if (confirm('삭제 하시겠습니다?\n삭제후 복원은 불가능합니다.')) {
+        $.post('./default.php', {
+          mode: 'sms_delete_sender',
+          no: no
+        }, function(e) {
+          let res = JSON.parse(e);
+
+          if (res.error == false) {
+            alert(res.msg);
+            return false;
+          } else {
+            window.location.reload();
+          }
+        });
+      }
+    });
+
+    let getHeight = $('.table-wrapper').css('max-height');
+    let setHeight = Number(getHeight.slice(0, -2)) + 70;
+
+    // 해상도에 따라 높이 조절
+    $('.table-wrapper').css('max-height', setHeight);
+  });
+</script>

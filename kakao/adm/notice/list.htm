@@ -1,0 +1,222 @@
+<?php
+include_once __DIR__ . '/../head.php';
+
+if ($member['mb_id'] !== 'admin') {
+    echo '<script>alert("접근 권한이 없습니다.");location.href="/adm/index.php";</script>';
+    exit;
+}
+
+$page_num = 5;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($page < 1) {
+    $page = 1;
+}
+
+if (isset($_GET['list_num']) && (int)$_GET['list_num'] > 0) {
+    $list_num = (int)$_GET['list_num'];
+} else {
+    $list_num = 15;
+}
+
+$keyword = isset($_GET['keyword']) ? trim($_GET['keyword']) : '';
+$search_where = '';
+if ($keyword !== '') {
+    global $conn;
+    $kw = mysqli_real_escape_string($conn, $keyword);
+    $search_where = " and (title like '%{$kw}%' or content like '%{$kw}%') ";
+}
+?>
+<style>
+.notice-list-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.notice-list-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.notice-list-table-wrap {
+  -webkit-overflow-scrolling: touch;
+  overflow-x: auto;
+}
+.notice-list-table {
+  width: 100%;
+  min-width: 720px;
+}
+.notice-list-table tbody td.title-cell {
+  max-width: 20rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.notice-pin-badge {
+  display: inline-block;
+  margin-right: 0.35rem;
+}
+</style>
+<?php include_once __DIR__ . '/../nav.php'; ?>
+<div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+  <div class="main-menu-header">
+    <form>
+      <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+    </form>
+  </div>
+  <?php include_once __DIR__ . '/../menu.php'; ?>
+</div>
+
+<div class="app-content content container-fluid">
+  <div class="content-wrapper">
+    <div class="content-header row">
+      <div class="content-header-left col-md-8 col-xs-12 mb-1">
+        <h2 class="content-header-title">공지사항 관리</h2>
+        <p class="text-muted mb-0">대시보드에 노출되는 공지사항을 등록·수정·삭제할 수 있습니다.</p>
+      </div>
+    </div>
+    <div class="content-body">
+      <div class="row">
+        <div class="col-xs-12">
+          <form id="searchFrm" method="get" action="/adm/notice/list.htm">
+            <input type="hidden" name="page" id="page" value="<?= (int)$page ?>" />
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title">공지 목록</h4>
+                <a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+                <div class="heading-elements">
+                  <ul class="list-inline mb-0">
+                    <li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+                    <li><a data-action="reload"><i class="icon-reload"></i></a></li>
+                    <li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+                    <li><a data-action="close"><i class="icon-cross2"></i></a></li>
+                  </ul>
+                </div>
+              </div>
+              <div class="card-body collapse in">
+                <div class="card-block notice-list-toolbar">
+                  <div class="notice-list-search">
+                    <input type="text" name="keyword" class="form-control" placeholder="제목·내용 검색" value="<?= htmlspecialchars($keyword) ?>" style="min-width: 200px;" />
+                    <select name="list_num" class="form-control" style="width: auto;">
+                      <option value="15"<?= $list_num === 15 ? ' selected' : '' ?>>15건</option>
+                      <option value="30"<?= $list_num === 30 ? ' selected' : '' ?>>30건</option>
+                      <option value="50"<?= $list_num === 50 ? ' selected' : '' ?>>50건</option>
+                    </select>
+                    <button type="submit" class="btn btn-secondary btn-sm">검색</button>
+                    <?php if ($keyword !== '') { ?>
+                    <a href="/adm/notice/list.htm" class="btn btn-outline-secondary btn-sm">초기화</a>
+                    <?php } ?>
+                  </div>
+                  <a href="/adm/notice/register.htm" class="btn btn-primary btn-sm">공지 등록</a>
+                </div>
+              </div>
+              <div class="table-responsive notice-list-table-wrap">
+                <table class="table notice-list-table">
+                  <thead class="thead-inverse">
+                    <tr>
+                      <th>No</th>
+                      <th>상단고정</th>
+                      <th>제목</th>
+                      <th>노출</th>
+                      <th>작성자</th>
+                      <th>등록일</th>
+                      <th>수정일</th>
+                      <th>관리</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  <?php
+                  $table = 'tb_notice';
+                  $where = " 1=1 {$search_where} ";
+                  include_once __DIR__ . '/../pager_count.php';
+
+                  $sql = "select * from tb_notice where 1=1 {$search_where} order by COALESCE(is_pinned, 0) desc, regdate desc limit {$start}, {$list_num} ";
+                  $result = db_query($sql);
+                  $no = $num - $list_num * ($page - 1);
+                  $allcnt = 0;
+                  for ($a = 0; $row = db_fetch($result); $a++) {
+                      $allcnt++;
+                  ?>
+                    <tr>
+                      <td><?= (int)$no ?></td>
+                      <td>
+                        <?php if ((int)($row['is_pinned'] ?? 0) === 1) { ?>
+                        <span class="tag tag-warning notice-pin-badge">고정</span>
+                        <?php } else { ?>
+                        <span class="text-muted">—</span>
+                        <?php } ?>
+                      </td>
+                      <td class="title-cell">
+                        <a href="/adm/notice/register.htm?idx=<?= (int)$row['idx'] ?>"><?= htmlspecialchars($row['title']) ?></a>
+                      </td>
+                      <td>
+                        <?php if ((int)($row['is_visible'] ?? 1) === 1) { ?>
+                        <span class="tag tag-success">노출</span>
+                        <?php } else { ?>
+                        <span class="tag tag-default">숨김</span>
+                        <?php } ?>
+                      </td>
+                      <td><?= htmlspecialchars($row['writer_id'] ?? '') ?></td>
+                      <td><?= !empty($row['regdate']) ? date('Y-m-d H:i', strtotime($row['regdate'])) : '—' ?></td>
+                      <td><?= !empty($row['moddate']) ? date('Y-m-d H:i', strtotime($row['moddate'])) : '—' ?></td>
+                      <td>
+                        <a href="/adm/notice/register.htm?idx=<?= (int)$row['idx'] ?>" class="btn btn-sm btn-outline-primary">수정</a>
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-notice-delete" data-idx="<?= (int)$row['idx'] ?>">삭제</button>
+                      </td>
+                    </tr>
+                  <?php
+                      $no--;
+                  }
+                  if ($allcnt === 0) {
+                  ?>
+                    <tr>
+                      <td colspan="8" class="text-center">등록된 공지사항이 없습니다.</td>
+                    </tr>
+                  <?php } ?>
+                  </tbody>
+                </table>
+              </div>
+              <?php if ($total_page > 1) { include_once __DIR__ . '/../pager.php'; } ?>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/app-assets/js/core/libraries/jquery.min.js" type="text/javascript"></script>
+<script>
+(function() {
+  $('.btn-notice-delete').on('click', function() {
+    var idx = parseInt($(this).data('idx'), 10) || 0;
+    if (idx <= 0) {
+      return;
+    }
+    if (!confirm('이 공지사항을 삭제하시겠습니까?')) {
+      return;
+    }
+    $.ajax({
+      type: 'POST',
+      url: '/adm/notice/ajax/_ajax_notice_delete.php',
+      data: { idx: idx },
+      success: function(result) {
+        var r = (result || '').toString().trim();
+        if (r === '1') {
+          alert('삭제되었습니다.');
+          location.reload();
+        } else {
+          alert(r || '삭제에 실패했습니다.');
+        }
+      },
+      error: function(xhr) {
+        alert(xhr.responseText || '요청 오류');
+      }
+    });
+  });
+})();
+</script>
+
+<?php include_once __DIR__ . '/../footer.php'; ?>

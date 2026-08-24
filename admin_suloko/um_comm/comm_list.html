@@ -1,0 +1,235 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_UM_COMM.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit&status=$status";
+
+  $add_query = "";
+
+  // tmadmin
+  if ($S_login['user_id'] == "tmadmin") $add_query .= " AND PARTNER_ID IN (SELECT PARTNER_ID FROM UM_PARTNER WHERE ROLE = 'TM_USER')";
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND REG_DATE BETWEEN '".$sDate."' AND '".$eDate."'";
+  }
+
+  if ($find_object == "all" && $find_text != "") {
+    $add_query .= " AND (PARTNER_ID LIKE '".$find_text."' OR PARTNER_NAME LIKE '%".$find_text."%')";
+    $find_object = "";
+  }
+
+  if ($status) {
+    $add_query .= " AND STATUS= '".$status."'";
+  } else {
+    $status = "";
+  }
+
+  // STATUS -> 'W: 대기 C: 취소 Y: 완료 P: 보류 D: 삭제'
+  $status_op = array(
+    "W" => "출금대기",
+    "C" => "출금취소",
+    "Y" => "출금완료",
+    "P" => "출금보류"
+  );
+
+  $find_op = array(
+    "all"          => "전체",
+    "PARTNER_ID"   => "파트너 아이디",
+    "PARTNER_NAME" => "파트너 이름"
+  );
+
+  $list = F_UM_COMM_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query
+  ));
+
+  if ($list['total'] == 0) {
+    $list['IDX'] = array();
+  }
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">파트너 정산신청 관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">언더마케팅</a></li>
+          <li class="breadcrumb-item active" aria-current="page">정산신청 관리</li>
+        </ol>
+      </div>
+      <div>
+        <a href="#" class="btn btn-danger allDelChk">선택 삭제</a>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="status" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <option value="">상태</option>
+                    <?=option_make($status_op, $status)?>
+                  </select>
+                </div>
+                <div class="form-group fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                    <span style="margin: 8px 5px 0 5px;">~</span>
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker mr-3" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                  </div>
+                </div>
+                <div class="form-group fl-left">
+                  <select name="find_object" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control auto-submit" name="find_text" value="<?=$find_text?>">
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="chkAll" /></th>
+                    <th>신청일</th>
+                    <th>파트너</th>
+                    <th>상태</th>
+                    <th>신청은행</th>
+                    <th>계좌번호</th>
+                    <th>예금주</th>
+                    <th>입금금액(원)</th>
+                    <th>관리</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['IDX']); $i++) {
+                      // $no = $list['total'] - (($page-1)*$list['row'])  - $i;
+                      // STATUS -> 'W: 대기 C: 취소 Y: 완료 P: 보류 D: 삭제'
+                      if ($list['STATUS'][$i] == "Y") {
+                        $manage = $list['UPDATE_DATE'][$i];
+                      } else {
+                        // 관리 버튼
+                        $manage = "<button type='button' class='btn btn-success change-status-btn' data-no='{$list['IDX'][$i]}' data-status='Y'>출금완료</button>";
+                        if ($list['STATUS'][$i] != "W") {
+                          $manage .= " <button type='button' class='btn btn-primary change-status-btn' data-no='{$list['IDX'][$i]}' data-status='W'>대기</button>";
+                        }
+                        if ($list['STATUS'][$i] != "P") {
+                          $manage .= " <button type='button' class='btn btn-danger change-status-btn' data-no='{$list['IDX'][$i]}' data-status='P'>보류</button>";
+                        }
+                        if ($list['STATUS'][$i] != "C") {
+                          $manage .= " <button type='button' class='btn btn-light change-status-btn' data-no='{$list['IDX'][$i]}' data-status='C'>취소</button>";
+                        }
+                      }
+                  ?>
+                  <tr class="text-center">
+                    <td><input type="checkbox" name="noChk[]" value="<?=$list['IDX'][$i]?>" /></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                    <td><?=$list['PARTNER_NAME'][$i]?>(<?=$list['PARTNER_ID'][$i]?>)</td>
+                    <td><?=$status_op[$list['STATUS'][$i]]?></td>
+                    <td><?=$list['BANK_NAME'][$i]?></td>
+                    <td><?=$list['BANK_ACCOUNT_NUM'][$i]?></td>
+                    <td><?=$list['PARTNER_NAME'][$i]?></td>
+                    <td><?=number_format($list['AMOUNT'][$i])?></td>
+                    <td><?=$manage?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+    // 선택삭제
+    $(document).on("click", ".allDelChk", function() {
+      let chk_no = new Array();
+      let i = 0;
+      $('[name="noChk[]"]:checked').each(function() {
+        chk_no[i] = $(this).val();
+        i++;
+      });
+
+      if (i > 0) {
+        if (confirm("선택한 정산신청을 삭제하시겠습니까?")) {
+          $.post("./default.php", {
+            mode : "all_comm_delete",
+            chk_no : chk_no
+          }, function(e) {
+            alert(e.msg);
+            if (e.error) {
+            } else {
+              window.location.reload();
+            }
+          }, "json");
+        }
+      } else {
+        alert("삭제할 항목을 선택하세요");
+      }
+    });
+
+    $(document).on("click",".change-status-btn", function() {
+      let no = $(this).data("no");
+      let status = $(this).data("status");
+      let status_str = (status == "Y" ? "출금완료" : "보류");
+
+      if (confirm(status_str + "로 변경하시겠습니까?")) {
+        $.post("./default.php",{
+          mode: "change_status",
+          no: no,
+          status: status
+        }, function(e) {
+          alert(e.msg);
+          if (e.error) {
+          } else {
+            window.location.reload();
+          }
+        }, "json");
+      }
+    });
+  });
+</script>

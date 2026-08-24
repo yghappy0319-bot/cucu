@@ -1,0 +1,58 @@
+<?php
+$game = $_GET['game'];
+$round = $_GET['round'];
+
+if(!$game){
+    header("Location: /");
+}
+if(!$round){
+    header("Location: /");
+}
+
+if($game=="mm"){
+    $_game = "미국로또 메가밀리언 {$round}회차 캘리포니아 주 결과를 확인해보세요. ";
+}else{
+  $_game = "미국로또 파워볼 {$round}회차 캘리포니아 주 결과를 확인해보세요. ";
+}
+$title = $_game;
+include "../header.html";
+
+$서머타임 = 미국서머타임();
+$sql = "select * from lr_result where game = '{$game}' and round = '{$round}' ";
+$data = db_select($sql);
+if($data['idx']<180){
+  echo "<script>alert('해당 당첨 결과는 텍사스 주 결과 입니다.');</script>";
+}
+?>
+
+<script>
+    $(".new_header .bottom .fl .menu ul li:eq(3)").addClass("on")
+    $(".new_header_m .menu:eq(1) ul li:eq(0)").addClass("on")
+    $(".new_all_menu .menu_fb > ul > li:eq(3)").addClass("on")
+</script>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">당첨 결과</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>당첨 결과</p></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>메가밀리언</p></li>
+            </ul>
+        </div>
+        <div class="modle_menu_02">
+            <a class="on" href="/buy/draw_mega.html">메가밀리언</a>
+            <a href="/buy/draw_power.html">파워볼</a>
+        </div>
+
+        <?php include "prize_result_detail.php"; ?>
+
+    </div>
+</div>
+
+<?php
+include "../footer_new.html";
+?>

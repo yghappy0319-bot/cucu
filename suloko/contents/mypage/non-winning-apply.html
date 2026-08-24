@@ -1,0 +1,251 @@
+<?php
+include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+
+if ($M_login['user_id'] == '') {
+  meta_go("/login.html");
+  exit;
+}
+
+$mb    = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='".$M_login['user_id']."'");
+$order = $db->get_data("SELECT * FROM ORDERS WHERE ORDERS_NO='".$_GET['no']."'");
+
+if (!isset($order['ORDERS_NO'])) {
+  alert_print("티켓이 존재하지 않습니다.");
+  history_go();
+  exit;
+}
+
+if ($order['USER_ID'] != $mb['USER_ID']) {
+  alert_print("티켓이 본인소유가 아닙니다.");
+  history_go();
+  exit;
+}
+
+if ($order['NON_MAIL'] == 'Y') {
+  alert_print("이미 배송신청한 티켓입니다.");
+  history_go();
+  exit;
+}
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html";?>
+  <main id="main">
+    <div class="wrap_mypage clear wrap_com">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/nav-mypage.html";?>
+      <div class="right">
+        <section class="sec_apply space_btm">
+          <div class="wrap_title">
+            <h3 class="heading fs23">낙첨복권 배송 신청</h3>
+          </div>
+          <form class="f_NotoSansKR" name="w_frm" id="w_frm" method="post" action="./non-winning-action.php">
+            <input type="hidden" name="ORDERS_NO" id="orders_no" class="chk_on" value="<?=$_GET["no"]?>" alt="배송하실 티켓을 선택해 주세요.">
+            <input type="hidden" id="my_cash" value="<?=$mb['CASH']?>">
+            <fieldset>
+              <legend class="hide">낙첨복권 배송 신청 입력 폼</legend>
+              <ul class="list_reg type2 ls50">
+                <li>
+                  <label for="to_name"><span>받으시는 분</span></label>
+                  <div class="bx_input">
+                    <input type="text" id="to_name" name="NAME" class="chk_on" alt="받으시는 분을 입력해 주세요." placeholder="받으시는 분의 성함을 입력해 주세요">
+                  </div>
+                </li>
+                <li>
+                  <label for="to_tel"><span>연락처</span></label>
+                  <div class="bx_input ">
+                    <input type="tel" id="to_tel" name="HP" class="chk_on" alt="연락처를 입력해 주세요." placeholder="- 없이 숫자만 입력해 주세요">
+                  </div>
+                </li>
+                <li class="item_addr">
+                  <label for="post1"><span>배송주소</span></label>
+                  <div>
+                    <div class="flex">
+                      <div class="bx_input ">
+                        <input type="text" id="post1" name="POST1" class="chk_on" alt="우편번호를 입력해 주세요." readonly>
+                      </div>
+                      <button class="btn_gray" type="button" onclick="sample6_execDaumPostcode()" style="height: 38px;">우편번호</button>
+                    </div>
+                    <div class="flex">
+                      <div class="bx_input flex">
+                        <input type="text" id="addr1" name="ADDR1" class="chk_on" alt="배송주소를 입력해 주세요." readonly>
+                      </div>
+                      <div class="bx_input flex" style="margin-left:0.3rem">
+                        <input type="text" id="addr2" name="ADDR2" class="chk_on" alt="상세주소를 입력해 주세요." placeholder="상세주소를 입력해 주세요">
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li>
+                  <label for=""><span>안내사항</span></label>
+                  <div style="line-height: 2.4rem;">
+                    <div>해외배송(EMS) 신청 후 수령까지 최대 4~5주 소요될 수 있습니다. (제주/도서사간지역은 배송이 더 지연될 수 있습니다.)</div>
+                  </div>
+                </li>
+                <li class="item_refund">
+                  <label for=""><span>배송비</span></label>
+                  <div class=" ">
+                    <strong class=" f_GmarketSans" style="color:#f00"><?= number_format($site['낙첨티켓신청금액']) ?></strong> 캐시
+                    <small style="color:#f00" class="fs18">(회원님의 현재 보유캐시 <?=number_format($mb['CASH'])?> 캐시)</small>
+                  </div>
+                </li>
+              </ul>
+              <div class="wrap_btn flex mt30 justify_center">
+                <button type="button" class="btn_navy" id="ok_btn">낙첨복권 배송신청 접수</button>
+              </div>
+            </fieldset>
+          </form>
+        </section>
+      </div>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html";?>
+</body>
+<script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
+<script>
+    function sample6_execDaumPostcode() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+
+                // 각 주소의 노출 규칙에 따라 주소를 조합한다.
+                // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+                var fullAddr = ''; // 최종 주소 변수
+                var extraAddr = ''; // 조합형 주소 변수
+
+                // 사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+                if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
+                    fullAddr = data.roadAddress;
+
+                } else { // 사용자가 지번 주소를 선택했을 경우(J)
+                    fullAddr = data.jibunAddress;
+                }
+
+                // 사용자가 선택한 주소가 도로명 타입일때 조합한다.
+                if(data.userSelectedType === 'R'){
+                    //법정동명이 있을 경우 추가한다.
+                    if(data.bname !== ''){
+                        extraAddr += data.bname;
+                    }
+                    // 건물명이 있을 경우 추가한다.
+                    if(data.buildingName !== ''){
+                        extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                    }
+                    // 조합형주소의 유무에 따라 양쪽에 괄호를 추가하여 최종 주소를 만든다.
+                    fullAddr += (extraAddr !== '' ? ' ('+ extraAddr +')' : '');
+                }
+
+                // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                //document.getElementById('sample6_postcode').value = data.postcode; //6자리 우편번호 사용
+                document.getElementById('post1').value = data.zonecode; //5자리 기초구역번호 사용
+                document.getElementById('addr1').value = fullAddr;
+
+                // 커서를 상세주소 필드로 이동한다.
+                document.getElementById('addr2').focus();
+            }
+        }).open();
+    }
+</script>
+<script>
+  $(function(){
+    $('#post1,#addr1').click(function(){
+      alert('우편번호 찾기를 선택해주세요.');
+    });
+  });
+</script>
+<script>
+$(document).ready(function(){
+  function autoHypenTel(str) {
+    str = str.replace(/[^0-9]/g, '');
+    var tmp = '';
+
+    if (str.substring(0, 2) == 02) {
+      // 서울 전화번호일 경우 10자리까지만 나타나고 그 이상의 자리수는 자동삭제
+      if (str.length < 3) {
+        return str;
+      } else if (str.length < 6) {
+        tmp += str.substr(0, 2);
+        tmp += '-';
+        tmp += str.substr(2);
+        return tmp;
+      } else if (str.length < 10) {
+        tmp += str.substr(0, 2);
+        tmp += '-';
+        tmp += str.substr(2, 3);
+        tmp += '-';
+        tmp += str.substr(5);
+        return tmp;
+      } else {
+        tmp += str.substr(0, 2);
+        tmp += '-';
+        tmp += str.substr(2, 4);
+        tmp += '-';
+        tmp += str.substr(6, 4);
+        return tmp;
+      }
+    } else {
+      // 핸드폰 및 다른 지역 전화번호 일 경우
+      if (str.length < 4) {
+        return str;
+      } else if (str.length < 7) {
+        tmp += str.substr(0, 3);
+        tmp += '-';
+        tmp += str.substr(3);
+        return tmp;
+      } else if (str.length < 11) {
+        tmp += str.substr(0, 3);
+        tmp += '-';
+        tmp += str.substr(3, 3);
+        tmp += '-';
+        tmp += str.substr(6);
+        return tmp;
+      } else {
+        tmp += str.substr(0, 3);
+        tmp += '-';
+        tmp += str.substr(3, 4);
+        tmp += '-';
+        tmp += str.substr(7);
+        return tmp;
+      }
+    }
+
+    return str;
+  }
+
+
+
+  $('#to_tel').keyup(function (event) {
+    event = event || window.event;
+    var _val = this.value.trim();
+    this.value = autoHypenTel(_val);
+  });
+
+  $(document).on("click","#ok_btn",function(){
+    var chk  =  false;
+    var myCash  =  Number($("#my_cash").val());
+    var ticketamount = "<?= number_format($site['낙첨티켓신청금액']) ?>";
+
+    $(".chk_on").each(function(){
+      if($.trim($(this).val()) == ''){
+        alert($(this).attr("alt"));
+        chk  =  true;
+        return false;
+      }
+    });
+
+    if(chk){
+      return false;
+    }
+
+    if(myCash < ticketamount){
+      alert("캐시가 부족합니다.");
+      return false;
+    }
+
+    $("#w_frm").submit();
+  });
+
+});
+</script>
+
+</html>

@@ -1,0 +1,164 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_COUPON_LOG.php";
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 25;
+  $add_query = "";
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit&sdate=$sdate&edate=$edate&schdate=$schdate";
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND C.REG_DATE BETWEEN '".$sDate."' AND '".$eDate."'";
+  }
+
+  $list = F_COUPON_LOG_MEMBER_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['MEMBER_NO'] = array();
+  }
+
+  $find_op = array(
+    "M.USER_ID"   => "아이디",
+    "M.NAME"      => "성명",
+    "C.PATNER_ID" => "파트너ID",
+    "C.GRPCODE"   => "쿠폰버전"
+  );
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">유입회원목록</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">파트너관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">유입회원목록</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group fl-left">
+                  <select name="find_object" id="select-beast" class="form-control form-select select2">
+                    <option value="all">--전체--</option>
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control auto-submit" name="find_text" value="<?=$find_text?>" />
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select name="schdate" id="schdate" class="form-control form-select select2">
+                    <option value="">--기간선택--</option>
+                    <?=option_make($search_date_op, $schdate)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                    <span style="margin: 8px 5px 0 5px;">~</span>
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive">
+              <table class="table border text-nowrap table-striped" id="table-list">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>ID</th>
+                    <th>이름</th>
+                    <th>회원구분</th>
+                    <th>가입일</th>
+                    <th>파트너ID</th>
+                    <th>쿠폰버전</th>
+                    <th>쿠폰등록일</th>
+                    <th>쿠폰번호</th>
+                    <th>첫 결제금액</th>
+                    <th>첫충전일</th>
+                    <th>가입경로</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['MEMBER_NO']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                      $first_date = "";
+                      $first_price = 0;
+
+                      // $price = $db->get_data("SELECT SUM(PRICE) AS PRICE FROM CASH WHERE MEMBER_NO='".$list['MEMBER_NO'][$i]."' AND PATNER_ID='".$list['PATNER_ID'][$i]."'");
+                      // if (!isset($price['PRICE'])) {
+                      //   $price['PRICE']  =  0;
+                      // }
+
+                      $c_price = $db->get_data("SELECT * FROM CASH WHERE MEMBER_NO='".$list['MEMBER_NO'][$i]."' AND PATNER_ID='".$list['PATNER_ID'][$i]."' ORDER BY REG_DATE ASC");
+                      if (isset($c_price['REG_DATE'])) {
+                        $first_date = date("Y-m-d H:i", strtotime($c_price['REG_DATE']));
+                        $first_price = $c_price["PRICE"];
+
+                        if ($first_price == "") {
+                          $first_price = 0;
+                        }
+                      }
+                  ?>
+                  <tr>
+                    <td><?=$no?></td>
+                    <td><?=$list['USER_ID'][$i]?></td>
+                    <td><?=$list['NAME'][$i]?></td>
+                    <td><?=$list['ISTYPE'][$i]?></td>
+                    <td><?=date("Y-m-d H:i", strtotime($list['USER_REG_DATE'][$i]))?></td>
+                    <td><?=$list['PATNER_ID'][$i]?></td>
+                    <td><?=$list['GRPCODE'][$i]?></td>
+                    <td><?=date("Y-m-d H:i", strtotime($list['LOG_DATE'][$i]))?></td>
+                    <td><?=$list['NUM'][$i]?></td>
+                    <td><?=number_format($first_price)?></td>
+                    <td><?=$first_date?></td>
+                    <td><?=$list['IN_TYPE'][$i]?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>

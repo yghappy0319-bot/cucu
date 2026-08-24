@@ -1,0 +1,333 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_NON_WINING.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit&status=$status";
+
+  $add_query = "";
+
+  if ($S_login['level'] == 1) {
+    switch ($S_login['user_id']) {
+      case "3dsys":
+        $add_query .= " AND AGENT_NO = 1 AND o.REG_DATE < '2024-07-21 03:00:00'";
+        break;
+      default: //VoyageX
+        $add_query .= " AND AGENT_NO = 0";
+    }
+  }
+
+  if ($status != "") {
+    $add_query = " AND n.STATUS='{$status}'";
+  }
+
+  if ($find_object == "all") {
+    $find_object = "";
+    $add_query  .= " AND (m.USER_ID LIKE '%{$find_text}%' OR n.NAME LIKE '%{$find_text}%' OR n.HP LIKE '%{$find_text}%')";
+  }
+
+   $add_query.= " AND ADMIN_STATUS is null ";
+
+  $list = F_NON_WINING_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['WINNING_NO'] = array();
+  }
+
+  $find_op = array(
+    "m.USER_ID" => "ID",
+    "n.NAME"    => "신청자",
+    "n.HP"      => "휴대폰번호"
+  );
+  if($S_login['user_id']=="admin205"){
+    $status_op = array(
+      "N" => "신청접수",
+      "T" => "접수완료",
+      "D" => "취소",
+      "R" => "배송중",
+      "Y" => "배송완료",
+      "H" => "숨김"
+    );
+  }else{
+    $status_op = array(
+      "N" => "신청접수",
+      "T" => "접수완료",
+      "D" => "취소",
+      "R" => "배송중",
+      "Y" => "배송완료"
+    );
+  }
+
+?>
+
+<style>
+  .previewImg img {
+    height: 50px;
+    transition: transform .3s;
+    margin: 0 auto;
+    padding: 7px 0px 0px 0px;
+  }
+  .previewImg img:hover {
+    cursor: pointer;
+    transform: scale(7);
+  }
+</style>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">낙첨티켓 배송신청</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">구매내역</a></li>
+          <li class="breadcrumb-item active" aria-current="page">낙첨티켓 배송신청</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>" autocomplete="off">
+                <div class="form-group mr-3 fl-left">
+                  <select name="status" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <option value="">--상태--</option>
+                    <?=option_make($status_op, $status)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select name="find_object" id="select-beast" class="form-control form-select select2">
+                    <option value="all">--Select--</option>
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control" name="find_text" value="<?=$find_text?>">
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+              </form>
+              <div class="form-group fl-left" style="float: right;">
+                <select name="up_status" id="up_status" class="form-control form-select select2">
+                  <option value="">--상태--</option>
+                  <?=option_make($status_op, "")?>
+                </select>
+                <button class="btn btn-border btn-danger" id="btn-priz-in">상태 변경</button>
+              </div>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="chkAll" /></th>
+                    <th>no</th>
+                    <th>주문번호</th>
+                    <th>복권명</th>
+                    <th>이미지</th>
+                    <th>ID</th>
+                    <th>신청자</th>
+                    <th>휴대폰번호</th>
+                    <th>추첨일시</th>
+                    <th>구매일시</th>
+                    <th>신청일시</th>
+                    <th>상태</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['WINNING_NO']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+
+                      $ticketImg = $list['IMG_PATH'][$i];
+                      $ticketImgDate = $list['IMG_DATE'][$i];
+                      $ticketTime = strtotime($ticketImgDate);
+
+                      //앞뒷면 구분 로직 추가 (3Dsystem)
+                      if (substr(pathinfo($ticketImg, PATHINFO_FILENAME),-1,1) == "a") {
+                        $ticketBackImg = (substr(pathinfo($ticketImg, PATHINFO_FILENAME),0,-1)) . "b.jpg";
+                      } else {
+                        $ticketBackImg = (pathinfo($ticketImg, PATHINFO_FILENAME) + 1) . ".jpg";
+                      }
+
+                      if (strpos($ticketImg, "/") === false) {
+                        $ticketTime = strtotime($ticketImgDate);
+                        $ticketDir = date('ymd', $ticketTime);
+                        $ticketUrl = $s3_ticket_url . $ticketDir . '/'. $ticketImg;
+                        $ticketBackUrl  = $s3_ticket_url . $ticketDir . "/back/" . $ticketBackImg;
+                      } else {
+                        $ticketDir = "";
+                        $ticketUrl = $s3_ticket_url . '/'. $ticketImg;
+                        $ticketBackUrl  = $s3_ticket_url . "/back/" . $ticketBackImg;
+                      }
+                      $play_date = "한) ".date("Y-m-d", strtotime($list['PLAYDATE'][$i]." +1 day"));
+                  ?>
+                  <tr class="container">
+                    <td><input type="checkbox" name="noChk[]" value="<?=$list['WINNING_NO'][$i]?>"></td>
+                    <td><?=$no?></td>
+                    <td><?=$list['ORDERS_NO'][$i]?></td>
+                    <td><?=$ball_op[$list['GUBUN'][$i]]?></td>
+                    <td class="previewImg">
+                      <img style="height: 50px; border: 0px;" src="<?=$ticketUrl?>" onerror="this.style.display='none';">
+                      <img style="height: 50px; border: 0px;" src="<?=$ticketBackUrl?>" onerror="this.style.display='none';">
+                    </td>
+                    <td><?=(($S_login['level'] == 1) ? substr($list['USER_ID'][$i],0,-4)."****" : $list['USER_ID'][$i])?><?php if ($S_login['level'] > 1) { ?><i class="modal-effect fa fa-search checkUser"
+                        title="상세정보"
+                        style="cursor: pointer; margin-left: 3px;"
+                        data-bs-effect="effect-scale"
+                        data-bs-target="#memberModal"
+                        data-bs-toggle="modal"
+                        data-no="<?=$list['MEMBER_NO'][$i]?>">
+                      </i><?php } ?></td>
+                    <td><?=(($S_login['level'] == 1) ? preg_replace('/.(?=.$)/u', '*', $list['NAME'][$i]) : $list['NAME'][$i])?></td>
+                    <td><?=(($S_login['level'] == 1) ? substr($list['HP'][$i],0,-4)."****" : $list['HP'][$i])?></td>
+                    <td><?=$play_date?></td>
+                    <td><?=$list['BUY_REG_DATE'][$i]?></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                    <td><?=$status_op[$list['STATUS'][$i]]; ?></td>
+                    <td><button data-bs-target="#requestDetails" data-bs-toggle="modal" class="btn btn-secondary btn-read" data-no="<?=$list['WINNING_NO'][$i]?>">상세정보</button></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<!-- BASIC MODAL -->
+<div class="modal fade" id="requestDetails">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-content-demo">
+      <div class="modal-header">
+        <h6 class="modal-title">배송신청 상세정보</h6>
+        <button aria-label="Close" class="btn-close" data-bs-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="card-body" id="order-view">
+            <div class="form-row">
+              <div class="col-md-6 mb-3">
+                <label for="non_orders_no">NO</label>
+                <input type="text" class="form-control" id="non_orders_no" readonly />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="non_NAME">받으시는 분</label>
+                <input type="text" class="form-control" id="non_NAME" readonly />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 mb-3">
+                <label for="non_post1">우편번호</label>
+                <input type="text" class="form-control" id="non_post1" readonly />
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="non_hp">연락처</label>
+                <input type="text" class="form-control" id="non_hp" readonly />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-12 mb-3">
+                <label for="non_addr1">주소</label>
+                <input type="text" class="form-control" id="non_addr1" readonly />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-12 mb-3">
+                <label for="non_addr2">상세주소</label>
+                <input type="text" class="form-control" id="non_addr2" readonly />
+              </div>
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_member.html"; ?>
+
+<script>
+  $(function() {
+    $(document).on('click', '.btn-read', function() {
+      let no = $(this).data('no');
+      let obj = $('#order-view');
+
+      $.post('./default.php', {
+        mode: 'read_non_wining',
+        no: no
+      }, function(e) {
+        obj.find('#non_orders_no').val(e.ORDERS_NO);
+        obj.find('#non_NAME').val(e.NAME);
+        obj.find('#non_hp').val(e.HP);
+        obj.find('#non_post1').val(e.POST1);
+        obj.find('#non_addr1').val(e.ADDR1);
+        obj.find('#non_addr2').val(e.ADDR2);
+      }, 'json');
+    });
+
+    $(document).on('click', '#btn-priz-in', function() {
+      let up_status = $("#up_status").val();
+      let chk_no = new Array();
+      let i = 0;
+      $('[name="noChk[]"]:checked').each(function() {
+        chk_no[i] = $(this).val();
+        i++;
+      });
+
+      if (up_status == '') {
+        alert('상태를 선택해 주세요.');
+        return false;
+      }
+
+      if (i > 0) {
+        if (confirm('선택한 항목을 변경하시겠습니까?')) {
+          $.post('./default.php', {
+            mode: 'all_up_status',
+            up_status: up_status,
+            chk_no: chk_no
+          }, function(e) {
+            if (e.error) {
+              alert(e.msg);
+            } else {
+              alert(e.msg);
+            }
+            window.location.reload();
+          }, 'json');
+        }
+      } else {
+        alert("상태를 선택하세요");
+      }
+    });
+  });
+</script>

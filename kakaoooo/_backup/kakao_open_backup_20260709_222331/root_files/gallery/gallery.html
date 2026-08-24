@@ -1,0 +1,86 @@
+<?php
+include_once $_SERVER['DOCUMENT_ROOT']."/lib/_function.php";
+
+// idx가 전달되었다고 가정
+$data = db_select("SELECT * FROM tb_video WHERE idx = {$idx}");
+?>
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><?=htmlspecialchars($data['title'])?></title>
+  <meta name="description" content="<?=htmlspecialchars($data['title'])?>" />
+
+  <!-- Open Graph (SNS 공유용) -->
+  <meta property="og:type" content="video.other" />
+  <meta property="og:site_name" content="도현썸" />
+  <meta property="og:title" content="<?=htmlspecialchars($data['title'])?>" />
+  <meta property="og:description" content="<?=htmlspecialchars($data['description'] ?? $data['title'])?>" />
+  <meta property="og:image" content="<?=htmlspecialchars($data['photo'] ?? 'default.jpg')?>" />
+  <meta property="og:url" content="https://kakao1.iwinv.net/video.php?idx=<?=$idx?>" />
+  <meta property="og:video" content="<?=htmlspecialchars($data['video'])?>" />
+  <meta property="og:video:type" content="video/mp4" />
+  <meta property="og:locale" content="ko_KR" />
+
+  <!-- fancyBox CSS & JS (v5) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 0; background: #f9f9f9; }
+    header, footer { background: #333; color: #fff; padding: 1em; text-align: center; }
+    main { padding: 2em; text-align: center; }
+    video { width: 100%; max-width: 800px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><?=htmlspecialchars($data['title'])?></h1>
+  </header>
+
+  <main>
+    <section id="home">
+      <h2>영상 보기</h2>
+      <?php if (!empty($data['video'])): ?>
+        <div id="videoBox" style="display:none;">
+          <video
+            src="/gallery/video/<?=htmlspecialchars($data['video'])?>"
+            controls
+            autoplay
+            muted
+            playsinline
+            style="width:100%; max-width:800px; border-radius:10px;"
+          ></video>
+        </div>
+      <?php else: ?>
+        <p>등록된 영상이 없습니다.</p>
+      <?php endif; ?>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 <?=htmlspecialchars($data['title'])?> 도현썸</p>
+  </footer>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // 페이지 로드 시 자동으로 팝업 열기
+    Fancybox.show([
+      {
+        src: "#videoBox",
+        type: "inline",
+        dragToClose: true,
+        Html: {
+          video: {
+            autoplay: true,
+            muted: true,
+            controls: true
+          }
+        }
+      }
+    ]);
+  });
+  </script>
+</body>
+</html>

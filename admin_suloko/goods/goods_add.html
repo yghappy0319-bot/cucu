@@ -1,0 +1,120 @@
+<?php
+require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_GOODS.php";
+F_admin_chk($S_login);
+
+if ($mode == 'update') {
+  $info = F_GOODS(array("mode"=>"read", "GOODS_NO"=>$no));
+} else {
+  $info = array();
+}
+
+if (!isset($mode)) $mode = "insert";
+if (!isset($info['GUBUN'])) $info['GUBUN'] = "";
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">판매상품</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">로또관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">판매상품</li>
+        </ol>
+      </div>
+
+    </div>
+    <!-- PAGE-HEADER END -->
+    <div class="row">
+      <div class="col-lg-12 col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">판매상품등록/수정</h3>
+          </div>
+          <div class="card-body">
+            <form class="needs-validation" novalidate method="post" name="w_frm" action="goods_action.php" enctype='multipart/form-data'>
+              <input type="hidden" name="GOODS_NO" value="<?=(isset($info['GOODS_NO'])) ? $info['GOODS_NO'] : ""?>">
+              <input type="hidden" name="mode" value="<?=$mode?>">
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom01">게임구분</label>
+                  <select class="form-select select2 form-control" name="GUBUN" id="validationCustom04" required>
+                    <option selected disabled value="">선택</option>
+                    <?=option_make($ball_op, $info['GUBUN'])?>
+                  </select>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please select a valid GUBUN.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom01">수량</label>
+                  <input type="text" class="form-control" id="validationCustom01" value="<?=(isset($info['CNT']))? $info['CNT'] : "0"; ?>" name="CNT" required>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please provide a valid CNT.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom01">티켓원가(달러)</label>
+                  <input type="text" class="form-control" id="validationCustom01" value="<?=(isset($info['PRICE1'])) ? $info['PRICE1'] : "0"?>" name="PRICE1" required>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please provide a valid 티켓원가.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom02">티켓원가(원화)</label>
+                  <input type="text" class="form-control" id="validationCustom01" value="<?=(isset($info['PRICE2'])) ? $info['PRICE2'] : "0"?>" name="PRICE2" required>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please provide a valid 티켓원가.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom01">수익</label>
+                  <input type="text" class="form-control" id="validationCustom01" value="<?=(isset($info['MARGIN'])) ? $info['MARGIN'] : "0"?>" name="MARGIN" required>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please provide a valid 수익.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom02">부가세</label>
+                  <input type="text" class="form-control" id="validationCustom01" value="<?=(isset($info['VAT'])) ? $info['VAT'] : "0"?>" name="VAT" required>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please provide a valid 부가세.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom01">최종결제금액</label>
+                  <input type="text" class="form-control" id="validationCustom01" value="<?=(isset($info['PRICE'])) ? $info['PRICE'] : "0"?>" name="PRICE" required>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please provide a valid PRICE.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+
+                </div>
+              </div>
+              <button class="btn btn-primary" type="submit">Submit form</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ROW CLOSED -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script language="javascript">
+$(document).ready(function() {
+  $(".side-menu").find(".slide").eq(2).addClass("is-expanded");
+  $(".side-menu").find(".slide").eq(2).find(".side-menu__item").addClass("active");
+  $(".side-menu").find(".slide").eq(2).find(".slide-menu").addClass("open");
+  $(".side-menu").find(".slide").eq(2).find(".slide-menu").find("li").eq(4).addClass("active");
+  $(".side-menu").find(".slide").eq(2).find(".slide-menu").find("li").eq(4).find("a").addClass("active");
+});
+</script>

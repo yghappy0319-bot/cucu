@@ -1,0 +1,240 @@
+<div class="popup app type1">
+  <section class="inner sec_app wrap_com">
+    <h2 class="f_GmarketSans fw600 ls50">파메코 이동하기</h2>
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <p class="txt_type1">파메코를 편리하게 즐기는 방법</p>
+    <div>
+      <ul class="list_qr flex space align_center">
+        <li>
+          <div class="wrap_img">
+            <img src="<?=$commonImageURI?>img_qr.jpg" alt="안드로이드 QR">
+          </div>
+          <p>Android OS</p>
+        </li>
+        <li>
+          <div class="wrap_img">
+            <img src="<?=$commonImageURI?>img_qr.jpg" alt="ios QR">
+          </div>
+          <p>iOS</p>
+        </li>
+      </ul>
+    </div>
+    <div>
+      <strong class="ls25">APP 설치 URL 보내기</strong>
+      <div class="bx_sendurl flex align_center space">
+        <input type="tel" placeholder="휴대폰 번호 입력">
+        <button class="f_GmarketSans fw500 ls50">동의 후 전송</button>
+      </div>
+    </div>
+    <ul class="list_bul txt_type1">
+      <li><span>APP 설치 URL 전송을 위해 고객님 휴대폰 번호를 수집합니다.</span></li>
+      <li><span>수집된 정보는 문자 발송 완료 후 즉시 삭제됩니다.</span></li>
+    </ul>
+  </section>
+</div>
+
+<div class="popup scan style1">
+  <div class="popup-cont-wrap">
+    <button class="btn close"><span class="hide">닫기</span><i class="material-icons">close</i></button>
+    <div class="cont scan">
+      <div class="tab style1">
+        <ul class="tab-menu">
+          <li data-tab="1">앞면</li>
+          <li data-tab="2">뒷면</li>
+        </ul>
+        <div class="tab-cont" data-tab="1">
+          <div class="img-wrap">
+            <img class="front" alt="앞면" />
+          </div>
+        </div>
+        <div class="tab-cont" data-tab="2">
+          <div class="img-wrap">
+            <img class="back" alt="뒷면" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="popup draw type1">
+  <div class="inner bx_padding f_NotoSansKR">
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <div>
+      <h2 class="f_GmarketSans fw600 ls50 lh12" style="font-size: 1.2rem;">
+        <span id="wininfo_balls_name">메가밀리언</span> <br><span class="color_red2" id="wininfo_draw">회차</span> 등수별 당첨금
+      </h2>
+    </div>
+    <p class="time fs24 pt10 pb10" id="wininfo_time_e"></p>
+    <ul class="list_ball clear pb10" id="wininfo_balls">
+      <li><span></span></li>
+      <li><span></span></li>
+      <li><span></span></li>
+      <li><span></span></li>
+      <li><span></span></li>
+      <li><span></span></li>
+    </ul>
+    <div class="wrap_tb bt bb">
+      <table class="tb_type3">
+        <caption>
+          <div class="hide">
+            메가밀리언 추첨번호에 대한 정보를 제공하는 표
+          </div>
+        </caption>
+        <colgroup>
+          <col width="10%">
+          <col width="">
+          <col width="26%">
+          <col width="15%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>등수</th>
+            <th>당첨조건</th>
+            <th>당첨금</th>
+            <th>당첨수</th>
+          </tr>
+        </thead>
+        <tbody id="wininfo_price">
+        </tbody>
+      </table>
+    </div>
+    <p class="desc" style="font-size: 0.6rem; padding-top: 5px;"></p>
+    <p class="fw600 fs24 pb5 wininfo_multiplier pt5"></p>
+  </div>
+</div>
+
+<div class="popup lastdraw type1">
+  <div class="inner bx_padding f_NotoSansKR">
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <div>
+      <h3><img src="<?=$commonImageURI?>logo_powerball_202x56.png" id="wininfo_balls_img"></h3>
+    </div>
+    <div id="nomal_info_div" style="background-color: #eeeeee; font-size: var(--px23); border-radius: 0.2rem; padding: 0.5rem; margin: 1rem 0; line-height: 0.8rem;">
+      오레곤주의 복권 당첨금은 고정 금액 방식입니다.<br>
+      1등을 제외한 2 ~ 9등까지는 금액이 항상 동일합니다.<br>
+      <span class="mega_multiplier_msg" style="display:none">2066회차부터 무작위 배수가 포함되어 자동 적용됩니다.<br></span>
+      복권 구매시 참고하여 주십시오.
+    </div>
+    <div id="winner_info_div" style="background-color: #eeeeee; font-size: var(--px23); border-radius: 0.2rem; padding: 0.5rem; margin: 1rem 0; line-height: 0.8rem; text-align: left;">
+      오레곤주의 복권 당첨금은 고정 금액 방식입니다.<br>
+      현재 직전회차 1등 당첨자가 발생하여 당첨금이 초기화 되었습니다.<br>
+      <span class="mega_multiplier_msg" style="display:none">2066회차부터 무작위 배수가 포함되어 자동 적용됩니다.<br></span>
+      복권 구매시 참고하여 주십시오.
+    </div>
+    <div class="wrap_tb bt bb">
+      <table class="tb_type3">
+        <caption>
+          <div class="hide">
+            추첨번호에 대한 정보를 제공하는 표
+          </div>
+        </caption>
+        <colgroup>
+          <col width="10%">
+          <col width="">
+          <col width="28%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>등수</th>
+            <th>당첨조건</th>
+            <th>당첨금</th>
+          </tr>
+        </thead>
+        <tbody id="last_wininfo_price_no_cnt">
+        </tbody>
+      </table>
+    </div>
+    <button class="btn_type1 btn_black btn_close_bottom">닫 기</button>
+  </div>
+</div>
+
+<div class="popup video type1">
+  <div class="inner sec_app wrap_com">
+    <button class="btn_close video_close"><span class="hide">닫기</span></button>
+    <h3 class="f_GmarketSans fw600 ls50 pb10">
+      <p class="pb5" id="video_gubun_name">메가밀리언</p>
+      <p> <span class="color_red2" id="youtube_draw">1257회차</span> 추첨영상</p>
+    </h3>
+    <div class="bx_gray" style="padding: 0.5rem 0 0.5rem 0;">
+      <p class="color_red3 fw500 fs25 ls75" style="word-break: break-all;">
+        ※ 한국과 미국의 시차가 있습니다. 영상의 날짜는 미국시간입니다.
+      </p>
+    </div>
+    <div class="wrap_iframe">
+      <iframe id="youtube_ifrm" title="video" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
+    </div>
+  </div>
+</div>
+
+<div class="popup complete type1">
+  <div class="inner sec_app wrap_com ls1">
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <div class="txt">
+      <div class="add_before ico">
+        <strong class="f_GmarketSans">결제가 정상<br>처리되었습니다.</strong>
+      </div>
+      <a href="/" class="btn_center btn_red f_NotoSansKR br10 fw500">메인으로</a>
+    </div>
+  </div>
+</div>
+
+<div class="popup webappGuide type1">
+  <div class="inner bx_padding f_NotoSansKR" style="border: 1px solid #000000; padding: 0.5rem 0.1rem 0.5rem 0.1rem;">
+    <div class="bx_white wrap_com" style="overflow: scroll; height: 580px;">
+      <img src="<?=$commonImageURI?>webapp/m_guide.png" style="width: 100%;" alt="웹앱 가이드">
+    </div>
+    <button type="button" class="btn_type1 btn_black btn_close_bottom" style="width: 3rem; margin-top: 0.7rem;">닫 기</button>
+  </div>
+</div>
+
+<div class="popup bank_step3 type1">
+  <div class="inner txt_center">
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <div class="bx_white2">
+      <span class="title">
+        <img src="<?=$commonImageURI?>icon_green.png" style="width: 30px;">
+      </span>
+      <span class="fs28 title">캐시 충전은 입금 확인 후 완료됩니다.</span>
+      <div class="bx_gray top3" style="padding-left: 3.5rem;">
+        <ul class="fs30" style="text-align: left;">
+          <li style="list-style-type: square;">
+            <span>입금은행 : </span><img src="<?=$commonImageURI?>kb_logo.png" class="pd-left" style="width: 4.7rem;">
+          </li>
+          <li style="list-style-type: square;">
+            <span>계좌번호 : </span>
+            <span class="pd-left">538801-01-519478</span>
+          </li>
+          <li style="list-style-type: square;">
+            <span style="word-spacing: 0.12rem;">예 금 주</span> : <span class="pd-left">주식회사 파메코</span>
+          </li>
+          <li style="list-style-type: square;">
+            <span style="word-spacing: 0.12rem;">입 금 액</span> :
+            <span class="pd-left">
+              <strong style="color: #FF0000;" id="cash_bank_cash3">0</strong>
+              <strong style="color: #FF0000;">원</strong> (VAT 포함)
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="popup scanImgSwiper type1">
+  <div class="inner bx_padding sec_event">
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <section class="sec_event">
+      <div class="slide swiper-container">
+        <ul class="swiper-wrapper"></ul>
+      </div>
+      <!-- navigation -->
+      <div class="swiper-button-next" style="right: -20px;"></div>
+      <div class="swiper-button-prev" style="left: -20px;"></div>
+      <!-- pagination -->
+      <div class="paging swiper-pagination" style="position: inherit;"></div>
+    </section>ß
+  </div>
+</div>

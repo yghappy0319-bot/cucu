@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
+      xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- PC 페이지 -->
+  <url>
+    <loc>https://www.sulokolink.com/</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>1.00</priority>
+  </url>
+  <url>
+    <loc>https://www.sulokolink.com/contents/lottery/mega.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/contents/lottery/mega-step1.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://www.sulokolink.com/contents/lottery/power.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/contents/lottery/power-step1.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://www.sulokolink.com/contents/service/purchase.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/contents/service/purchase.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://www.sulokolink.com/contents/draw/draw-guide.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/contents/draw/draw-guide.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://www.sulokolink.com/contents/statistic/frequency.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/contents/statistic/frequency.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://www.sulokolink.com/policy-privacy.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/policy-privacy.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://www.sulokolink.com/terms.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/terms.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+
+  <url>
+    <loc>https://www.sulokolink.com/signup.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/signup.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://www.sulokolink.com/contents/cs/faq.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/contents/cs/faq.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://www.sulokolink.com/contents/cs/notice.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/contents/cs/notice.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://www.sulokolink.com/contents/cs/news.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/contents/cs/news.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://www.sulokolink.com/contents/draw/draw-mega.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/contents/draw/draw-mega.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.64</priority>
+  </url>
+  <url>
+    <loc>https://www.sulokolink.com/contents/draw/draw-power.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/contents/draw/draw-power.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.64</priority>
+  </url>
+  <url>
+    <loc>https://www.sulokolink.com/contents/service/mega.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/contents/service/mega.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.64</priority>
+  </url>
+  <url>
+    <loc>https://www.sulokolink.com/contents/service/power.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/contents/service/power.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.64</priority>
+  </url>
+  <url>
+    <loc>https://www.sulokolink.com/contents/service/receive.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/contents/service/receive.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.64</priority>
+  </url>
+  <url>
+    <loc>https://www.sulokolink.com/contents/service/policy.html</loc>
+    <xhtml:link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.sulokolink.com/contents/service/policy.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.64</priority>
+  </url>
+
+  <!-- 모바일 페이지 -->
+  <url>
+    <loc>https://m.sulokolink.com/</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>1.00</priority>
+  </url>
+  <url>
+    <loc>https://m.sulokolink.com/contents/lottery/mega-step1.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/contents/lottery/mega.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://m.sulokolink.com/contents/lottery/power-step1.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/contents/lottery/power.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://m.sulokolink.com/contents/service/purchase.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/contents/service/purchase.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://m.sulokolink.com/contents/draw/draw-guide.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/contents/draw/draw-guide.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://m.sulokolink.com/contents/statistic/frequency.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/contents/statistic/frequency.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://m.sulokolink.com/policy-privacy.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/policy-privacy.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://m.sulokolink.com/terms.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/terms.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+
+  <url>
+    <loc>https://m.sulokolink.com/signup.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/signup.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://m.sulokolink.com/contents/cs/faq.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/contents/cs/faq.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://m.sulokolink.com/contents/cs/notice.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/contents/cs/notice.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://m.sulokolink.com/contents/cs/news.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/contents/cs/news.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://m.sulokolink.com/contents/draw/draw-mega.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/contents/draw/draw-mega.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.64</priority>
+  </url>
+  <url>
+    <loc>https://m.sulokolink.com/contents/draw/draw-power.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/contents/draw/draw-power.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.64</priority>
+  </url>
+  <url>
+    <loc>https://m.sulokolink.com/contents/service/mega.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/contents/service/mega.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.64</priority>
+  </url>
+  <url>
+    <loc>https://m.sulokolink.com/contents/service/power.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/contents/service/power.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.64</priority>
+  </url>
+  <url>
+    <loc>https://m.sulokolink.com/contents/service/receive.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/contents/service/receive.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.64</priority>
+  </url>
+  <url>
+    <loc>https://m.sulokolink.com/contents/service/policy.html</loc>
+    <xhtml:link rel="canonical" href="https://www.sulokolink.com/contents/service/policy.html" />
+    <lastmod>2025-02-28T07:28:17+00:00</lastmod>
+    <priority>0.64</priority>
+  </url>
+
+</urlset>

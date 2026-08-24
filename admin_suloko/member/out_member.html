@@ -1,0 +1,197 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_OUT_MEMBER.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit";
+
+  $add_query = "";
+
+  $find_text = preg_replace("/\s+/", "", $find_text);
+
+  if ($find_object == "all" && $find_text != "") {
+    if ($S_login['level'] == 2) {
+      if (strstr($find_text, '-') == false) {
+        $add_query .= " AND (USER_ID = '{$find_text}' OR replace(NAME, ' ', '') = '{$find_text}' OR replace(HP, '-', '') = '{$find_text}')";
+      } else {
+        $add_query .= " AND (USER_ID = '{$find_text}' OR replace(NAME, ' ', '') = '{$find_text}' OR HP = '{$find_text}')";
+      }
+    } else {
+      if (strstr($find_text, '-') == false) {
+        $add_query .= " AND (USER_ID LIKE '%{$find_text}%' OR replace(NAME, ' ', '') LIKE '%{$find_text}%' OR replace(HP, '-', '') LIKE '%{$find_text}%')";
+      } else {
+        $add_query .= " AND (USER_ID LIKE '%{$find_text}%' OR replace(NAME, ' ', '') LIKE '%{$find_text}%' OR HP LIKE '%{$find_text}%')";
+      }
+    }
+    $find_object = "";
+  }
+
+  // SLK-1218 member list limited
+  if ($S_login['level'] > 2 || ($S_login['level'] == 2 && $find_text != "")) {
+    $list = F_OUT_MEMBER_list(array(
+      "row"         => $limit,
+      "page"        => $page,
+      "order"       => $order,
+      "find_text"   => $find_text,
+      "find_object" => $find_object,
+      "add_query"   => $add_query,
+    ));
+  }
+
+  if ($list['total'] == 0) {
+    $list['MEMBER_NO'] = array();
+  }
+
+  $find_op = array(
+    "USER_ID" => "아이디",
+    "HP"      => "휴대폰번호",
+    "NAME"    => "성명"
+  );
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">탈퇴회원</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">회원관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">탈퇴회원</li>
+        </ol>
+      </div>
+      <div class="ms-auto pageheader-btn">
+        <a href="#" class="btn btn-danger allDelChk">선택삭제</a>
+        <a href="./out_member_excel.html?find_text=<?=$find_text?>&find_object=<?=$_GET['find_object']?>" target="_blank" class="btn btn-primary btn-icon text-white me-2">
+          <span>
+            <i class="fa fa-file-excel-o"></i>
+          </span> Excel Download
+        </a>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group fl-left">
+                  <select name="find_object" id="select-beast" class="form-control form-select select2">
+                    <option value="all">--전체--</option>
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control" name="find_text" value="<?=$find_text?>" />
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="chkAll" /></th>
+                    <th>NO</th>
+                    <th>ID</th>
+                    <th>성명</th>
+                    <th>휴대폰번호</th>
+                    <th>Email</th>
+                    <th>가입일시</th>
+                    <th>탈퇴일시</th>
+                    <th>총결제금액</th>
+                    <th>총구매건수</th>
+                    <th>사유</th>
+                    <th>검색</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['MEMBER_NO']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+
+                      if (!$list['TOTPRICE'][$i]) { $list['TOTPRICE'][$i]=0; }
+                      if (!$list['TOTCNT'][$i]) { $list['TOTCNT'][$i]=0; }
+                  ?>
+                  <tr>
+                    <td><input type="checkbox" name="noChk[]" value="<?=$list['MEMBER_NO'][$i]?>"></td>
+                    <td><?=$no?></td>
+                    <td><?=$list['USER_ID'][$i]?></td>
+                    <td><?=$list['NAME'][$i]?></td>
+                    <td><?=$list['HP'][$i]?></td>
+                    <td><?=$list['EMAIL'][$i]?></td>
+                    <td><?=$list['LASTDATE'][$i]?></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                    <td class="text-end"><?=number_format($list['TOTPRICE'][$i])?></td>
+                    <td class="text-end"><?=number_format($list['TOTCNT'][$i])?></td>
+                    <td><?=nl2br($list['OUT_MEMO'][$i])?></td>
+                    <td>
+                      <a href="/order/orders_list.html?find_object=o.HP&find_text=<?=$list['HP'][$i]?>" target="_blank" class="btn btn-primary btn_update">구매내역</a>
+                      <a href="/member/cash_list.html?find_object=l.USER_ID&find_text=<?=$list['USER_ID'][$i]?>" target="_blank" class="btn btn-dark btn_update">캐시내역</a>
+                      <a href="/order/payment_list_bank.html?find_object=c.USER_ID&find_text=<?=$list['USER_ID'][$i]?>" target="_blank" class="btn btn-success btn_update">무통장내역</a>
+                      <a href="/order/payment_list.html?find_object=c.USER_ID&find_text=<?=$list['USER_ID'][$i]?>" target="_blank" class="btn btn-danger btn_update">카드결제내역</a>
+                    </td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+  });
+
+  // 선택삭제
+  $(document).on('click', '.allDelChk', function() {
+    let chk_no = new Array();
+    let i = 0;
+    $('[name="noChk[]"]:checked').each(function() {
+      chk_no[i] = $(this).val();
+      i++;
+    });
+
+    if (i > 0) {
+      if (confirm('선택한 항목을 삭제하시겠습니까?')) {
+        $.post('./default.php', {
+          mode: 'all_out_member_del',
+          gubun: 'OUT_MEMBER',
+          chk_no: chk_no
+        }, function(e) {
+          if (e.error) {
+            alert(e.msg);
+          } else {
+            alert(e.msg);
+          }
+          window.location.reload();
+        }, 'json');
+      }
+    } else {
+      alert('삭제할 항목을 선택하세요');
+    }
+  });
+</script>

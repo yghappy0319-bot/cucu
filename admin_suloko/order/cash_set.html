@@ -1,0 +1,171 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_CASH_SETTING.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page)  $page  = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit&agent=$agent";
+
+
+    $order = " AMOUNT asc ";
+  $list = F_CASH_SETTING_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+));
+
+if ($list['total'] == 0) {
+$list['BBS_INTERNAL_NO'] = array();
+}
+
+$find_op = array(
+"SUBJECT" => "제목",
+"CONTENT" => "내용"
+);
+?>
+
+<!--app-content open-->
+<div class="app-content">
+    <div class="side-app">
+        <!-- PAGE-HEADER -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">캐시 설정</h1>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#">무통장관리</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">캐시 설정</li>
+                </ol>
+            </div>
+            <div style="display: none;" >
+                <a href="./in_message_add.html" class="btn btn-primary btn-icon">
+                  <span>
+                    <i class="fe fe-plus"></i>
+                  </span> 전달사항 등록
+                </a>
+                <a href="#" class="btn btn-danger btn-icon allDelChk">선택 삭제</a>
+            </div>
+        </div>
+        <!-- PAGE-HEADER END -->
+
+        <!-- Row -->
+        <div class="row row-sm">
+            <div class="col-lg-12">
+                <div class="card custom-card">
+                    <div class="card-body">
+
+                        <div class="table-responsive table-wrapper">
+                            <table class="table border table-center text-nowrap table-bordered table-scroll" id="table-list">
+                                <thead>
+                                <tr>
+                                    <th>제목</th>
+                                    <th>금액</th>
+                                    <th>캐시</th>
+                                    <th>포인트</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <?php
+                    for ($i = 0; $i < count($list['IDX']); $i++) {
+                  ?>
+                                <tr>
+                                    <td><?=$list['CASH_NAME'][$i]?></td>
+                                    <td><?=$list['AMOUNT'][$i]?></td>
+                                    <td><?=$list['CASH'][$i]?></td>
+                                    <td><?=$list['POINT'][$i]?></td>
+                                    <td>
+                                        <a href="" class="btn btn-primary btn-icon text-white me-2" data-bs-target="#modaldemo1" data-bs-toggle="modal" onClick="go_cash_show('<?=$list['IDX'][$i]?>')">
+                                          <span>
+                                            <i class="fe fe-plus"></i>
+                                          </span> 수정
+                                        </a>
+                                    </td>
+                                </tr>
+                                <?php } ?>
+                                </tbody>
+                            </table>
+                        </div>
+                 
+                        <!-- pagination-wrapper -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Row -->
+    </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+
+<div class="modal fade" id="modaldemo1">
+    <div class="modal-dialog" role="document" style="        max-width: 800px;" >
+        <div class="modal-content modal-content-demo" >
+
+        </div>
+    </div>
+</div>
+
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+    function go_cash_update(){
+        var params = jQuery("#w_frm").serialize();
+        $.ajax({
+            type : "POST",
+            url: "_ajax_cash_action.php",
+            async: false,
+            data: params,
+            success: function(result) {
+                var r = result.trim();
+                if(r==1){
+                    alert("수정 되었습니다.");
+                    location.reload();
+                }
+            },
+            error:function(e) {
+                alert(e.responseText);
+            }
+        });
+    }
+    function go_cash_show(obj){
+        $.ajax({
+            type : "POST",
+            url: "_ajax_cash_info.php",
+            async: false,
+            data: {
+                idx : obj
+            },
+            success: function(result) {
+                $("#modaldemo1 .modal-content").html(result);
+            },
+            error:function(e) {
+                alert(e.responseText);
+            }
+        });
+    }
+
+    function init_form() {
+        $(".delete_btn").hide();
+        $("#w_frm").find('[name="mode"]').val("insert");
+        $("#w_frm").find('[name="IDX"]').val("");
+
+        $("#w_frm").find('[name="product_name"]').val("");
+        $("#w_frm").find('[name="original_price"]').val("");
+        $("#w_frm").find('[name="product_price"]').val("");
+        $("#w_frm").find('[name="content1"]').val("");
+        $("#w_frm").find('[name="sort"]').val("");
+        $('#summernote').summernote('code', "");
+        $("#w_frm").find('#banner_url').html("");
+        $("#w_frm").find('[name="STATUS"]:radio[value="Y"]').prop("checked",true);
+        $("#w_frm").find('#REG_DATE').html("");
+    }
+
+</script>

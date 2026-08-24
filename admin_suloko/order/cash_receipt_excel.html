@@ -1,0 +1,84 @@
+<?php
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/config.php";
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/export.php";
+  include $_SERVER["DOCUMENT_ROOT"]."/_library/function_CASH_RECEIPT.php";
+
+  F_admin_chk($S_login);
+
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/_check-auth-readonly.php"; // 권한체크
+
+  error_reporting(E_ERROR);
+  ini_set("display_errors", 1);
+  ini_set("memory_limit", $csv_memory);
+
+  // file name
+  $file_name = "cash_receipt_".date("Ymd").".csv";
+  $page_name = "현금영수증신청";
+
+  // 데이터 조회
+  $find_text = $_GET["find_text"];
+  $find_object = $_GET["find_object"];
+  $sdate = $_GET["sdate"];
+  $edate = $_GET["edate"];
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND R.REG_DATE BETWEEN '".$sDate."' AND '".$eDate."'";
+  }
+
+  if ($find_object == "all" && $find_text != "") {
+    $add_query .= " AND (R.USER_ID = '".$find_text."' OR M.NAME LIKE '%".$find_text."%' OR M.HP LIKE '%".$find_text."%')";
+    $find_object = "";
+  }
+
+  if ($receiptSt) {
+    $add_query .= " AND R.STATUS= '".$receiptSt."'";
+  }
+
+  $list = F_CASH_RECEIPT_LIST(array(
+    "row"         => $csv_max_row,
+    "page"        => 1,
+    "order"       => "",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query
+  ));
+
+  // default
+  $csv_dump = "";
+
+  // 컬럼명
+  $titles = array("", "IDX", "성명", "아이디", "휴대폰번호", "결제일시", "신청금액", "상태", "신청일시", "발급일시");
+  $csv_dump .= implode(",", $titles);
+  $csv_dump .= "\r\n";
+
+  // 데이터 삽입
+  for ($i = 0; $i < count($list["CASH_NO"]); $i++) {
+    $tp = "완료";
+    if ($list["STATUS"][$i] == "N") {
+      $tp = "신청";
+    }
+
+    $reg_date = $list["REG_DATE"][$i];
+    $update_date = $list["UPDATE_DATE"][$i];
+    if ($reg_date == $update_date) {
+      $update_date = "-";
+    }
+    $cnt = $i + 1;
+
+    $csv_dump .= $cnt.",";
+    $csv_dump .= $list["IDX"][$i].",";
+    $csv_dump .= $list["NAME"][$i].",";
+    $csv_dump .= $list["USER_ID"][$i].",";
+    $csv_dump .= $list["HP"][$i].",";
+    $csv_dump .= $list["CASH_REG_DATE"][$i].",";
+    $csv_dump .= "\"".number_format($list["PRICE"][$i])."\"".",";
+    $csv_dump .= $tp.",";
+    $csv_dump .= $reg_date.",";
+    $csv_dump .= $update_date;
+    $csv_dump .= "\r\n";
+  }
+
+  export_csv($file_name, $csv_dump, $cnt, $page_name);
+?>

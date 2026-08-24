@@ -1,0 +1,152 @@
+<?php
+// 정보 처리
+function F_NON_WINING($_L) {
+  global $db;
+
+  $add_query = "";
+  $_L['price'] = preg_replace("/[^0-9\-]/", "", $_L['price']);
+
+  if ($_L['mode'] == 'read') {
+    $info = $db->get_data("SELECT * FROM NON_WINING WHERE WINNING_NO = '{$_L['WINNING_NO']}'");
+    $info = F_strip_slashes($info);
+    return $info;
+  }
+
+  $_L = F_add_slashes($_L);
+
+  if ($_L['mode'] == 'insert') {
+    $query = "
+      INSERT INTO NON_WINING(
+        WINNING_NO,
+        ORDERS_NO,
+        NAME,
+        HP,
+        POST1,
+        ADDR1,
+        ADDR2,
+        REG_DATE
+      ) VALUES (
+        '{$_L['WINNING_NO']}',
+        '{$_L['ORDERS_NO']}',
+        '{$_L['NAME']}',
+        '{$_L['HP']}',
+        '{$_L['POST1']}',
+        '{$_L['ADDR1']}',
+        '{$_L['ADDR2']}',
+        NOW()
+      )
+    ";
+  }
+
+  if ($_L['mode'] == 'update') {
+    if ($_L['file1']) $add_query .= "file1 = '{$_L['file1']}',";
+    $query = "
+      UPDATE NON_WINING SET
+        {$add_query}
+        ORDERS_NO  = '{$_L['ORDERS_NO']}',
+        NAME       = '{$_L['NAME']}',
+        HP         = '{$_L['HP']}',
+        POST1      = '{$_L['POST1']}',
+        ADDR1      = '{$_L['ADDR1']}',
+        ADDR2      = '{$_L['ADDR2']}'
+      WHERE
+        WINNING_NO = '{$_L['WINNING_NO']}'
+    ";
+  }
+
+  if ($_L['mode'] == 'delete') {
+    $query = "DELETE FROM NON_WINING WHERE WINNING_NO = '{$_L['WINNING_NO']}'";
+  }
+
+  $db->query($query);
+}
+
+// 목록 불러오기
+function F_NON_WINING_list($_L) {
+  global $db;
+
+  $add_query = "";
+  $wheres = isset($_L['wheres']) ? $_L['wheres'] : "";
+  $_L = F_add_slashes($_L);
+
+  if ($_L['find_object'] != null && $_L['find_text'] != null) {
+    $add_query .= " AND {$_L['find_object']} LIKE '%{$_L['find_text']}%'";
+  }
+  if ($_L['add_query']) {
+    $add_query .= stripslashes($_L['add_query']);
+  }
+  if (isset($_L['s_area'])) {
+    $add_query .= " AND area = '{$_L['s_area']}'";
+  }
+  if ($wheres) {
+    $add_query .= $wheres;
+  }
+
+  //  정렬기준
+  if ($_L['order'] != null) {
+    $order_query = " ORDER BY {$_L['order']} ";
+  } else {
+    $order_query = " ORDER BY WINNING_NO DESC ";
+  }
+
+  // 페이지 네비게이션 표시
+  if (!$_L['page']) {
+    $_L['page'] = 1;
+  }
+
+  if ($add_query) {
+    $querylen = strlen($add_query);
+    $where_query = " WHERE ".substr($add_query, 4, $querylen-4);
+  }
+
+  $page_info['cur'] = $_L['page'];
+  $page_info['row'] = $_L['row'];
+  $count_now = $page_info['row'] * ($page_info['cur'] - 1);
+  $top_rows = $_L['page'] * $_L['row'];
+  $page_info['total'] = $db->get_data_one("
+    SELECT
+      count(*)
+    FROM
+      NON_WINING AS n
+        LEFT JOIN
+      ORDERS AS o ON o.ORDERS_NO = n.ORDERS_NO
+        LEFT JOIN
+      MEMBER AS m ON m.USER_ID = o.USER_ID
+    $where_query
+  ");
+
+  // 위의 조건에 따라 목록 가져오기
+  $query = "
+    SELECT
+      n.*,
+      m.MEMBER_NO,
+      o.USER_ID,
+      o.PLAYDATE,
+      o.GUBUN,
+      o.IMG_DATE,
+      o.REG_DATE AS BUY_REG_DATE,
+      o.IMG_PATH
+    FROM
+      NON_WINING AS n
+        LEFT JOIN
+      ORDERS AS o ON o.ORDERS_NO = n.ORDERS_NO
+        LEFT JOIN
+      MEMBER AS m ON m.USER_ID = o.USER_ID
+    $where_query
+    $order_query
+    LIMIT {$count_now}, {$page_info['row']}
+  ";
+  $list = $db->get_list($query);
+
+  $list['page_string'] = print_page_num($page_info); // 페이지 번호 출력
+  $list['total'] = $page_info['total'];
+  $list['row'] = $_L['row'];
+  $list['count'] = 0;
+
+  if (is_array($list['WINNING_NO'])) {
+    $list['count'] = count($list['WINNING_NO']);
+  }
+
+  return $list;
+}
+?>

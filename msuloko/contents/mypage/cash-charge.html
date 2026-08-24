@@ -1,0 +1,278 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_common/config.php";
+
+  $menu_on['cash'] = true;
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  if ($M_login['user_id'] == 'rhkdahrcjs') {
+    meta_go("/");
+    exit;
+  }
+
+  $hide_card_charge = ($M_login['user_id'] == 'hj39766363');
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}' LIMIT 1");
+
+  // 구매 중인 페이지로 이동
+  if (isset($_GET["page"])) {
+    $file = ($_GET["page"] === "mm") ? "mega-step2.html" : "power-step2.html";
+    $page = "{$file}?tp=y&type={$_GET['type']}&count={$_GET['count']}&numbers={$_GET['numbers']}";
+
+    $cat_btn = "
+      <a href='/contents/lottery/{$page}' class='txt_center br10 dp_center btn_red fs30 lh30'>구매 중인 페이지로 이동</a>
+    ";
+  }
+
+  // 무통장 입금 대기건 확인
+  $query = "SELECT * FROM CASH WHERE CARDNAME='무통장' AND IS_USE='N' AND USER_ID='{$M_login['user_id']}' ORDER BY CASH_NO DESC LIMIT 1;";
+  $bank = $db->get_data($query);
+  if (isset($bank['CASH_NO'])) {
+    $bank_waiting = true;
+    $bank['CASH'] = number_format($bank['CASH']);
+    $bank['PRICE'] = number_format($bank['PRICE']);
+    $bank['REG_DATE'] = date("Y년 n월 j일 G시 i분", strtotime($bank['REG_DATE']));
+  }
+  unset($query);
+
+  // 신용카드 결제 대기건 확인
+  $card = $db->get_data("SELECT * FROM CASH WHERE CARDNAME='카드' AND IS_USE = '' AND USER_ID='".$M_login['user_id']."' ORDER BY CASH_NO DESC LIMIT 1;");
+  if (isset($card['CASH_NO'])) {
+    $card_waiting     = true;
+    $card['CASH']     = number_format($card['CASH']);
+    $card['PRICE']    = number_format($card['PRICE']);
+    $card['REG_DATE'] = date("Y년 n월 j일 G시 i분", strtotime($card['REG_DATE']));
+  }
+
+
+  // 최근 접속시간 업데이트
+  $db->query("UPDATE MEMBER SET LASTDATE=NOW(), REG_IP='{$ip_address}' WHERE USER_ID='{$M_login['user_id']}'");
+
+  // 알림 동의 마일리지 지급
+  if ($M_login['user_id']) {
+    $is_noti_ok = exec_token_mileage($M_login['user_id']);
+  }
+
+  // 결제 이벤트 대상 확인
+  $is_event_user = $is_event_user_b = false;
+  $cash_op = select_event_cash_op($M_login['user_id']);
+  $is_event_user = chk_event_user_a($M_login['user_id']);
+  if ($is_event_user_b === false) $is_event_user_b = chk_event_user_b1($M_login['user_id']);
+  if ($is_event_user_b === false) $is_event_user_b = chk_event_user_b2($M_login['user_id']);
+  if ($is_event_user_b === false) $is_event_user_b = chk_event_user_b3($M_login['user_id']);
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage bg">
+        <div class="contents f_NotoSansKR">
+          <section class="sec_charge">
+            <div class="section bg_navy wrap_com bx_padding pb5">
+              <h3 class="h_type4 fs33 fw500">
+                <img src="<?=$mlevel_image_op[$mb['LEVEL']]?>" class="mr5" style="width: 0.95rem;"><?=$mb['NAME']?>
+                <span class="color_red"> [<?=$mlevel_op[$mb['LEVEL']]?>]</span> 회원님의 보유캐시
+              </h3>
+              <div class="bx_type3 mb40">
+                <p class="f_GmarketSans fwB"><?=number_format($mb['CASH'])?> 캐시</p>
+              </div>
+            </div>
+            <div class="level_wrap">
+              <ul class="list_level3 txt_type3">
+                <li>
+                  <h3 class="h_type4" style="padding: 0.3rem 0 0.3rem 0;">
+                    <img src="/common/images/check_red.png" class="checker_red">회원 등급별 캐시백(마일리지 적립) 안내
+                  </h3>
+                </li>
+                <?php foreach ($grade_op as $key => $grade) { ?>
+                <li>
+                  <div class="bx_level3">
+                    <p><strong><?=$grade["name"]?> (<?=$grade["eng"]?>)</strong></p>
+                  </div>
+                  <div>
+                    <ul class="list_bul fs28">
+                      <?php if ($key != "brown") { ?>
+                      <li><?=$grade["cash"]?>만 캐시 복권 구매대행 이용 회원</li>
+                      <?php } else { ?>
+                      <li>회원가입과 동시에 부여되는 기본 등급</li>
+                      <?php } ?>
+                      <li>복권 구매대행 이용금액의 <strong class="color_red3"><?=$grade["percent"]?>%</strong> 마일리지 적립</li>
+                    </ul>
+                  </div>
+                </li>
+                <?php } ?>
+              </ul>
+            </div>
+
+            <div class="section wrap_com bg_white pt30 <?=isset($_GET["page"]) ? "" : "none"?>">
+              <?=$cat_btn?>
+            </div>
+            <div class="section wrap_com bg_white pt50 pb10">
+              <?php if ($is_event_user) { // 미접속자 ?>
+              <div><img src="/common/images/mevt_bn_sb50.png" style="width: 100%; border-radius: 16px; margin-bottom: 24px;" alt="슈퍼빅이벤트"></div>
+              <?php } else if ($is_event_user_b) { // 소액결제자 ?>
+              <div><img src="/common/images/mevt_bn_sb40.png" style="width: 100%; border-radius: 16px; margin-bottom: 24px;" alt="슈퍼빅이벤트"></div>
+              <?php } ?>
+              <div class="tit-wrap flex" style="align-items: center; justify-content: space-between;">
+                <h3 class="h_type4 pb10">
+                  <img src="/common/images/check_red.png" class="checker_red">
+                  <span class="fs30">충전하실 금액을 선택해 주세요</span>
+                  <p><i class="ml15 fs27 color_red3">(부가세 10% 별도)</i></p>
+                </h3>
+                <?php if (!$hide_card_charge) { ?>
+                <a href="/contents/cs/notice_detail.php?no=2338" class="btn_interestfree">신용카드 무이자 안내</a>
+                <?php } ?>
+              </div>
+
+              <div class="cash_items">
+                <?php foreach ($cash_op as $k => $v) { ?>
+                <div class="item<?php if ($v['cash'] == 60000) echo ' is-best'; ?>">
+                  <?php if ($v['cash'] == 60000) { ?>
+                  <span class="charge-best-badge"><em>BEST</em><small>추천</small></span>
+                  <?php } ?>
+                  <p class="num"><span class="point"><?=number_format($v['cash'])?></span>캐시</p>
+                  <?php if ($v['point'] > 0) { ?>
+                  <p class="bonus">
+                    <span class="txt">+ 보너스 포인트</span>
+                    <span class="point"><?=number_format($v['point'])?>P</span>
+                    <img src="/common/images/up_icon.svg">
+                  </p>
+                  <?php } ?>
+                  <div class="exp" style="margin: 9px 0 9px;">
+                    <p class="tit">결제금액:</p>
+                    <p class="won"><?=number_format($v['cash'])?><span class="unit">원</span></p>
+                  </div>
+                  <div class="exp">
+                    <p class="cash"><?=number_format($v['cash'])?><span class="unit">캐시</span></span>
+                    <?php if ($v['point'] > 0) {?>
+                    <span class="msign">+</span>
+                    <p class="point"><?=number_format($v['point'])?><span class="unit">포인트</span> <?=$v["point_text"];?></p>
+                    <?php } ?>
+                  </div>
+                  <div class="btn_wrap">
+                    <?php if (!$hide_card_charge && $v['cash'] < 600000) { ?>
+
+                      <?php if (isset($card_waiting) && $card_waiting) { ?>
+                      <a class="btn pay_card buy_pay_card_waiting_btn" data-cash="<?=$v['cash']?>" >신용카드 캐시충전</a>
+                      <?php } else { ?>
+                      <a class="btn pay_card buy_pay_btn" data-no="<?=$k?>">
+                        <?php if ($v['cash'] >= 60000 && $v['cash'] < 600000) { ?>
+                        <p class="tag card">무이자 할부</p>
+                        <?php } ?> 신용카드 캐시충전
+                      </a>
+                      <?php } ?>
+
+                    <?php } ?>
+
+
+
+                    <?php if ($bank_waiting) { ?>
+                    <a class="btn pay_bank buy_pay_bank_waiting_btn" <?php if ($v['cash'] == 600000) echo 'style="width: 125px;"';?>>무통장 캐시충전</a>
+                    <?php } else { ?>
+                    <a class="btn pay_bank buy_pay_bank_btn" data-no="<?=$k?>" <?php if ($v['cash'] == 600000) echo 'style="width: 125px;"';?>>무통장 캐시충전</a>
+                    <?php } ?>
+                  </div>
+                </div>
+                <?php } ?>
+              </div>
+            </div>
+            <div class="section bg_navy wrap_com bg_white">
+              <ul class="list_bul txt_type2 lh16">
+                <li><p class="color_000">모든 결제상품은 <strong class="color_red3">부가세(VAT) 10% 별도</strong>입니다.</p></li>
+                <li><p class="color_000">캐시는 슈로코의 유료 서비스를 이용하기 위해 발행된 사이버머니로 현금과 1:1 비율로 환산 됩니다.</p></li>
+                <li>
+                  <p class="color_000">슈로코의 결제서비스를 악용하는 사례를 방지하기 위해 캐시 충전 후 미사용 캐시는 카드 승인 취소만 가능합니다.</p>
+                </li>
+              </ul>
+            </div>
+            <div class="section wrap_com bg_white pt50 pb20">
+              <h3 class="h_type4 pb10"><img src="/common/images/check_red.png" class="checker_red"> 캐시 충전 안내</h3>
+              <div class="div_youtube">
+                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/DK1Ds993z7M" title="video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="border-radius:10px;"></iframe>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+
+  <form name="w_frm" id="w_frm" method="GET" action="/contents/lottery/power-step2.html">
+    <input type="hidden" name="GUBUN" id="gubun" value="<?=(isset($_COOKIE['cat_GUBUN'])) ? $_COOKIE['cat_GUBUN'] : ""?>">
+    <input type="hidden" name="GAMECNT" id="gamecnt" value="<?=(isset($_COOKIE['cat_GAMECNT'])) ? $_COOKIE['cat_GAMECNT'] : ""?>" />
+    <input type="hidden" name="GUBUNO" id="gubunno" value="<?=(isset($_COOKIE['cat_GUBUNO'])) ? $_COOKIE['cat_GUBUNO'] : ""?>" />
+    <input type="hidden" name="PAYMENT" id="payment" value="<?=(isset($_COOKIE['cat_PAYMENT'])) ? $_COOKIE['cat_PAYMENT'] : ""?>" />
+    <input type="hidden" name="CASH" id="cash" value="<?=(isset($_COOKIE['cat_CASH'])) ? $_COOKIE['cat_CASH'] : "0"?>" />
+    <input type="hidden" name="POINT" id="point" value="<?=(isset($_COOKIE['cat_POINT'])) ? $_COOKIE['cat_POINT'] : "0"?>" />
+    <input type="hidden" name="IPOINT" id="ipoint" value="<?=(isset($_COOKIE['cat_IPOINT'])) ? $_COOKIE['cat_IPOINT'] : "0"?>" />
+    <input type="hidden" name="price" id="price" value="<?=(isset($_COOKIE['cat_price'])) ? $_COOKIE['cat_price'] : $good['PRICE2']?>" />
+    <input type="hidden" name="tp" id="tp" value="Y" />
+  </form>
+  <form name="c_frm" id="c_frm" method="POST" action="./cash_pay.html">
+    <input type="hidden" name="cash_no" id="cash_no" />
+  </form>
+</body>
+
+<script>
+  $(document).ready(function() {
+    // 유튜브 안내 영상 높이 조정
+    let _width = $('.div_youtube').width();
+    let _height = _width * 9 / 16;
+    $('.div_youtube').css('height', _height);
+
+    $(document).on("click", ".buy_pay_btn_system", function(e) {
+      alert("결제 시스템 안정성 강화를 위한 IDC 이관 작업으로 금일 05~07시 동안 서비스 이용이 일시 중단됩니다.");
+      return false;
+    });
+
+    $(document).on("click", ".buy_pay_btn", function() {
+      var cash = parseInt($(this).data("cash"), 10);
+      var targetAmounts = [60000, 120000, 200000, 300000];
+      var now = new Date();
+      var hour = now.getHours();
+      var isNightTime = (hour >= 22) || (hour < 9);
+      if (targetAmounts.indexOf(cash) !== -1 && isNightTime) {
+        alert("AM 09:00부터 순차적으로 결제진행이 됩니다.");
+        return false;
+      }
+
+
+      var no = $(this).data("no");
+
+      $("#cash_no").val(no);
+      $("#c_frm").submit();
+    });
+
+    $(document).on("click", ".buy_pay_bank_btn", function() {
+      var no = $(this).data("no");
+      $("#cash_no").val(no);
+      $("#c_frm").attr("action", "./cash_pay_bank.html").attr("method", "get").submit();
+    });
+
+    $(document).on("click", ".buy_pay_bank_waiting_btn", function() {
+      $(location).attr('href',"/contents/mypage/cash_pay_bank_waiting.html");
+    });
+
+    $(document).on("click", ".buy_pay_card_waiting_btn", function() {
+      $(location).attr('href',"/contents/mypage/cash_pay_card_waiting.html");
+    });
+  });
+</script>
+
+<script src="/common/js/config.js?version=<?=$version?>" charset="utf-8"></script>
+<script src="/common/js/common.js?version=<?=$version?>" charset="utf-8"></script>
+<script src="/common/js/token.js?version=<?=$version?>" charset="utf-8"></script>
+
+<?php if ($is_noti_ok) { // 알림동의 마일리지 지급 안내 ?>
+<script>
+  alert("[<?=$M_login['name']?>] 회원님!<br><br>알림 동의로 [6,000 마일리지]가 지급되었습니다.<br><br>마일리지는 즉시 사용 가능합니다.");
+</script>
+<?php } ?>
+
+</html>

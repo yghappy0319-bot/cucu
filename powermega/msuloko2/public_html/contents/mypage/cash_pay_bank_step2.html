@@ -1,0 +1,216 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  $menu_on['cash'] = true;
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}' LIMIT 1");
+
+  // 결제 이벤트 대상 확인
+  $cash_op = select_event_cash_op($M_login['user_id']);
+
+  $cash = $cash_op[$_GET["cash_no"]];
+
+  $RES["price"]       = $cash["price"];
+  $RES["price_text"]  = number_format($cash["price"]);
+  $RES["ipoint"]      = $cash["ipoint"];
+  $RES["ipoint_text"] = $cash["ipoint_text"];
+  $RES["cash"]        = $cash["cash"];
+  $RES["cash_text"]   = number_format($cash["cash"]);
+?>
+
+<style>
+  .bx_gray.top {
+    padding: 0.5rem 0 0.5rem 0.5rem;
+    font-size: 1rem;
+    color: #545454;
+    line-height: 1.4;
+    font-weight: bold;
+  }
+  .bx_gray {
+    background: #eee;
+  }
+  .bx_gray ul {
+    list-style: none;
+  }
+  .bx_gray .list_bul > li {
+    padding: 0;
+  }
+  .bx_gray .list_bul > li {
+    /*padding-left: 0.6rem;*/
+    position: relative;
+    line-height: 1rem;
+    font-size: 0.5rem;
+    letter-spacing: -0.5px;
+  }
+  .bx_gray .list_bul > li:before {
+    background: none;
+    /*content: "*";*/
+    width: inherit;
+    height: inherit;
+  }
+  .bx_gray .list_bul > li:before {
+    position: absolute;
+    left: -12px;
+    top: 0.2em;
+    display: inline-block;
+    vertical-align: middle;
+    border-radius: 100%;
+  }
+  .bx_gray .list_bul .pd-left { position: absolute; left: 3.7rem; }
+  .sec_charge .pay {
+    margin-top: 20px;
+    text-align: center;
+  }
+  .sec_charge .pay .bx_border {
+    border: 1px solid #5c5c5c;
+    border-radius: 0.25rem;
+  }
+  .sec_charge .btn_pay {
+    width: 100%;
+    height: 2.5rem;
+    line-height: 2.5rem;
+    font-size: 1rem;
+  }
+  .sec_charge .btn_pay2 {
+    width: 100%;
+    height: 2.5rem;
+    line-height: 2.5rem;
+    font-size: 0.9rem;
+  }
+  .f_GmarketSans {
+    font-family: 'GmarketSans', sans-serif !important;
+  }
+  .btn_red {
+    background: #f00 !important;
+    color: #fff;
+  }
+  .btn_gray {
+    background: #494949 !important;
+    color: #fff;
+  }
+  .border_blue {
+    border: 2px solid blue !important;
+  }
+</style>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage bg">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub bb border_dcdcdc" style="margin-bottom: 0;">
+            <h2 class="title">캐시충전</h2>
+            <a href="/contents/mypage/cash-charge.html" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <section class="sec_charge">
+            <div class="section wrap_com bg_white">
+              <h3 class="h_type4 add_before pt30">입금액 확인</h3>
+              <div class="bx_gray top" style="border-radius: 0.25rem;">
+                <ul class="flex" style="justify-content: center; padding: 0.55rem 0.75rem 0.55rem 0rem; letter-spacing: -0.05em;"><span class="fs33"><img src="/common/images/check_red.png" style="width: 0.9rem;"> 입금액 : <strong id="cash_cash" class="color_red3"><?=number_format($cash["price"])?>원</strong> (VAT 포함)</span></ul>
+                <ul class="list_bul"><!--style="color:#e60012"-->
+                  <li class="fs28" style="padding:0 0.5rem 0.5rem 0;"> 입금 전 필수 확인 사항 및 입금 계좌번호 발송 안내</li>
+                  <li class="flex"><span><img src="/common/images/check_red.png" style="width: 0.7rem;"></span> <span style="padding: 0 0 0.2rem 0.2rem;">입금 후 캐시 충전 확인은 마이페이지의 My 캐시 또는 복권 구매시 확인 가능합니다.</span></li>
+                  <!-- <li class="flex"><span><img src="/common/images/check_red.png" style="width: 0.7rem;"></span> <span style="padding: 0 0 0.2rem 0.2rem;">이체 후 캐시 충전은 영업시간 기준 최대 1시간이 소요될 수 있습니다.<br>(평일 오전 10시~저녁 7시)</span></li>
+                  <li class="flex"><span><img src="/common/images/check_red.png" style="width: 0.7rem;"></span> <span style="padding: 0 0 0.2rem 0.2rem;">영업시간 이후의 무통장 입금은 익일 오전 11시까지 캐시 충전 완료 됩니다.</span></li>
+                  <li class="flex"><span><img src="/common/images/check_red.png" style="width: 0.7rem;"></span> <span style="padding: 0 0 0.2rem 0.2rem;">주말 및 공휴일 무통장 입금은 캐시 충전까지 <span class="color_red3">최대 16시간</span>이 소요될 수 있습니다.</span></li> -->
+                  <li class="flex"><span><img src="/common/images/check_red.png" style="width: 0.7rem;"></span> <span style="padding: 0 0 0.2rem 0.2rem;">입금 오류 또는 복권 구매전 환불은 고객센터 1:1문의를 이용해주십시오.</span></li>
+                  <li class="flex"><span><img src="/common/images/check_red.png" style="width: 0.7rem;"></span> <span style="padding: 0 0 0.2rem 0.2rem;">주식회사 파메코의 입금 계좌번호가 회원님의 전화번호로 문자 발송되오나, 스팸으로 분류되어 즉시 확인이 불가할 수 있으니 참고하여 주십시오.</span></li>
+                </ul>
+              </div>
+              <div class="pay">
+                <button type="button" class="btn_pay2 bx_border btn_red f_GmarketSans btm_bank_buy_cash">
+                  <strong class="blink">캐시충전 신청 및 입금 계좌번호 확인</strong>
+                </button>
+                <div style="text-align:center;margin-bottom: 0.9rem; margin-top: 1.6rem; display: none;" class="f_GmarketSans btn_pay_loading">캐시충전 신청중입니다.</div>
+                <button type="button" class="btn_pay bx_border btn_black f_GmarketSans btm_bank_cancel_cash mt20">
+                  <strong>캐시충전 취소</strong>
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+
+  <form name="form" id="w_frm" method="GET" action="./cash_pay_bank_step3.html">
+    <input type="hidden" class="it1" value="<?=$_GET["ITEMNAME"]?>" name="ITEMNAME" id="ITEMNAME" /><!--상품명-->
+    <input type="hidden" class="it1" value="<?=$_GET["cash_no"]?>" name="cno" id="cno" /><!--구매상품번호-->
+  </form>
+</body>
+
+<script>
+  function confirmEvent() {
+    window.name = "myOpener";
+    var win;
+    var iLeft = (window.screen.width / 2) - (Number(815) / 2);
+    var iTop = (window.screen.height / 2) - (Number(600) / 2);
+    var features = "menubar=no,toolbar=no,status=no,resizable=yes,scrollbars=no,location=no";
+    features += ",left=" + iLeft + ",top=" + iTop + ",width=" + 815 + ",height=" + 600;
+    win = window.open("", "pcPop", features);
+    win.focus();
+
+    $(".btn_pay").hide();
+    $(".btn_pay_loading").show();
+    $("#w_frm").submit();
+
+    var winLoop = setInterval(function() {
+      if (win.closed) {
+        clearInterval(winLoop);
+        location.href = "./cash-charge.html";
+      }
+    }, 1000);
+  }
+
+  $(document).ready(function() {
+    $(document).on("click", ".btm_bank_buy_cash", function() {
+      $(this).hide();
+      $(".btn_pay_loading").show();
+
+      $.post("./bank_action.php", {
+        cno: $("#w_frm").find("#cno").val(),
+        ITEMNAME: $("#w_frm").find("#ITEMNAME").val()
+      }, function(e) {
+        var res = JSON.parse(e);
+        if (res.error == false) {
+          alert(res.msg);
+          if (res.goUrl.length > 0) location.href = res.goUrl;
+          $(".btm_bank_buy_cash").show();
+          $(".btn_pay_loading").hide();
+          return false;
+        } else {
+          _tfa.push({notify: 'event', name: 'lead', id: 2024947});
+          $("#w_frm").submit();
+        }
+      })
+    });
+
+    $(document).on("click", ".btm_bank_cancel_cash", function() {
+      location.href = "/contents/mypage/cash-charge.html";
+    });
+  });
+
+  window.onload=function () {
+    document.addEventListener('touchstart', function(event) {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    })
+    var lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+      var now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 100) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false)
+  }
+</script>
+</html>

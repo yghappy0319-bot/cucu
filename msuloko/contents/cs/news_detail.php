@@ -1,0 +1,141 @@
+<?php
+  if (is_numeric($_GET['no'])) {
+    require_once $_SERVER['DOCUMENT_ROOT']."/_common/config.php";
+    require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_BBS.php";
+    $no = xss_clean($_GET['no']);
+    $info = F_BBS(array("mode"=>"read", "BBS_NO"=>$no));
+
+    $page_title = stripDescription(strip_tags($info['SUBJECT'])) . " - 파워볼, 메가밀리언, 미국 로또, 슈로코 [고객센터 | 최신뉴스]";
+    $page_description = cutString(stripDescription(strip_tags($info['CONTENT'])),150);
+  };
+
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_BBS.php";
+
+  // INJECTION
+  if (!is_numeric($no)) {
+    meta_go('/');
+  }
+  $no = xss_clean($no);
+
+  $l_href = "news.html";
+  $v_href = "news_details.html";
+  $info = F_BBS(array("mode"=>"read", "BBS_NO"=>$no));
+
+  $fild = '';
+  $table = "BBS";
+
+  $subject = $info['SUBJECT'];
+  $subject = str_replace("{new}", "<img src='/common/images/icon_new_3d.png' style='width:1.2rem'>", $subject);
+  $subject = str_replace("{i}", "<img src='/common/images/icon_i_3d.png' style='width:1.2rem'>", $subject);
+  $initialValue = stripslashes($info['CONTENT']);
+
+  if (count($info) < 1) {
+    meta_go('/');
+  }
+
+  // 1:1 문의 일 경우 작성자만 보도록 처리 (SLK-452)
+  if ($info['GUBUN'] == "QNA") {
+    if ($M_login['user_id'] != $info['USER_ID']) {
+      meta_go('/');
+      exit();
+    }
+  }
+  $menu_on['bbs'] = true;
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="service bg">
+        <div class="contents f_NotoSansKR">
+          <?php
+            $bbs_sub['news'] = true;
+            include "inc_bbs.html";
+          ?>
+          <section class="sec_details wrap_com bg_white ls50">
+            <div class="board_details">
+              <div class="title">
+                <div><?=$subject?></div>
+                <ul class="list_info">
+                  <li>
+                    <span>날짜</span>
+                    <p><?=date("Y.m.d", strtotime($info['REG_DATE']))?></p>
+                  </li>
+                  <li>
+                    <span>조회</span>
+                    <p><?=number_format($info['HIT'])?></p>
+                  </li>
+                </ul>
+              </div>
+              <div class="content">
+                <div class="txt" style="word-break: break-all;">
+                  <?php if ($info['YUTUBE'] != '') { ?>
+                  <div class="play" id="player_box">
+                    <div id="player" style="width: 100%;"></div>
+                  </div>
+                  <?php } ?>
+                  <p>
+                    <iframe src="/nse/text_detail.html?no=<?=$info['BBS_NO']?>" style="width: 100%;" scrolling="no" frameborder="0" onload="this.height=this.contentWindow.document.documentElement.scrollHeight"></iframe>
+                  </p>
+                </div>
+              </div>
+              <div>
+                <button type="button" onclick="javascript:location.href='news.html';" class="btn_navy type2">목록</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+
+  <form name="read_hit" action="#" enctype='multipart/form-data' method="post">
+    <input type="hidden" name="fild" value="<?=$table?>">
+    <input type="hidden" name="table" value="<?=$table?>">
+    <input type="hidden" name="no" value="<?=$no?>">
+  </form>
+</body>
+
+<script>
+  $(document).ready(function() {
+    hit();
+  });
+
+  function hit() {
+    var frm = $('[name="read_hit"]');
+    $.post("/hit_chk.php", {
+      fild: frm.find('[name="fild"]').val(),
+      table: frm.find('[name="table"]').val(),
+      no: frm.find('[name="no"]').val(),
+    }, function(e){}, 'json');
+  }
+
+  if ($('#player_box').length > 0) {
+    var tag = document.createElement('script');
+
+    tag.src = 'https://www.youtube.com/iframe_api';
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    var player;
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        videoId: '<?=$info["YUTUBE"]?>',
+        events: {
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerStateChange(event) {
+      if (event.data == 0) {
+        $('#player_box').html('<div id="player"></div>');
+        onYouTubeIframeAPIReady();
+      }
+    }
+  }
+</script>
+</html>

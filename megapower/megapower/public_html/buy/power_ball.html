@@ -1,0 +1,109 @@
+<?php
+  $title = "파워볼";
+  $pb_category_on = "class='on' ";
+  include "../header.html";
+  $_game_name = "pb"; //게임명
+
+  if($이벤트_럭키딜){
+    $_gnt = 10; //최대 게임수
+  }else{
+    $gnt = 100; //최대 게임수
+  }
+
+  $power_ball = 파워볼();
+  $power1 = $power_ball['prize'] * 환율();
+  $서머타임 = 미국서머타임();
+
+  $kr_power_result = $power_ball['ko_date'];
+  $_파워볼추첨 = 파워볼_결과일($kr_power_result);
+
+  if (다음회차($_파워볼추첨)) {
+
+    $주문회차 = $power_ball['round'] + 1;
+    $_결과발표 = $_파워볼추첨 ." 20:00:00";
+
+    $_한국추첨일 = date("Y-m-d",strtotime($_결과발표));
+    $_kor추첨일 = date("m월 d일",strtotime($_결과발표));
+    $_한국요일 = 추첨일요일반환($_한국추첨일);
+    $_한국주문마감일 = date("Y-m-d",strtotime($_결과발표))." ".$서머타임['주문마감시간'].":00:00";
+
+    $_미국추첨일 = date("Y-m-d",strtotime($_결과발표." -1 days"));
+    $_usa추첨일 = date("m월 d일",strtotime($_결과발표." -1 days"));
+    $_미국요일 = 추첨일요일반환($_미국추첨일);
+
+  } else {
+    $주문회차 = $power_ball['round'] + 2; //다음 추첨일
+    $_결과발표 = 파워볼_결과일($_파워볼추첨)." 20:00";
+    $_파워볼추첨 = 파워볼_결과일($_파워볼추첨);
+
+    $_한국추첨일 = date("Y-m-d",strtotime($_결과발표));
+    $_kor추첨일 = date("m월 d일",strtotime($_결과발표));
+    $_한국요일 = 추첨일요일반환($_한국추첨일);
+    $_한국주문마감일 = date("Y-m-d",strtotime($_결과발표))." ".$서머타임['주문마감시간'].":00:00";
+
+    $_미국추첨일 = date("Y-m-d",strtotime($_결과발표." -1 days"));
+    $_usa추첨일 = date("m월 d일",strtotime($_결과발표." -1 days"));
+    $_미국요일 = 추첨일요일반환($_미국추첨일);
+  }
+
+  if($이벤트_럭키딜){ // 당첨금이 낮을때 하는 구매유도 이벤트. 럭키 딜 이벤트
+    if($buy>0){
+      $_amount = 3700;
+      $_grade = $member['grade'];
+    }
+    if($_grade>0){
+      $gnt = $_grade;
+      $default_select_game = $gnt;
+    }else{
+      $gnt = $_gnt;
+      $default_select_game = 5;
+    }
+  }
+
+include_once "pc_power_ball.php";
+?>
+<? include_once "./coupon.php"; ?>
+
+<form method="POST" id="buyFrm" >
+  <input type="hidden" id="prosess" />
+  <?
+    $gcnt = $gnt;
+    for($nb=1;$nb<=$gcnt;$nb++){
+  ?>
+  <input type="hidden" name="lotto[]" class="lotto_number select_number_<?=$nb?>" />
+
+  <? } ?>
+  <input type="hidden" name="order_game_cnt" class="order_game_cnt" />
+  <input type="hidden" name="order_game_name" id="order_game_name" value="<?=$_game_name?>" />
+  <input type="hidden" name="order_round" id="order_round" value="<?=$주문회차?>" />
+  <input type="hidden" name="order_drawing_day" value="<?=$_한국추첨일?>" />
+
+  <input type="hidden" name="coupon_idx" />
+  <input type="hidden" name="org_total_amount" value="<?=$_amount * 5 ?>" />
+  <input type="hidden" name="total_amount" id="total_amount" value="<?=$_amount * 5 ?>" />
+  <input type="hidden" name="sell_prize_money" class="amount_input" id="sell_prize_money"  />
+  <input type="hidden" name="sell_lucky_point" class="amount_input" id="sell_lucky_point"  />
+  <? if($이벤트_럭키딜){?>
+    <? if($buy>0){?>
+    <input type="hidden" name="event_order" value="lucky_deal" />
+    <? } ?>
+  <? } ?>
+</form>
+
+
+<script>
+Day_CountDownTimer('<?= $_한국주문마감일 ?>', 'power_countdown');
+const selectedNumbers = [];
+const selectedNewNumbers = [];
+var buy_val = 1;
+const default_amount = "<?=$_amount?>";
+const lot_cnt = "<?=$gnt?>";
+const white_ball_count = 69;
+const last_ball_count = 26;
+const last_ball_name = "파워볼";
+
+</script>
+<? include_once "game_js.php"; ?>
+<?php
+  include "../footer_new.html";
+?>

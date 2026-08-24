@@ -1,0 +1,38 @@
+# SSH keys and SFTP connection settings (not source code)
+**/.ssh/
+**/*.pem
+**/*.key
+**/.vscode/sftp.json
+sftp.json
+
+# Environment / secret files
+**/.env
+**/.env.*
+**/.env.local
+**/.env.production
+
+# Cloud service-account keys (never upload)
+**/*firebase-adminsdk*.json
+**/*adminsdk*.json
+**/serviceAccount*.json
+**/google-services.json
+**/*-credentials.json
+**/credentials.json
+
+# OS and editor
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.log
+
+# Local caches (not project source)
+**/.cache/
+**/.local/
+
+# Dependencies that can be restored (keep vendor PHP libs — they are needed to run)
+**/node_modules/
+
+# GitHub rejects files over 100MB; keep large archives on disk only
+**/*.zip
+**/*.rar
+**/*.7z

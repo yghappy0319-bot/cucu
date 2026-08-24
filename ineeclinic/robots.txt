@@ -1,0 +1,4 @@
+User-agent: *
+ Allow: /
+
+Sitemap: https://ineeclinicseoul.com/sitemap.xml

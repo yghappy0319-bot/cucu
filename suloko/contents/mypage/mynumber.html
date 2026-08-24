@@ -1,0 +1,160 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_MY_BALL.php";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='".$M_login['user_id']."'");
+
+  if (!$page) $page = 1;
+  $limit       = 20;
+  $find_text   = "";
+  $find_object = "";
+  $add_query   = " AND MEMBER_NO='".$mb['MEMBER_NO']."'";
+
+
+  $condition = array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => " REG_DATE DESC",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  );
+  $list = F_MY_BALL_list($condition);
+
+  if ($list['total'] <= 0) {
+    $list['BALL_NO'] = array();
+  }
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html";?>
+  <main id="main">
+    <div class="wrap_mypage clear wrap_com">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/nav-mypage.html";?>
+      <div class="right">
+        <section class="sec_mynumber">
+          <div class="wrap_title">
+            <h3 class="heading" style="font-size:1.25rem">자주쓰는 번호 관리</h3>
+          </div>
+          <div class="bx_gray ls50">
+            <div class="clear">
+            <ul class="list_bul gray left" style="color:#373b46">
+              <li>자주쓰는 복권 번호 생성 및 등록은 메가밀리언, 파워볼 각 구매 페이지에서 설정할 수 있습니다.</li>
+            </ul>
+            <div class="right">
+            <ul class="btns_buy clear">
+              <li class="left"><a href="/contents/lottery/mega.html" class="btn_navy">메가밀리언 구매하기</a></li>
+              <li class="left"><a href="/contents/lottery/power.html" class="btn_navy">파워볼 구매하기</a></li>
+            </ul>
+            </div>
+            </div>
+          </div>
+          <div class="wrap_title">
+            <h4 class="heading fs20">복권별 번호 관리</h4>
+          </div>
+          <div class="wrap_tb">
+            <table class="tb_type2">
+              <caption>
+                <div class="hide">
+                  보너스 포인트
+                </div>
+              </caption>
+              <colgroup>
+                <col width="8.38%">
+                <col width="15%">
+                <col width="">
+                <col width="23%">
+                <col width="10%">
+              </colgroup>
+              <thead class="bg_navy">
+                <tr>
+                  <th>NO</th>
+                  <th>복권명</th>
+                  <th>나의 복권 번호</th>
+                  <th>등록일</th>
+                  <th>삭제하기</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php
+                  $no = 0;
+                  for ($i = 0; $i < count($list['BALL_NO']); $i++) {
+                    $cla = ($list['GUBUN'][$i] == 'MM') ? "mega" : "power";
+
+                    for ($s = 1; $s < 6; $s++) {
+                      if ($list['BALL'.$s][$i] != '') {
+                        $no++;
+                        $ball = explode(",", $list['BALL'.$s][$i]);
+                ?>
+                <tr>
+                  <td><?=$no?></td>
+                  <td><?=$ball_op[$list['GUBUN'][$i]]?></td>
+                  <td>
+                    <div>
+                      <ul class="list_ball clear">
+                        <li><span><?=$ball[0]?></span></li>
+                        <li><span><?=$ball[1]?></span></li>
+                        <li><span><?=$ball[2]?></span></li>
+                        <li><span><?=$ball[3]?></span></li>
+                        <li><span><?=$ball[4]?></span></li>
+                        <li class="<?=$cla?> "><span><?=$ball[5]?></span></li>
+                      </ul>
+                    </div>
+                  </td>
+                  <td><?=date("Y-m-d H:i", strtotime($list['REG_DATE'][$i]))?></td>
+                  <td class="delete"><a href="javascript:del_my_number('<?=$list['BALL_NO'][$i]?>','<?=$s?>')"><span class="hide">삭제하기</span></a></td>
+                </tr>
+                <?php
+                      }
+                    }
+                  }
+                ?>
+              </tbody>
+            </table>
+          </div>
+          <?php if ($list['total'] <= 0) { ?>
+          <div class="nohistory">
+            <div class="wrap_img"><img src="/common/images/img_nohistory.jpg" alt=""></div>
+            <p>등록한 나의 복권 번호가 없습니다.</p>
+          </div>
+          <?php } else { ?>
+          <!-- 페이징 숫자 표시는 5개까지 -->
+          <div class="wrap_paging mb60">
+            <?php
+              $page_info['cur'] = $condition['page'];
+              $page_info['row'] = $condition['row'];
+              $page_info['total'] = $list['total'];
+              $list['page_string'] = print_page_num1($page_info);
+              echo $list['page_string'];
+            ?>
+          </div>
+          <?php } ?>
+        </section>
+      </div>
+    </div>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html";?>
+</body>
+
+<script>
+ function del_my_number(ball_no,balls){
+  let con = confirm("복권번호를 삭제합니다.");
+  if (con == true) {
+   $.post("/other.php",{
+    mode: "my_lotto_number_each_del",
+    ball_no: ball_no,
+    balls: balls
+   }, function(e) {
+    open("/contents/mypage/mynumber.html", "_self");
+   }, "json");
+  }
+ }
+</script>
+
+</html>

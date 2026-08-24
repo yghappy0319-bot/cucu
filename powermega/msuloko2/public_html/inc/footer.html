@@ -1,0 +1,56 @@
+<footer class="f_NotoSansKR">
+  <div class="wrap_com">
+    <div class="top ls25">
+      <h2 class="hide">회사 정보</h2>
+      <ul class="flex align_center space">
+        <li><a href="/policy-privacy.html" >개인정보처리방침</a></li>
+        <li><a href="/terms.html">이용약관</a></li>
+        <li><a href="/contents/service/purchase.html">서비스안내</a></li>
+        <li><a href="/contents/cs/news.html">고객센터</a></li>
+        <li><a href="/contents/cs/direct.html">1:1문의</a></li>
+      </ul>
+    
+    <?php if (!empty($M_login['user_id'])) { ?>
+    <div class="mid">
+      <p style="float: right; right: 1.5rem;">
+        <img src=<?=$commonImageURI?>kb-escrow.png style="width: 58px;" />
+      </p>
+      <h2 class="hide">사업 정보</h2>
+      <ul>
+        <?php if (!empty($site_company_name)): ?><li class="dp_b"><?=$site_company_name?></li><?php endif; ?>
+        <?php if (!empty($site_ceo)): ?><li class="dp_b">대표이사 : <?=$site_ceo?></li><?php endif; ?>
+        <?php if (!empty($site_address)): ?><li class="dp_b">주소 : <?=$site_address?></li><?php endif; ?>
+        <?php if (!empty($site_business_no)): ?><li class="dp_b">사업자등록번호 :  <?=$site_business_no?></li><?php endif; ?>
+        <?php if (!empty($site_mail_order_no)): ?><li class="dp_b">통신판매업신고번호 : <?=$site_mail_order_no?></li><?php endif; ?>
+        <li class="dp_b" aria-hidden="true"></li>
+        <?php if (!empty($site_privacy_officer)): ?><li class="dp_b">개인정보관리책임자 : <?=$site_privacy_officer?></li><?php endif; ?>
+        <?php if (!empty($site_support_email)): ?><li class="dp_b">서비스 및 제휴 문의 : <?=$site_support_email?></li><?php endif; ?>
+      </ul>
+      <p class="ls50 color_red3 mt10">로또는 도박이 아닙니다. 과도한 로또, 도박은 사행성 중독으로 인한 경제적 부담을 불러올 수 있습니다. </p>
+      <p class="ls50 color_red3 mt10">만19세 미만 미성년자는 복권을 구매하거나 당첨금을 수령할 수 없습니다.</p>
+    </div>
+    <?php } ?>
+
+    <div class="btm">
+      <div class="flex space align_end">
+        <div class="wrap_sns" style="display: none;">
+          <h2 class="hide">관련 사이트</h2>
+          <ul class="sns flex justify_center align_center">
+            <li class="facebook"><a href="" title=""><span class="hide">페이스북</span></a></li>
+            <li class="insta"><a href="" title=""><span class="hide">인스타그램</span></a></li>
+            <li class="youtube"><a href="" title=""><span class="hide">유튜브</span></a></li>
+          </ul>
+        </div>
+        <div class="app clear" style="display: none;">
+          <h2 class="left f_NotoSansKR fw500 ls50" style="color: #ccc;">서비스 APP</h2>
+          <ul class="left">
+            <li class="googleplay"><span class="hide">구글플레이</span></a></li>
+            <li class="appstore"><span class="hide">애플 앱스토어</span></a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<?php include $_SERVER['DOCUMENT_ROOT']."/inc/popup.html"; ?>

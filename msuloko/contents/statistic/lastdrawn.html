@@ -1,0 +1,282 @@
+<?php
+  $page_title = "미출현 번호 통계 - 파워볼, 메가밀리언, 미국 복권, 슈로코";
+  $page_description = "메가밀리언, 파워볼 등 과거 당첨 번호 통계 정보 제공";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  $menu_on['stats'] = true;
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage">
+        <div class="contents f_NotoSansKR">
+          <div class="logo-btn-wrap">
+            <div class="logo-wrap">
+              <div class="logo-txt">
+                <span>메가밀리언</span>
+                <p class="add_after h_type2">MEGA MILLIONS<sup>®</sup></p>
+              </div>
+              <img src="/common/images/logo_mega.png" alt="" class="logo-img">
+            </div>
+          </div>
+          <div class="title_sub bb border_dcdcdc" style="margin-bottom: 0;">
+            <a href="/contents/mypage/" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <div style="padding:15px 0 30px;">
+            <section class="sec_stats wrap_com section ls50 bg_white">
+              <h3 class="h_type4" style="padding-bottom: 0px !important;">당첨번호 통계</h3>
+              <div class="wrap_tab">
+                <ul class="tab_type1 flex gubun_check">
+                  <li><a class="gubun" id="mm">메가밀리언</a></li>
+                  <li><a class="gubun" id="pb">파워볼</a></li>
+                </ul>
+              </div>
+              <div class="bx_search" style="display: none;">
+                <div class="wrap_date flex align_center space">
+                  <div class="flex space">
+                    <input type="text" autocomplete="off" id="smonthpicker" name="sdate" class="monthpicker" /> ~
+                    <input type="text" autocomplete="off" id="emonthpicker" name="edate" disabled />
+                  </div>
+                  <button type="button" class="btn_navy btn search_btn">조회</button>
+                </div>
+                <p class="info"><i class="material-icons">new_releases</i> <span></span>의 번호별 미출현 횟수입니다.</p>
+              </div>
+            </section>
+            <section class="sec_stats wrap_com section mt30 bg_white">
+              <div class="wrap_common">
+                <ul class="list_sel flex align_center datechk_check">
+                  <li><button class="frequencyPage">번호별 통계</button></li>
+                  <li class="on"><button class="lastdrawnPage">번호별 미출현 횟수</button></li>
+                </ul>
+              </div>
+              <div class="stats_wrap mega layout layout02">
+                <table class="type1 stats_numbers">
+                  <colgroup>
+                    <col width="10%">
+                    <col width="90%">
+                  </colgroup>
+                  <tbody class="wball_list">
+                    <tr>
+                      <th colspan="2">화이트볼</th>
+                    </tr>
+                  </tbody>
+                </table>
+                <table class="type1 stats_numbers pball mega">
+                  <colgroup>
+                    <col width="10%">
+                    <col width="90%">
+                  </colgroup>
+                  <tbody class="pball_list">
+                    <tr>
+                      <th colspan="2" class="type">메가볼</th>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+
+  <script>
+    $(function() {
+      const type = sessionStorage.getItem('type');
+      if (type) {
+        $(`#${type}`).trigger('click');
+      } else {
+        $('#mm').trigger('click');
+      }
+
+      let currentYear = new Date().getFullYear();
+      let defaultDate = new Date().toISOString().slice(0, 7);
+      $('#emonthpicker').val(defaultDate);
+      $('#emonthpicker').css({
+        'background': 'url(/common/images/calendar.svg) right center no-repeat',
+        'background-color': '#eee',
+        'color': '#888'
+      });
+
+      options = {
+        pattern: 'yyyy-mm',
+        selectedYear: currentYear,
+        startYear: 2015,
+        finalYear: 2030,
+        monthNames: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
+      };
+
+      $('.monthpicker').monthpicker(options);
+    });
+
+    $('#mm').click(function() {
+      getStatisticData('mm');
+    });
+
+    $('#pb').click(function() {
+      getStatisticData('pb');
+    });
+
+    $('.search_btn').click(function() {
+      let isOn = $('ul.tab_type1 li.on');
+      let type = isOn.find('a').attr('id');
+
+      let sdate = $('#smonthpicker').val();
+      let edate = $('#emonthpicker').val();
+
+      if (sdate) {
+        let sdateParts = sdate.split('-');
+        let edateParts = edate.split('-');
+        let syear = parseInt(sdateParts[0]);
+        let smonth = parseInt(sdateParts[1]);
+        let eyear = parseInt(edateParts[0]);
+        let emonth = parseInt(edateParts[1]);
+
+        let message = `${syear}년 ${smonth}월부터 ${eyear}년 ${emonth}월까지`;
+        $('p.info span').text(message);
+      }
+
+      $('.wball_list .numbers').closest('tr').remove();
+      $('.pball_list .numbers').closest('tr').remove();
+
+      getFrequency(type);
+    });
+
+    $('.frequencyPage').click(function() {
+      window.location.href = "frequency.html";
+    });
+
+    $('.lastdrawnPage').click(function() {
+      window.location.href = "lastdrawn.html";
+    });
+
+    function getStatisticData(type) {
+      sessionStorage.removeItem('type');
+      sessionStorage.setItem('type', type);
+
+      $('#smonthpicker').val('');
+
+      let gubun = (type === 'mm') ? 'mega' : 'power';
+      let oldGubun = (type === 'mm') ? 'power' : 'mega';
+      let oldType = (type === 'mm') ? 'pb' : 'mm';
+      (type === 'mm') ? $('.logo-wrap span').text('메가밀리언') : $('.logo-wrap span').text('파워볼');
+      (type === 'mm') ? $('.logo-wrap p').html('MEGA MILLIONS<sup>®</sup>') : $('.logo-wrap p').html('POWERBALL<sup>®</sup>');
+      (type === 'mm') ? $('p.info span').text('2017년 10월 31일부터 현재까지') : $('p.info span').text('2015년 10월 7일부터 현재까지');
+      (type === 'mm') ? $('.type').html('메가볼') : $('.type').html('파워볼');
+
+      $('.stats_wrap').removeClass(oldGubun);
+      $('.stats_wrap').addClass(gubun);
+      $('.stats_numbers.pball').removeClass(oldGubun);
+      $('.stats_numbers.pball').addClass(gubun);
+      $('.logo-wrap img').attr('src', `/common/images/logo_${gubun}.png`);
+      $(`#${oldType}`).parent().removeClass('on');
+      $(`#${type}`).parent().addClass('on');
+
+      $('.wball_list .numbers').closest('tr').remove();
+      $('.pball_list .numbers').closest('tr').remove();
+
+      getFrequency(type);
+    };
+
+    function getFrequency(type) {
+      let sdate = $('#smonthpicker').val();
+      let edate = $('#emonthpicker').val();
+
+      if (sdate) {
+        sdate = `${sdate}-01`;
+        edate = `${edate}-01`;
+      }
+
+      $.post('./mode.php', {
+        mode: 'getLastDrawn',
+        gubun: type,
+        sdate: sdate,
+        edate: edate
+      }, function(e) {
+        makeBall(e);
+      }, 'json');
+    };
+
+    function makeBall(res) {
+      let data = null;
+
+      for (const key in res) {
+        if (key === 'winfo') {
+          data = res.winfo;
+        } else if (key === 'pinfo') {
+          data = res.pinfo;
+        }
+
+        if (data) {
+          const maxNumber = Math.max(...data.timesince.map(str => parseFloat(str)));
+          const inputArray = data.number;
+          const allNumbers = Array.from({ length: data.max[0] }, (_, index) => index + 1);
+
+          allNumbers.forEach((number) => {
+            let cnt = 0;
+            if (inputArray.includes(number.toString())) {
+              cnt = parseInt(data.timesince.shift());
+            }
+
+            let listItem = makeHtml(number, cnt, maxNumber);
+
+            if (data.max[0] > 30) {
+              $('.wball_list').append(listItem);
+            } else {
+              $('.pball_list').append(listItem);
+            }
+          });
+          setTextPosition();
+        }
+      }
+    };
+
+    function makeHtml(number, cnt, maxNumber) {
+      let styleRatio = 0;
+      let comment = '회 (마지막 회차 당첨 번호)';
+      if (cnt > 0) {
+        styleRatio = (cnt / maxNumber) * 100;
+        comment = '회 연속 미출현';
+      }
+
+      let html = `
+        <tr class="numbers">
+          <td>
+            <p class="num">${number}</p>
+          </td>
+          <td>
+            <div class="bar">
+              <div class="frequency" style="width: ${styleRatio}%">
+                <span class="bar_num">${cnt}${comment}</span>
+              </div>
+            </div>
+          </td>
+        </tr>
+      `;
+      return html;
+    }
+
+    function setTextPosition() {
+      $('.bar').each(function() {
+        let $bar = $(this);
+        let $frequency = $bar.find('.frequency');
+        let $bar_num = $bar.find('.bar_num');
+        let frequencyWidth = $frequency.width();
+        let bar_numWidth = $bar_num.width();
+
+        if (frequencyWidth < bar_numWidth) {
+          $bar_num.css('left', '0');
+          $bar_num.css('right', '');
+        } else {
+          $bar_num.css('right', '0');
+          $bar_num.css('left', '');
+        }
+      });
+    }
+  </script>
+</body>
+</html>

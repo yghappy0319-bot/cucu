@@ -1,0 +1,44 @@
+<?php
+  $bbs_on_class['direct'] = "";
+  $bbs_on_class['faq'] = "";
+  $bbs_on_class['notice'] = "";
+  $bbs_on_class['news'] = "";
+  $bbs_on_class['report'] = "";
+  if ($bbs_sub['direct'] == true) $bbs_on_class['direct'] = "on";
+  if ($bbs_sub['faq'] == true) $bbs_on_class['faq'] = "on";
+  if ($bbs_sub['notice'] == true) $bbs_on_class['notice'] = "on";
+  if ($bbs_sub['news'] == true) $bbs_on_class['news'] = "on";
+  if ($bbs_sub['report'] == true) $bbs_on_class['report'] = "on";
+?>
+
+<section class="sec_cs wrap_com section bg_white">
+  <div class="wrap_tab type2">
+    <ul class="tab_type2 flex wrap">
+      <li class="<?=$bbs_on_class['news']?>">
+        <a href="/contents/cs/news.html">
+          <p>최신뉴스</p>
+        </a>
+      </li>
+      <li class="<?=$bbs_on_class['faq']?>">
+        <a href="/contents/cs/faq.html">
+          <p>자주묻는질문</p>
+        </a>
+      </li>
+      <li class="<?=$bbs_on_class['notice']?>">
+        <a href="/contents/cs/notice.html">
+          <p>공지사항</p>
+        </a>
+      </li>
+      <li class="<?=$bbs_on_class['direct']?>">
+        <a href="/contents/cs/direct.html">
+          <p>1:1문의</p>
+        </a>
+      </li>
+      <li class="<?=$bbs_on_class['report']?>">
+        <a href="/contents/cs/report.html">
+          <p>보이스피싱 제보</p>
+        </a>
+      </li>
+    </ul>
+  </div>
+</section>

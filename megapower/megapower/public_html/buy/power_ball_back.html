@@ -1,0 +1,558 @@
+<?php
+  include "../header.html";
+  $_game_name = "pb"; //게임명
+  $gnt = 10; //최대 게임수
+  $power_ball = 파워볼();
+  $power1 = $power_ball['prize'] * 환율();
+
+  $kr_power_result = $power_ball['ko_date'];
+
+  $_파워볼추첨 = 파워볼_결과일($kr_power_result);
+
+  if (다음회차($_파워볼추첨)) {
+
+    $주문회차 = $power_ball['round'] + 1;
+    $_결과발표 = $_파워볼추첨." 20:00:00";
+
+    $_한국추첨일 = date("Y-m-d",strtotime($_결과발표))." 12:00:00";
+    $_한국요일 = 추첨일요일반환($_한국추첨일);
+    $_한국주문마감일 = date("Y-m-d",strtotime($_결과발표))." 02:00:00";
+
+    $_미국추첨일 = date("Y-m-d",strtotime($_결과발표." -1 days"))." 20:00:00";
+    $_미국요일 = 추첨일요일반환($_미국추첨일);
+
+  } else {
+    $주문회차 = $power_ball['round'] + 2; //다음 추첨일
+    $_결과발표 = 파워볼_결과일($_파워볼추첨)." 20:00:00";
+
+    $_한국추첨일 = date("Y-m-d",strtotime($_결과발표))." 12:00:00";
+    $_한국요일 = 추첨일요일반환($_한국추첨일);
+    $_한국주문마감일 = date("Y-m-d",strtotime($_결과발표))." 02:00:00";
+
+    $_미국추첨일 = date("Y-m-d",strtotime($_결과발표." -1 days"))." 20:00:00";
+    $_미국요일 = 추첨일요일반환($_미국추첨일);
+  }
+
+
+?>
+<style>
+  .lotto-box{ width: 506px;  }
+  #lotto-container{width: 504px;}
+  .lotto-ball {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #FFCC00;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    margin: 3px;
+    cursor: pointer;
+  }
+
+  .selected {
+    background-color: #00FF00;
+  }
+  #lotto-last-container{width: 504px;}
+  .lotto-last-ball {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #f0ad4e;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 3px;
+    font-size: 20px;
+  }
+  .last-selected {
+    background-color: #5bc0de;
+  }
+  .select_list {display: flex;}
+  .select_list .gball {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 1px;
+      border: 1px solid #ccc;
+    }
+
+  .last_ball{
+    border: 1px solid #ff375a !important;
+  }
+  .game_btn_active{
+    background-color: black;
+    color: white;
+  }
+  .reset_btn {}
+  .reset_btn button{background-color: #fff;
+    border: 1px solid;}
+</style>
+
+
+<div class="coupon_box" style="display:none;" >
+  쿠폰영역인데 레이어로 띄워주삼
+  <?
+  $coupon_result = db_query("select * from lr_coupon_log where midx = {$member['idx']} and status = 0 ");
+  $coupon_num = mysqli_num_rows($coupon_result);
+  foreach($coupon_result as $coupon){
+  ?>
+    <div>
+      <?=$coupon['name']?> | <?=$coupon['discount']?>%
+      <button type="button" onclick="go_set_coupon('<?=$coupon['discount']?>','<?=$coupon['idx']?>')" >적용</button>
+      </div>
+  <? } ?>
+  <? if($coupon_num==0){?>
+    <div>
+      사용가능한 쿠폰이 없습니다.
+      </div>
+  <? } ?>
+</div>
+
+<main>
+    <section>
+      <div>
+        <?= 게임명($_game_name) ?> 구매하기
+      </div>
+
+      <div>
+        <div>
+          주문 회차 : <?= $주문회차 ?>
+          1등 당첨금 <?=당첨금원화단위변경($power1)?>
+        </div>
+
+        <div>
+          추첨 일시
+          <div>
+            한국 <?=$_한국추첨일?> <?=$_한국요일?>
+            </div>
+          <div>
+            미국 <?=$_미국추첨일?> <?=$_미국요일?>
+            </div>
+        </div>
+        <div>
+          주문마감 <?=$_한국주문마감일?> <?=$_한국요일?>
+        </div>
+
+      </div>
+
+      <div>
+        <div>
+          <?
+          for($g=1;$g<=$gnt;$g++){?>
+          <button type="button" onclick="go_game(<?=$g?>)" class="gamebtn g<?=$g?>" >
+            <div><?=$g?>게임</div>
+            <div>(<?= number_format($_amount*$g) ?>P)</div>
+
+          </button>
+          <? } ?>
+
+        </div>
+
+        <div style="display:flex;" >
+          <div class="lotto-box" >
+
+            <div id="lotto-container">
+              <div>화이트볼 (<span class="white_ball" >5</span>개를 선택해주세요.)
+                <button type="button" onclick="go_all_reset()">자동선택</button>
+                <button type="button" onclick="go_all_clear()">초기화</button>
+              </div>
+            </div>
+
+            <div id="lotto-last-container">
+              <div><?= 게임명($_game_name) ?></div>
+            </div>
+          </div>
+
+          <div>
+            <div>
+              <?= 게임명($_game_name) ?> <span class="game_cnt" ></span>게임 선택되었습니다.
+              <div>
+
+
+              </div>
+            </div>
+            <ul class="game_list" ></ul>
+
+
+          </div>
+        </div>
+        <div>
+          <div>
+            보유 포인트 : <?= number_format($member['point']) ?>P
+            </div>
+          <button type="button" onclick="go_coupon()" >쿠폰</button>
+          <button type="button" onclick="go_buy()" ><span class="view_total_amount" >0</span>P 구매하기</button>
+        </div>
+      </div>
+
+      <div id="result"></div>
+    </section>
+    <form method="POST" id="buyFrm" >
+      <input type="hidden" id="prosess" />
+      <?
+        $gcnt = $gnt;
+        for($nb=1;$nb<=$gcnt;$nb++){
+      ?>
+      <input type="hidden" name="lotto[]" class="lotto_number select_number_<?=$nb?>" />
+
+      <? } ?>
+      <input type="hidden" name="coupon_idx" />
+      <input type="hidden" name="order_game_cnt" class="order_game_cnt" />
+      <input type="hidden" name="total_amount" value="<?=$_amount * 5 ?>" />
+      <input type="hidden" name="org_total_amount" value="<?=$_amount * 5 ?>" />
+      <input type="hidden" name="order_game_name" value="<?=$_game_name?>" />
+      <input type="hidden" name="order_round" value="<?=$주문회차?>" />
+    </form>
+
+</main>
+<script>
+const selectedNumbers = [];
+const selectedNewNumbers = [];
+var buy_val = 1;
+const default_amount = "<?=$_amount?>";
+const lot_cnt = "<?=$gnt?>";
+
+function go_coupon(){
+  $(".coupon_box").toggle();
+}
+
+function applyDiscount(originalPrice, discountPercentage) {
+      var discountAmount = originalPrice * (discountPercentage / 100);
+      var discountedPrice = originalPrice - discountAmount;
+      return discountedPrice;
+  }
+
+function go_set_coupon(obj,idx){
+
+  var originalPrice = parseFloat($("input[name='org_total_amount']").val());
+  var discountPercentage = obj;
+  var discountedPrice = applyDiscount(originalPrice, discountPercentage);
+  var coupon_amount = discountedPrice.toLocaleString('ko-KR');
+
+  $("input[name='coupon_idx']").val(idx)
+  $(".view_total_amount").html(coupon_amount);
+  $("input[name='total_amount']").val(discountedPrice)
+  $(".coupon_box").css("display","none;");
+
+}
+
+function _amount(obj){
+  var change_amount = default_amount * obj;
+  $("input[name='total_amount']").val(change_amount);
+  var formattedAmount = change_amount.toLocaleString('ko-KR'); // 'ko-KR' 지역화 옵션을 사용하여 한국식 콤마 포맷
+
+  $(".view_total_amount").html(formattedAmount);
+  $("input[name='org_total_amount']").val(change_amount);
+  //console.log(change_amount);
+
+}
+
+function go_all_clear(){
+  var all = $(".order_game_cnt").val();
+  for(i=1;i<=all;i++){
+    const randum_number = [];
+    const generatedNumbers = generateRandomNumbers(1, 70, 5);
+    const megaNumber = generateRandomNumbers(1, 25, 1)[0];
+    randum_number.push(...generatedNumbers);
+    randum_number.push(megaNumber);
+    var ballarr = randum_number.length;
+    for(ba=0;ba<ballarr;ba++){
+        $(".view_number"+i+"_"+ba).html("");
+    }
+    $(".select_number_"+i).val(""); //추가
+  }
+}
+
+function go_all_reset(){
+  var all = $(".order_game_cnt").val();
+  buy_val = all +1;;
+  for(i=1;i<=all;i++){
+    const randum_number = [];
+    const generatedNumbers = generateRandomNumbers(1, 70, 5);
+    const megaNumber = generateRandomNumbers(1, 25, 1)[0];
+    randum_number.push(...generatedNumbers);
+    randum_number.push(megaNumber);
+
+    var ballarr = randum_number.length;
+    for(ba=0;ba<ballarr;ba++){
+        $(".view_number"+i+"_"+ba).html(randum_number[ba]);
+    }
+    $(".select_number_"+i).val(randum_number);
+  }
+
+  _amount(all);
+}
+
+function real_order_cnt(){
+  const lottoNumberInputs = document.querySelectorAll('.lotto_number');
+  let nonEmptyCount = 0;
+  lottoNumberInputs.forEach(inputElement => {
+    const inputValue = inputElement.value;
+    if (inputValue.trim() !== '') {
+      nonEmptyCount++;
+    }
+  });
+  return nonEmptyCount;
+}
+
+function go_reset(obj) {
+  const randum_number = [];
+  const generatedNumbers = generateRandomNumbers(1, 70, 5);
+  const megaNumber = generateRandomNumbers(1, 25, 1)[0]; // 1개 숫자만 선택
+  randum_number.push(...generatedNumbers); // 스프레드 연산자를 사용하여 각 요소를 배열에 추가
+  randum_number.push(megaNumber); // 마지막 숫자 추가
+
+  var ballarr = randum_number.length;
+  for(ba=0;ba<ballarr;ba++){ // game list ball add
+      $(".view_number"+obj+"_"+ba).html(randum_number[ba]);
+  }
+  $(".select_number_"+obj).val(randum_number); //추가
+  $(".order_game_cnt").val(real_order_cnt());
+  _amount(real_order_cnt());
+}
+
+function generateRandomNumbers(min, max, count) {
+  const uniqueNumbers = new Set();
+  while (uniqueNumbers.size < count) {
+    const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
+    uniqueNumbers.add(randomNum);
+  }
+  return Array.from(uniqueNumbers);
+}
+
+  function view_cnt(obj){
+    $(".gamebtn").removeClass("game_btn_active");
+    $(".g"+obj).addClass("game_btn_active");
+    $(".game_cnt").html(obj);
+    $(".order_game_cnt").val(obj);
+  }
+
+  function go_game(obj){
+    $(".lotto_number").val("");
+    buy_val = 1;
+
+    view_cnt(obj);
+
+    var html = "";
+    b = 1;
+
+    for(var a=0;a<obj;a++){
+      html+= "<li class='select_list list" + b + "' >";
+      html+= "<div class='gball view_number"+b+"_0' ></div>";
+      html+= "<div class='gball view_number"+b+"_1' ></div>";
+      html+= "<div class='gball view_number"+b+"_2' ></div>";
+      html+= "<div class='gball view_number"+b+"_3' ></div>";
+      html+= "<div class='gball view_number"+b+"_4' ></div>";
+      html+= "<div class='gball view_number"+b+"_5 last_ball'  ></div>";
+      html+= "<div class='reset_btn' ><button type='button' onclick='go_reset("+b+")' >자동선택</button></div>";
+      html+= "</li>";
+      $(".game_list").html(html);
+      b++;
+    }
+
+    _amount(obj);
+  }
+
+  function getSelectedMegaNumber() {
+    const selectedMegaBall = document.querySelector('.lotto-last-ball.last-selected');
+
+    if (selectedMegaBall) {
+      const megaNumber = parseInt(selectedMegaBall.textContent);
+      return megaNumber;
+    } else {
+      return null; // 선택된 메가 번호가 없는 경우
+    }
+  }
+
+function go_set(){
+  buy_val = real_order_cnt()+1;
+  if(buy_val > lot_cnt){
+    alert(lot_cnt+"게임 이상은 구입하실 수 없습니다.");
+    return false;
+  }
+
+  const selectedLottoBalls = document.querySelectorAll('.lotto-ball.selected');
+
+  // 선택된 요소들의 내용을 가져와 배열에 저장합니다.
+  const selectedNumbers = Array.from(selectedLottoBalls).map(ball => parseInt(ball.textContent));
+  const arrayLength = selectedNumbers.length;
+
+  if(arrayLength!=5){
+    alert("화이트볼 5개를 선택해주세요.");
+    return false;
+  }
+
+  const selectedMegaNumber = getSelectedMegaNumber();
+
+  if (selectedMegaNumber !== null) { // last ball
+    selectedNumbers.push(selectedMegaNumber);
+
+    if(!$(".select_number_"+buy_val).val()){ //값이 없으면
+      $(".select_number_"+buy_val).val(selectedNumbers); //추가
+
+      const list1Exists = document.querySelector('.game_list .list'+buy_val) !== null;
+      if (!list1Exists) { // game list dom add
+        b = buy_val;
+        var html = "";
+        html+= "<li class='select_list list" + b + "' >";
+        html+= "<div class='gball view_number"+b+"_0' ></div>";
+        html+= "<div class='gball view_number"+b+"_1' ></div>";
+        html+= "<div class='gball view_number"+b+"_2' ></div>";
+        html+= "<div class='gball view_number"+b+"_3' ></div>";
+        html+= "<div class='gball view_number"+b+"_4' ></div>";
+        html+= "<div class='gball view_number"+b+"_5 last_ball'  ></div>";
+        html+= "<div class='reset_btn'><button type='button' onclick='go_reset("+b+")' >자동선택</button></div>";
+        html+= "</li>";
+        $(".game_list").append(html);
+        view_cnt(b);
+      }
+
+      var ballarr = selectedNumbers.length;
+      for(ba=0;ba<ballarr;ba++){ // game list ball add
+          $(".view_number"+buy_val+"_"+ba).html(selectedNumbers[ba]);
+      }
+      $(".order_game_cnt").val(buy_val);
+      _amount(buy_val);
+      buy_val++;
+
+    }else{
+      var cnt = real_order_cnt() +1; //현재 있는 개수 +1
+      //console.log(real_order_cnt());
+    }
+
+
+    for (const number of selectedNumbers) {
+      selectedNewNumbers.push(number);
+    }
+    $(".lotto-ball").removeClass("selected");
+    $(".lotto-last-ball").removeClass("last-selected");
+    selectedNumbers.length = 0;
+    $(".white_ball").html(5);
+  } else {
+    alert("파워볼 1개를 선택해주세요.");
+  }
+}
+
+
+
+
+
+const container = document.getElementById("lotto-container");
+
+function toggleSelect(ball, number) { //white ball select
+  var d_ball = 5;
+  const isSelected = ball.classList.toggle("selected");
+
+  if(selectedNewNumbers.length>5){
+    selectedNewNumbers.length = 0;
+    selectedNumbers.length = 0;
+  }
+  if (isSelected) {
+    if (selectedNumbers.length < 5) {
+
+      selectedNumbers.push(number);
+      $(".white_ball").html(d_ball-selectedNumbers.length);
+    } else {
+      // selectedNew.length
+      ball.classList.remove("selected");
+      alert("최대 5개까지 선택할 수 있습니다.");
+
+    }
+  } else {
+    const index = selectedNumbers.indexOf(number);
+    if (index !== -1) {
+      selectedNumbers.splice(index, 1);
+    }
+    $(".white_ball").html(d_ball-selectedNumbers.length);
+  }
+}
+
+function go_lotto(obj){
+
+  for (let number = 1; number <= 69; number++) {
+    const ball = document.createElement("div");
+    ball.textContent = number;
+    ball.classList.add("lotto-ball");
+    ball.addEventListener("click", () => toggleSelect(ball, number));
+    container.appendChild(ball);
+  }
+
+  const lottoContainer = document.getElementById("lotto-last-container");
+
+  for (let i = 1; i <= 26; i++) {
+    const lottoBall = document.createElement("div");
+    lottoBall.classList.add("lotto-last-ball");
+    lottoBall.textContent = i;
+    lottoBall.addEventListener("click", () => handleLottoBallClick(lottoBall));
+    lottoContainer.appendChild(lottoBall);
+  }
+
+  const newButtonDiv = document.createElement('div');
+  newButtonDiv.innerHTML = '<button type="button" onclick="go_set()" >선택한 번호 담기</button>';
+  lottoContainer.appendChild(newButtonDiv);
+}
+
+let selectedBall = null;
+function handleLottoBallClick(ball) {
+  if (selectedBall) {
+    selectedBall.classList.remove("last-selected");
+  }
+  if (selectedBall !== ball) {
+    selectedBall = ball;
+    selectedBall.classList.add("last-selected");
+    const selectedNumber = parseInt(selectedBall.textContent);
+  } else {
+    selectedBall = null;
+  }
+}
+
+function go_buy(){
+
+  if(real_order_cnt()==0){
+    alert('번호를 선택하여 담기 버튼을 눌러주세요.');
+    return false;
+  }
+
+  var prosess = $("#prosess").val();
+  if(prosess==1){
+    alert('구매중 진행중 입니다. 잠시만 기다려주세요!');
+    return false;
+  }
+  var params = jQuery("#buyFrm").serialize();
+  $.ajax({
+    type : "POST",
+    url: "_ajax_buy.php",
+    async: false,
+    data: params,
+    success: function(result) {
+    var r = result.trim();
+    console.log(r);
+      if(r!=1){
+        alert(r);
+        return false;
+      }else{
+        $("#prosess").val(1);
+        alert("정상적으로 구매되었습니다.");
+        $("#buyFrm").attr("action","/content/completed.html");
+        $("#buyFrm").submit();
+        $("#buyFrm").attr("action","");
+      }
+    },
+    error:function(e) {
+      alert(e.responseText);
+    }
+  });
+}
+
+go_lotto(5);
+go_game(5);
+
+</script>
+
+<?php
+  include "../footer.html";
+?>

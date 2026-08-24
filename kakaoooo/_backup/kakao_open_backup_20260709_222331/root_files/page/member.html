@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>프로필등록</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      background: linear-gradient(135deg, #ffeef8 0%, #fff5e6 100%);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .wrap {
+      width: 100%;
+      max-width: 480px;
+      background: #fff;
+      padding: 28px 22px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    h2 {
+      margin: 0 0 22px;
+      text-align: center;
+      color: #d6336c;
+      font-size: 22px;
+    }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #333;
+    }
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 15px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus,
+    textarea:focus {
+      border-color: #ff85a2;
+    }
+    textarea {
+      min-height: 220px;
+      resize: vertical;
+      line-height: 1.7;
+    }
+    .gender-group {
+      display: flex;
+      gap: 10px;
+    }
+    .gender-group label {
+      flex: 1;
+      margin: 0;
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .gender-group input[type="radio"] {
+      display: none;
+    }
+    .gender-group input[type="radio"]:checked + label.male {
+      background: #4dabf7;
+      border-color: #4dabf7;
+      color: #fff;
+    }
+    .gender-group input[type="radio"]:checked + label.female {
+      background: #ff85a2;
+      border-color: #ff85a2;
+      color: #fff;
+    }
+    .hint {
+      font-size: 12px;
+      color: #888;
+      margin-top: 6px;
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #ff85a2 0%, #ffab73 100%);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: opacity 0.2s;
+    }
+    .submit-btn:hover { opacity: 0.9; }
+    .submit-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>🌸 프로필등록 🌸</h2>
+    <form id="memberForm">
+      <div class="form-group">
+        <label for="name">닉네임 (2글자)</label>
+        <input type="text" id="name" name="name" maxlength="2" placeholder="닉네임 2글자" autocomplete="off">
+        <div class="hint">※ 정확히 2글자로 입력해주세요.</div>
+      </div>
+
+      <div class="form-group">
+        <label>성별</label>
+        <div class="gender-group">
+          <input type="radio" id="gender_male" name="gender" value="남">
+          <label for="gender_male" class="male">남</label>
+          <input type="radio" id="gender_female" name="gender" value="여">
+          <label for="gender_female" class="female">여</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="content">프로필 내용</label>
+        <textarea id="content" name="content">🌸 닉네임•키 : 
+🌸 지역(시•군) : 
+🌸 프리(낮프•밤프•올프) : 
+🌸 기•미•돌 : 
+🌸 MBTI : 
+🌸 나의 매력 : 
+🌸 뭐 타고 왔어? : </textarea>
+      </div>
+
+      <button type="submit" class="submit-btn">등록하기</button>
+    </form>
+  </div>
+
+  <script>
+    function 창닫기() {
+      var ua = navigator.userAgent || '';
+
+      if (ua.indexOf('KAKAOTALK') > -1) {
+        location.href = 'kakaotalk://inappbrowser/close';
+        return;
+      }
+      if (ua.indexOf('NAVER') > -1) {
+        location.href = 'naversearchapp://inappbrowser/close';
+        return;
+      }
+
+      try { window.close(); } catch (e) {}
+
+      setTimeout(function(){
+        try { window.open('', '_self').close(); } catch (e) {}
+      }, 100);
+    }
+
+    $(function(){
+      function 첫줄업데이트() {
+        var name = $('#name').val().trim();
+        var gender = $('input[name="gender"]:checked').val() || '';
+        var 표시 = (name + ' ' + gender).trim();
+
+        var $ta = $('#content');
+        var lines = $ta.val().split('\n');
+        lines[0] = '🌸 닉네임•키 : ' + (표시 ? 표시 + ' / ' : '');
+        $ta.val(lines.join('\n'));
+      }
+
+      $('#name').on('input', 첫줄업데이트);
+      $('input[name="gender"]').on('change', 첫줄업데이트);
+
+      $('#memberForm').on('submit', function(e){
+        e.preventDefault();
+
+        var name = $('#name').val().trim();
+        var gender = $('input[name="gender"]:checked').val();
+        var content = $('#content').val();
+
+        if (name.length !== 2) {
+          alert('닉네임은 정확히 2글자로 입력해주세요.');
+          $('#name').focus();
+          return;
+        }
+        if (!gender) {
+          alert('성별을 선택해주세요.');
+          return;
+        }
+
+        var $btn = $(this).find('.submit-btn');
+        $btn.prop('disabled', true).text('처리 중...');
+
+        $.ajax({
+          url: '/page/_member_insert.php',
+          type: 'POST',
+          dataType: 'json',
+          data: { name: name, gender: gender, content: content }
+        })
+        .done(function(res){
+          if (res && res.success) {
+            alert('프로필등록 완료! 공창으로와!');
+            창닫기();
+          } else {
+            alert((res && res.message) ? res.message : '프로필등록 실패했습니다.');
+            $btn.prop('disabled', false).text('등록하기');
+          }
+        })
+        .fail(function(){
+          alert('서버 오류가 발생했습니다.');
+          $btn.prop('disabled', false).text('등록하기');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

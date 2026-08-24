@@ -1,0 +1,101 @@
+<?php
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/config.php";
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/export.php";
+  include $_SERVER["DOCUMENT_ROOT"]."/_library/function_CASH.php";
+
+  F_admin_chk($S_login);
+
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/_check-auth-readonly.php"; // 권한체크
+
+  error_reporting(E_ERROR);
+  ini_set("display_errors", 1);
+  ini_set("memory_limit", $csv_memory);
+
+  // file name
+  $file_name = "payment_".date("Ymd").".csv";
+  $page_name = "카드결제로그";
+
+  $find_text = $_GET["find_text"];
+  $find_object = $_GET["find_object"];
+  $sdate = $_GET["sdate"];
+  $edate = $_GET["edate"];
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND c.REG_DATE BETWEEN '".$sDate."' AND '".$eDate."'";
+  }
+
+  if ($find_object == "all" && $find_text != "") {
+    $add_query .= " AND (c.USER_ID = '".$find_text."' OR m.NAME LIKE '%".$find_text."%' OR o.HP LIKE '%".$find_text."%')";
+    $find_object = "";
+  }
+
+  // 22만/12만 카드결제 숨김 ON (무통장 유지, 상품 주문내역 미적용)
+  $add_query .= get_staff_hide_card_payment_filter('c.');
+
+  $list = F_CASH_MEMBER_list(array(
+    "row"         => $csv_max_row,
+    "page"        => 1,
+    "order"       => "",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query
+  ));
+
+  // default
+  $csv_dump = "";
+
+  // 컬럼명
+  $titles = array("", "CASH NO", "성명", "휴대폰번호", "충전금액", "결제금액", "상품명", "카드사", "카드번호", "승인번호", "할부", "구매경로", "구매일시", "상태", "PG");
+  $csv_dump .= implode(",", $titles);
+  $csv_dump .= "\r\n";
+
+  // 데이터 삽입
+  for ($i = 0; $i < count($list["CASH_NO"]); $i++) {
+    $tp = "승인";
+    if ($list["IS_USE"][$i] == "N") {
+      $tp = "취소";
+    }
+
+    // 할부기간 표시
+    $quota = "일시불";
+    if ($list["QUOTA"][$i] != "00") {
+      $quota = $list["QUOTA"][$i] .= "개월";
+    }
+
+    // PG사
+    $pg = ($list['PG_ID'][$i] == 'wayup') ? "웨이업" : "코엠";
+
+    $NAME = $list['NAME'][$i];
+    $HP   = $list['HP'][$i];
+
+    // 탈퇴 회원 정보 추가
+    if (empty($NAME)) {
+      $out  = $db->get_data("SELECT NAME, HP FROM OUT_MEMBER WHERE USER_ID='{$list['USER_ID'][$i]}' LIMIT 1");
+      $NAME = $out['NAME']."(탈퇴)";
+      $HP   = $out['HP'];
+    }
+
+    $cnt = $i + 1;
+
+    $csv_dump .= $cnt.",";
+    $csv_dump .= $list["CASH_NO"][$i].",";
+    $csv_dump .= $NAME.",";
+    $csv_dump .= $HP.",";
+    $csv_dump .= "\"".number_format($list["CASH"][$i])."\"".",";
+    $csv_dump .= "\"".number_format($list["PRICE"][$i])."\"".",";
+    $csv_dump .= "\"".$list["ITEMNAME"][$i]."\"".",";
+    $csv_dump .= "\"".$list["CARDNAME"][$i]."\"".",";
+    $csv_dump .= $list["CARDNO"][$i].",";
+    $csv_dump .= "\"".$list["AUTHNUM"][$i]."\"".",";
+    $csv_dump .= "\"".$quota."\"".",";
+    $csv_dump .= $list["SELLER_GUBUN"][$i].",";
+    $csv_dump .= $list["REG_DATE"][$i].",";
+    $csv_dump .= $tp.",";
+    $csv_dump .= $pg;
+    $csv_dump .= "\r\n";
+  }
+
+  export_csv($file_name, $csv_dump, $cnt, $page_name);
+?>

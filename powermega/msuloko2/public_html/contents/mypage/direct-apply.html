@@ -1,0 +1,151 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}'");
+
+  $menu_on['bbs'] = true;
+?>
+
+<style>
+  .mypage .sec_cs {
+    padding-top: 0rem !important;
+    padding-bottom: 0rem !important;
+  }
+</style>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage bg">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub border_dcdcdc" style="margin-bottom: 0;">
+            <a href="/contents/cs/direct.html" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <?php
+            $bbs_sub['direct'] = true;
+            include $_SERVER['DOCUMENT_ROOT']."/contents/cs/inc_bbs.html";
+          ?>
+          <section class="sec_refund">
+            <div class="wrap_form section wrap_com bg_white">
+              <h3 class="h_type4 bb">새 문의 등록</h3>
+              <form class="f_NotoSansKR fs25" name="w_frm" id="w_frm" method="post" >
+                <fieldset>
+                  <legend class="hide">새 문의등록 입력 폼 </legend>
+                  <ul class="list_form">
+                    <li class="required">
+                      <label for="qna_type"><span>구분</span></label>
+                      <div class="bx_input">
+                        <select name="QNA_TYPE" id="qna_type" class="chk_on" alt="구분을 선택해 주세요.">
+                          <option value="">선택해 주세요.</option>
+                          <option value="복권문의">복권문의</option>
+                          <option value="캐시문의">캐시문의</option>
+                          <option value="쿠폰문의">쿠폰문의</option>
+                          <option value="출금문의">출금문의</option>
+                          <option value="결제문의">결제문의</option>
+                          <option value="기타">기타</option>
+                        </select>
+                      </div>
+                    </li>
+                    <li class="required">
+                      <label for="bank2"><span>휴대폰번호</span></label>
+                      <div class="bx_input">
+                        <input type="tel" name="HP" id="tel" value="<?=$mb['HP']?>" maxlength="13" class="chk_on" alt="휴대폰 번호를 입력해 주세요." />
+                      </div>
+                    </li>
+                    <li class="required">
+                      <label for="bank3"><span>제목</span></label>
+                      <div class="bx_input">
+                        <input type="text" name="SUBJECT" id="subject" class="chk_on" alt="제목을 입력해 주세요." />
+                      </div>
+                    </li>
+                    <li class="required">
+                      <label for="money"><span>내용</span></label>
+                      <div class="bx_input pt20 pb20" style="height: 5rem;">
+                        <textarea name="CONTENT" id="content" placeholder="내용을 입력해주세요." class="chk_on" alt="내용을 입력해 주세요."></textarea>
+                      </div>
+                    </li>
+                  </ul>
+                  <button type="button" class="btn_navy type2 dp_b mt30 okBtn" style="width: 100%;margin-bottom:30px;">문의하기</button>
+                </fieldset>
+              </form>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script>
+  $(function() {
+    let submitting = false;  // 중복 제출 방지
+
+    $('#tel').keyup(function (event) {
+      event = event || window.event;
+      let _val = this.value.trim();
+      this.value = autoHypenTel(_val);
+    });
+    $(document).on("click", ".okBtn", function() {
+      if (submitting) return false;
+
+      let i = true;
+
+      $(".chk_on").each(function() {
+        if ($.trim($(this).val()) == '') {
+          alert($(this).attr("alt"));
+          $(this).focus();
+          i = false;
+          return false;
+        }
+        if ($(this).attr("id") === "subject" && $(this).val().length > 50) {
+          alert("제목은 50자 이내로 작성해 주세요.");
+          $(this).focus();
+          i = false;
+          return false;
+        }
+      });
+
+      if (!i) return false;
+
+      submitting = true;
+      let $btn = $(this);
+      let $frm = $('#w_frm');
+      let formData = new FormData($frm[0]);
+
+      $btn.prop('disabled', true);
+
+      $.ajax({
+        url: './direct-apply-action.php',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        async: false
+      }).done(function(res) {
+        if (res.error) {
+          alert(res.msg || '처리 중 오류가 발생했습니다.');
+          submitting = false;
+          $btn.prop('disabled', false);
+          return;
+        }
+        alert(res.msg || '문의가 접수되었습니다.');
+        location.href = res.url || '/contents/cs/direct.html';
+      }).fail(function(xhr, status, err) {
+        alert('전송에 실패했습니다. 다시 시도해 주세요.');
+        submitting = false;
+        $btn.prop('disabled', false);
+      });
+    });
+
+
+  });
+</script>
+</html>

@@ -1,0 +1,150 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  if ($M_login['user_id'] == '') {
+    alert_print("로그인을 해주세요.");
+    meta_go("/login.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='".$M_login['user_id']."'");
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+  <main id="main">
+    <div class="wrap_mypage clear wrap_com">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/nav-mypage.html"; ?>
+      <div class="right">
+        <section class="sec_delete">
+          <div class="wrap_title bb">
+            <h3 class="heading color_000">회원탈퇴</h3>
+          </div>
+          <div class="notice_type1 ls75">
+            <div class="wrap_img"><img src="/common/images/img_smile.png" alt=""></div>
+            <p class="pb10">그동안 <?=$사이트명1?>를 이용해 주셔서 감사합니다.</p>
+            <!-- <small class="fs16">더욱더 개선하여 좋은 서비스와 품질로 보답하겠습니다.</small> -->
+          </div>
+          <div class="bx_gray ls50">
+            <p>회원 탈퇴 전 다음 내용을 확인해 주십시오.</p>
+            <div>
+              <p style="margin-bottom: 0.3em;">현재 <?=$mb["NAME"]?> 회원님께서는</p>
+              <span class="color_red3"><?=number_format($mb["CASH"])?></span> 캐시,
+              <span class="color_red3"><?=number_format($mb["POINT"])?></span> 보너스 포인트,
+              <span class="color_red3"><?=number_format($mb["IPOINT"])?></span> 마일리지를 보유하고 있습니다.
+            </div>
+            <p style="margin-top: 0.4em;">
+              <span class="color_red">보유중인 캐시는 회원탈퇴 이전 출금</span> 또는 <span class="color_red">카드승인 취소</span>가 가능하며,
+            </p>
+            <p style="margin-top: 0.3em;">보너스 포인트 및 마일리지는 <?=$사이트명1?> 약관에 의거해 캐시 또는 현금으로의 출금이 불가합니다.</p>
+            <p style="margin-top: 1em;">
+              또한 <span class="color_red">회원탈퇴 이후</span>에는
+              <span class="color_red">출금 또는 카드승인 취소</span>가 <span class="color_red">불가</span>하며,
+              보유중인 <span class="color_red">보너스 포인트</span> 및
+              <span class="color_red">마일리지</span>는 <span class="color_red">자동 소멸</span>됩니다.
+            </p>
+            <p style="margin-top: 0.3em;">상기 내용을 확인하시고 회원탈퇴를 진행해 주십시오.</p>
+            <ul class="list_bul gray" style="margin-top: 1.0rem;">
+              <li><span>회원 탈퇴를 하실 경우 고객님의 개인정보와 구매이력이 삭제되니 신중하게 결정하셔서 신청해 주세요.</span></li>
+              <li>
+                <span>
+                  [전자상거래등에서의 소비자보호에 관한 법률], [통신비밀보호법], [정보통신망 이용촉진 및 정보보호에관한법률] 등 법률에 근거하여
+                  거래 관련 권리의무관계의 확인 등을 이유로 일정기간 그 정보를 보유하여야 할 필요가 있을 경우에는 일정기간 동안 그 정보를 보유합니다.
+                </span>
+              </li>
+            </ul>
+          </div>
+          <p class="fs15 txt_type2" style="text-align: center;">
+            회원 탈퇴 신청 완료 후 해당 아이디는 즉시 탈퇴 처리되며,
+            <span class="color_red">탈퇴일로부터 6개월(180일)간 동일한 개인정보</span>로는
+            <span class="color_red">재가입</span>이 <span class="color_red">제한</span>됩니다.
+          </p>
+          <div class="agree">
+            <div>
+              <input type="checkbox" class="chk_type1" id="chk_agree">
+              <label for="chk_agree" class="fs15">위의 내용을 확인했습니다.</label>
+            </div>
+          </div>
+        </section>
+        <section class="sec_delete">
+          <div class="wrap_title bb">
+            <h4 class="heading color_000 fs23">회원탈퇴를 위한 비밀번호 인증</h4>
+          </div>
+          <form class="fm_delete f_NotoSansKR" name="w_frm" id="w_frm" method="post" action="delete_action.php">
+            <fieldset>
+              <legend class="hide">회원정보 인증을 위한 입력 폼</legend>
+              <ul class="list_reg">
+                <li>
+                  <label for="name_del"><span>이름</span></label>
+                  <div class="bx_input" style="border-color: transparent;">
+                    <input type="text" id="name_del" value="<?=$mb["NAME"]?>" readonly>
+                  </div>
+                </li>
+                <li>
+                  <label for="id_del"><span>아이디</span></label>
+                  <div class="bx_input" style="border-color: transparent;">
+                    <input type="" id="id_del" value="<?=$mb["USER_ID"]?>" readonly>
+                  </div>
+                </li>
+                <li>
+                  <label for="pw_del"><span>비밀번호</span></label>
+                  <div>
+                    <div class="bx_input pw">
+                      <input type="password" name="passwd" id="pw_del" value="" placeholder="비밀번호를 입력해주세요.">
+                    </div>
+                  </div>
+                </li>
+                <li class="item_textarea flex column">
+                  <label for=""><span>기타 개선사항이나 의견이 있으시면 남겨주세요.</span></label>
+                  <div>
+                    <div class="bx_input">
+                      <textarea name="content" id="other_con" placeholder="내용을 입력해주세요.(10자 이상)"></textarea>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+              <div class="wrap_btn flex align_center justify_center space_btm mt30">
+                <a style="cursor: pointer;" class="btn_gray" id="ok_btn">회원 탈퇴</a>
+              </div>
+            </fieldset>
+          </form>
+        </section>
+      </div>
+    </div>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+</body>
+<script>
+  $(document).ready(function() {
+    $(document).on("click", "#ok_btn", function() {
+      var pwd = $("#pw_del").val();
+      var con = $("#other_con").val();
+
+      if ($("#chk_agree:checked").length <= 0) {
+        alert("탈퇴하시기전 내용을 체크해 주세요.");
+        return false;
+      }
+
+      if (pwd == '') {
+        alert("비밀번호를 입력해 주세요.");
+        return false;
+      }
+
+      $.post("/other.php", {
+        mode : "chk_pwd",
+        pwd : pwd
+      }, function(e) {
+        if (e.error) {
+          if (confirm("회원탈퇴하시겠습니까?")) {
+            $("#w_frm").submit();
+          }
+        } else {
+          alert(e.msg);
+        }
+      },"json");
+    });
+  });
+</script>
+
+</html>

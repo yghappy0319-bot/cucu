@@ -1,0 +1,141 @@
+<?php
+  $page_title = "추첨 안내 - 파워볼, 메가밀리언, 미국 로또, 슈로코";
+  $page_description = "메가밀리언, 파워볼 등 미국 로또 당첨 번호 확인 및 추첨 안내";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_WININFO.php";
+
+  // 환율
+  $won = $db->get_data("SELECT * FROM EXCHANGE WHERE DATE='".date("Y-m-d")."'");
+
+  if (empty($won['WON']) == false) {
+    $won = $db->get_data("SELECT * FROM EXCHANGE WHERE 1 ORDER BY DATE DESC");
+  } else {
+    $won['WON'] = 1;
+  }
+
+  $date = date("Y-m-d");
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 5;
+  $add_query = " AND GUBUN='MM' AND PLAYDATE < '".$date."'";
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit";
+
+  $condition = array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => " PLAYDATE DESC",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  );
+
+  $list = F_WININFO_list($condition);
+
+  $info = $db->get_data("SELECT * FROM WININFO WHERE GUBUN='MM' AND PLAYDATE < '".$date."' ORDER BY PLAYDATE DESC");
+
+  $info['price'] = $info['PRIZ1'];
+  $info['PRIZ1'] = $info['PRIZ1'] * $won['WON'];
+  $info['allprice'] = $info['PRIZ1'];
+
+  if ($info['PRIZ1'] > 0) {
+    $info['PRIZ1'] = number_format($info['PRIZ1']);
+    $info['PRIZ1'] = str_replace(",", "", $info['PRIZ1']);
+    $info['PRIZ1'] = str_replace(".", "", $info['PRIZ1']);
+    $info['PRIZ1'] = substr($info['PRIZ1'], 0, -8);
+    $info['PRIZ1'] = number_format($info['PRIZ1']);
+  }
+
+  $weekee = date("w", strtotime($info['TIME_E']));
+  $weeks  = $week_op[$weekee];
+  $info['TIME_E'] = date("m월 d일 ", strtotime($info['TIME_E'])).$weeks."요일  12:00";
+
+  $weekee = date("w", strtotime($info['TIME_S']));
+  $weeks  = $week_op[$weekee];
+  $info['TIME_S'] = date("m월 d일 ", strtotime($info['TIME_S'])).$weeks."요일  12:00";
+
+  $page_row_t = intval($list[total] / $condition[row]) + 1;  // 전체페이지수
+  if (($page_row_t - 1) == ($list[total] / $condition[row])) $page_row_t--;
+  $menu_on['draw'] = true;
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="cs bg_contents">
+        <div class="contents f_NotoSansKR">
+          <!-- <div class="title_sub bb border_dcdcdc" style="margin-bottom:0">
+            <h2 class="title">당첨자 회원 리스트</h2>
+            <a href="/" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div> -->
+          <section class="sec_service receive section f_NotoSansKR ls50 txt_type1 fs24">
+            <div class="bg_white wrap_com mb20">
+              <!-- <div class="wrap_tab type2 bg_white">
+                <ul class="tab_type2 flex wrap">
+                  <li class="on">
+                    <a href="draw-guide.html"><p>추첨안내</p></a>
+                  </li>
+                  <li>
+                    <a href="draw-mega.html"><p>메가밀리언 당첨결과</p></a>
+                  </li>
+                  <li>
+                    <a href="draw-power.html"><p>파워볼 당첨결과</p></a>
+                  </li>
+                  <li>
+                    <a href="draw-winners.html"><p>당첨자 회원 리스트</p></a>
+                  </li>
+                </ul>
+              </div> -->
+              <ul class="list_result clear f_GmarketSans" style="padding-top: 20px;">
+                <li class="mega left" style="width: 49%;">
+                  <div>
+                    <span>메가밀리언</span>
+                    <p class="add_after h_type2">MEGA MILLIONS<sup>®</sup></p>
+                    <div style="padding: 0.8rem 0 0; line-height: 1.2;">
+                      <p>매주 수/토요일</p>
+                      <p>한국시간 <strong class="color_red2">12:00</strong></p>
+                    </div>
+                  </div>
+                </li>
+                <li class="power right" style="width: 49%;">
+                  <div>
+                    <span>파워볼</span>
+                    <p class="add_after h_type2">POWERBALL<sup>®</sup></p>
+                    <div style="padding: 0.8rem 0 0; line-height: 1.2;">
+                      <p>매주 화/목/일요일</p>
+                      <p>한국시간 <strong class="color_red2">12:00</strong></p>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+              <div style="padding-bottom: 1.4rem;">
+                <h3 class="h_type4 fs28" style="padding: 1.4rem 0 0.5rem;">당첨번호 추첨</h3>
+                <div class="lh14">
+                  <p><span>당첨번호 6개는 추첨 이슈가 없는 한 5분 안에 추첨되어 미국 파워볼, 메가밀리언 사이트에 등재 됩니다. <br>(번호가 등재되는 이슈에 따라 시간이 달라질 수 있습니다)</span></p>
+                </div>
+                <!-- <h3 class="h_type4 fs28" style="padding: 1.4rem 0 0.5rem;">당첨추첨 순서</h3>
+                <div class="lh14">
+                  <p><span></span></p>
+                </div> -->
+                <h3 class="h_type4 fs28" style="padding: 1.4rem 0 0.5rem;">당첨금 적립</h3>
+                <div class="lh14">
+                  <p><span>당첨된 회원님은 당첨금을 자동으로 캐시로 적립받으며, 출금신청은 마이페이지 > 출금신청을 통해 신청해 주셔야 합니다.
+                  <br>캐시적립은 업무시간 기준으로 실시간 승인됩니다.</span></p>
+                </div>
+                <!-- <h3 class="h_type4 fs28" style="padding: 1.4rem 0 0.5rem;">당첨시 유의사항</h3>
+                <div class="lh14">
+                  <p><span>당첨된 회원님은 당첨금을 캐시로 적립받아 수령할 수 있으며, 당첨금 수령은 마이페이지 > 환급신청을 통해 신청해 주셔야 합니다.
+                  <br>캐시적립은 업무시간 기준으로 실시간 승인됩니다.</span></p>
+                </div> -->
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+</html>

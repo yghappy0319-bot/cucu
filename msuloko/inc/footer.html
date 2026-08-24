@@ -1,0 +1,56 @@
+<?php if (isset($M_login['user_id']) && $M_login['user_id'] != '') { ?>
+<footer class="f_NotoSansKR">
+  <div class="wrap_com">
+    <div class="top ls25">
+      <h2 class="hide">회사 정보</h2>
+      <ul class="flex align_center space">
+        <li><a href="/policy-privacy.html" class="color_red">개인정보처리방침</a></li>
+        <li><a href="/terms.html">이용약관</a></li>
+        <li><a href="/contents/service/purchase.html">서비스안내</a></li>
+        <li><a href="/contents/cs/news.html">고객센터</a></li>
+        <li><a href="/contents/cs/direct.html">1:1문의</a></li>
+      </ul>
+    </div>
+    <div class="mid">
+      <p style="float: right; right: 1.5rem;">
+        <img src=<?=$commonImageURI?>kb-escrow.png style="width: 58px;" />
+      </p>
+      <h2 class="hide">사업 정보</h2>
+      <ul> 
+        <li class="dp_b">주식회사 수로코</li>
+        <li class="dp_b">대표이사 : 박병진</li>
+        <li class="dp_b">주소 : 서울특별시 서초구 강남대로37길 56-31,<br><span style="padding-left: 1.5rem;">3층(서초동, 서현빌딩)<span></li>
+        <li class="dp_b">사업자등록번호 :  302-81-32445</li>
+        <li class="dp_b">통신판매업신고번호 : 제2025-서울구로-1354호</li>
+        <li class="dp_b" aria-hidden="true"></li>
+        <li class="dp_b">개인정보관리책임자 : 오호동</li>
+        <li class="dp_b"></a>대표번호 : 1660-1018, 1811-8133</li>
+        <li class="dp_b">서비스 및 제휴 문의 : support@superlottokorea.co.kr</li>
+      </ul>
+      <p class="ls50 color_red3 mt10">로또는 도박이 아닙니다. 과도한 로또, 도박은 사행성 중독으로 인한 경제적 부담을 불러올 수 있습니다. </p>
+      <p class="ls50 color_red3 mt10">만19세 미만 미성년자는 복권을 구매하거나 당첨금을 수령할 수 없습니다.</p>
+    </div>
+    <div class="btm">
+      <div class="flex space align_end">
+        <div class="wrap_sns" style="display: none;">
+          <h2 class="hide">관련 사이트</h2>
+          <ul class="sns flex justify_center align_center">
+            <li class="facebook"><a href="" title=""><span class="hide">페이스북</span></a></li>
+            <li class="insta"><a href="" title=""><span class="hide">인스타그램</span></a></li>
+            <li class="youtube"><a href="" title=""><span class="hide">유튜브</span></a></li>
+          </ul>
+        </div>
+        <div class="app clear" style="display: none;">
+          <h2 class="left f_NotoSansKR fw500 ls50" style="color: #ccc;">서비스 APP</h2>
+          <ul class="left">
+            <li class="googleplay"><span class="hide">구글플레이</span></a></li>
+            <li class="appstore"><span class="hide">애플 앱스토어</span></a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+<?php } ?>
+
+<?php include $_SERVER['DOCUMENT_ROOT']."/inc/popup.html"; ?>

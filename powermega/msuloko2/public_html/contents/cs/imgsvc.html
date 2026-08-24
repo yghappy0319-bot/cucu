@@ -1,0 +1,18 @@
+<?php
+
+  if (isset($_GET['i']) && strlen($_GET['i']) > 0) {
+    $url = "BBS/".$_GET['i'];
+  } else if (isset($_GET['u']) && strlen($_GET['u']) > 0) {
+    $url = "nse/".$_GET['u'];
+  } else if (isset($_GET['s']) && strlen($_GET['s']) > 0) {
+    $url = "shop/goodsImg/listImg/".$_GET['s'];
+  } else if (isset($_GET['g']) && strlen($_GET['g']) > 0) {
+    $url = "shop/goodsImg/".$_GET['g'];
+  } else {
+    exit;
+  }
+
+  $img_url = "https://supermmadmin010.aoslwl.com/upload/".$url;
+  header('Content-Type: image/jpg');
+  readfile($img_url);
+?>

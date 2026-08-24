@@ -1,0 +1,75 @@
+<?php include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main">
+        <div class="contents">
+          <div class="title_sub bb border_dcdcdc">
+            <h2 class="title">아이디 찾기</h2>
+            <a  href="/login.html" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <section class="sec_reg find find_id wrap_com2">
+            <form class="f_NotoSansKR" name="w_frm" method="post" autocomplete="off">
+              <fieldset>
+                <legend class="hide">아이디 찾기 입력 폼</legend>
+                <ul class="list_form">
+                  <li>
+                    <label for="reg_name"><span>이름</span></label>
+                    <div class="bx_input">
+                      <input type="text" id="reg_name" name="NAME" maxlength="30" placeholder="이름을 입력해주세요." />
+                    </div>
+                  </li>
+                  <li class="item_tel">
+                  <label for="reg_tel"><span>휴대폰 번호</span></label>
+                  <div>
+                    <div class="wrap_type1 flex align_center">
+                      <div class="bx_tel bx_input">
+                        <input type="text" id="user_phone" name="user_phone" maxlength="13" />
+                      </div>
+                      <button type="button" class="btn_gray auth_btn">인증번호요청</button>
+                    </div>
+                    <div class="wrap_type1 flex align_center auth_chk" style="display: none;">
+                      <div class="bx_num bx_input">
+                        <input type="text" id="auth_num" name="AUTH_NUM">
+                      <p><span class="hide">남은시간</span><span class="time count_down">03:00</span></p>
+                      </div>
+                      <button type="button" class="btn_gray auth_chk_btn">인증번호확인</button>
+                    </div>
+                    <p class="txt_type1 color_red" style="display: none;">입력하신 휴대폰 번호로 인증번호가 발송되었습니다.</p>
+                  </div>
+                </li>
+                </ul>
+                <div class="wrap_btn flex align_center space">
+                  <button type="button" class="btn_prev">이전</button>
+                  <button type="button" class="btn_gray ok_btn">아이디 찾기</button>
+                </div>
+              </fieldset>
+            </form>
+          </section>
+          <section class="sec_find wrap_com2 f_NotoSansKR" style="display: none;">
+            <div class="wrap_title">
+              <p class="ls50"><span class="dp_b">입력하신 정보로</span><span class="color_red">1</span>개의 아이디가 가입되어 있습니다.</p>
+            </div>
+            <div class="bx_result ls75">
+              <p><span id="find_name"></span> 님의 아이디는 <span class="dp_b"><strong id="find_user_id"></strong> 입니다.</span></p>
+              <span>혹시, 비밀번호는 기억이 나시나요?</span>
+              <div class="wrap_btn flex align_center space">
+                <a href="find-pw.html" class="btn_w">비밀번호 찾기</a>
+                <a href="/login.html" class="btn_gray">로그인</a>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script src="/common/js/time.js?version=<?=$version?>" charset="utf-8"></script>
+<script src="/common/js/find_id.js?version=<?=$version?>" charset="utf-8"></script>
+<script src="/common/js/member_common.js?version=<?=$version?>" charset="utf-8"></script>
+
+</html>

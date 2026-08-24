@@ -1,0 +1,261 @@
+<?php
+include "../../admin/header.html";
+
+$page_num = 10;
+$page = isset($_GET["page"]) ? $_GET["page"] : 1;
+
+if ($_GET['list_num'] > 0) {
+    $list_num = (int)$_GET['list_num'];
+} else {
+    $list_num = 500;
+}
+
+$search = isset($search) ? $search : '';
+$searchs = isset($searchs) ? $searchs : '';
+$_search = "";
+
+if ($search) {
+    $search_esc = mysqli_real_escape_string($conn, $search);
+    $_search = " AND (a.name LIKE '%{$search_esc}%' OR a.phone LIKE '%{$search_esc}%' OR a.id LIKE '%{$search_esc}%') ";
+}
+
+$no_charge_join = "
+LEFT JOIN (
+  SELECT midx, COUNT(*) AS bank_cnt
+  FROM lr_deposit_log
+  WHERE status = 2
+    AND IFNULL(deposit_type, '') != 'reward'
+  GROUP BY midx
+) AS bank_log ON bank_log.midx = a.idx
+LEFT JOIN (
+  SELECT midx, COUNT(*) AS card_cnt
+  FROM lr_card_log
+  WHERE pg_status1 = '정상'
+  GROUP BY midx
+) AS card_log ON card_log.midx = a.idx
+";
+$no_charge_where = " a.cut_off = 0 AND IFNULL(bank_log.bank_cnt, 0) = 0 AND IFNULL(card_log.card_cnt, 0) = 0 {$_search} ";
+
+if ($searchs == "desc_latest") {
+    $정렬 = " a.last_login_date desc ";
+} else if ($searchs == "asc_latest") {
+    $정렬 = " a.last_login_date asc ";
+} else if ($searchs == "asc_regdate") {
+    $정렬 = " a.regdate asc ";
+} else {
+    $정렬 = " a.regdate desc ";
+}
+
+$countSql = "
+SELECT count(*) AS totalRecords
+FROM lr_member a
+{$no_charge_join}
+WHERE {$no_charge_where}
+";
+include_once "../pager_result.php";
+
+$sql = "
+SELECT
+  a.*,
+  IFNULL(bank_log.bank_cnt, 0) AS bank_cnt,
+  IFNULL(card_log.card_cnt, 0) AS card_cnt
+FROM lr_member a
+{$no_charge_join}
+WHERE {$no_charge_where}
+ORDER BY {$정렬}
+LIMIT {$start}, {$list_num}
+";
+$_data = db_query($sql);
+
+?>
+<main id="main" class="main">
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-10">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">캐시충전 미이용 회원</h5>
+                        <p class="text-muted mb-3">
+                            무통장 캐시충전 0회 · 카드충전 0회인 회원만 표시합니다. 보상캐시는 충전 횟수에 포함하지 않습니다.<br>
+                            전체 탈퇴처리는 현재 목록 조건에 해당하는 회원만 대상이며, 실제 충전 이력이 있는 회원은 처리되지 않습니다.
+                        </p>
+                        <div>
+                          <div class="card p-3">
+                            <form class="row align-items-center g-2" id="searchFrm" >
+                              <input type="hidden" name="page" id="page" value="<?= $page ?>">
+                              <input type="hidden" name="searchs" value="<?= htmlspecialchars($searchs) ?>" id="searchs">
+
+                              <div class="col-auto">
+                                <input type="text" name="search" class="form-control" value="<?= htmlspecialchars($search) ?>" placeholder="아이디/이름/연락처">
+                              </div>
+                              <div class="col-auto">
+                                <button class="btn btn-primary">검색</button>
+                              </div>
+                              <div class="col-auto">
+                                <a href="/admin/manage/member_no_charge.html" class="btn btn-outline-secondary">초기화</a>
+                              </div>
+                              <div class="col-auto">
+                                <select name="list_num" class="form-select" onchange="$('#page').val(1); $('#searchFrm').submit()">
+                                  <option value="100" <?= $list_num==100 ? "selected":"" ?>>100명</option>
+                                  <option value="500" <?= $list_num==500 ? "selected":"" ?>>500명</option>
+                                  <option value="1000" <?= $list_num==1000 ? "selected":"" ?>>1000명</option>
+                                </select>
+                              </div>
+                              <div class="col-auto ms-auto">
+                                <button type="button" class="btn btn-danger" onclick="go_cut_off_all()">현재 조건 전체 탈퇴처리 (<?= number_format($num) ?>명)</button>
+                              </div>
+
+                              <div class="w-100"></div>
+
+                              <div class="col-auto">
+                                <label class="form-label mb-0">최근접속</label>
+                                <div class="btn-group" role="group">
+                                  <a href="/admin/manage/member_no_charge.html?searchs=desc_latest<?= $search ? "&search=".urlencode($search):"" ?>" class="btn btn-outline-secondary <?= $searchs=='desc_latest' ? 'active':'' ?>">최근순</a>
+                                  <a href="/admin/manage/member_no_charge.html?searchs=asc_latest<?= $search ? "&search=".urlencode($search):"" ?>" class="btn btn-outline-secondary <?= $searchs=='asc_latest' ? 'active':'' ?>">오래된순</a>
+                                </div>
+                              </div>
+                              <div class="col-auto">
+                                <label class="form-label mb-0">가입일</label>
+                                <div class="btn-group" role="group">
+                                  <a href="/admin/manage/member_no_charge.html<?= $search ? "?search=".urlencode($search):"" ?>" class="btn btn-outline-secondary <?= $searchs=='' ? 'active':'' ?>">최신순</a>
+                                  <a href="/admin/manage/member_no_charge.html?searchs=asc_regdate<?= $search ? "&search=".urlencode($search):"" ?>" class="btn btn-outline-secondary <?= $searchs=='asc_regdate' ? 'active':'' ?>">오래된순</a>
+                                </div>
+                              </div>
+                            </form>
+                          </div>
+
+                          <div class="mb-2"><strong>대상 회원 <?= number_format($num) ?>명</strong></div>
+
+                          <div class="section_table">
+                              <div class="tbl_basic">
+                                  <div class="table-responsive">
+                                      <table class="table">
+                                          <thead>
+                                          <tr class="text-nowrap">
+                                              <th>num</th>
+                                              <th class="text-center">아이디</th>
+                                              <th class="text-center">이름</th>
+                                              <th class="text-center">연락처</th>
+                                              <th>캐시</th>
+                                              <th>포인트</th>
+                                              <th>누적캐시</th>
+                                              <th>무통장충전</th>
+                                              <th>카드충전</th>
+                                              <th>유입</th>
+                                              <th>최근접속</th>
+                                              <th>가입일</th>
+                                          </tr>
+                                          </thead>
+                                          <tbody>
+                                          <?php
+                                          $no = $num - $list_num * ($page-1);
+                                          if ($_data) {
+                                          foreach ($_data as $member) { ?>
+                                              <tr class="text-center text-nowrap">
+                                                  <td><?=$no?></td>
+                                                  <td>
+                                                      <a href="<?=$config['웹사이트주소']?>/lib/_super_login.php?member_id=<?= $member['id'] ?>"
+                                                         target="_blank"><?= $member['id'] ?></a>
+                                                  </td>
+                                                  <td>
+                                                      <?= $member['name'] ?>
+                                                      <i class="bi bi-x" onclick="go_cut_off_one('<?= $member['idx'] ?>')" ></i>
+                                                  </td>
+                                                  <td><a href="tel:<?= $member['phone'] ?>"><?= $member['phone'] ?></a></td>
+                                                  <td><?= number_format($member['point']) ?></td>
+                                                  <td><?= number_format($member['lucky_point']) ?></td>
+                                                  <td><?= number_format($member['cash']) ?></td>
+                                                  <td><?= (int)$member['bank_cnt'] ?></td>
+                                                  <td><?= (int)$member['card_cnt'] ?></td>
+                                                  <td><?= $member['ads'] ?></td>
+                                                  <td><?= $member['last_login_date'] ? date("y-m-d H:i", strtotime($member['last_login_date'])) : "-" ?></td>
+                                                  <td><?= $member['regdate'] ? date("y-m-d H:i", strtotime($member['regdate'])) : "-" ?></td>
+                                              </tr>
+                                          <?php $no--; }
+                                          }
+                                          if (!$num) { ?>
+                                              <tr>
+                                                  <td colspan="12" class="text-center py-4">캐시충전 이력이 없는 회원이 없습니다.</td>
+                                              </tr>
+                                          <?php } ?>
+                                          </tbody>
+                                      </table>
+                                  </div>
+                              </div>
+                          </div>
+                        </div>
+
+                        <?php include_once "../pager.php" ?>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+<script>
+function go_cut_off_one(midx) {
+    if (!confirm("해당 회원을 탈퇴처리 하시겠습니까?")) {
+        return;
+    }
+    $.ajax({
+        type: "POST",
+        url: "ajax_member_no_charge_cut_off.php",
+        data: {
+            action: "one",
+            midx: midx
+        },
+        success: function (result) {
+            var r = (result + "").trim();
+            if (parseInt(r, 10) > 0) {
+                alert("처리되었습니다.");
+                location.reload();
+            } else {
+                alert("처리 대상이 아닙니다. 충전 이력이 있거나 이미 탈퇴된 회원입니다.");
+            }
+        },
+        error: function (e) {
+            alert(e.responseText);
+        }
+    });
+}
+
+function go_cut_off_all() {
+    var cnt = <?= (int)$num ?>;
+    if (cnt < 1) {
+        alert("탈퇴처리할 회원이 없습니다.");
+        return;
+    }
+    if (!confirm("무통장/카드 충전 이력이 없는 회원 " + cnt + "명을 전체 탈퇴처리 하시겠습니까?")) {
+        return;
+    }
+    if (!confirm("되돌릴 수 없습니다. 현재 목록 조건의 " + cnt + "명을 탈퇴처리 할까요?")) {
+        return;
+    }
+    $.ajax({
+        type: "POST",
+        url: "ajax_member_no_charge_cut_off.php",
+        data: {
+            action: "all",
+            search: <?= json_encode($search) ?>
+        },
+        success: function (result) {
+            var r = (result + "").trim();
+            var n = parseInt(r, 10);
+            if (n >= 0) {
+                alert(n + "명 탈퇴처리 되었습니다.");
+                location.href = "/admin/manage/member_no_charge.html";
+            } else {
+                alert("오류");
+            }
+        },
+        error: function (e) {
+            alert(e.responseText);
+        }
+    });
+}
+</script>
+
+<?php
+include "../../admin/footer.html";
+?>

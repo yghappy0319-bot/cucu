@@ -1,0 +1,516 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_common/config.php";
+
+  $menu_on['cash'] = true;
+
+  if ($M_login['user_id'] == '') {
+    alert_print("로그인을 해주세요.");
+    meta_go("/login.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='".$M_login['user_id']."'");
+
+  if (isset($_GET["page"])) {
+    $page = ($_GET["page"] === "mm") ? "mega.html?tp=y" : "power.html?tp=y";
+    $cat_btn = "<a href='/contents/lottery/{$page}' id='prevPage'>구매 중인 페이지로 이동</a>";
+  }
+
+  // 무통장 입금 대기건 확인
+  $bank = $db->get_data("SELECT * FROM CASH WHERE CARDNAME='무통장' AND IS_USE = 'N' AND USER_ID='".$M_login['user_id']."' ORDER BY CASH_NO DESC LIMIT 1;");
+  if (isset($bank['CASH_NO'])) {
+    $bank_waiting     = true;
+    $bank['CASH']     = number_format($bank['CASH']);
+    $bank['PRICE']    = number_format($bank['PRICE']);
+    $bank['REG_DATE'] = date("Y년 n월 j일 G시 i분", strtotime($bank['REG_DATE']));
+  }
+
+  // 최근 접속시간 업데이트
+  $db->query("UPDATE MEMBER SET LASTDATE=NOW(), REG_IP='{$ip_address}' WHERE USER_ID='{$M_login['user_id']}'");
+
+  // 결제 이벤트 대상 확인
+  $is_event_user = $is_event_user_b = false;
+  $cash_op = select_event_cash_op($M_login['user_id']);
+  $is_event_user = chk_event_user_a($M_login['user_id']);
+  if ($is_event_user_b === false) $is_event_user_b = chk_event_user_b1($M_login['user_id']);
+  if ($is_event_user_b === false) $is_event_user_b = chk_event_user_b2($M_login['user_id']);
+  if ($is_event_user_b === false) $is_event_user_b = chk_event_user_b3($M_login['user_id']);
+?>
+
+<style>
+.bx_type2 > .left:before{ margin-right: 0; width: 0; height: 0; background: none; }
+</style>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+  <main id="main">
+    <div class="wrap_mypage clear wrap_com">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/nav-mypage.html"; ?>
+      <div class="right">
+        <section class="sec_charge">
+          <div class="wrap_title">
+            <h3 class="heading">캐시충전</h3>
+          </div>
+          <div class="bx_type2 top flex space align_center bg_navy type_radius">
+            <p class="left add_before fw300"><img src="<?=$mlevel_image_op[$mb['LEVEL']]?>" style="width: 1.3rem;">
+              <span class="va_mid">
+                <strong><?=$mb['NAME']?> <span class="color_red">[<?=$mlevel_op[$mb['LEVEL']]?>]</span></strong> 회원님, 현재 보유캐시는_
+              </span>
+              <strong class="color_ylw"><?=number_format($mb['CASH'])?> 캐시</strong><span class="va_mid">입니다.</span></p><?=$cat_btn?>
+          </div>
+          <div class="bx_notice">
+            <ul class="list_bul gray">
+              <li>모든 결제상품은 <strong class="color_red">부가세(VAT) 10% 별도</strong>입니다.</li>
+              <li><span>캐시는 슈로코의 유료 서비스를 이용하기 위해 발행된 사이버머니로 현금과 1:1 비율로 환산 됩니다.</span></li>
+              <li><span>슈로코의 결제서비스를 악용하는 사례를 방지하기 위해 캐시 충전 후 미사용 캐시는 카드 승인 취소만 가능합니다.</span></li>
+            </ul>
+          </div>
+          <div class="wrap_title">
+            <p class="heading"><img src="/common/images/check_red.png" class="checker_red"> 회원 등급별 캐시백(마일리지 적립) 안내</p>
+          </div>
+          <div class="bx_notice list_level2" style="padding: 0.8rem; margin-bottom: 24px;">
+            <?php $grade_pairs = array_chunk($grade_op, 2, true); ?>
+            <?php foreach ($grade_pairs as $pair) { ?>
+              <ul class="flex list_level2 txt_type2" style="justify-content: space-between;">
+                <?php foreach ($pair as $key => $grade) { ?>
+                  <li class="flex align_center">
+                    <div class="bx_level">
+                      <p style="padding:0; line-height: 1;"><strong><?= strtoupper($grade['eng']) ?></strong></p>
+                      <span><?= $grade['name'] ?></span>
+                    </div>
+                    <div>
+                      <ul class="list_bul">
+                        <?php if ($key != 'brown') { ?>
+                          <li><?= $grade['cash'] ?>만 캐시 복권 구매대행 이용 회원</li>
+                        <?php } else { ?>
+                          <li>회원가입과 동시에 부여되는 기본 등급</li>
+                        <?php } ?>
+                        <li>복권 구매대행 이용금액의 <strong class="color_red"><?= $grade['percent'] ?>%</strong> 마일리지 적립</li>
+                      </ul>
+                    </div>
+                  </li>
+                <?php } ?>
+              </ul>
+            <?php } ?>
+          </div>
+          <?php if ($is_event_user) { // 미접속자 ?>
+          <div style="margin-bottom: 24px;"><img src="/common/images/evt_bn_sb50.png" alt="슈퍼BIG포인트UP" style="border-radius: 16px;"></div>
+          <?php } else if ($is_event_user_b) { // 소액결제자 ?>
+          <div style="margin-bottom: 24px;"><img src="/common/images/evt_bn_sb40.png" alt="슈퍼BIG포인트UP" style="border-radius: 16px;"></div>
+          <?php } ?>
+          <div class="mb40">
+            <div class="wrap_title flex" style="justify-content: space-between; align-items: center;">
+              <span class="heading">
+                <img src="/common/images/check_red.png" class="checker_red"> 충전하실 금액을 선택해 주세요
+                <span class="color_red2">(부가세 10% 별도)</span>
+              </span>
+              <a class="br5 text-center color_fff fs18 lh25" href="/contents/cs/notice_details.html?no=2338"
+                style="width: 11rem; background-color: darkorange;">신용카드 무이자 할부 안내</a>
+            </div>
+            <div class="charge-lists">
+              <?php foreach($cash_op as $k => $v) { ?>
+              <div class="list">
+                <div class="cash-wrap">
+                  <p class="cash"><?=number_format($v['cash'])?>캐시</p>
+                  <?php if ($v['point'] > 0) { ?>
+                  <div class="tag bonus"><span class="tit">+ 보너스포인트</span>
+                  <span class="point"><?=number_format($v['point'])?>P</span>
+                  <img src="/common/images/up_icon.svg"></div>
+                  <?php } ?>
+                  <?php if ($v['cash'] >= 60000 && $v['cash'] <= 300000) { ?>
+                  <div class="tag credit">무이자할부</div>
+                  <?php } ?>
+                </div>
+
+                <div class="won-bonus-wrap">
+                  <div class="won-wrap">
+                    <p class="tit">결제금액:</p>
+                    <p class="won"><?=number_format($v['cash'])?><span class="unit">원</span></p>
+                  </div>
+                  <div class="bonus-wrap">
+                    <p class="cash"><?=number_format($v['cash'])?><span class="unit">캐시</span></p>
+                    <?php if ($v['point'] > 0) { ?>
+                    <span class="msign">+</span>
+                    <p class="bonus"><?=number_format($v['point'])?><span class="unit">포인트</span> <?=$v["point_text"];?></p>
+                    <?php } ?>
+                  </div>
+                </div>
+                <div class="btn-wrap">
+                  <?php if ($v['cash'] != 600000) { ?>
+                  <?
+                  $now = new DateTime();
+
+                  // 시작 시각: 2025-11-02 05:00:00
+                  $start = new DateTime('2025-11-02 05:00:00');
+                  // 종료 시각: 2025-11-02 07:00:00
+                  $end = new DateTime('2025-11-02 07:00:00');
+
+                  if ($now >= $start && $now <= $end) { ?>
+                  <a class="btn card buy_pay_btn_system" >신용카드 캐시충전</a>
+                  <? } else { ?>
+                  <a class="btn card btn_popup buy_pay_btn" id="btn_pay" data-no="<?=$k?>">신용카드 캐시충전</a>
+                  <? } ?>
+
+
+                  <?php } ?>
+                  <?php if ($bank_waiting) { ?>
+                  <a class="btn bank btn_popup buy_pay_bank_waiting_btn" id="btn_pay_bank_waiting" data-waiting="Y" data-cash="<?=$bank['CASH']?>" data-price="<?=$bank['PRICE']?>" data-reg_date="<?=$bank['REG_DATE']?>" <?php if ($v['cash'] == 600000) echo "style='width: 370px'"; ?>>무통장 캐시충전</a>
+                  <?php } else { ?>
+                  <a class="btn bank btn_popup buy_pay_bank_btn" id="btn_pay_bank" data-no="<?=$k?>" <?php if ($v['cash'] == 600000) echo "style='width: 370px'"; ?>>무통장 캐시충전</a>
+                  <?php } ?>
+                </div>
+              </div>
+              <?php } ?>
+            </div>
+          </div>
+          <div class="flex mb40" style="justify-content: center; align-items: center; flex-direction: column;">
+            <div style="width: 586px; padding: 0.4rem; padding-left: 15px;">캐시 충전 안내</div>
+            <div class="div_youtube" style="margin-left: 0.4rem; width: 586px;">
+              <iframe width="100%" height="100%" src="https://www.youtube.com/embed/DK1Ds993z7M" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="border-radius:10px;"></iframe>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+    <input type="hidden" id="account_number" class="account_number" value="538801-01-519478">
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+  <form name="form" id="w_frm" method="POST" action="./cash_action.php">
+    <input type="hidden" class="it1" value="" name="ORDERID" id="ORDERID" /><!--주문번호-->
+    <input type="hidden" class="it1" value="" name="ITEMNAME" id="ITEMNAME" /><!--상품명-->
+    <input type="hidden" class="it" value="<?=$M_login['name']?>" name="USERNAME" /><!--주문자명-->
+    <input type="hidden" class="it3" value="0" name="AMOUNT" id="AMOUNT" /><!--결제금액-->
+    <input type="hidden" class="it1" value="" name="cno" id="cno" /><!--구매상품번호-->
+    <input type="hidden" class="it1" value="" name="CARDNAME" id="CARDNAME" /><!--카드사-->
+    <input type="hidden" class="it1" value="" name="BILLINFO" id="BILLINFO" /><!--카드번호-->
+    <input type="hidden" class="it1" value="" name="EXPIREPERIOD" id="EXPIREPERIOD" /><!--유효기간-->
+    <input type="hidden" class="it1" value="" name="QUOTA" id="QUOTA" /><!--할부개월수-->
+    <input type="hidden" class="it1" value="" name="CARDPWD" id="CARDPWD" /><!--비밀번호 앞 2자리-->
+    <input type="hidden" class="it1" value="" name="CARDAUTH" id="CARDAUTH" /><!--//생년월일 YYMMDD-->
+  </form>
+  <form name="mform" id="m_frm" method="POST" action="">
+    <input type="hidden" class="it1" value="" name="ITEMNAME" id="ITEMNAME" /><!--상품명-->
+    <input type="hidden" class="it1" value="" name="cno" id="cno" /><!--구매상품번호-->
+  </form>
+</body>
+
+<script>
+  $(document).ready(function() {
+    var ok_check = false;
+
+    function init_orderid() {
+      var today = new Date();
+      var year  = today.getFullYear();
+      var month = today.getMonth() + 1;
+      var date  = today.getDate();
+      var time  = today.getTime();
+
+      if (parseInt(month) < 10) {
+        month = "0" + month;
+      }
+
+      if (parseInt(date) < 10) {
+        date = "0" + date;
+      }
+
+      var order_idxx = "R_" + year + "" + month + "" + date + "" + time;
+
+      $("#ORDERID").val(order_idxx);
+    }
+
+    $(document).on("click", ".buy_pay_btn_system", function(e) {
+        alert("결제 시스템 안정성 강화를 위한 IDC 이관 작업으로 금일 05~07시 동안 서비스 이용이 일시 중단됩니다.");
+        return false;
+    });
+
+    $(document).on("click", ".buy_pay_btn", function(e) {
+      var no = $(this).data("no");
+
+      // Meta Pixel Event Code
+      fbq('track', 'InitiateCheckout');
+
+      $.post("/other.php", {
+        mode: "search_cash_price",
+        no: no,
+        type: "card"
+      }, function(e) {
+
+        $(".cash_price").html(e.price_text);
+        $(".cash_cash").html(e.cash_text);
+        $(".cash_point").html(e.point_text);
+        $("#w_frm").find("#cno").val(no);
+        $("#w_frm").find("#AMOUNT").val(e.price);
+        $("#w_frm").find("#ITEMNAME").val(e.itemname);
+
+        if (e.point == 0) {
+          $(".bonus_point_display").addClass("none");
+        } else {
+          $(".bonus_point_display").removeClass("none");
+        }
+
+        if (e.cash >= 60000) {
+          $("#quota").show();
+        } else {
+          $("#c_quota").val('00');
+          $("#quota").hide();
+        }
+
+        init_orderid();
+      }, "json");
+    });
+
+    $(document).on("click", ".buy_pay_bank_waiting_btn", function() {
+      var cash     = $(this).data("cash");
+      var price    = $(this).data("price");
+      var reg_date = $(this).data("reg_date");
+
+      $(".bank_waiting_cash_num").html(cash);
+      $(".bank_waiting_price_num").html(price);
+      $(".bank_waiting_reg_date").html(reg_date);
+    });
+
+    $(document).on("click", "#btn_bank_waiting_close", function() {
+      $(location).attr('href', "/contents/mypage/cash-history.html");
+    });
+
+    $(document).on("click", ".buy_pay_bank_btn", function() {
+      var no = $(this).data("no");
+
+      $(".bank_step1").show();
+      $(".bank_step2").hide();
+      $(".bank_step3").hide();
+      $("#btn_bank_step2_buy_cash").show();
+      $(".btn_pay_loading").hide();
+
+      // Meta Pixel Event Code
+      fbq('track', 'InitiateCheckout');
+
+      $.post("/other.php", {
+        mode: "search_cash_price",
+        no: no,
+        type: "bank"
+      }, function(e) {
+        $(".cash_bank_price").html(e.price_text);
+        $(".cash_bank_cash").html(e.cash_text);
+        $(".cash_bank_point").html(e.point_text);
+
+        if (e.point_text == 0) {
+          $(".cash_bank_point_display").addClass("none");
+        } else {
+          $(".cash_bank_point_display").removeClass("none");
+        }
+
+        $("#m_frm").find("#cno").val(no);
+        $("#m_frm").find("#ITEMNAME").val(e.itemname);
+      }, "json");
+    });
+
+    $(document).on("click", "#btn_bank_step1_buy_cash", function() {
+      var bank_name = $("#bank_name").val();
+      if (bank_name == "") {
+        alert("입금자명을 입력해 주세요.");
+        $("#bank_name").focus();
+        return false;
+      }
+      $.post("/other.php", {
+        mode: "pay_bank_name_chk",
+        name: bank_name
+      }, function(e){
+        var res = JSON.parse(e);
+        if (res.error == false) {
+          alert(res.msg);
+          return false;
+        } else {
+          $(".bank_step1").hide();
+          $(".bank_step2").show();
+          $(".bank_step3").hide();
+        }
+      })
+    });
+
+    $(document).on("click", "#btn_bank_step2_buy_cash", function() {
+      console.log('btn_bank_step2_buy_cash');
+      $(this).hide();
+      $(".btn_pay_loading").show();
+      $.post("./bank_action.php", {
+        cno: $("#m_frm").find("#cno").val(),
+        ITEMNAME: $("#m_frm").find("#ITEMNAME").val()
+      }, function(e) {
+        var res = JSON.parse(e);
+        if (res.error == false) {
+          alert(res.msg);
+          if (res.goUrl.length > 0) location.href = res.goUrl;
+          $("#btn_bank_step2_buy_cash").show();
+          $(".btn_pay_loading").hide();
+          $(".bank_step1").hide();
+          $(".bank_step2").show();
+          $(".bank_step3").hide();
+          return false;
+        } else {
+          $(".bank_step1").hide();
+          $(".bank_step2").hide();
+          $(".bank_step3").show();
+        }
+      })
+    });
+
+    // 복사하기 버튼 클릭
+    $('#account_copy').click(function() {
+      $('#account_number').prop("type", "text");
+      $('#account_number').select();
+      var copy = document.execCommand('copy');
+      $('#account_number').prop("type", "hidden");
+      if (copy) {
+        alert("계좌번호를 복사하였습니다.");
+      }
+    });
+
+    $(document).on("click", "#btn_bank_step2_cancel_cash", function(){
+      $("#btn_bank_step2_buy_cash").show();
+      $(".btn_pay_loading").hide();
+      $(".pay_bank").find(".btn_close").click();
+    });
+
+    $(document).on("click", "#btn_bank_step3_close", function() {
+      // $("#btn_bank_step2_buy_cash").show();
+      // $(".btn_pay_loading").hide();
+      // $(".pay_bank").find(".btn_close").click();
+      open("/contents/mypage/cash-charge.html", "_self");
+    });
+
+    $(document).on("click", "#btn_card_buy_cash", function() {
+      var c_birth1 = $("#c_birth1").val();
+      var c_birth2 = $("#c_birth2").val();
+      var c_birth3 = $("#c_birth3").val();
+      var c_birth = c_birth1 + c_birth2 + c_birth3 + "";
+      var c_card1 = $("#c_card1").val();
+      var c_card2 = $("#c_card2").val();
+      var c_card3 = $("#c_card3").val();
+      var c_card4 = $("#c_card4").val();
+      var c_card = c_card1 + c_card2 + c_card3 + c_card4 + "";
+      var c_month = $("#c_month").val();
+      var c_year = $("#c_year_val").val();
+      var c_pwd = $("#c_pwd_val").val();
+      var c_quota = $("#c_quota").val();
+      var c_name = $("#c_name").val();
+
+      if (ok_check) {
+        return false;
+      }
+
+      if (c_birth == '') {
+        alert("생년월일을 입력해 주세요.");
+        return false;
+      }
+
+      if (c_card == '') {
+        alert("카드번호를 입력해 주세요.");
+        return false;
+      }
+
+      if (c_card.length != 14 && c_card.length != 15 && c_card.length != 16 ) {
+        alert("카드번호를 정확히 입력해 주세요.");
+        return false;
+      }
+
+      if (c_month == '' || c_year == '') {
+        alert("유효기간을 입력해 주세요.");
+        return false;
+      }
+      if (c_month.length == 1) c_month = "0"+c_month;
+      if (c_year.length == 1) {
+        alert("유효기간 '년도'를 정확히 입력해 주세요.");
+        return false;
+      }
+
+      if (c_pwd == '') {
+        alert("비밀번호 앞2자리를 입력해 주세요.");
+        return false;
+      }
+
+      if (c_quota == '') {
+        c_quota = '00';
+      }
+
+      $(this).html("결제진행중입니다.");
+      $(this).attr("id", "btn_card_buy_cash_loading");
+      $(this).css("background-color", "#eee");
+      $(this).css("color", "#000");
+
+      $("#CARDNAME").val(c_name);
+      $("#BILLINFO").val(c_card);
+      $("#EXPIREPERIOD").val(c_year + c_month);
+      $("#CARDPWD").val(c_pwd);
+      $("#CARDAUTH").val(c_birth);
+      $("#QUOTA").val(c_quota);
+
+      ok_check = true;
+
+      $("#w_frm").submit();
+    });
+
+    $(document).on('input propertychange', "#c_birth1, #c_birth2, #c_birth3, #c_card1, #c_card2, #c_card3, #c_card4, #c_month, #c_year_val, #c_quota, #c_pwd_val", function() {
+      var val = $(this).val();
+      val = val.replace(/[^0-9]/ig, "");
+
+      $(this).val(val);
+    });
+
+    $(document).on("change", "#c_birth2 , #c_birth1",function() {
+      var year = $("#c_birth1").val();
+      var mon  = $("#c_birth2").val();
+      var html = '<option value="">일</option>';
+
+      if (year == '' || mon == '') {
+        $("#c_birth3").html(html);
+        return false;
+      }
+
+      var mo = Math.floor(year%4);
+      var february = (mo == 0 ? 29 : 28);
+      var months = {"01": 31, "02": february, "03": 31, "04": 30, "05": 31, "06": 30, "07": 31, "08": 31, "09": 30, "10": 31, "11": 30, "12": 31}
+      var count = months[mon];
+
+      for (var i = 1; i <= count; i++) {
+        var day = (i < 10 ? "0" + i : i);
+        html += '<option value="'+day+'">' + day + '</option>';
+      }
+      $("#c_birth3").html(html);
+    });
+
+    $(document).on("input propertychange", "#c_card1", function() {
+      $(this).val($(this).val().toUpperCase());
+      if ($(this).val().length == 4) {
+        $("#c_card2").focus();
+      }
+    });
+
+    $(document).on("input propertychange", "#c_card2", function() {
+      $(this).val($(this).val().toUpperCase());
+      if ($(this).val().length == 4) {
+        $("#c_card3").focus();
+      }
+    });
+
+    $(document).on("input propertychange", "#c_card3", function() {
+      $(this).val($(this).val().toUpperCase());
+      if ($(this).val().length == 4) {
+        $("#c_card4").focus();
+      }
+    });
+
+    $(document).on("input propertychange", "#c_card4", function() {
+      $(this).val($(this).val().toUpperCase());
+    });
+
+    $(document).on("input propertychange", "#c_month", function() {
+      $(this).val($(this).val().toUpperCase());
+      if ($(this).val().length == 2) {
+        $("#c_year_val").focus();
+      }
+    });
+  });
+</script>
+</html>

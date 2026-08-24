@@ -1,0 +1,102 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_EXCHANGE.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit";
+
+  $list = F_EXCHANGE_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['EXCHANGE_NO'] = array();
+  }
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">환율정보</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">로또관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">환율정보</li>
+        </ol>
+      </div>
+      <div class="ms-auto pageheader-btn">
+        <a class="btn btn-primary btn-icon text-white me-2 okBtn">
+          <span><i class="fe fe-plus"></i></span> Add Exchange
+        </a>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div class="table-responsive table-wrapper">
+              <table class="table border text-nowrap table-bordered table-scroll">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>날짜</th>
+                    <th>환율</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['EXCHANGE_NO']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                  ?>
+                  <tr class="text-center">
+                    <td><?=$no?></td>
+                    <td><?=$list['DATE'][$i]?></td>
+                    <td><?=number_format($list['WON'][$i])?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+    $(document).on('click', '.okBtn',function() {
+      window.open('./exchange_add.php');
+    });
+
+    let getHeight = $('.table-wrapper').css('max-height');
+    let setHeight = Number(getHeight.slice(0, -2)) + 50;
+
+    // 해상도에 따라 높이 조절
+    $('.table-wrapper').css('max-height', setHeight);
+  });
+</script>

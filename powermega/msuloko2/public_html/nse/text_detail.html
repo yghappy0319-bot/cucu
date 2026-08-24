@@ -1,0 +1,75 @@
+<?php
+
+  include_once $_SERVER['DOCUMENT_ROOT']."/_common/config.php";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_NOTICE.php";
+
+  if($no == ''){
+    exit;
+  }
+
+  ## INJECTION
+  if (!is_numeric($no)) {
+    meta_go('/');
+    exit();
+  }
+  $no = xss_clean($no);
+
+  $info = F_NOTICE(array("mode"=>"read", "BBS_NO"=>$no));
+
+  $k = false;
+
+  if($info['FILE1'] != ''){
+    $file = explode(".",$info['FILE1']);
+    $ext  = strtolower(end($file));
+    $ext_arr = array("jpg","jpeg","gif","png","powerball");
+
+    if(in_array($ext,$ext_arr) && strstr($info['CONTENT'],"{{이미지출력위치}}") !== False){
+      $str = '<img src="/contents/cs/imgsvc.html?i='.$info['FILE1'].'" style="max-width:100%;" alt="">';
+      $info['CONTENT'] = str_replace("{{이미지출력위치}}",$str,$info['CONTENT']);
+      $k = true;
+    }
+  }
+
+  if(strstr($info['CONTENT'],"/upload/nse/") !== False) {
+    $info['CONTENT'] = str_replace("/upload/nse/","/contents/cs/imgsvc.html?u=",$info['CONTENT']);
+  }
+
+
+?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ko">
+<head>
+<style>
+h1 {
+margin: 0;
+h1 span>span {font-size:inherit;font-weight:inherit;}
+}
+p {
+margin : 0;
+line-height: 1.5;
+}
+img {
+  max-width:100%;
+}
+</style>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body class="se2_inputarea" style="height:0">
+<?=nl2br($info['CONTENT'])?>
+<?php
+if ($info['FILE1'] != '' && !$k) {
+  $file = explode(".",$info['FILE1']);
+  $ext  = strtolower(end($file));
+  $ext_arr = array("jpg","jpeg","gif","png","powerball");
+
+  if(in_array($ext,$ext_arr)) {
+?>
+<div class="wrap_img" style="margin-bottom:10px;">
+<img src="/contents/cs/imgsvc.html?i=<?=$info['FILE1']?>" alt="" style="max-width:100%;">
+</div>
+<?php
+  }
+}
+?>
+</body>
+</html>

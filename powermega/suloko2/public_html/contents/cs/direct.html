@@ -1,0 +1,197 @@
+<?php
+  $page_title = "1:1문의 | 고객센터 - 파워볼, 메가밀리언, 미국 복권, 파메코";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_common/config.php";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_BBS.php";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 20;
+  $add_query = " AND GUBUN='QNA' AND USER_ID='".$M_login['user_id']."'";
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit";
+
+  if ($find_object == 'all') {
+    $add_query .= " AND SUBJECT like '%".$find_text."%' OR CONTENT like '%".$find_text."%'";
+    $find_object = '';
+  }
+
+  $find_op = array(
+    "SUBJECT" => "질문",
+    "REPLY" => "답변내용"
+  );
+
+  $list = F_BBS_list(array(
+    "row" => $limit,
+    "page" => $page,
+    "order" => " REG_DATE DESC",
+    "find_text" => $find_text,
+    "find_object" => $find_object,
+    "add_query" => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['BBS_NO'] = array();
+  }
+
+  $total = 0;
+  if ($list['total'] > 0) {
+    $total = ceil($list['total'] / $limit);
+  }
+
+  // 최근 접속시간 업데이트
+  $db->query("UPDATE MEMBER SET LASTDATE=NOW(), REG_IP='{$ip_address}' WHERE USER_ID='{$M_login['user_id']}'");
+?>
+
+<script language="javascript">
+  $(document).ready(function() {
+    $(document).on("click", ".searchBtn", function() {
+      $("#srForm").submit();
+    });
+  });
+</script>
+
+<?php $menu_on['bbs'] = true; ?>
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+  <main id="main">
+    <div class="location ls50">
+      <div class="wrap_com">
+        <ol class="clear">
+          <li><a href="" class="add_before"><span class="hide">홈</span></a></li>
+          <li><a href="">고객센터</a></li>
+          <li><a href="">1:1 문의</a></li>
+        </ol>
+      </div>
+    </div>
+    <section class="sec_news sec_cs sec_tab wrap_com">
+      <h2 class="h_type4">고객센터</h2>
+      <div class="wrap_tab">
+        <ul class="tab_type1 flex align_center ls75">
+          <li><a href="/contents/cs/faq.html">자주묻는질문</a></li>
+          <li><a href="/contents/cs/news.html" class="on">최신뉴스</a></li>
+          <li><a href="/contents/cs/notice.html">공지사항</a></li>
+          <li class="on"><a href="/contents/cs/direct.html">1:1 문의</a></li>
+          <li><a href="/contents/cs/report.html">보이스피싱 제보</a></li>
+        </ul>
+      </div>
+      <div class="wrap_board f_NotoSansKR ls50">
+        <section class="sec_direct">
+          <ul class="list_bul gray ls50 bx_padding" style="padding:0, 0, 0, 1.9rem">
+            <li><span>한번 등록한 상담내용은 수정이 불가능합니다. 수정을 원하시는 경우, 삭제 후 재등록 하셔야 합니다.</span></li>
+            <li><span>1:1 상담은 24시간 신청가능하며 접수된 내용은 빠른 시간 내에 답변을 드리도록 하겠습니다.</span></li>
+            <!-- <li><span>문의하신 1:1 상담은 고객님의 메일로도 확인하실 수 있습니다.</span></li> -->
+          </ul>
+          <div class="wrap_list ">
+            <div class="clear">
+              <a href="/contents/mypage/direct-apply.html" class="right btn_red2 radius5 f_NotoSansKR">새 문의 등록</a>
+            </div>
+            <h3 class="hide">1:1문의 내역 리스트</h3>
+            <div class="table thead bg_navy ">
+              <div class="tr">
+                <div>NO</div>
+                <div>분류</div>
+                <div>제목</div>
+                <div>등록일자</div>
+                <div>상태</div>
+              </div>
+            </div>
+            <ol class="list_type tbody">
+              <?php
+                for ($i=0; $i < count($list['BBS_NO']); $i++) {
+                  $no = $list['total'] - (($page - 1) * $list['row']) - $i;
+
+                  $tp = "<p class='fw600'>답변대기</p>";
+
+                  if ($list['REPLY_YN'][$i] == 'Y') {
+                    $tp = "<p class='color_red fw600'>답변완료</p>";
+                  }
+              ?>
+              <li>
+                <div class="table bx_data reply_on" style="cursor:pointer;" data-no="<?=$list['BBS_NO'][$i]?>">
+                  <div class="tr">
+                    <div><?=$no?></div>
+                    <div><?=$list['QNA_TYPE'][$i]?></div>
+                    <div class="td_click text-left"><?=$list['SUBJECT'][$i]?></div>
+                    <div><?=$list['REG_DATE'][$i]?></div>
+                    <div><?=$tp?></div>
+                  </div>
+                </div>
+                <div class="bx_answer bx_light_gray bx_padding f_NotoSansKR" style="display:none;">
+                  <div class="pb20">
+                    <div class="text">
+                      <p class="fw500">문의내용 [원문]</p>
+                      <?=nl2br($list['CONTENT'][$i])?>
+                    </div>
+                    <!--<butotn class="right radius5 btn_navy">닫기</butotn>-->
+                  </div>
+                  <?php if ($list['REPLY_YN'][$i] == 'Y') { ?>
+                  <div style="border-top:1px solid #eaeaea;">
+                    <div class="text pt20">
+                      <p class="color_red fw600">질문에 대한 답변입니다.</p>
+                      <?=nl2br($list['REPLY'][$i])?>
+                    </div>
+                    <!--<butotn class="right radius5 btn_navy">닫기</butotn>-->
+                  </div>
+                  <?php } ?>
+                </div>
+              </li>
+              <?php } ?>
+            </ol>
+          </div>
+        </section>
+        <?php if ($list['total'] <= 0) { ?>
+        <div class="nohistory">
+          <div class="wrap_img"><img src="/common/images/img_nohistory.jpg" alt=""></div>
+          <p>1:1 문의 내역이 없습니다.</p>
+        </div>
+        <?php } else { ?>
+        <!-- 페이징 숫자 표시는 5개까지 -->
+        <div class="wrap_paging">
+          <?php
+            $page_info['cur'] = $page;
+            $page_info['row'] = $limit;
+            $page_info['total'] = $list['total'];
+            $list['page_string'] = print_page_num1($page_info);
+            echo $list['page_string'];
+          ?>
+        </div>
+        <?php } ?>
+      </div>
+    </section>
+    <?php include $_SERVER['DOCUMENT_ROOT']."/inc/quick-sub.html"; ?>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+</body>
+
+<script>
+  $(document).ready(function() {
+    $(document).on("click", ".reply_on",function() {
+      //$(".reply_on").removeClass("open");
+      //$(".list_type4").find("div").hide();
+
+      if ($(this).is(".open")) {
+        $(this).removeClass("open");
+        $(this).parent().find(".bx_answer ").slideUp();
+      } else {
+        $(this).addClass("open");
+        $(this).parent().find(".bx_answer ").slideDown();
+
+        let no = $(this).data('no');
+        $.post("./mode.php", {
+          mode: "qna_user_read",
+          no: no
+        }, function(e) {
+
+        },"json");
+      }
+    });
+  });
+</script>
+
+</html>

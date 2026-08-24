@@ -1,0 +1,65 @@
+{
+  "name": "슈로코 3.0",
+  "short_name": "슈로코 3.0",
+  "start_url": "/",
+  "scope": ".",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "display": "standalone",
+  "background_color": "#fff",
+  "theme_color": "#fff",
+  "description": "미국로또구매대행 파워볼 메가밀리언 슈로코 superlottokorea, 미국로또구매대행",
+  "dir": "ltr",
+  "lang": "ko-KR",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/common/images/pwa/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/common/images/pwa/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/common/images/pwa/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/common/images/pwa/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/common/images/pwa/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "/common/images/pwa/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/common/images/pwa/icon-284x284.png",
+      "sizes": "284x284",
+      "type": "image/png"
+    },
+    {
+      "src": "/common/images/pwa/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["shopping"],
+  "screenshots": [],
+  "shortcuts": []
+}

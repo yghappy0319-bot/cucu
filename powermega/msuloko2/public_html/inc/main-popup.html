@@ -1,0 +1,87 @@
+<!--
+<div class="modal-main-banner" data-modal-id="modal-report">
+  <div class="inner">
+    <button type="button" class="close-modal-x"><span class="hide">닫기</span></button>
+
+    <div style="position:relative">
+      <img src="<?=$commonImageURI?>index/report_popup.png" style="margin-top: -20px; width: 100%;" />
+      <a href="/contents/cs/report.html" style="width: 38%;height: 9%;position:absolute;bottom: 0;left: 50%;transform: translateX(-50%);"></a>
+    </div>
+
+    <button class="dont-show-7-days">7일간 열지 않음</button>
+    <button class="dont-show-1-day">오늘 하루 열지 않음</button>
+    <button class="close-modal">닫기</button>
+  </div>
+</div>
+-->
+
+<?php if ($M_login["user_id"] != '') { // 로그인 회원용 팝업 영역 ?>
+<div class="modal-main-banner" data-modal-id="modal-mainCash">
+  <div class="inner"  >
+    <button type="button" class="close-modal-x"><span class="hide">닫기</span></button>
+
+    <img src="/images/web/cash_point.png?date=<?=date('his')?>" style="margin-top: -20px; width: 100%;" />
+
+    <button class="dont-show-7-days">7일간 열지 않음</button>
+    <button class="dont-show-1-day">오늘 하루 열지 않음</button>
+    <button class="close-modal">닫기</button>
+  </div>
+</div>
+<?php } ?>
+
+
+
+<!-- PWA 앱 설치 안내 팝업 (안드로이드 + 미설치 상태에서만 JS로 표시) -->
+<div class="modal-main-banner" data-modal-id="pwa-install">
+  <div class="inner">
+    <button type="button" class="close-modal-x"><span class="hide">닫기</span></button>
+
+    <div style="padding: 20px 16px 12px; text-align: center;">
+      <p style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">파메코 앱으로 더 편하게 이용해 보실래요?</p>
+      <p style="font-size: 13px; line-height: 1.5; color: #555;">
+        홈 화면에 파메코 앱을 설치하면<br>
+        더 빠르게 접속하고, 브라우저 주소창 없이<br>
+        앱처럼 편하게 이용하실 수 있어요.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 8px; padding: 0 16px 16px;">
+      <button type="button"
+              class="pwa-install-btn"
+              style="flex: 1; padding: 10px 0; font-size: 14px; font-weight: 600; color: #fff; background-color: #007aff; border: none; border-radius: 4px;">
+        앱 설치
+      </button>
+      <button type="button"
+              class="pwa-skip-btn"
+              style="flex: 1; padding: 10px 0; font-size: 13px; color: #555; background-color: #f2f2f2; border: none; border-radius: 4px;">
+        웹으로 볼게요
+      </button>
+    </div>
+
+    <div style="padding: 0 16px 16px; text-align: right;">
+      <button type="button"
+              class="dont-show-1-day"
+              style="font-size: 11px; color: #999; background: none; border: none; padding: 0;">
+        오늘 하루 보지 않기
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!--
+<div class="modal-main-banner" data-modal-id="modal-newMegamillions">
+  <div class="inner">
+    <button type="button" class="close-modal-x"><span class="hide">닫기</span></button>
+
+    <img src="<?=$commonImageURI?>index/new_mega_popup.png" style="margin-top: -20px; width: 100%;" usemap="#mega-map" />
+    <map name="mega-map">
+      <area target="_self" alt="새로운메가밀리언" title="새로운메가밀리언" href="/contents/cs/notice_detail.php?no=11096" coords="50,300,370,470" shape="rect">
+    </map>
+
+    <button class="dont-show-7-days">7일간 열지 않음</button>
+    <button class="dont-show-1-day">오늘 하루 열지 않음</button>
+    <button class="close-modal">닫기</button>
+  </div>
+</div>
+-->

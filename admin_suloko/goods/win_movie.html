@@ -1,0 +1,187 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_WININFO.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit&gubun=$gubun&sdate=$sdate&edate=$edate";
+
+  $add_query = "";
+
+  if ($gubun != "") {
+    $add_query .= " AND GUBUN='{$gubun}'";
+  }
+
+  if ($sdate != "" && $edate != "") {
+    $add_query .= " AND PLAYDATE BETWEEN '{$sdate}' AND '{$edate}'";
+  } else {
+    $dt = date("Y-m-d");
+    $add_query .= " AND PLAYDATE <= '{$dt}'";
+  }
+
+  $list = F_WININFO_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['WININFO_NO'] = array();
+  }
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">추첨영상등록</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">로또관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">추첨영상등록</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="gubun" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <option value="">--복권종류--</option>
+                    <?=option_make($ball_op, $gubun)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select name="schdate" id="schdate" class="form-control form-select select2">
+                    <option value="">--기간선택--</option>
+                    <?=option_make($search_date_op, $schdate)?>
+                  </select>
+                </div>
+                <input type="hidden" name="find_object" value="PLAYDATE" />
+                <div class="form-group fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                    <span style="margin: 8px 5px 0 5px;">~</span>
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive mb-3">
+              <div class="input-group col-md-10 fl-left">
+                <input type="text" id="ball_gubun" class="form-control col-2" placeholder="복권명" readonly />&nbsp;
+                <input type="text" id="play_date" class="form-control col-2" placeholder="추첨일" readonly />&nbsp;
+                <input type="text" id="YUTUBE" class="form-control" placeholder="추첨영상" />&nbsp;
+                <a class="btn btn-border btn-primary" id="btn-yutube-in">등록</a>
+              </div>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border text-nowrap table-bordered table-scroll">
+                <thead>
+                  <tr>
+                    <th>회차</th>
+                    <th>복권명</th>
+                    <th>추첨일자</th>
+                    <th class="col-6">동영상 URL</th>
+                    <th class="col-1">보기</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['WININFO_NO']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                      $play_date = "한) ".date("Y-m-d", strtotime($list['PLAYDATE'][$i]." +1 day"));
+                      // $play_date = "한) ".date("Y-m-d", strtotime($list['PLAYDATE'][$i]." +1 day"))."<br>미) ".$list['PLAYDATE'][$i];
+                  ?>
+                  <tr style="cursor: pointer;" class="ballFunC text-center" data-pdate="<?=$list['PLAYDATE'][$i]?>">
+                    <td><?=$list['DRAWNUM'][$i]?></td>
+                    <td><?=$ball_op[$list['GUBUN'][$i]]?></td>
+                    <td><?=$play_date?></td>
+                    <td class="text-start"><?=$list['YUTUBE'][$i]?></td>
+                    <td>
+                    <?php if ($list['YUTUBE'][$i]) { ?>
+                    <a href="<?=$list['YUTUBE'][$i]?>" target="_blank" class="btn btn-radius btn-secondary">보기</a>
+                    <?php } ?>
+                    </td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+    $(document).on('click', '.ballFunC', function() {
+      let play_date = $(this).data('pdate');
+      $.post('./default.php', {
+        mode: 'wininfo_yutube',
+        play_date: play_date
+      }, function(e){
+        if (e.error) {
+          $('#ball_gubun').val(e.gubun);
+          $('#play_date').val(e.kor_play_date);
+          $('#YUTUBE').val(e.yutube);
+        } else {
+          alert('정확한 추첨일자를 입력해 주세요.');
+        }
+      }, 'json');
+    });
+
+    $(document).on('click', '#btn-yutube-in', function() {
+      let gubun = $('#ball_gubun').val();
+      let play_date = $('#play_date').val();
+      let yutube = $('#YUTUBE').val();
+
+      $.post('./default.php', {
+        mode: 'btn-yutube-in',
+        play_date: play_date,
+        yutube: yutube
+      }, function(e) {
+        alert(e.msg);
+        if (e.error) {
+          window.location.reload();
+        }
+      }, 'json');
+    });
+
+    let getHeight = $('.table-wrapper').css('max-height');
+    let setHeight = Number(getHeight.slice(0, -2)) - 50;
+
+    // 해상도에 따라 높이 조절
+    $('.table-wrapper').css('max-height', setHeight);
+  });
+</script>

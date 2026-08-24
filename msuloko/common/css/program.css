@@ -1,0 +1,52 @@
+.wrap_paging {
+    position: relative;
+    display: table;
+    margin: 1rem auto 0;
+    padding: 0 2rem;
+}
+.wrap_paging > a.next {
+    right: 0;
+}
+
+.wrap_paging a {
+    display: block;
+    margin-left:-1px;
+    width: 1.7rem;
+    height: 1.7rem;
+    border: 1px solid #d2d2d2;
+    box-sizing: border-box;
+    color: #000;
+    line-height: 1.5rem;
+    text-align: center;
+}
+.wrap_paging > a {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: url(../images/ico_arr_right_paging.png) no-repeat center;
+}
+.wrap_paging > a.prev {
+    left: 0;
+    background-image: url(../images/ico_arr_left_paging.png);
+}
+.hide {
+    overflow: hidden;
+    display: block;
+    position: absolute;
+    border: 0;
+    width: 1px;
+    height: 1px;
+    clip: rect(1px, 1px, 1px, 1px);
+}
+.wrap_paging ol {
+    font-size: 0;
+}
+.wrap_paging ol li {
+    display: inline-block;
+    font-size: 0.8rem;
+}
+.wrap_paging ol li a:hover, .wrap_paging ol li.on a {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+}

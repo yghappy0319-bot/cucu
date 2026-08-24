@@ -1,0 +1,154 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_SMSTEMPLET.php";
+  F_admin_chk($S_login);
+
+  if ($mode == "update") {
+    $info = F_SMSTEMPLET(array("mode" => "read", "TEMPLET_NO" => $no));
+  } else {
+    $info = array();
+  }
+
+  if (!isset($mode)) { $mode = "insert"; };
+  if (!isset($info['CODESK'])) { $info['CODESK'] = ""; };
+  if (!isset($info['STOPYN'])) { $info['STOPYN'] = ""; };
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">알림템플릿관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">알림관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">알림템플릿관리</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <div class="row">
+      <div class="col-lg-12 col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">탬플릿 등록/수정</h3>
+          </div>
+          <div class="card-body">
+            <form class="needs-validation" novalidate method="post" name="w_frm" action="default.php" enctype='multipart/form-data'>
+              <input type="hidden" name="TEMPLET_NO" value="<?=(isset($info['TEMPLET_NO'])) ? $info['TEMPLET_NO'] : ""?>" />
+              <input type="hidden" name="STAFFID" value="<?=(isset($info['STAFFID'])) ? $info['STAFFID'] : $S_login['user_id']?>" />
+              <input type="hidden" name="mode" value="<?=$mode?>" />
+              <div class="form-row">
+                <div class="col-md-3 mb-3">
+                  <label for="validationCustom04">카테고리</label>
+                  <select class="form-select select2 form-control" name="CODESK" id="validationCustom04" required>
+                    <option selected disabled value="">선택</option>
+                    <?=option_make($codesk_op, $info['CODESK'])?>
+                  </select>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please select a valid one.</div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="validationCustom04">사용여부</label>
+                  <select class="form-select select2 form-control" name="STOPYN" id="validationCustom04" required>
+                    <option selected disabled value="">선택</option>
+                    <?=option_make($stop_op, $info['STOPYN'])?>
+                  </select>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please select a valid one.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3" id="must" style="display: none;">
+                  <label for="customControlValidation3">SMS 필수 발송</label>
+                  <p class="tag-indigo">* 알림 동의 여부와 상관없이 문자가 발송됩니다. (알림 동의한 회원은 알림과 문자 모두 발송됩니다)</p>
+                  <div class="d-flex">
+                    <div class="custom-control custom-radio me-4">
+                      <input type="radio" class="custom-control-input" id="customControlValidation3" name="MUST" value='Y' <?=($info['MUST'] == 'Y') ? "checked" : ""?> />
+                      <label class="custom-control-label" for="customControlValidation3">Y</label>
+                    </div>
+                    <div class="custom-control custom-radio mb-3">
+                      <input type="radio" class="custom-control-input" id="customControlValidation4" name="MUST" value='N' <?=($info['MUST'] != 'Y') ? "checked" : ""?> />
+                      <label class="custom-control-label" for="customControlValidation4">N</label>
+                    </div>
+                  </div>
+                  <div class="invalid-feedback">Please provide a valid IS HIDE.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom03">제목</label>
+                  <input type="text" class="form-control" name="SUBJECT" value="<?=(isset($info['SUBJECT'])) ? $info['SUBJECT'] : ""?>" id="validationCustom03" required />
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please provide a valid subject.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom03">설명</label>
+                    <input type="text" class="form-control" name="GUBUN" value="<?=(isset($info['GUBUN'])) ? $info['GUBUN'] : ""?>" id="validationCustom03" required />
+                    <div class="valid-feedback">Looks good!</div>
+                    <div class="invalid-feedback">Please provide a valid explain.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationTextarea">내용</label>
+                  <textarea class="form-control h-415" id="validationTextarea" name="CONTENT" placeholder="내용을 작성해 주세요." required><?=(isset($info['CONTENT'])) ? $info['CONTENT'] : ""?></textarea>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please enter a message in the content.</div>
+                </div>
+              </div>
+              <div>
+                <button class="btn btn-primary" type="submit">저장하기</button>
+                <button class="btn btn-dark btn_cancel" type="button">뒤로가기</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ROW CLOSED -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script language="javascript">
+  $(document).ready(function() {
+    // 왼쪽 메뉴 처리
+    let slide_title = $('.breadcrumb-item').find('a').text();
+    let title = $('.page-title').text();
+    let is_active = false;
+    $('.slide').each(function(slide_idx, slide_itm) {
+      $(slide_itm).find('.slide-menu').find('li').each(function(slide_menu_idx,slide_menu_itm) {
+        is_active = false;
+        if ($(slide_menu_itm).find('a').text().indexOf(title) != -1) {
+          $(slide_menu_itm).addClass('active');
+          $(slide_menu_itm).find('a').addClass('active');
+          is_active = true;
+        }
+        if (is_active && $(slide_itm).find('.side-menu__label').text() == slide_title) $(slide_itm).find('.side-menu__item').addClass('active');
+      });
+    });
+    side_menu_scroll();
+  });
+
+  // Category에서 SMS 선택 시
+  $('select[name=CODESK]').change(function() {
+    if ($(this).val() === 'S') {
+      $('#must').css('display', '');
+    } else {
+      $('#must').css('display', 'none');
+    }
+  })
+
+  // 뒤로가기
+  $('.btn_cancel').click(function() {
+    history.back();
+  })
+</script>

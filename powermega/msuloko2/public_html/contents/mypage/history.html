@@ -1,0 +1,114 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_common/config.php";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  // 최근 접속시간 업데이트
+  $db->query("UPDATE MEMBER SET LASTDATE=NOW(), REG_IP='{$ip_address}' WHERE USER_ID='{$M_login['user_id']}'");
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub bb border_dcdcdc" style="margin-bottom: 0;">
+            <h2 class="title">구매 · 당첨 내역</h2>
+            <a href="/contents/mypage/" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <div>
+            <section class="sec_history wrap_com section ls50 bg_white">
+              <div class="wrap_tab">
+                <ul class="tab_type1 flex gubun_check">
+                  <li class="on"><a class="gubun" data-tp="all">전체보기</a></li>
+                  <li><a class="gubun" data-tp="MM">메가밀리언</a></li>
+                  <li><a class="gubun" data-tp="PB">파워볼</a></li>
+                </ul>
+              </div>
+              <!-- 당첨/낙첨 탭(개발연동) -->
+              <div class="wrap_tab">
+                <ul class="tab_type1 flex winchk_check">
+                  <li style="margin-top: 0px !important;"><a class="winchk" data-tp="Y">당첨</a></li>
+                  <li style="margin-top: 0px !important;"><a class="winchk" data-tp="N">낙첨</a></li>
+                </ul>
+              </div>
+              <div class="bx_search">
+                <div class="wrap_common">
+                  <ul class="list_sel flex align_center datechk_check">
+                    <li><button data-tp="7D" class='date_gubun'>1주일</button></li>
+                    <li><button data-tp="1M" class='date_gubun'>1개월</button></li>
+                    <li class="on"><button data-tp="3M" class='date_gubun'>3개월</button></li>
+                    <li><button data-tp="6M" class='date_gubun'>6개월</button></li>
+                  </ul>
+                </div>
+                <div class="wrap_date flex align_center space">
+                  <div class="flex space">
+                    <input type="text" autocomplete="off" id="sdate" value="<?=$sdate?>" />
+                    <span class="mr5">~</span>
+                    <input type="text" autocomplete="off" id="edate" value="<?=$edate?>" />
+                    <input type="hidden" name="hide" id="hide" />
+                  </div>
+                  <button type="button" class="btn_navy btn search_btn">상세조회</button>
+                </div>
+              </div>
+              <div class="search_type2 flex align_center space mt30">
+                <div class="select">
+                  <select id="order" name="order">
+                    <option value=" REG_DATE DESC">최신순</option>
+                    <option value=" REG_DATE ASC">과거순</option>
+                  </select>
+                </div>
+              </div>
+            </section>
+            <section class="sec_history wrap_com section mt30 bg_white pb40">
+              <div class="flex" style="justify-content: space-between;">
+                <div>
+                  <h3 class="h_type4 order_title">구매 · 당첨 내역</h3>
+                  <h3 class="h_type4 hide_title" style="display: none;">숨김내역</h3>
+                </div>
+                <div>
+                  <button class="btn_w mb20 fs23" style="padding: 0.1rem 0.3rem 0.1rem 0.3rem;" onclick="location.href='/contents/service/mega.html'">게임 규칙 안내</button>
+                  <button class="btn_super mb20 fs23 btn_hide" value="Y" style="padding: 0 0.3rem 0 0.3rem;">숨김 내역 보기</button>
+                  <button class="btn_super mb20 fs23 btn_order" value="N" style="padding: 0 0.3rem 0 0.3rem; display: none;">구매 내역 보기</button>
+                </div>
+              </div>
+              <div class="wrap_tab" style="display: none;">
+                <ul class="tab_type1 flex">
+                  <li class="on"><button>메가밀리언</button></li>
+                  <li><button>파워볼</button></li>
+                </ul>
+              </div>
+              <div class="wrap_tb bt ls50 lh10">
+                <table class="tb_type2" id="list_box">
+                  <thead>
+                    <caption>
+                      <div class="hide">
+                        최근 구매내역에 대한 정보를 제공하는 표
+                      </div>
+                    </caption>
+                    <colgroup>
+                      <col width="">
+                      <col width="">
+                    </colgroup>
+                  </thead>
+                </table>
+              </div>
+              <button class="btn_more btn_center bg_navy add_after br5 type_btn_more">
+                <span class="va_mid">더보기</span>
+              </button>
+            </section>
+          </div>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+<script src="/common/js/my_lotto.js?version=<?=$version?>" charset="utf-8"></script>
+
+</html>

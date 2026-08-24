@@ -1,0 +1,350 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_BBS.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page   = 1;
+  if (!$limit) $limit = 20;
+  if (!isset($find_object_reply)) $find_object_reply = "N";
+
+  $add_query = " AND GUBUN='QNA' AND HIDDEN = '0' ";
+  $PARAM     = "find_object_reply=$find_object_reply&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit&find_object_type=$find_object_type";
+
+  $list = F_BBS_list(array(
+    "row"               => $limit,
+    "page"              => $page,
+    "order"             => $order,
+    "find_text"         => $find_text,
+    "find_object"       => $find_object,
+    "find_object_type"  => $find_object_type,
+    "find_object_reply" => $find_object_reply,
+    "add_query"         => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['BBS_NO'] = array();
+  }
+
+  $find_op  =  array(
+    "SUBJECT" => "제목",
+    "CONTENT" => "내용",
+    "REPLY"   => "답변내용",
+    "NAME"    => "작성자",
+    "USER_ID" => "아이디"
+  );
+
+  $qna_op = array(
+    "N" => "N",
+    "Y" => "Y",
+  );
+
+
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">1:1문의</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">게시판관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">1:1문의</li>
+        </ol>
+      </div>
+      <?php if ($S_login['user_id'] != "admin216") { ?>
+      <div class="ms-auto pageheader-btn">
+        <button class="btn btn-danger allDelChk">선택삭제</button>
+      </div>
+      <?php } ?>
+
+      <?php if ($S_login['user_id'] == "admin205") { ?>
+        <div class=" pageheader-btn">
+          <button class="btn btn-danger allHideChk">선택숨김</button>
+        </div>        
+      <?php } ?>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group fl-left">
+                  <select name="find_object_reply" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <option value="">-- 답변유무 --</option>
+                    <option value="Y" <?php if ($find_object_reply == "Y") echo "selected"; ?>>답변완료</option>
+                    <option value="N" <?php if ($find_object_reply == "N") echo "selected"; ?>>미답변</option>
+                  </select>
+                </div>
+                <div class="form-group mx-1 fl-left">
+                  <select name="find_object_type" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <option value="">-- 구분 --</option>
+                    <?=option_make($qna_category_op, $find_object_type)?>
+                  </select>
+                </div>
+                <div class="form-group mx-1 fl-left">
+                  <select name="find_object" id="select-beast" class="form-control form-select select2">
+                    <option value="">--Select--</option>
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control" name="find_text" value="<?=$find_text?>">
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="chkAll" /></th>
+                    <th>No</th>
+                    <th>구분</th>
+                    <th>아이디</th>
+                    <th>제목</th>
+                    <th>내용</th>
+                    <th>휴대폰</th>
+                    <th>작성자</th>
+                    <th>등록일시</th>
+                    <th>답변공개여부</th>
+                    <th>답변작성여부</th>
+                    <th>답변확인일시</th>
+                    <th>답변 작성</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['BBS_NO']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+
+                      $isReply = "미등록";
+                      if ($list['REPLY'][$i]) {
+                        $isReply = "등록";
+                      }
+                  ?>
+                  <tr class="text-center">
+                    <td><input type="checkbox" name="noChk[]" value="<?=$list['BBS_NO'][$i]?>" /></td>
+                    <td><?=$no?></td>
+                    <td><?=$list['QNA_TYPE'][$i]?></td>
+                    <?php if ($S_login['user_id'] == "admin301") { // 박태걸사장 계정 ?>
+                    <td><?=$list['USER_ID'][$i]?></td>
+                    <?php } else { ?>
+                    <td><?=$list['USER_ID'][$i]?><i class="modal-effect fa fa-search checkUser"
+                        title="상세정보"
+                        style="cursor: pointer; margin-left: 3px;"
+                        data-bs-effect="effect-scale"
+                        data-bs-target="#memberModal"
+                        data-bs-toggle="modal"
+                        data-no="<?=$list['MEMBER_NO'][$i]?>">
+                      </i></td>
+                    <?php } ?>
+                    <td class="text-start" style="max-width: 200px; white-space: normal; word-break: keep-all;"><?php if ($list['REPLY_YN'][$i] == "N") echo "<img src='/assets/images/ico_new.gif'>&nbsp;"; ?><?= $list['SUBJECT'][$i]?></td>
+                    <td class="text-start" style="max-width: 400px; white-space: normal; word-break: keep-all;"><?=nl2br($list['CONTENT'][$i])?></td>
+                    <td><?=$list['HP'][$i]?></td>
+                    <td><?=$list['NAME'][$i]?></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                    <td>
+                      <select class="form-control form-select select2 upstat" data-no="<?=$list['BBS_NO'][$i]?>" style="width: 50px;">
+                        <?=option_make($qna_op, $list['REPLY_YN'][$i])?>
+                      </select>
+                    </td>
+                    <td class="text-center"><?=$isReply?></td>
+                    <td><?=$list['USER_READ_DATE'][$i]?></td>
+                    <td>
+                    <?php if ($list['REPLY_YN'][$i] == "Y") { ?>
+                    <a data-bs-target="#modaldemo1" data-bs-toggle="modal" class="btn btn-default-light btn-read" data-no="<?=$list['BBS_NO'][$i]?>" >
+                    <font color="#000000">(기존)완료</font></a>
+                    <a href="./qna_add.html?mode=update&no=<?=$list['BBS_NO'][$i]?>" class="btn btn-default-light">
+                    <font color="#000000">매크로완료</font></a>
+                    <?php } else { ?>
+                    <a data-bs-target="#modaldemo1" data-bs-toggle="modal" class="btn btn-radius btn-secondary btn-read" data-no="<?=$list['BBS_NO'][$i]?>">
+                    <font color="#fff">(기존)답변</font></a>
+                    <a href="./qna_add.html?mode=update&no=<?=$list['BBS_NO'][$i]?>" class="btn btn-radius btn-secondary">
+                    <font color="#fff">매크로답변</font></a>
+                    <?php } ?>
+                    </td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<!-- BASIC MODAL -->
+<div class="modal fade" id="modaldemo1">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-content-demo">
+      <div class="modal-header">
+        <h6 class="modal-title">1:1 문의</h6><button aria-label="Close" class="btn-close" data-bs-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="card-body" id="order-view">
+            <div class="form-row">
+              <div class="col-md-12 mb-3">
+                <label for="subject">질문</label>
+                <input type="text" class="form-control" id="subject" readonly />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-12 mb-3">
+                <label for="content">질문내용</label>
+                <input type="hidden" id="check_bbs_no" />
+                <textarea class="form-control h-150" id="content" placeholder="Required example textarea" disabled></textarea>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-12 mb-3">
+                <label for="reply">답변내용</label>
+                <input type="hidden" id="check_bbs_no" />
+                <textarea class="form-control h-150" id="reply" placeholder="Required example textarea"></textarea>
+              </div>
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <?php if ($S_login['user_id'] != "admin216") { ?>
+        <button class="btn btn-primary" id="save-btn">Save changes</button>
+        <?php } ?>
+        <button class="btn btn-light" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_member.html"; ?>
+
+<script>
+$(function() {
+  var baseReply = "안녕하세요 슈로코 고객지원팀입니다.\n\n저희 슈로코를 이용해주셔서 대단히 감사합니다.";
+
+  $(document).on('click', '.btn-read', function() {
+    let no = $(this).data('no');
+
+    $.post('./default.php', {
+      mode: 'read_bbs',
+      no: no
+    }, function(e) {
+      $('#order-view').find('#check_bbs_no').val(no);
+      $('#order-view').find('#subject').val(e.SUBJECT);
+      $('#order-view').find('#content').val(e.CONTENT);
+      $('#order-view').find('#reply').val(e.REPLY ? e.REPLY : baseReply);
+    }, 'json');
+  });
+
+  $(document).on('click', '#save-btn', function() {
+    let no = $('#order-view').find('#check_bbs_no').val();
+    let content = $('#order-view').find('#reply').val();
+
+    $.post('./default.php', {
+      mode: 'in_bbs',
+      no: no,
+      content: content
+    }, function(e) {
+      if (e.error) {
+        alert('답변 등록하였습니다.');
+        window.location.reload();
+      } else {
+        alert(e.msg);
+      }
+    }, 'json');
+  });
+
+  // 선택 삭제
+  $(document).on('click', '.allDelChk', function() {
+    let chk_no = new Array();
+    let i = 0;
+    $('[name="noChk[]"]:checked').each(function() {
+      chk_no[i] = $(this).val();
+      i++;
+    });
+
+    if (i > 0) {
+      if (confirm('선택한 항목을 삭제하시겠습니까?')) {
+        $.post('./default.php', {
+          mode: 'all_del',
+          gubun: 'BBS',
+          chk_no: chk_no
+        }, function(e) {
+          if (e.error) {
+            alert(e.msg);
+          } else {
+            alert(e.msg);
+          }
+          window.location.reload();
+        }, 'json');
+      }
+    } else {
+      alert('삭제할 항목을 선택하세요');
+    }
+  });
+
+
+  // 선택 숨김
+  $(document).on('click', '.allHideChk', function() {
+    let chk_no = new Array();
+    let i = 0;
+    $('[name="noChk[]"]:checked').each(function() {
+      chk_no[i] = $(this).val();
+      i++;
+    });
+
+    if (i > 0) {
+      if (confirm('선택한 문의를 숨김하시겠습니까? 관리자에만 숨겨짐')) {
+        $.post('./default.php', {
+          mode: 'all_hide',
+          gubun: 'BBS',
+          chk_no: chk_no
+        }, function(e) {
+          console.log(e.msg);
+          if (e.error) {
+            alert(e.msg);
+          } else {
+            alert(e.msg);
+          }
+          window.location.reload();
+        }, 'json');
+      }
+    } else {
+      alert('삭제할 항목을 선택하세요');
+    }
+  });
+
+  $(document).on('change', '.upstat', function() {
+    let no = $(this).data('no');
+    let st = $(this).val();
+
+    if (confirm('답변 여부를 변경 하시겠습니까?')) {
+      $.post('./default.php', {
+        mode: 'up_bbs_stat',
+        no: no,
+        st: st
+      }, function(e) {
+        alert(e.msg);
+        window.location.reload();
+      }, 'json');
+    }
+  });
+});
+</script>

@@ -1,0 +1,152 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_common/config.php";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='".$M_login['user_id']."'");
+
+  if ($mb['USER_ID'] == '') {
+    alert_print("존재하지 않는 회원입니다.");
+    meta_go("/logout.php");
+    exit;
+  }
+
+  // 환급진행
+  $sprice = $db->get_data("SELECT SUM(MONEY) AS money FROM INVOCE WHERE USER_ID='{$M_login['user_id']}' AND STATUS='N'");
+  if (!isset($sprice['money'])) $sprice['money'] = 0;
+
+  // 최근 접속시간 업데이트
+  $db->query("UPDATE MEMBER SET LASTDATE=NOW(), REG_IP='{$ip_address}' WHERE USER_ID='{$M_login['user_id']}'");
+?>
+
+<style>
+.bx_type2 > .left:before {
+  margin-right: 0;
+  width: 0;
+  height: 0;
+  background: none;
+}
+
+#tooltip {
+  position:absolute;
+  padding:10px;
+  display:none;
+  background:#fff;
+  width:320px;
+  z-index: 9999;
+  border:1px solid #313131;
+  border-radius:10px;
+}
+
+.ball_ani {
+  animation: blinker 1s linear infinite;
+}
+</style>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+  <main id="main">
+    <div class="wrap_mypage clear wrap_com">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/nav-mypage.html"; ?>
+      <div class="right">
+        <section class="sec_mypage">
+          <div class="wrap_title">
+          <h3 class="heading fs25">마이페이지</h3>
+          </div>
+          <div class="top bx_type2 flex space align_center bg_navy type_radius">
+            <p class="left add_before fw300 ls75">
+              <img src="<?=$mlevel_image_op[$mb['LEVEL']]?>" style="width: 1.3rem;">&nbsp;&nbsp;
+              <span class="va_mid">
+                <strong><?=$mb['NAME']?>
+                  <span class="color_red">[<?=$mlevel_op[$mb['LEVEL']]?>]</span>
+                </strong>
+                회원님, 안녕하세요
+              </span>
+            </p>
+            <div class="right flex align_center">
+              <span style="letter-spacing: 0px;">
+                <span><?=$mb['HP']?> / <?=$mb['EMAIL']?></span>
+              </span>
+              <a href="/contents/mypage/my-info.html">회원정보수정</a>
+            </div>
+          </div>
+          <div class="btm clear" style="border: 2px solid #373b46; padding: 20px 0 45px 0px;">
+            <div class="left">
+              <h4>MY 정보</h4>
+              <div>
+                <ul class="list_bul2">
+                  <li>
+                    <p>아이디</p>
+                    <span><?=$mb['USER_ID']?></span>
+                  </li>
+                  <li>
+                    <p>이메일</p>
+                    <span><?=$mb['EMAIL']?></span>
+                  </li>
+                  <li>
+                    <p>휴대폰번호</p>
+                    <span><?=$mb['HP']?></span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="right">
+              <div>
+                <!-- <h4>MY 캐시/마일리지/쿠폰 현황</h4> -->
+                <ul class="list_bul2">
+                  <!-- <h5>캐시현황</h5> -->
+                  <li class="pt15">
+                    <p>My 캐시</p>
+                    <div>
+                      <span class="red">
+                        <span><?=number_format($mb['CASH'])?></span> 캐시
+                      </span>
+                      <a href="/contents/mypage/cash-charge.html" class="btn btn_red">충전하기</a>
+                    </div>
+                  </li>
+                  <li>
+                    <p>출금 예정 당첨금</p>
+                    <div>
+                      <span><span><?=number_format($sprice['money'])?></span> 원</span>
+                    </div>
+                  </li>
+                  <li>
+                    <p class="under">출금 가능한 당첨금</p>
+                    <div>
+                      <span><span><?=number_format($mb['WINCASH'])?></span> 원</span>
+                    </div>
+                  </li>
+                  <li style="border-bottom:1px solid #eaeaea"></li>
+                  <li>
+                    <p>마일리지</p>
+                    <div>
+                      <span><span><?=number_format($mb['IPOINT'])?></span> M</span>
+                    </div>
+                  </li>
+                  <li>
+                    <p>보너스포인트</p>
+                    <div>
+                      <span><span><?=number_format($mb['POINT'])?></span> P</span>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              <div class="text-left pt30" style="width: 100%;">
+                <a href="/contents/mypage/history.html" class="fs18" style="text-decoration: underline;">구매/당첨내역 자세히보기 ></a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+</body>
+
+</html>

@@ -1,0 +1,132 @@
+<footer class="footer">
+  <div class="top ls25">
+    <div class="wrap_com">
+      <h2 class="hide">회사 정보</h2>
+      <ul>
+        <li><a href="/contents/service/purchase.html">서비스안내</a></li>
+        <li><a href="/policy-privacy.html">개인정보처리방침</a></li>
+        <li><a href="/terms.html">이용약관</a></li>
+        <li><a href="/contents/cs/direct.html">1:1문의</a></li>
+        <li><a href="/contents/cs/news.html">고객센터</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <?php if ($M_login['user_id'] != '') { ?>
+  <div class="mid">
+    <div class="wrap_com">
+      <div class="cert_wrap">
+        <img class="escrowImg" src="<?=$commonImageURI?>kb-escrow.png">
+      </div>
+      <h2 class="hide">사업 정보</h2>
+      <ul>
+        <li>
+          <span>주식회사 수로코 /</span>
+          <span>대표이사 : 박병진 /</span>
+          <span>주소 : 서울특별시 서초구 강남대로37길 56-31, 3층(서초동, 서현빌딩) /</span>
+          <span>사업자등록번호 : 302-81-32445 /</span>
+          <span>통신판매업신고번호 : 제2025-서울구로-1354호</span>
+        </li>
+        <li>
+          <span>개인정보관리책임자 : 박병진 /</span>
+          <span>대표번호 : 1660-1018, 1811-8133 /</span>
+          <span>서비스 및 제휴 문의 : support@superlottokorea.co.kr</span>
+        </li>
+      </ul>
+      <p class="footer_notice">로또는 도박이 아닙니다. 과도한 로또, 도박은 사행성 중독으로 인한 경제적 부담을 불러올 수 있습니다. <br>만19세 미만 미성년자는 복권을 구매하거나 당첨금을 수령할 수 없습니다.</p>
+    </div>
+  </div>
+  <?php } ?>
+</footer>
+
+<?php include $_SERVER['DOCUMENT_ROOT']."/inc/login.html"; ?>
+<?php include $_SERVER['DOCUMENT_ROOT']."/inc/popup.html";?>
+
+<script>
+  // APP 설치 URL 보내기
+  $(function() {
+    function autoHypenTelApp(str) {
+      if (str == '') {
+        return str;
+      }
+
+      str = str.replace(/[^0-9]/g, '');
+      var tmp = '';
+      if (str.substring(0, 2) == 02) {
+        // 서울 전화번호일 경우 10자리까지만 나타나고 그 이상의 자리수는 자동삭제
+        if (str.length < 3) {
+          return str;
+        } else if (str.length < 6) {
+          tmp += str.substr(0, 2);
+          tmp += '-';
+          tmp += str.substr(2);
+          return tmp;
+        } else if (str.length < 10) {
+          tmp += str.substr(0, 2);
+          tmp += '-';
+          tmp += str.substr(2, 3);
+          tmp += '-';
+          tmp += str.substr(5);
+          return tmp;
+        } else {
+          tmp += str.substr(0, 2);
+          tmp += '-';
+          tmp += str.substr(2, 4);
+          tmp += '-';
+          tmp += str.substr(6, 4);
+          return tmp;
+        }
+      } else {
+        // 핸드폰 및 다른 지역 전화번호 일 경우
+        if (str.length < 4) {
+          return str;
+        } else if (str.length < 7) {
+          tmp += str.substr(0, 3);
+          tmp += '-';
+          tmp += str.substr(3);
+          return tmp;
+        } else if (str.length < 11) {
+          tmp += str.substr(0, 3);
+          tmp += '-';
+          tmp += str.substr(3, 3);
+          tmp += '-';
+          tmp += str.substr(6);
+          return tmp;
+        } else {
+          tmp += str.substr(0, 3);
+          tmp += '-';
+          tmp += str.substr(3, 4);
+          tmp += '-';
+          tmp += str.substr(7);
+          return tmp;
+        }
+      }
+      return str;
+    }
+
+    $('#app_phone').keyup(function(event) {
+      event = event || window.event;
+      var _val = this.value.trim();
+      this.value = autoHypenTelApp(_val);
+    });
+
+    $(document).on("click", "#app_hp_btn", function() {
+      var hp = $('#app_phone').val();
+      if (hp == '') {
+        alert("연락처를 입력해 주세요.");
+        return false;
+      }
+
+      $.post("/other.php", {
+        mode : "app_sms",
+        hp  : hp
+      }, function(e) {
+        alert(e.msg);
+        if (e.error) {
+          $('#app_phone').val("");
+          $(".btn_close").click();
+        }
+      }, "json");
+    });
+  });
+</script>

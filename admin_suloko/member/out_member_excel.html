@@ -1,0 +1,65 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/_common/config.php";
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/export.php";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_OUT_MEMBER.php";
+
+  F_admin_chk($S_login);
+
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/_check-auth-readonly.php"; // 권한체크
+
+  error_reporting(E_ERROR);
+  ini_set("display_errors", 1);
+  ini_set("memory_limit", $csv_memory);
+
+  // file name
+  $file_name = "out_member_".date("Ymd").".csv";
+  $page_name = "탈퇴회원";
+
+  $find_text = preg_replace("/\s+/", "", $_GET["find_text"]);
+  $find_object = $_GET["find_object"];
+
+  if ($find_object == "all" && $find_text != "") {
+    if (strstr($find_text, '-') == false) {
+      $add_query .= " AND (USER_ID LIKE '%{$find_text}%' OR replace(NAME, ' ', '') LIKE '%{$find_text}%' OR replace(HP, '-', '') LIKE '%{$find_text}%')";
+    } else {
+      $add_query .= " AND (USER_ID LIKE '%{$find_text}%' OR replace(NAME, ' ', '') LIKE '%{$find_text}%' OR HP LIKE '%{$find_text}%')";
+    }
+    $find_object = "";
+  }
+
+  $list  = F_OUT_MEMBER_list(array(
+    "row"         => $csv_max_row,
+    "page"        => 1,
+    "order"       => "",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query
+  ));
+
+  // default
+  $csv_dump = "";
+
+  // 컬럼명
+  $titles = array("", "ID", "NAME", "HP", "EMAIL", "가입일시", "탈퇴일시", "TOTPRICE", "TOTCNT", "탈퇴사유");
+  $csv_dump .= implode(",", $titles);
+  $csv_dump .= "\r\n";
+
+  // 데이터 삽입
+  for ($i = 0; $i < count($list["MEMBER_NO"]); $i++) {
+    $cnt = $i + 1;
+
+    $csv_dump .= $cnt.",";
+    $csv_dump .= $list["USER_ID"][$i].",";
+    $csv_dump .= $list["NAME"][$i].",";
+    $csv_dump .= $list["HP"][$i].",";
+    $csv_dump .= $list["EMAIL"][$i].",";
+    $csv_dump .= $list["LASTDATE"][$i].",";
+    $csv_dump .= $list["REG_DATE"][$i].",";
+    $csv_dump .= "\"".number_format($list["TOTPRICE"][$i])."\"".",";
+    $csv_dump .= "\"".number_format($list["TOTCNT"][$i])."\"".",";
+    $csv_dump .= "\"".nl2br($list['OUT_MEMO'][$i])."\"";
+    $csv_dump .= "\r\n";
+  }
+
+  export_csv($file_name, $csv_dump, $cnt, $page_name);
+?>

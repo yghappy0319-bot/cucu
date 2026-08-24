@@ -1,0 +1,279 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_CASH.php";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  if (!$page) $page = 1;
+  $limit       = 20;
+  $find_text   = "";
+  $find_object = "";
+  $add_query   = " AND c.USER_ID='{$M_login['user_id']}'";
+  $PARAM       = "&sdate=$sdate&edate=$edate&limit=$limit";
+
+  if ($sdate != '' && $edate != '') {
+    $add_query .= " AND c.REG_DATE BETWEEN '{$sdate} 00:00:00' AND '{$edate} 23:59:59'";
+  }
+
+  $condition = array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => " c.REG_DATE DESC",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  );
+  $list = F_CASH_MEMBER_list($condition);
+
+  if ($list['total'] <= 0) {
+    $list['CASH_NO'] = array();
+  }
+?>
+
+<style>
+  [data-tooltip] { position: relative; }
+  [data-tooltip]:before,
+  [data-tooltip]:after{visibility:hidden;opacity:0;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;transition:all .2s ease;font-size:11px;font-family:dotum;letter-spacing:-1px;}
+  [data-tooltip]:before{content:attr(data-tooltip);height:13px;position:absolute;top:-20px;padding:5px 10px;border-radius:5px;color:#000000;background:#EFEFEF;box-shadow:0 3px 8px rgba(165, 165, 165, 0.5);}
+  [data-tooltip]:after{content: '';border-left:5px solid transparent;top:2px;border-right:5px solid transparent;border-top:5px solid #025272;}
+  [data-tooltip]:not([data-tooltip=""]):hover:before{visibility:visible;opacity:1;top:-30px}
+  [data-tooltip]:not([data-tooltip=""]):hover:after{visibility:visible;opacity:1;top:-8px}
+</style>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+  <main id="main">
+    <div class="wrap_mypage clear wrap_com">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/nav-mypage.html"; ?>
+      <div class="right">
+        <section>
+          <div class="wrap_title">
+            <h3 class="heading">캐시관리 - <span class="color_blue">충전내역</span></h3>
+          </div>
+          <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+            <div class="bx_search bx_gray">
+              <div class="clear">
+                <div class="left flex align_center">
+                  <p>조회기간</p>
+                  <ul class="list_sel">
+                    <li><button type="button" data-tp="7D" class='gubun'>1주일</button></li>
+                    <li><button type="button" data-tp="1M" class='gubun'>1개월</button></li>
+                    <li><button type="button" data-tp="3M" class='gubun'>3개월</button></li>
+                    <li><button type="button" data-tp="6M" class='gubun'>6개월</button></li>
+                  </ul>
+                </div>
+                <div class="right">
+                  <span>
+                    <input type="text" autocomplete="off" name="sdate" id="sdate" value="<?php if (isset($sdate)) { echo $sdate; } ?>"> ~
+                    <input type="text" autocomplete="off" name="edate" id="edate" value="<?php if (isset($edate)) { echo $edate; } ?>">
+                  </span>
+                  <button class="btn_gray">조회</button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </section>
+        <section>
+          <div class="wrap_title">
+            <strong class="heading fs23">충전내역</strong>
+          </div>
+          <div class="wrap_tb">
+            <table class="tb_type2">
+              <caption>
+                <div class="hide">보너스 포인트</div>
+              </caption>
+              <colgroup>
+                <col width="25%">
+                <col width="13%">
+                <col width="17%">
+                <col width="17%">
+                <col width="13%">
+                <col width="15%">
+              </colgroup>
+              <thead class="bg_navy">
+                <tr>
+                  <th>결제일시</th>
+                  <th>결제수단</th>
+                  <th>충전캐시</th>
+                  <th>결제금액</th>
+                  <th>상태</th>
+                  <th>현금영수증 발급</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php
+                  for ($i = 0; $i < count($list['CASH_NO']); $i++) {
+                    $no = $list['total'] - (($page - 1) * $list['row']) - $i;
+                    $receiptSt = "-";
+
+                    if ($list['CARDNAME'][$i] == "무통장") {
+                      $pay_type = "무통장";
+                      if ($list['IS_USE'][$i] == 'Y') {
+                        $tp = "<strong>충전완료</strong>";
+
+                        // 현금영수증 신청
+                        $reference_date = strtotime("2023-03-22 00:00:00");
+
+                        if ($list['RECEIPT_ST'][$i] == 'Y') {
+                          $receiptSt = "<strong>발급완료</strong>";
+                        } else if ($list['RECEIPT_ST'][$i] == 'N') {
+                          $receiptSt = "<strong>발급중</strong>";
+                        } else {
+                          $laterthan = strtotime($list['REG_DATE'][$i]) >= $reference_date;
+                          if ($laterthan) {
+                            $receiptSt = "<button type='button' class='btn_popup btn_gray apply_cash_receipt' id='btn_cash_receipt'
+                                                  style='padding: 0 1.0rem; height: 1.5rem; background-color: gray; font-weight: 700;'
+                                                  data-no='{$list['CASH_NO'][$i]}'>발급 신청</button>";
+                          }
+                        }
+                      } else if ($list['IS_USE'][$i] == 'C') {
+                        $tp = "<font color='#ff0000'>입금취소</font>";
+                      } else {
+                        $PRICE = number_format($list['PRICE'][$i]);
+                        $tp = "
+                          <button type='button' class='btn_popup btn_bank_waiting' id='btn_pay_bank' data-price='{$PRICE}'>입금대기</button>
+                          <button type='button' class='btn_bank_cancel bank_cancel' data-no='{$list['CASH_NO'][$i]}'>신청취소</button>
+                        ";
+                      }
+                    } else {
+                      $pay_type = "신용카드";
+                      $receiptSt = "-";
+
+                      if ($list['IS_USE'][$i] == 'Y') {
+                        $tp = "<strong>승인</strong>";
+                      } else if ($list['IS_USE'][$i] == 'N') {
+                        $tp = "<font color='#ff0000'>취소</font>";
+                      } else {
+                        $tp = "<strong>대기</strong>";
+                      }
+                    }
+
+                    // 관리자 수동 입력
+                    $is_admin = "";
+                    if ($list['IN_IP'][$i] == "0.0.0.0") {
+                      $is_admin = "
+                        <a href='#' id='tooltip' data-tooltip='관리자가 등록한 내역입니다.'>
+                          <svg width='13' height='13' fill='currentColor' class='bi bi-exclamation-circle' viewBox='0 0 16 16'>
+                            <path d='M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z' />
+                            <path d='M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z' />
+                          </svg>
+                        </a>
+                      ";
+                    }
+                ?>
+                <tr>
+                  <td><?=$is_admin?> <?=$list['REG_DATE'][$i]?></td>
+                  <td><?=$pay_type?></td>
+                  <td><?=number_format($list['CASH'][$i])?>캐시</td>
+                  <td><?=number_format($list['PRICE'][$i])?>원</td>
+                  <td><?=$tp?></td>
+                  <td><?=$receiptSt?></td>
+                </tr>
+                <?php } ?>
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <?php if ($list['total'] <= 0) { ?>
+        <div class="nohistory">
+          <div class="wrap_img"><img src="/common/images/img_nohistory.jpg" alt=""></div>
+          <p>최근에 충전하신 내역이 없습니다.</p>
+        </div>
+        <?php } else { ?>
+        <!-- 페이징 숫자 표시는 5개까지 -->
+        <div class="wrap_paging mb60">
+          <?php
+            $page_info['cur'] = $condition['page'];
+            $page_info['row'] = $condition['row'];
+            $page_info['total'] = $list['total'];
+            $list['page_string'] = print_page_num1($page_info);
+            echo $list['page_string'];
+          ?>
+        </div>
+        <?php } ?>
+      </div>
+    </div>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+</body>
+
+<script>
+  $(document).ready(function() {
+    $(document).on('click', '.gubun', function() {
+      $.post('/other.php',{
+        mode: "search_date",
+        schdate: $(this).data('tp')
+      }, function(e) {
+        if (e.errNo > 0) {
+        } else {
+          $('#sdate').val(e.sdate);
+          $('#edate').val(e.edate);
+        }
+      }, 'json');
+    });
+
+    $(document).on('click', '.bank_cancel', function() {
+      let no = $(this).data('no');
+
+      if (confirm('무통장 입금 신청을 취소 하시겠습니까?')) {
+        $.post('/other.php', {
+          mode: 'bank_cancel',
+          no: no
+        }, function(e) {
+          if (e.error == false) {
+            alert(e.msg);
+          } else {
+            alert('취소 되었습니다.');
+            open('/contents/mypage/cash-history.html', '_self');
+          }
+        }, 'json');
+      }
+    });
+
+    // 입금 대기 - 입금 계좌 및 금액 확인
+    $(document).on('click', '.btn_bank_waiting', function() {
+      let price = $(this).data('price');
+
+      $('.bank_step1').hide();
+      $('.bank_step2').hide();
+      $('#account_copy').hide();
+      $('#btn_bank_step3_close').hide();
+
+      $('.fs20').html('캐시 충전은 입금 확인 후 완료됩니다.<br><br>');
+      $('.cash_bank_price').html(price);
+      $('.bank_step3').show();
+    });
+
+    // 현금영수증 발급 신청
+    $(document).on('click', '.apply_cash_receipt', function() {
+      let no = $(this).data('no');
+      $('.cash_receipt').removeClass('active');
+
+      if (confirm('현금영수증 신청을 하시겠습니까?\n홈택스에서 <현금영수증 소비자 발급수단>을 입력하셔야만 영수증 사용내역이 집계되니 필히 입력하여 주시기 바랍니다.')) {
+        $.post('/other.php', {
+          mode: 'apply_cash_receipt',
+          no: no
+        }, function(e) {
+          if (e.error == false) {
+            alert(e.msg);
+          } else {
+            $('.cash_receipt').show();
+          }
+        }, 'json');
+      } else {
+        $('.cash_receipt').removeClass('active');
+      }
+    });
+
+    // 현금영수증 발급 model close
+    $('.btn_cash_receipt').on('click', function() {
+      open('/contents/mypage/cash-history.html', '_self');
+    })
+  });
+</script>
+
+</html>

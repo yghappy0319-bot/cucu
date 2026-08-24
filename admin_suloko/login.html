@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <!-- META DATA -->
+    <meta charset="UTF-8">
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=0'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="슈퍼로또코리아">
+    <meta name="author" content="Spruko Technologies Private Limited">
+    <meta name="keywords" content="admin, dashboard, dashboard ui, admin dashboard template, admin panel dashboard, admin panel html, admin panel html template, admin panel template, admin ui templates, administrative templates, best admin dashboard, best admin templates, bootstrap 4 admin template, bootstrap admin dashboard, bootstrap admin panel, html css admin templates, html5 admin template, premium bootstrap templates, responsive admin template, template admin bootstrap 4, themeforest html">
+
+    <!-- FAVICON -->
+    <link rel="icon" href="../../assets/images/suloko/favicon-blue.png" sizes="32x32" />
+    <link rel="icon" href="../../assets/images/suloko/favicon-blue.png" sizes="192x192" />
+    <link rel="apple-touch-icon-precomposed" href="../../assets/images/suloko/favicon-blue.png" />
+    <meta name="msapplication-TileImage" content="../../assets/images/suloko/favicon-blue.png" />
+
+    <!-- TITLE -->
+    <title>슈로코 관리자</title>
+
+    <!-- STYLE CSS -->
+    <link href="../../assets/css/style.css" rel="stylesheet"/>
+
+    <!-- SINGLE-PAGE CSS -->
+    <link href="../../assets/plugins/single-page/css/main.css" rel="stylesheet" type="text/css">
+
+    <!--- FONT-ICONS CSS -->
+    <link href="../../assets/css/icons.css" rel="stylesheet"/>
+
+    <!-- COLOR SKIN CSS -->
+    <link id="theme" rel="stylesheet" type="text/css" media="all" href="../../assets/colors/color1.css" />
+  </head>
+
+  <body>
+    <!-- GLOABAL LOADER -->
+    <div id="global-loader">
+      <img src="../../assets/images/loader.svg" class="loader-img" alt="Loader">
+    </div>
+    <!-- /GLOABAL LOADER -->
+
+    <!-- BACKGROUND-IMAGE -->
+    <div class="login-img">
+      <!-- PAGE -->
+      <div class="page">
+        <div>
+          <div class="col col-login mx-auto">
+            <div class="text-center">
+              <h3><font color="#ffffff">Superlottokorea ADMIN</font></h3>
+            </div>
+          </div>
+          <!-- CONTAINER OPEN -->
+          <div class="container-login100">
+            <div class="wrap-login100 p-0">
+              <div class="card-body">
+                <form class="login100-form needs-validation" novalidate name="login_frm" id="login_frm" method="post">
+                  <input type="hidden" name="mode" id="mode" value="step1">
+                  <input type="hidden" name="_win" id="_win" value="">
+                  <span class="login100-form-title">Login</span>
+                  <div class="wrap-input100 validate-input" data-bs-validate="Valid ID is required">
+                    <input class="input100 form-control" type="text" name="user_id" id="user_id" placeholder="ID" required />
+                    <span class="focus-input100"></span>
+                    <span class="symbol-input100">
+                      <i class="zmdi zmdi-email" aria-hidden="true"></i>
+                    </span>
+                    <div class="valid-feedback">Looks good!</div>
+                    <div class="invalid-feedback">Please provide a valid ID.</div>
+                  </div>
+                  <div class="wrap-input100 validate-input" data-bs-validate="Password is required">
+                    <input class="input100 form-control" type="password" name="user_pw" id="user_pw" placeholder="Password" required />
+                    <input type="hidden" name="user_otp" id="user_otp">
+                    <span class="focus-input100"></span>
+                    <span class="symbol-input100">
+                      <i class="zmdi zmdi-lock" aria-hidden="true"></i>
+                    </span>
+                    <div class="valid-feedback">Looks good!</div>
+                    <div class="invalid-feedback">Please provide a valid Password.</div>
+                  </div>
+                  <div class="container-login100-form-btn">
+                    <button type="button" class="login100-form-btn btn-primary login-btn">
+                      <strong style="letter-spacing:-1px;">로그인</strong>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <!-- CONTAINER CLOSED -->
+        </div>
+      </div>
+      <!-- End PAGE -->
+    </div>
+    <!-- BACKGROUND-IMAGE CLOSED -->
+
+    <button id="otp_modal" class="modal-effect" data-bs-effect="effect-scale" data-bs-target="#twofaModal" data-bs-toggle="modal" style="display:none"></button>
+    <!-- 2FA -->
+    <div class="modal fade" id="twofaModal">
+      <div class="modal-dialog modal-dialog-scrollable " role="document">
+        <div class="modal-content modal-content-demo col-sm-12">
+          <div class="modal-header">
+            <h6 class="modal-title"><strong>2차 인증</strong></h6><button aria-label="Close" class="btn-close" data-bs-dismiss="modal" ><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <div class="row mb-3" style="background-color:var(--bs-gray); height:1px"></div>
+            <div class="form-row" style="background-color:var(--bs-light)">
+              <div class="col-3 mb-1 form-label">OTP인증번호 :</div>
+              <div class="col-9 mb-1"><input class="form-control number-font text-center" type="number" name="otp_nums" id="otp_nums" maxlength="6" oninput="maxLengthCheck(this)" style="font-size: 20px;" autofocus></div>
+            </div>
+            <div><div class="col-12 text-center alert-success">* 안전한 로그인을 위해 OTP인증을 사용합니다.</div></div>
+          </div>
+          <div class="modal-footer text-center">
+            <button class="btn btn-primary otp-btn" type="button">인증</button> <button class="btn btn-light" data-bs-dismiss="modal" type="button">취소</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JQUERY JS -->
+    <script src="../../assets/js/jquery.min.js"></script>
+
+    <!-- BOOTSTRAP JS -->
+    <script src="../../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- SELECT2 JS -->
+    <script src="../../assets/plugins/select2/select2.full.min.js"></script>
+
+    <!-- FORMVALIDATION JS -->
+    <script src="../../assets/js/form-validation.js"></script>
+
+    <!-- CUSTOM JS-->
+    <script src="../../assets/js/custom.js"></script>
+
+    <script>
+      function adminEnsureWinId() {
+        var namedWin = (window.name && window.name.indexOf('ADMIN_WIN_') === 0)
+          ? window.name.replace(/^ADMIN_WIN_/, '')
+          : '';
+        if (namedWin) return namedWin;
+        var params = new URLSearchParams(location.search);
+        var urlWin = (params.get('_win') || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 32);
+        var winId = urlWin || Math.random().toString(36).slice(2, 12);
+        window.name = 'ADMIN_WIN_' + winId;
+        return winId;
+      }
+
+      (function() {
+        var winId = adminEnsureWinId();
+        $('#_win').val(winId);
+        var params = new URLSearchParams(location.search);
+        if (params.get('_win') !== winId) {
+          params.set('_win', winId);
+          history.replaceState(null, '', location.pathname + '?' + params.toString());
+        }
+      })();
+
+      $(document).on('click', '.login-btn', function() {
+        let user_id = $("#user_id").val();
+        let user_pw = $("#user_pw").val();
+
+        if (user_id == "") {
+          alert("아이디를 입력해 주세요.");
+          return false;
+        }
+
+        if (user_pw == "") {
+          alert("비밀번호를 입력해 주세요.");
+          return false;
+        }
+
+        $('#_win').val(adminEnsureWinId());
+        $.post('./login_chk.php?_win=' + encodeURIComponent(adminEnsureWinId()), $('#login_frm').serialize(), function(e) {
+          if (!e.error) {
+            if (e.msg == "otp") {
+              $("#otp_modal")[0].click();
+            } else {
+              location.replace(e.msg);
+            }
+          } else {
+            alert(e.msg);
+          }
+        }, 'json');
+      });
+
+      $(document).on('click', '.otp-btn', function() {
+        let otp_nums = $("#otp_nums").val();
+        let user_id = $("#user_id").val();
+
+        if (otp_nums == "") {
+          alert("OTP인증번호를 입력하세요.");
+          return false;
+        } else {
+          $("#mode").val("step2");
+          $("#user_otp").val(otp_nums);
+        }
+
+        $('#_win').val(adminEnsureWinId());
+        $.post('./login_chk.php?_win=' + encodeURIComponent(adminEnsureWinId()), $('#login_frm').serialize(), function(e) {
+          if (!e.error) {
+            location.replace(e.msg);
+          } else {
+            alert(e.msg);
+          }
+        }, 'json');
+      });
+
+      $('#user_pw').keyup(function() {
+        if (event.keyCode == 13) {
+          $('.login-btn').click();
+        }
+      });
+
+      $('#otp_nums').keyup(function() {
+        if (event.keyCode == 13) {
+          $('.otp-btn').click();
+        }
+      });
+
+      $('.modal').on('shown.bs.modal', function() {
+        $(this).find('[autofocus]').focus();
+      });
+
+      function maxLengthCheck(object) {
+        if (object.value.length > object.maxLength) {
+          object.value = object.value.slice(0, object.maxLength);
+        }
+      }
+    </script>
+  </body>
+</html>

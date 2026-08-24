@@ -1,0 +1,730 @@
+<style>
+  .input-readonly {
+    background-color: #e2e2e2;
+    border: 1px solid darkgray;
+  }
+  .modal-card-body {
+    padding: 0px;
+    border: none;
+  }
+  .accordion-detail-info {
+    padding: 1rem 0 0 0;
+  }
+  .border-none {
+    border: 0px solid #eaedf1 !important;
+  }
+  .generate_passwd_btn {
+    padding: 0.1rem 0.75rem;
+  }
+  .save_passwd_btn {
+    padding: 0.1rem 0.75rem;
+  }
+</style>
+
+<!-- BASIC MODAL -->
+<div class="modal fade" id="memberModal">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content modal-content-demo">
+      <div class="modal-header">
+        <h6 class="modal-title">회원 정보</h6>
+        <button aria-label="Close" class="btn-close" data-bs-dismiss="modal">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="card-body modal-card-body">
+          <div class="dimmer active">
+            <div class="lds-ring">
+              <div></div><div></div><div></div><div></div>
+            </div>
+          </div>
+          <div class="memberInfo" style="display: none;">
+            <form name="w_frm_member" id="w_frm_member">
+              <table class="table border text-nowrap border-none">
+                <thead>
+                  <tr>
+                    <td width="100px"></td>
+                    <td width=""></td>
+                    <td width="110px"></td>
+                    <td width=""></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="modal-subject text-end">성명</td>
+                    <td><input type="text" name="NAME" id="mNAME" class="custom-form-control" /></td>
+                    <td class="modal-subject text-end">회원번호</td>
+                    <td><span id="mMEMBER_NO"></span></td>
+                  </tr>
+                  <tr>
+                    <td class="modal-subject text-end">아이디</td>
+                    <td><input type="text" name="USER_ID" id="mUSER_ID" class="input-readonly" readonly /></td>
+                    <td class="modal-subject text-end">가입경로</td>
+                    <td><span id="mIN_TYPE"></span></td>
+                  </tr>
+                  <tr>
+                    <td class="modal-subject text-end">생년월일</td>
+                    <td><input type="text" name="BIRTH" id="mBIRTH" /></td>
+                    <td class="modal-subject text-end">가입일시</td>
+                    <td><span id="mREG_DATE"></span></td>
+                  </tr>
+                  <tr>
+                    <td class="modal-subject text-end">국적</td>
+                    <td>
+                      <select name="COUNTRY" id="mcountry">
+                        <?=option_make($country_op, "")?>
+                      </select>
+                    </td>
+                    <td class="modal-subject text-end">마지막접속</td>
+                    <td><span id="mLASTDATE"></span></td>
+                  </tr>
+                  <tr>
+                    <td class="modal-subject text-end">성별</td>
+                    <td>
+                      <select name="GENDER" id="mgender">
+                        <?=option_make($gender_op, "")?>
+                      </select>
+                    </td>
+                    <td class="modal-subject text-end">접속 IP</td>
+                    <td><span id="mREGIP"></span></td>
+                  </tr>
+                  <tr>
+                    <td class="modal-subject text-end">회원등급</td>
+                    <td>
+                      <select name="LEVEL" id="mmember_level">
+                        <?=option_make($mlevel_op, "")?>
+                      </select>
+                    </td>
+                    <td class="modal-subject text-end">캐시</td>
+                    <td><span id="mCASH"></span></td>
+                  </tr>
+                  <tr>
+                    <td class="modal-subject text-end">휴대폰번호</td>
+                    <td><input type="text" name="HP" id="mHP" onkeyup="onlyNum(this); setHypenPhone(this)" /></td>
+                    <td class="modal-subject text-end">당첨금</td>
+                    <td><span id="mWINCASH"></span></td>
+                  </tr>
+                  <tr>
+                    <td class="modal-subject text-end">이메일주소</td>
+                    <td><input type="text" name="EMAIL" id="mEMAIL" /></td>
+                    <td class="modal-subject text-end">마일리지</td>
+                    <td><span id="mIPOINT"></span></td>
+                  </tr>
+                  <tr>
+                    <td class="modal-subject text-end">마케팅동의</td>
+                    <td>
+                      <select name="IS_MARKETING" id="mmarketing">
+                        <?=option_make($yn_op, "")?>
+                      </select>
+                    </td>
+                    <td class="modal-subject text-end">보너스포인트</td>
+                    <td><span id="mPOINT"></span></td>
+                  </tr>
+                  <tr>
+                    <td class="modal-subject text-end">임시 비밀번호</td>
+                    <td>
+                      <input type="text" name="PASSWD" class="input-readonly" readonly />
+                      <button type="button" class="btn btn-success generate_passwd_btn">생성</button>
+                      <button type="button" class="btn btn-success save_passwd_btn">전송</button>
+                      <br/><strong>* 생성된 비밀번호는 "전송" 시 회원 정보에 저장</strong>
+                    </td>
+                    <td class="modal-subject text-end">알림동의</td>
+                    <td><span id="mTOKEN"></span></td>
+                  </tr>
+                  <tr>
+                    <td class="modal-subject text-end">총 결제금액</td>
+                    <td colspan="2"><span id="mPRICE"></span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </form>
+          </div>
+        </div>
+
+        <div class="card-body accordion-detail-info">
+          <div class="accordion" id="memberDetail">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="accordionPlaygame">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#playgame" aria-expanded="false" aria-controls="playgame">
+                  구매내역
+                </button>
+              </h2>
+              <div id="playgame" class="accordion-collapse collapse" data-bs-parent="#memberDetail">
+                <div class="accordion-body" style="width: 100%; overflow: auto;">
+                  <table class="table border text-nowrap table-striped">
+                    <thead>
+                      <tr class="text-center">
+                        <th>번호</th>
+                        <th>구매일시</th>
+                        <th>구분</th>
+                        <th>번호</th>
+                        <th>방식</th>
+                        <th>당첨여부</th>
+                        <th>당첨금</th>
+                        <th>스캔</th>
+                      </tr>
+                    </thead>
+                    <tbody id="playgameInfo"></tbody>
+                  </table>
+                  <div id="playgameInfo_page"></div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="accordionCard">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#card" aria-expanded="false" aria-controls="card">
+                  카드결제내역
+                </button>
+              </h2>
+              <div id="card" class="accordion-collapse collapse" data-bs-parent="#memberDetail">
+                <div class="accordion-body" style="width: 100%; overflow: auto;">
+                  <table class="table border text-nowrap table-striped">
+                    <thead>
+                      <tr class="text-center">
+                        <th>번호</th>
+                        <th>구매일시</th>
+                        <th>결제금액</th>
+                        <th>카드사</th>
+                        <th>카드번호</th>
+                        <th>승인번호</th>
+                        <th>할부</th>
+                        <th>경로</th>
+                        <th>상태</th>
+                      </tr>
+                    </thead>
+                    <tbody id="cardInfo"></tbody>
+                  </table>
+                  <div id="cardInfo_page"></div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="accordionBank">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#bank" aria-expanded="false" aria-controls="bank">
+                  무통장결제내역
+                </button>
+              </h2>
+              <div id="bank" class="accordion-collapse collapse" data-bs-parent="#memberDetail">
+                <div class="accordion-body" style="width: 100%; overflow: auto;">
+                  <table class="table border text-nowrap table-striped">
+                    <thead>
+                      <tr class="text-center">
+                        <th>번호</th>
+                        <th>신청일시</th>
+                        <th>처리일시</th>
+                        <th>결제금액</th>
+                        <th>충전캐시</th>
+                        <th>경로</th>
+                        <th>상태</th>
+                      </tr>
+                    </thead>
+                    <tbody id="bankInfo"></tbody>
+                  </table>
+                  <div id="bankInfo_page"></div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="accordionCash">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#cash" aria-expanded="false" aria-controls="cash">
+                  캐시내역
+                </button>
+              </h2>
+              <div id="cash" class="accordion-collapse collapse" data-bs-parent="#memberDetail">
+                <div class="accordion-body" style="width: 100%; overflow: auto;">
+                  <table class="table border text-nowrap table-striped">
+                    <thead>
+                      <tr class="text-center">
+                        <th>번호</th>
+                        <th>등록일시</th>
+                        <th>충전/취소</th>
+                        <th>보유</th>
+                        <th>적립</th>
+                        <th>사용</th>
+                        <th>잔여</th>
+                        <th>로그</th>
+                      </tr>
+                    </thead>
+                    <tbody id="cashInfo"></tbody>
+                  </table>
+                  <div id="cashInfo_page"></div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="accordionWinmoney">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#winmoney" aria-expanded="false" aria-controls="winmoney">
+                  당첨금내역
+                </button>
+              </h2>
+              <div id="winmoney" class="accordion-collapse collapse" data-bs-parent="#memberDetail">
+                <div class="accordion-body" style="width: 100%; overflow: auto;">
+                  <table class="table border text-nowrap table-striped">
+                    <thead>
+                      <tr class="text-center">
+                        <th>번호</th>
+                        <th>등록일시</th>
+                        <th>주문/환급</th>
+                        <th>보유</th>
+                        <th>적립</th>
+                        <th>사용</th>
+                        <th>잔여</th>
+                        <th>로그</th>
+                      </tr>
+                    </thead>
+                    <tbody id="winmoneyInfo"></tbody>
+                  </table>
+                  <div id="winmoneyInfo_page"></div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="accordionMileage">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mileage" aria-expanded="false" aria-controls="mileage">
+                  마일리지내역
+                </button>
+              </h2>
+              <div id="mileage" class="accordion-collapse collapse" data-bs-parent="#memberDetail">
+                <div class="accordion-body" style="width: 100%; overflow: auto;">
+                  <table class="table border text-nowrap table-striped">
+                    <thead>
+                      <tr class="text-center">
+                        <th>번호</th>
+                        <th>등록일시</th>
+                        <th>보유</th>
+                        <th>적립</th>
+                        <th>사용</th>
+                        <th>잔여</th>
+                        <th>로그</th>
+                      </tr>
+                    </thead>
+                    <tbody id="mileageInfo"></tbody>
+                  </table>
+                  <div id="mileageInfo_page"></div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="accordionPoint">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#point" aria-expanded="false" aria-controls="point">
+                  포인트내역
+                </button>
+              </h2>
+              <div id="point" class="accordion-collapse collapse" data-bs-parent="#memberDetail">
+                <div class="accordion-body" style="width: 100%; overflow: auto;">
+                  <table class="table border text-nowrap table-striped">
+                    <thead>
+                      <tr class="text-center">
+                        <th>번호</th>
+                        <th>등록일시</th>
+                        <th>쿠폰</th>
+                        <th>쿠폰번호</th>
+                        <th>등록</th>
+                        <th>잔여</th>
+                        <th>로그</th>
+                      </tr>
+                    </thead>
+                    <tbody id="pointInfo"></tbody>
+                  </table>
+                  <div id="pointInfo_page"></div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="accordionRefund">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#refund" aria-expanded="false" aria-controls="refund">
+                  환급내역
+                </button>
+              </h2>
+              <div id="refund" class="accordion-collapse collapse" data-bs-parent="#memberDetail">
+                <div class="accordion-body" style="width: 100%; overflow: auto;">
+                  <table class="table border text-nowrap table-striped">
+                    <thead>
+                      <tr class="text-center">
+                        <th>번호</th>
+                        <th>신청일시</th>
+                        <th>신청액</th>
+                        <th>수수료</th>
+                        <th>실지급액</th>
+                        <th>예금주</th>
+                        <th>은행명</th>
+                        <th>계좌번호</th>
+                        <th>상태</th>
+                      </tr>
+                    </thead>
+                    <tbody id="refundInfo"></tbody>
+                  </table>
+                  <div id="refundInfo_page"></div>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="accordionQna">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#qna" aria-expanded="false" aria-controls="qna">
+                  문의내역
+                </button>
+              </h2>
+              <div id="qna" class="accordion-collapse collapse" data-bs-parent="#memberDetail">
+                <div class="accordion-body" style="width: 100%; overflow: auto;">
+                  <table class="table border text-nowrap table-striped">
+                    <thead>
+                      <tr class="text-center">
+                        <th>번호</th>
+                        <th>등록일시</th>
+                        <th>구분</th>
+                        <th>제목</th>
+                        <th>내용</th>
+                        <th>공개여부</th>
+                        <th>답변작성</th>
+                        <th>답변</th>
+                        <th>확인일시</th>
+                      </tr>
+                    </thead>
+                    <tbody id="qnaInfo"></tbody>
+                  </table>
+                  <div id="qnaInfo_page"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success ok_member_info_save_btn">저장</button>
+        <button type="button" class="btn btn-light cancel_btn" data-bs-dismiss="modal">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(function() {
+    $('.checkUser').click(function() {
+      // accordion select initialization
+      $('.accordion-item > .accordion-header').each(function() {
+        $('.accordion-button').removeClass('active');
+        $('.accordion-button').addClass('collapsed');
+        $('.accordion-collapse').removeClass('show');
+      })
+
+      let no = $(this).data('no');
+
+      // loader control
+      $('.dimmer').css('display', 'block');
+      $('.memberInfo').css('display', 'none');
+      $('.accordion-detail-info').css('display', 'none');
+
+      // initialization
+      $('#playgameInfo').html('');
+      $('#playgameInfo_page').html('');
+      $('#cardInfo').html('');
+      $('#cardInfo_page').html('');
+      $('#bankInfo').html('');
+      $('#bankInfo_page').html('');
+      $('#cashInfo').html('');
+      $('#cashInfo_page').html('');
+      $('#winmoneyInfo').html('');
+      $('#winmoneyInfo_page').html('');
+      $('#mileageInfo').html('');
+      $('#mileageInfo_page').html('');
+      $('#pointInfo').html('');
+      $('#pointInfo_page').html('');
+      $('#refundInfo').html('');
+      $('#refundInfo_page').html('');
+      $('#qnaInfo').html('');
+      $('#qnaInfo_page').html('');
+
+      setTimeout(() => {
+        getMemberInfo(no);
+      }, 500);
+    });
+  });
+
+  let page = 1;
+
+  // 구매 내역
+  $('#accordionPlaygame').click(function(e) {
+    let userId = $('#mUSER_ID').val();
+
+    if (e.target.nodeName === 'BUTTON') {
+      page = 1;
+    }
+
+    $.post('/member/mode.php', {
+      mode: 'getMemberGameHistory',
+      user_id: userId,
+      page: page
+    }, function(e) {
+      $('#playgameInfo').html(e.list_html);
+      $('#playgameInfo_page').html(e.page_html);
+    }, 'json');
+  });
+
+  // 카드 결제 내역
+  $('#accordionCard').click(function(e) {
+    let userId = $('#mUSER_ID').val();
+
+    if (e.target.nodeName === 'BUTTON') {
+      page = 1;
+    }
+
+    $.post('/member/mode.php', {
+      mode: 'getMemberCardHistory',
+      user_id: userId,
+      page: page
+    }, function(e) {
+      $('#cardInfo').html(e.list_html);
+      $('#cardInfo_page').html(e.page_html);
+    }, 'json');
+  });
+
+  // 무통장 결제 내역
+  $('#accordionBank').click(function(e) {
+    let userId = $('#mUSER_ID').val();
+
+    if (e.target.nodeName === 'BUTTON') {
+      page = 1;
+    }
+
+    $.post('/member/mode.php', {
+      mode: 'getMemberBankHistory',
+      user_id: userId,
+      page: page
+    }, function(e) {
+      $('#bankInfo').html(e.list_html);
+      $('#bankInfo_page').html(e.page_html);
+    }, 'json');
+  });
+
+  // 캐시 내역
+  $('#accordionCash').click(function(e) {
+    let userId = $('#mUSER_ID').val();
+
+    if (e.target.nodeName === 'BUTTON') {
+      page = 1;
+    }
+
+    $.post('/member/mode.php', {
+      mode: 'getMemberCashHistory',
+      user_id: userId,
+      page: page
+    }, function(e) {
+      $('#cashInfo').html(e.list_html);
+      $('#cashInfo_page').html(e.page_html);
+    }, 'json');
+  });
+
+  // 당첨금 내역
+  $('#accordionWinmoney').click(function(e) {
+    let userId = $('#mUSER_ID').val();
+
+    if (e.target.nodeName === 'BUTTON') {
+      page = 1;
+    }
+
+    $.post('/member/mode.php', {
+      mode: 'getMemberWinmoneyHistory',
+      user_id: userId,
+      page: page
+    }, function(e) {
+      $('#winmoneyInfo').html(e.list_html);
+      $('#winmoneyInfo_page').html(e.page_html);
+    }, 'json');
+  });
+
+  // 마일리지 내역
+  $('#accordionMileage').click(function(e) {
+    let userId = $('#mUSER_ID').val();
+
+    if (e.target.nodeName === 'BUTTON') {
+      page = 1;
+    }
+
+    $.post('/member/mode.php', {
+      mode: 'getMemberMileageHistory',
+      user_id: userId,
+      page: page
+    }, function(e) {
+      $('#mileageInfo').html(e.list_html);
+      $('#mileageInfo_page').html(e.page_html);
+    }, 'json');
+  });
+
+  // 포인트 내역
+  $('#accordionPoint').click(function(e) {
+    let userId = $('#mUSER_ID').val();
+
+    if (e.target.nodeName === 'BUTTON') {
+      page = 1;
+    }
+
+    $.post('/member/mode.php', {
+      mode: 'getMemberPointHistory',
+      user_id: userId,
+      page: page
+    }, function(e) {
+      $('#pointInfo').html(e.list_html);
+      $('#pointInfo_page').html(e.page_html);
+    }, 'json');
+  });
+
+  // 환급 내역
+  $('#accordionRefund').click(function(e) {
+    let userId = $('#mUSER_ID').val();
+
+    if (e.target.nodeName === 'BUTTON') {
+      page = 1;
+    }
+
+    $.post('/member/mode.php', {
+      mode: 'getMemberRefundHistory',
+      user_id: userId,
+      page: page
+    }, function(e) {
+      $('#refundInfo').html(e.list_html);
+      $('#refundInfo_page').html(e.page_html);
+    }, 'json');
+  });
+
+  // 문의 내역
+  $('#accordionQna').click(function(e) {
+    let userId = $('#mUSER_ID').val();
+
+    if (e.target.nodeName === 'BUTTON') {
+      page = 1;
+    }
+
+    $.post('/member/mode.php', {
+      mode: 'getMemberQnaHistory',
+      user_id: userId,
+      page: page
+    }, function(e) {
+      $('#qnaInfo').html(e.list_html);
+      $('#qnaInfo_page').html(e.page_html);
+    }, 'json');
+  });
+
+  // 페이징 처리
+  $(document).on('click', '.page_btn', function() {
+    page = $(this).data('no');
+    let targetId = $(this).parents('div .accordion-item').find('h2').attr('id');
+    $(`#${targetId}`).trigger('click');
+  })
+
+  // 비밀번호 생성
+  $('.generate_passwd_btn').click(function() {
+    const rand = Math.random().toString(36).substr(2, 8);
+    if (rand) {
+      $('#w_frm_member').find('[name="PASSWD"]').val(rand);
+    }
+  });
+
+  // 생성된 비밀번호 sms 전송
+  $('.save_passwd_btn').click(function() {
+    let pwd = $('#w_frm_member').find('[name="PASSWD"]').val();
+    let user_id = $('#w_frm_member').find('[name="USER_ID"]').val();
+
+    if (pwd == '') {
+      alert('비밀번호를 생성해 주세요.');
+      return false;
+    }
+    $.post('/member/mode.php', {
+      mode: 'updateMemberPassword',
+      user_id: user_id,
+      pwd: pwd
+    }, function(e) {
+      alert(e.msg);
+      if (e.error) {
+      }
+    }, 'json');
+  });
+
+  // ESC 키로 modal 창 닫기
+  $(document).keydown(function(e) {
+    let code = e.keyCode || e.which;
+    if (code == 27) {
+      $('.btn-close').click();
+    }
+  });
+
+  // 외부영역 클릭 시 modal 창 닫기
+  $(document).mouseup(function(e) {
+    if ($('#memberModal').has(e.target).length === 0) {
+      $('#memberModal').hide();
+    }
+  });
+
+  // Modal Close
+  $('.btn-close, .cancel_btn').click(function() {
+    $('#memberModal').hide();
+    $('#w_frm_member')[0].reset();
+  });
+
+  // 회원 정보 수정
+  $('.ok_member_info_save_btn').click(function() {
+    let edit = {};
+    edit.USER_ID      = $('#w_frm_member').find('[name="USER_ID"]').val();
+    edit.NAME         = $('#w_frm_member').find('[name="NAME"]').val();
+    edit.BIRTH        = $('#w_frm_member').find('[name="BIRTH"]').val();
+    edit.COUNTRY      = $('#mcountry option:selected').val();
+    edit.GENDER       = $('#mgender option:selected').val();
+    edit.HP           = $('#w_frm_member').find('[name="HP"]').val();
+    edit.LEVEL        = $('#mmember_level option:selected').val();
+    edit.EMAIL        = $('#w_frm_member').find('[name="EMAIL"]').val();
+    edit.IS_MARKETING = $('#mmarketing option:selected').val();
+
+    updateMemberInfo(edit);
+  });
+
+  function updateMemberInfo(edit) {
+    $.post('/member/mode.php', {
+      mode: 'updateMemberInfo',
+      data: JSON.stringify(edit),
+    }, function(e) {
+      alert(e.msg);
+      $('#srForm').submit();
+    }, 'json');
+  }
+
+  function getMemberInfo(no) {
+    $.post('/member/mode.php',{
+      mode: 'getMemberDetail',
+      no: no
+    }, function(e) {
+      if (e.error) {
+        $('#mUSER_ID').val(e.USER_ID);
+
+        // 수정가능 정보
+        $('#mNAME').val(e.NAME);
+        $('#mBIRTH').val(e.BIRTH);
+        $('#mcountry').html(e.country_html);
+        $('#mgender').html(e.gender_html);
+        $('#mmember_level').html(e.level_html);
+        $('#mHP').val(e.HP);
+        $('#mEMAIL').val(e.EMAIL);
+        $('#mmarketing').html(e.marketing_html);
+
+        // 추가 정보
+        $('#mMEMBER_NO').html(e.MEMBER_NO);
+        $('#mIN_TYPE').html(e.IN_TYPE);
+        $('#mREG_DATE').html(e.REG_DATE);
+        $('#mLASTDATE').html(e.LASTDATE);
+        $('#mREGIP').html(e.REG_IP);
+        $('#mCASH').html(e.CASH);
+        $('#mWINCASH').html(e.WINCASH);
+        $('#mIPOINT').html(e.IPOINT);
+        $('#mPOINT').html(e.POINT);
+        $('#mTOKEN').html(e.TOKEN);
+        $('#mPRICE').html(e.PRICE);
+
+        // loader control
+        $('.dimmer').css('display', 'none');
+        $('.memberInfo').css('display', 'block');
+        $('.accordion-detail-info').css('display', 'block');
+      } else {
+        alert(e.msg);
+      }
+    }, 'json');
+  }
+</script>

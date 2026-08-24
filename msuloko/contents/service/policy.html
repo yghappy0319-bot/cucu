@@ -1,0 +1,76 @@
+<?php
+  $page_title = "회원 등급 안내 - 파워볼, 메가밀리언, 미국 복권, 슈로코";
+  $page_description = "파워볼, 메가밀리언 소개 및 미국 로또 구매 대행 신청 방법, 복권 당첨금 수령 안내";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  $menu_on['service'] = true;
+  $service_sub['policy'] = true;
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="service bg">
+        <div class="contents f_NotoSansKR">
+          <?php include "inc_top.html"; ?>
+          <section class="sec_service section">
+            <div class="bg_white wrap_com ls50">
+              <div class="top bb"><h3>회원 등급 안내</h3></div>
+              <p class="txt_type1">온라인 구매실적 통합, 등급에 따라 이용금액의 0.5%~ 8% 마일리지 적립</p>
+              <ul class="list">
+                <li>
+                  <p>회원 등급 안내</p>
+                  <ul class="list_level flex wrap space">
+                    <?php foreach ($grade_op as $key => $grade) { ?>
+                    <li>
+                      <div class="bx_level">
+                        <img src="/common/images/img_<?=$key?>.png" alt="<?=$key?>" />
+                        <p><strong><?=strtoupper($grade["eng"])?></strong></p>
+                        <span><?=$grade["name"]?></span>
+                      </div>
+                      <?php if ($key != "brown") { ?>
+                      <p><?=$grade["cash"]?>만 캐시 복권<br>구매대행 이용 회원</p>
+                      <?php } else { ?>
+                      <p>회원가입과 동시에 부여되는 <br>기본 등급</p>
+                      <?php } ?>
+                    </li>
+                    <?php } ?>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <ul class="list_level2 txt_type1">
+                <?php foreach ($grade_op as $key => $grade) { ?>
+                <li>
+                  <div class="bx_level">
+                    <img src="/common/images/img_<?=$key?>.png" alt="<?=$key?>" />
+                    <p><strong><?=$grade["name"]?> (<?=$grade["eng"]?>)</strong></p>
+                  </div>
+                  <div>
+                    <ul class="list_bul">
+                      <?php if ($key != "brown") { ?>
+                      <li><?=$grade["cash"]?>만 캐시 복권 구매대행 이용 회원</li>
+                      <?php } else { ?>
+                      <li>회원가입과 동시에 부여되는 기본 등급</li>
+                      <?php } ?>
+                      <li>복권 구매대행 이용금액의 <?=$grade["percent"]?>% 마일리지 적립</li>
+                    </ul>
+                  </div>
+                </li>
+                <?php } ?>
+              </ul>
+            </div>
+          </section>
+          <div class="wrap_com">
+            <?php include $_SERVER['DOCUMENT_ROOT']."/inc/quick.html"; ?>
+          </div>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+</html>

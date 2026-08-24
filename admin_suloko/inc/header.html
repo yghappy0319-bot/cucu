@@ -1,0 +1,713 @@
+<?php
+  //______________Badges
+
+
+  $INVOCE_CNT  = $db->get_data_one("SELECT COUNT(*) AS cnt FROM INVOCE WHERE STATUS='N'");
+  $BBS_QNA_CNT = $db->get_data_one("SELECT COUNT(*) AS cnt FROM BBS WHERE GUBUN='QNA' AND REPLY_YN='N' AND HIDDEN = '0'");
+
+  // 무통장 입금
+  $BANK_CNT = $db->get_data_one("SELECT COUNT(*) AS cnt FROM CASH WHERE CARDNAME='무통장' AND IS_USE='N'");
+
+  // 현금영수증 신청
+  $CASH_RECEIPT = $db->get_data_one("SELECT COUNT(*) AS cnt FROM CASH_RECEIPT WHERE STATUS = 'N'");
+
+  // SMS 입금 현황
+  $BANK_SMS  = $db->get_data_one("SELECT COUNT(*) AS cnt FROM CASH_SMS_LOG WHERE STATUS IN('N1', 'N2', 'N3')");
+
+  // 쇼핑 주문 개수
+  // $SHOP_ORDER_CNT = $db->get_data_one("SELECT count(idx) as cnt FROM `SHOP_Order` WHERE state = 1");
+
+  // 파트너 정산신청
+  $UM_COMM_CNT = $db->get_data_one("SELECT COUNT(*) AS CNT FROM UM_COMM WHERE STATUS = 'C'");
+
+  // 파트너 Q&A
+  $UM_QNA_CNT = $db->get_data_one("SELECT COUNT(*) AS CNT FROM BBS WHERE GUBUN='UM_QNA' AND REPLY_YN='N'");
+
+  //______________권한관리용 배열 (메뉴변경시 수정이 필요함)
+  $sub_menu = array(
+    "무통장관리" => array(
+      "/order/payment_list_bank.html",
+      "/order/cash_receipt.html",
+      "/order/in_message.html",
+      "/order/in_message_add.html",
+      "/order/in_message_action.php",
+      "/order/payment_list_bank_SMS.html"
+    ),
+    "신용카드관리" => array(
+      "/order/payment_list.html"
+    ),
+    "매출현황 (당첨금사용)" => array(
+      "/counter/time2_winmoney.html",
+      "/counter/day2_winmoney.html",
+      "/counter/month3_winmoney.html"
+    ),
+    "매출현황" => array(
+      "/counter/time2.html",
+      "/counter/day2.html",
+      "/counter/month3.html",
+      "/counter/month2.html",
+      "/counter/first_sales_time.html",
+      "/counter/first_sales_day.html",
+      "/counter/first_sales_month.html"
+    ),
+    "게시판관리" => array(
+      "/bbs/report.html",
+      "/bbs/qna.html",
+      "/bbs/qna_add.html",
+      "/bbs/qna_action.php",
+      "/bbs/qna_manual.html",
+      "/bbs/qna_manual_add.html",
+      "/bbs/qna_manual_action.php",
+      "/bbs/banner_notice.html",
+      "/bbs/notice.html",
+      "/bbs/notice_add.html",
+      "/bbs/notice_action.php",
+      "/bbs/news.html",
+      "/bbs/news_add.html",
+      "/bbs/news_action.php",
+      "/bbs/faq.html",
+      "/bbs/faq_add.html",
+      "/bbs/faq_action.php",
+      "/bbs/qnaMacro.html",
+      "/bbs/qnaMacroAction.html",
+      "/bbs/qnaAjax.php"
+    ),
+    "당첨금환급" => array(
+      "/winner/refund.html",
+      "/winner/list.html",
+      "/winner/result.html",
+      "/winner/statistics.html"
+    ),
+    "회원관리" => array(
+      "/member/member_list.html",
+      "/member/marketing_member.html",
+      "/member/out_member.html",
+      "/member/admin.html",
+      "/member/admin_add.html",
+      "/member/admin_action.php"
+    ),
+    "포인트관리" => array(
+      "/member/cash_list.html",
+      "/winner/winmoney_list.html",
+      "/member/ipoint_list.html",
+      "/member/point_list.html"
+    ),
+    "구매내역" => array(
+      "/order/orders_list.html",
+      "/order/ticket_list.html",
+      "/order/ticket_list_today.html",
+      "/order/scan_error.html",
+      "/order/upload_ticket_list.html",
+      "/order/non_winning_list.html"
+    ),
+    "로또관리" => array(
+      "/goods/win_number.html",
+      "/goods/win_money.html",
+      "/goods/win_money_action.php",
+      "/goods/win_cnt.html",
+      "/goods/win_movie.html",
+      "/goods/exchange.html",
+      "/goods/exchange_add.html",
+      "/goods/exchange_action.php"
+    ),
+    "알림관리" => array(
+      "/notification/templat.html",
+      "/notification/templat_add.html",
+      "/notification/sms/calling_number.html",
+      "/notification/sms/history.html",
+      "/notification/push/topic.html",
+      "/notification/push/status.html",
+      "/notification/push/reservation.html",
+      "/notification/push/history.html",
+      "/notification/email/templat.html",
+      "/notification/email/templat_add.html",
+      "/notification/email/history.html"
+    ),
+    "쇼핑관리" => array(
+      "/shop/partner.html",
+      "/shop/goods.html",
+      "/shop/register.php",
+      "/shop/order.html",
+    ),
+    "파트너" => array(
+      "/um_ptn_summ/partner_summ_day.html",
+      "/um_ptn_summ/partner_summ_month.html",
+      "/um_ptn_summ/partner_summ_year.html",
+      "/um_comm/comm_list.html",
+      "/um_partner/partner_list.html",
+      "/um_partner/partner_member_list.html",
+      "/um_partner/partner_member_referral.html",
+      "/um_banner/um_banner.html",
+      "/um_banner/um_banner_action.php",
+      "/um_contact/notice.html",
+      "/um_contact/notice_add.html",
+      "/um_contact/notice_action.php",
+      "/um_contact/qna.html",
+      "/um_setting/commission_policy.html",
+      "/um_setting/commission_policy_detail.html"
+    ),
+    "제휴파트너관리" => array(
+      "/referral/partner.html",
+      "/referral/partner_member.html",
+      "/referral/statistics.html",
+      "/referral/day.html"
+    ),
+    "쿠폰발행" => array(
+      "/coupon/coupon.html",
+      "/coupon/coupon_add.html",
+      "/coupon/coupon_action.php",
+      "/coupon/coupon_log.html"
+    ),
+    "쿠폰파트너관리" => array(
+      "/partner/partner.html",
+      "/partner/partner_ok.php",
+      "/partner/partner_add.html",
+      "/partner/partner_action.php",
+      "/partner/partner_member.html",
+      "/partner/day.html"
+    )
+  );
+
+  //______________권한 컨틀롤
+  //모든 메뉴
+  $menuAuth_All = array("무통장관리","신용카드관리","매출현황 (당첨금사용)","매출현황","게시판관리","당첨금환급","회원관리","포인트관리","구매내역","로또관리","알림관리","쇼핑관리","파트너","제휴파트너관리","쿠폰발행","쿠폰파트너관리");
+
+  //메뉴 컨트롤
+  switch ($S_login['level']) {
+    case 4:
+      //super admin
+      $menuAuth = $menuAuth_All;
+      $indexurl = "/index.php";
+      break;
+    case 3:
+      //main admin
+      $menuAuth = $menuAuth_All;
+      $indexurl = "/index.php";
+      break;
+    case 2:
+      //staff admin
+      $menuAuth = array("무통장관리","신용카드관리","게시판관리","당첨금환급","회원관리","포인트관리","구매내역","로또관리","알림관리","파트너","제휴파트너관리","쿠폰발행","쿠폰파트너관리");
+      $indexurl = "/blank.html";
+      break;
+    default:
+      $menuAuth = array();
+      $indexurl = "/blank.html";
+  }
+
+  //______________권한 예외처리
+  //박태걸 사장
+  if ($S_login['user_id'] == "admin301") {
+    $menuAuth = array("무통장관리","신용카드관리","매출현황 (당첨금사용)","매출현황","게시판관리","당첨금환급","구매내역","로또관리","알림관리","파트너","제휴파트너관리","쿠폰발행","쿠폰파트너관리");
+  }
+
+  //SLK-871 기능제한 계정
+  if ($S_login['user_id'] == "admin216") {
+    $menuAuth = array("매출현황 (당첨금사용)","매출현황");
+  }
+
+  //SLK-1303 기능제한 계정
+  if ($S_login['user_id'] == "admin219" || $S_login['user_id'] == "admin220") {
+    $menuAuth = array("무통장관리","신용카드관리","매출현황 (당첨금사용)","매출현황","당첨금환급","회원관리","포인트관리","구매내역","로또관리","파트너","제휴파트너관리","쿠폰발행","쿠폰파트너관리");
+  }
+
+  //SLK-1109
+  if ($S_login['user_id'] == "cs210") {
+    $menuAuth = array("무통장관리","매출현황 (당첨금사용)","매출현황","게시판관리");
+  }
+
+  //SLK-1328
+  if ($S_login['user_id'] == "admin207") {
+    $menuAuth = array("무통장관리","신용카드관리","매출현황 (당첨금사용)","매출현황","게시판관리","당첨금환급","회원관리","포인트관리","구매내역","알림관리","쇼핑관리");
+  }
+
+  //메뉴 컨트롤
+  function chkAuth($menuname) {
+    global $S_login,$menuAuth;
+    $res = false;
+
+    foreach ($menuAuth as $val) {
+      if ($menuname == $val) {
+        $res = true;
+        break;
+      }
+    }
+
+    return $res;
+  }
+
+  //______________동접자 정보
+  $arr_ccu = array("web","web-dummy");
+  $ccu_total = 0;
+  foreach ($arr_ccu as $value) {
+    $ccufile = fopen("{$src_root}/cron/apache_ccu_{$value}.txt", "r");
+    if ($ccufile) {
+      ${"ccu_".$value} = fgets($ccufile);
+      $ccu_total += ${"ccu_".$value};
+    }
+    fclose($ccufile);
+  }
+
+  //페이지별 관리자 권한 체크 (USA staff, Super Admin 제외)
+  if ($S_login['level'] != 1 && $S_login['level'] != 4) F_admin_url_auth_chk();
+?>
+<body class="app sidebar-mini" <? if ($S_login['user_id'] == "admin301") { ?>oncontextmenu="return false" onselectstart="return false" ondragstart="return false"<? } ?>>
+  <div class="page">
+    <div class="page-main">
+      <div class="app-sidebar__overlay" data-bs-toggle="sidebar"></div>
+      <aside class="app-sidebar">
+        <div class="side-header">
+          <a class="header-brand1" href="/">
+            <img src="/assets/images/suloko/suloko.svg" class="header-brand-img desktop-logo" alt="logo" />
+            <img src="/assets/images/suloko/favicon.png" class="header-brand-img toggle-logo" alt="logo" />
+            <img src="/assets/images/suloko/favicon.png" class="header-brand-img light-logo" alt="logo" />
+            <img src="/assets/images/suloko/suloko.svg" class="header-brand-img light-logo1" alt="logo" />
+          </a>
+        </div>
+        <ul class="side-menu menu-scroll">
+        <?php if ($S_login['level'] == 1) { ?>
+          <li><h3></h3></li>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fe fe-file"></i>
+              <span class="side-menu__label">구매내역 (오늘)</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li><a href="/order/ticket_list_today.html?gubun=PB" class="slide-item-usa">티켓출력 - 파워볼</a></li>
+              <li><a href="/order/ticket_list_today.html?gubun=MM" class="slide-item-usa">티켓출력 - 메가밀리언</a></li>
+              <hr>
+              <li><a href="/order/scan_error_today.html?gubun=PB" class="slide-item-usa">스캔업로드 - 파워볼</a></li>
+              <li><a href="/order/scan_error_today.html?gubun=MM" class="slide-item-usa">스캔업로드 - 메가밀리언</a></li>
+              <li><a href="/order/scan_error_today.html" class="slide-item-usa">스캔업로드 - 미분류</a></li>
+              <hr>
+              <li><a href="/order/winner_list_usa.html?gubun=PB" class="slide-item-usa">당첨 티켓 - 파워볼</a></li>
+              <li><a href="/order/winner_list_usa.html?gubun=MM" class="slide-item-usa">당첨 티켓 - 메가밀리언</a></li>
+            </ul>
+          </li>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fe fe-file"></i>
+              <span class="side-menu__label">구매내역</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li><a href="/order/orders_list.html" class="slide-item-usa">구매내역</a></li>
+              <li><a href="/order/ticket_list.html?gubun=PB" class="slide-item-usa">티켓출력-파워볼</a></li>
+              <li><a href="/order/ticket_list.html?gubun=MM" class="slide-item-usa">티켓출력-메가밀리언</a></li>
+              <li>
+                <a href="/order/non_winning_list.html" class="slide-item-usa">낙첨티켓 배송신청</a>
+              </li>
+              <li><a href="/winner/list.html" class="slide-item-usa">당첨자조회</a></li>
+            </ul>
+          </li>
+        <?php } else { ?>
+          <li><h3>Main<br>
+            <button class="btn btn-default-light" style="font-size:0.7rem;text-align:left;cursor:default">
+              전체 동시접속자 : <span class="fw-bold" style="color: red;"><?=$ccu_total?></span>명<br>
+              <!-- [ PC: <span class="fw-bold"><?=$ccu_web?></span>명,
+              Mobile: <span class="fw-bold"><?=$ccu_mweb?></span>명,
+              App: <span class="fw-bold"><?=$ccu_mapp?></span>명 ] -->
+            </button></h3>
+          </li>
+          <? if (chkAuth("무통장관리")) { ?>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fa fa-vcard"></i>
+              <span class="side-menu__label">무통장관리</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li>
+                <a href="/order/payment_list_bank.html" class="slide-item">무통장입금 관리
+                  <span class="badge bg-secondary side-badge">
+                    <?=number_format($BANK_CNT)?>
+                  </span>
+                </a>
+              </li>
+              <li>
+                <a href="/order/cash_receipt.html" class="slide-item">현금영수증 신청
+                  <span class="badge bg-danger side-badge">
+                    <?=number_format($CASH_RECEIPT)?>
+                  </span>
+                </a>
+              </li>
+              <li><a href="/order/in_message.html" class="slide-item">전달사항</a></li>
+              <li>
+                <a href="/order/payment_list_bank_SMS.html" class="slide-item">무통장입금 SMS 로그
+                  <span class="badge bg-dark side-badge">
+                    <?=number_format($BANK_SMS)?>
+                  </span>
+                </a>
+              </li>
+              <li><a href="/order/cash_set.html" class="slide-item">캐시 설정</a></li>
+            </ul>
+          </li>
+          <? } ?>
+          <? if (chkAuth("신용카드관리")) { ?>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fa fa-credit-card"></i>
+              <span class="side-menu__label">신용카드관리</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li><a href="/order/payment_list.html" class="slide-item">카드결제로그</a></li>
+            </ul>
+          </li>
+          <? } ?>
+          <? if (chkAuth("매출현황 (당첨금사용)")) { ?>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fa fa-area-chart"></i>
+              <span class="side-menu__label">매출현황 (당첨금사용)</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li><a href="/counter/time2_winmoney.html" class="slide-item">시간별 매출</a></li>
+              <li><a href="/counter/day2_winmoney.html" class="slide-item">일별 매출</a></li>
+              <li><a href="/counter/month3_winmoney.html" class="slide-item">월별 매출</a></li>
+            </ul>
+          </li>
+          <? } ?>
+          <? if (chkAuth("매출현황")) { ?>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fa fa-pie-chart"></i>
+              <span class="side-menu__label">매출현황</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li><a href="/counter/time2.html" class="slide-item">시간별 매출</a></li>
+              <li><a href="/counter/day2.html" class="slide-item">일별 매출</a></li>
+              <li><a href="/counter/month3.html" class="slide-item">월별 매출</a></li>
+              <li><a href="/counter/month2.html" class="slide-item">월별 매출 (결제금액별)</a></li>
+              <li><a href="/counter/first_sales_time.html" class="slide-item">시간별 첫 결제금액</a></li>
+              <li><a href="/counter/first_sales_day.html" class="slide-item">일별 첫 결제금액</a></li>
+              <li><a href="/counter/first_sales_month.html" class="slide-item">월별 첫 결제금액</a></li>
+            </ul>
+          </li>
+          <? } ?>
+          <? if (chkAuth("게시판관리")) { ?>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fa fa-clipboard"></i>
+              <span class="side-menu__label">게시판관리</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li><a href="/bbs/report.html" class="slide-item">보이스피싱제보</a></li>
+              <li>
+                <a href="/bbs/qna.html" class="slide-item">1:1문의
+                  <span class="badge bg-info side-badge">
+                    <?=number_format($BBS_QNA_CNT)?>
+                  </span>
+                </a>
+              </li>
+              <li><a href="/bbs/qna_manual.html" class="slide-item">문의메뉴얼</a></li>
+              <li><a href="/bbs/banner_notice.html" class="slide-item">긴급공지</a></li>
+              <li><a href="/bbs/notice.html" class="slide-item">공지사항</a></li>
+              <li><a href="/bbs/news.html" class="slide-item">최신뉴스</a></li>
+              <li><a href="/bbs/faq.html" class="slide-item">FAQ</a></li>
+              <li><a href="/bbs/qnaMacro.html" class="slide-item">1:1문의 매크로 관리</a></li>
+            </ul>
+          </li>
+          <? } ?>
+          <? if (chkAuth("당첨금환급")) { ?>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fa fa-money"></i>
+              <span class="side-menu__label">당첨금환급</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li>
+                <a href="/winner/refund.html" class="slide-item">환급관리
+                  <span class="badge bg-success side-badge">
+                    <?=number_format($INVOCE_CNT)?>
+                  </span>
+                </a>
+              </li>
+              <li><a href="/winner/list.html" class="slide-item">당첨자조회</a></li>
+              <li><a href="/winner/result.html" class="slide-item">당첨금처리조회</a></li>
+              <li><a href="/winner/statistics.html" class="slide-item">당첨분석</a></li>
+            </ul>
+          </li>
+          <? } ?>
+          <? if (chkAuth("회원관리")) { ?>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fa fa-group"></i>
+              <span class="side-menu__label">회원관리</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li><a href="/member/member_list.html" class="slide-item">회원관리</a></li>
+              <li><a href="/member/marketing_member.html" class="slide-item">마케팅 회원관리</a></li>
+              <li><a href="/member/out_member.html" class="slide-item">탈퇴회원</a></li>
+              <li><a href="/member/admin.html" class="slide-item">관리자관리</a></li>
+            </ul>
+          </li>
+          <? } ?>
+          <? if (chkAuth("포인트관리")) { ?>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fa fa-product-hunt"></i>
+              <span class="side-menu__label">포인트관리</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li><a href="/member/cash_list.html" class="slide-item">캐시관리</a></li>
+              <li><a href="/winner/winmoney_list.html" class="slide-item">당첨금관리</a></li>
+              <li><a href="/member/ipoint_list.html" class="slide-item">마일리지관리</a></li>
+              <li><a href="/member/point_list.html" class="slide-item">보너스포인트관리</a></li>
+            </ul>
+          </li>
+          <? } ?>
+          <? if (chkAuth("구매내역")) { ?>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fa fa-list-alt"></i>
+              <span class="side-menu__label">구매내역</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li><a href="/order/orders_list.html" class="slide-item">구매내역</a></li>
+              <? /** <li><a href="/order/upload_ticket_list.html" class="slide-item">티켓이미지</a></li> **/ ?>
+
+              <? if($S_login["user_id"]=="admin205"){?>
+                <li><a href="/order/new_scan.html" class="slide-item">티켓이미지</a></li>
+              <? } ?>
+
+              <li>
+                <a href="/order/non_winning_list.html" class="slide-item">낙첨티켓 배송신청</a>
+              </li>
+            </ul>
+          </li>
+          <? } ?>
+          <? if (chkAuth("로또관리")) { ?>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fa fa-gbp"></i>
+              <span class="side-menu__label">로또관리</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li><a href="/goods/win_number.html" class="slide-item">당첨번호내역</a></li>
+              <li><a href="/goods/win_money.html" class="slide-item">당첨금현황</a></li>
+              <li><a href="/goods/win_cnt.html" class="slide-item">당첨자수입력</a></li>
+              <li><a href="/goods/win_movie.html" class="slide-item">추첨영상등록</a></li>
+              <li><a href="/goods/exchange.html" class="slide-item">환율정보</a></li>
+            </ul>
+          </li>
+          <? } ?>
+          <? if (chkAuth("알림관리")) { ?>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fa fa-bell"></i>
+              <span class="side-menu__label">알림관리</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li><a href="/notification/templat.html" class="slide-item">알림템플릿관리</a></li>
+              <li><a href="/notification/sms/calling_number.html" class="slide-item">문자발신번호관리</a></li>
+              <li><a href="/notification/sms/history.html" class="slide-item">문자발송내역</a></li>
+              <li><a href="/notification/push/topic.html" class="slide-item">푸시구독관리&nbsp;&nbsp;<span class="badge bg-primary-gradient">웹푸시</span> <i class="fa fa-pushed"></i></a></li>
+              <li><a href="/notification/push/status.html" class="slide-item">푸시구독현황</a></li>
+              <li><a href="/notification/push/reservation.html" class="slide-item">푸시예약내역</a></li>
+              <li><a href="/notification/push/history.html" class="slide-item">푸시발송내역</a></li>
+              <li><a href="/notification/email/templat.html" class="slide-item">이메일템플릿관리</a></li>
+              <li><a href="/notification/email/history.html" class="slide-item">이메일발송내역</a></li>
+            </ul>
+          </li>
+          <? } ?>
+          <? if (chkAuth("쇼핑관리")) { ?>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fa fa-shopping-cart"></i>
+              <span class="side-menu__label">쇼핑관리</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li><a href="/shop/partner.html" class="slide-item">제휴사목록</a></li>
+              <li><a href="/shop/order.html" class="slide-item">주문내역</a></li>
+              <li><a href="/shop/goods.html" class="slide-item">상품관리</a></li>
+              <li>
+                <a href="/shop/order.html" class="slide-item">주문관리
+                  <span class="badge bg-info side-badge">
+                    <?=number_format($SHOP_ORDER_CNT)?>
+                  </span>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <? } ?>
+          <? if (chkAuth("파트너")) { ?>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fa fa-tags"></i>
+              <span class="side-menu__label">파트너</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li><a href="/um_ptn_summ/partner_summ_day.html" class="slide-item">시간별 활동현황</a></li>
+              <li><a href="/um_ptn_summ/partner_summ_month.html" class="slide-item">일별 활동현황</a></li>
+              <li><a href="/um_ptn_summ/partner_summ_year.html" class="slide-item">월별 활동현황</a></li>
+              <li>
+                <a href="/um_comm/comm_list.html" class="slide-item">정산신청 관리
+                  <span class="badge bg-secondary side-badge">
+                    <?=number_format($UM_COMM_CNT)?>
+                  </span>
+                </a>
+              </li>
+              <li><a href="/um_partner/partner_list.html" class="slide-item">파트너 관리</a></li>
+              <li><a href="/um_partner/partner_member_list.html" class="slide-item">가입 회원</a></li>
+              <li><a href="/um_partner/partner_member_referral.html" class="slide-item">유입 리퍼럴</a></li>
+              <li><a href="/um_banner/um_banner.html" class="slide-item">배너 관리</a></li>
+              <li><a href="/um_contact/notice.html" class="slide-item">공지사항</a></li>
+              <li>
+                <a href="/um_contact/qna.html" class="slide-item">Q&A
+                  <span class="badge bg-warning side-badge">
+                    <?=number_format($UM_QNA_CNT)?>
+                  </span>
+                </a>
+              </li>
+              <li><a href="/um_setting/commission_policy.html" class="slide-item">커미션 설정</a></li>
+            </ul>
+          </li>
+          <? } ?>
+          <? if (chkAuth("제휴파트너관리")) { ?>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fa fa-times-circle-o"></i>
+              <span class="side-menu__label">제휴파트너관리</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li><a href="/referral/partner.html" class="slide-item">파트너관리</a></li>
+              <li><a href="/referral/partner_member.html" class="slide-item">가입회원목록</a></li>
+              <li><a href="/referral/statistics.html" class="slide-item">파트너실적통계</a></li>
+              <li><a href="/referral/day.html" class="slide-item">일별실적통계</a></li>
+            </ul>
+          </li>
+          <? } ?>
+          <? if (chkAuth("쿠폰발행")) { ?>
+          <li class="slide">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fa fa-times-circle-o"></i>
+              <span class="side-menu__label">쿠폰발행</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li><a href="/coupon/coupon.html" class="slide-item">쿠폰발행</a></li>
+              <li><a href="/coupon/coupon_log.html" class="slide-item">쿠폰사용내역</a></li>
+            </ul>
+          </li>
+          <? } ?>
+          <? if (chkAuth("쿠폰파트너관리")) { ?>
+          <li class="slide last-slide-menu">
+            <a class="side-menu__item" href="#">
+              <i class="side-menu__icon fa fa-times-circle-o"></i>
+              <span class="side-menu__label">쿠폰파트너관리</span>
+              <i class="angle fa fa-angle-right"></i>
+            </a>
+            <ul class="slide-menu">
+              <li><a href="/partner/partner.html" class="slide-item">파트너관리</a></li>
+              <li><a href="/partner/partner_member.html" class="slide-item">유입회원목록</a></li>
+              <li><a href="/partner/day.html" class="slide-item">일별통계</a></li>
+            </ul>
+          </li>
+          <? } ?>
+        <?php } ?>
+        </ul>
+      </aside>
+      <!--/APP-SIDEBAR-->
+
+      <!-- Mobile Header -->
+      <div class="app-header header">
+        <div class="container-fluid">
+          <div class="d-flex">
+            <a aria-label="Hide Sidebar" class="app-sidebar__toggle" data-bs-toggle="sidebar" href="#"></a><!-- sidebar-toggle-->
+            <a class="header-brand1 d-flex d-md-none" href="/">
+              <img src="../../assets/images/brand/logo.png" class="header-brand-img desktop-logo" alt="logo">
+              <img src="../../assets/images/brand/logo-1.png" class="header-brand-img toggle-logo" alt="logo">
+              <img src="../../assets/images/brand/logo-2.png" class="header-brand-img light-logo" alt="logo">
+              <h3>
+                <font>슈로코 관리자</font>
+              </h3>
+            </a><!-- LOGO -->
+            <div class="d-flex order-lg-2 ms-auto header-right-icons">
+              <div class="dropdown d-lg-none d-md-block d-none">
+                <a href="#" class="nav-link icon" data-bs-toggle="dropdown">
+                  <i class="fe fe-search"></i>
+                </a>
+                <div class="dropdown-menu header-search dropdown-menu-start">
+                  <div class="input-group w-100 p-2">
+                    <input type="text" class="form-control" placeholder="Search....">
+                    <div class="input-group-text btn btn-primary">
+                      <i class="fa fa-search" aria-hidden="true"></i>
+                    </div>
+                  </div>
+                </div>
+              </div><!-- SEARCH -->
+              <button class="navbar-toggler navresponsive-toggler d-md-none ms-auto"
+                      type="button" data-bs-toggle="collapse"
+                      data-bs-target="#navbarSupportedContent-4"
+                      aria-controls="navbarSupportedContent-4"
+                      aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon fe fe-more-vertical text-dark"></span>
+              </button>
+              <div class="dropdown d-none d-md-flex profile-1">
+                <a href="#" data-bs-toggle="dropdown" class="nav-link pe-2 leading-none d-flex">
+                  <span>
+                    <img src="../../assets/images/users/8.jpg" alt="profile-user" class="avatar profile-user brround cover-image">
+                  </span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                  <div class="drop-heading">
+                    <div class="text-center">
+                      <h5 class="text-dark mb-0"><?=$S_login['name']?></h5>
+                      <small class="text-muted"><?=$S_login['user_id']?></small>
+                    </div>
+                  </div>
+                  <div class="dropdown-divider m-0"></div>
+                  <a class="dropdown-item" href="<?=admin_url('/logout.php')?>">
+                    <i class="dropdown-icon fe fe-log-out"></i> Sign out
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-1 navbar navbar-expand-lg responsive-navbar navbar-dark d-md-none bg-white">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent-4">
+          <div class="d-flex order-lg-2 ms-auto">
+            <div class="dropdown d-md-flex profile-1">
+              <a href="#" data-bs-toggle="dropdown" class="nav-link pe-2 leading-none d-flex">
+                <span>
+                  <img src="../../assets/images/users/8.jpg" alt="profile-user" class="avatar profile-user brround cover-image">
+                </span>
+              </a>
+              <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                <div class="drop-heading">
+                  <div class="text-center">
+                    <h5 class="text-dark mb-0"><?=$S_login['name']?></h5>
+                    <small class="text-muted"><?=$S_login['user_id']?></small>
+                  </div>
+                </div>
+                <div class="dropdown-divider m-0"></div>
+                <a class="dropdown-item" href="<?=admin_url('/logout.php')?>">
+                  <i class="dropdown-icon fe fe-log-out"></i> Sign out
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /Mobile Header -->
+
+      <!-- GLOABAL LOADER -->
+      <div id="global-loader">
+        <img src="../../assets/images/loader.svg" class="loader-img" alt="Loader" />
+      </div>
+      <!-- /GLOABAL LOADER -->

@@ -1,0 +1,36 @@
+<?php
+  include "../header.html";
+?>
+<main>
+  <section>
+    <div style="text-align: center;" >
+      <div style="font-size: 22px;">
+        <?=$order_round ?>회차 <?=게임명($order_game_name)?> <?=$order_game_cnt?>게임 구매가 완료 되었습니다.
+      </div>
+      <div>
+        <div>
+          <?=$order_round ?>회차 결과 발표일 안내
+        </div>
+        <div>
+          2023년 08월 14일 한국시간 오후12:00 입니다.
+        </div>
+        <div>
+          회원이 선택한 번호를 미국 현지 구매대행사에 구매 요청합니다.<br />
+          실물 복권은 당첨 결과 발표 시까지 미국 현지 구매대행사에서 안전하게 보관합니다.<br />
+          당첨 결과 및 구매한 로또 스캔본은 <?=$config['사이트명']?> 홈페이지 및 모바일 앱을 통해 확인하실 수 있습니다.<br />
+        </div>
+
+        <div>
+          <a href="/">홈으로</a>
+          <a href="/member/buy.html">구매내역</a>
+          <a href="/member/buy.html">1:1문의</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+
+<?php
+  include "../footer.html";
+?>

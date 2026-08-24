@@ -1,0 +1,109 @@
+<?php
+  header("Cache-Control: no-cache");
+  require_once $_SERVER['DOCUMENT_ROOT']."/_common/config.php";
+
+  $basic_title = "파메코 - 파워볼, 메가밀리언, 미국 로또, 해외 복권, 1등 당첨금 정보, 번호 통계 제공. 파워메가볼";
+  $basic_description = "해외 복권 구매 1등 번호 당첨 분석 무료 파워볼 메가밀리언 회차별 추첨 정보 제공";
+
+  $title = isset($page_title) ? $page_title : $basic_title;
+  $description = isset($page_description) ? $page_description : $basic_description;
+  $version = date("his");
+?>
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title><?php echo $title; ?></title>
+  <meta name="description" content="<?php echo $description; ?>">
+  <link rel="canonical" href="https://www.sulokolink.com<?=$_SERVER['REQUEST_URI']?>">
+
+  <meta property="og:title" content="<?php echo $title; ?>" />
+  <meta property="og:description" content="<?php echo $description; ?>" />
+  <meta property="og:url" content="https://www.sulokolink.com<?=$_SERVER['REQUEST_URI']?>" />
+  <meta property="og:image" content="<?=$commonImageURI?>superlottokorea-img.jpg" />
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="<?php echo $title; ?>">
+  <meta name="twitter:description" content="<?php echo $description; ?>">
+  <meta name="twitter:image" content="<?=$commonImageURI?>superlottokora-img.jpg">
+  <meta name="twitter:domain" content="https://www.sulokolink.com<?=$_SERVER['REQUEST_URI']?>">
+
+  <link rel="icon" href="/favicon.png?date=<?=date('his')?>" type="image/png" />
+  <link rel="icon" href="<?=$mainImageURI?>cropped-favicon-32x32.png" sizes="32x32" type="image/png" />
+  <link rel="icon" href="<?=$mainImageURI?>cropped-favicon-192x192.png" sizes="192x192" type="image/png" />
+  <link rel="apple-touch-icon-precomposed" href="<?=$mainImageURI?>cropped-favicon-180x180.png" type="image/png" />
+  <meta name="msapplication-TileImage" content="<?=$mainImageURI?>cropped-favicon-270x270.png" type="image/png" />
+
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Cache-control" content="no-cache">
+  <meta http-equiv="Cache" content="no-cache">
+
+
+  <!-- pwa -->
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="manifest" href="/manifest.json">
+
+  <link rel="stylesheet" href="/common/css/default.css?ver=<?=$version?>">
+  <link rel="stylesheet" href="/common/css/common.css?ver=<?=$version?>">
+  <link rel="stylesheet" href="/common/css/font.css?ver=<?=$version?>">
+  <link rel="stylesheet" href="/common/css/style_m.css?ver=<?=$version?>">
+  <link rel="stylesheet" href="/common/css/sub_m.css?ver=<?=$version?>">
+  <link rel="stylesheet" href="/common/css/program.css?ver=<?=$version?>">
+  <!-- font -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+  <!-- font-family: 'Montserrat', sans-serif; -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+
+  <!-- plugin -->
+  <script src="/common/plugin/swiper.min.js" charset="utf-8" ></script>
+  <link rel="stylesheet" href="/common/plugin/swiper.min.css">
+  <script src="/common/js/slide.js?ver=<?=$version?>" charset="utf-8" ></script>
+
+  <script src="/common/plugin/jquery-ui.js"></script>
+  <link rel="stylesheet" href="/common/plugin/jquery-ui.css">
+
+  <!-- Taboola Pixel Code -->
+  <script src="/common/js/taboola.js?ver=<?=$version?>"></script>
+
+  <script src="/common/js/common.js?ver=<?=$version?>" charset="utf-8"></script>
+
+  <!-- The core Firebase JS SDK is always required and must be listed first -->
+  <script src="/common/firebasejs/7.14.1/firebase-app.js"></script>
+  <script src="/common/firebasejs/7.14.1/firebase-messaging.js"></script>
+
+  <!-- monthpicker -->
+  <script src="/common/plugin/jquery.mtz.monthpicker.js"></script>
+
+  <script>
+    $(document).ready(function() {
+      $(document).on('click', '.btn_back', function() {
+        history.go();
+      });
+    });
+  </script>
+
+<!-- Taboola Pixel Code -->
+<script type='text/javascript'>
+  window._tfa = window._tfa || [];
+  window._tfa.push({notify: 'event', name: 'page_view', id: 2024947});
+  !function (t, f, a, x) {
+         if (!document.getElementById(x)) {
+            t.async = 1;t.src = a;t.id=x;f.parentNode.insertBefore(t, f);
+         }
+  }(document.createElement('script'),
+  document.getElementsByTagName('script')[0],
+  '//cdn.taboola.com/libtrc/unip/2024947/tfa.js',
+  'tb_tfa_script');
+</script>
+<!-- End of Taboola Pixel Code -->
+
+
+</head>

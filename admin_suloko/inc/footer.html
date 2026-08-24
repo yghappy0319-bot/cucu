@@ -1,0 +1,207 @@
+      </div>
+      <!-- FOOTER -->
+      <footer class="footer">
+        <div class="container">
+          <div class="row align-items-center flex-row-reverse">
+            <div class="col-md-12 col-sm-12 text-center">
+              <div>
+                <!-- Copyright © 2022 <a href="#">Suloko</a>. Designed with <span class="fa fa-heart text-danger"></span> by <a href="#"> Suloko </a> All rights reserved -->
+                Copyright © 2022 Suloko. Designed with by Suloko
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+      <!-- FOOTER END -->
+    </div>
+
+    <!-- BACK-TO-TOP -->
+    <!--<a href="#top" id="back-to-top"><i class="fa fa-angle-up"></i></a>-->
+
+    <!-- JQUERY JS -->
+    <script src="../../assets/js/jquery.min.js?ver=<?=$version?>"></script>
+    <script>
+    (function() {
+      function ensureWinId() {
+        var namedWin = (window.name && window.name.indexOf('ADMIN_WIN_') === 0)
+          ? window.name.replace(/^ADMIN_WIN_/, '')
+          : '';
+        if (namedWin) return namedWin;
+        var params = new URLSearchParams(location.search);
+        var urlWin = (params.get('_win') || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 32);
+        var winId = urlWin || Math.random().toString(36).slice(2, 12);
+        window.name = 'ADMIN_WIN_' + winId;
+        return winId;
+      }
+
+      var winId = ensureWinId();
+
+      function ensureWinInput(form) {
+        if (!form || form.tagName !== 'FORM') return;
+        var input = form.querySelector('input[name="_win"]');
+        if (!input) {
+          input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = '_win';
+          form.appendChild(input);
+        }
+        input.value = winId;
+      }
+
+      function withWin(url) {
+        if (!url || url.indexOf('javascript:') === 0 || url.charAt(0) === '#') return url;
+        if (/^https?:\/\//i.test(url) && url.indexOf(location.origin) !== 0) return url;
+        try {
+          // location.origin만 쓰면 상대경로(qna_action.php)가 루트(/qna_action.php)로 바뀌어 404 발생
+          var abs = new URL(url, location.href);
+          abs.searchParams.set('_win', winId);
+          return abs.pathname + abs.search + abs.hash;
+        } catch (e) {
+          return url;
+        }
+      }
+
+      // 모든 폼에 _win 미리 삽입 (form.submit() 이벤트 미발생 대비)
+      function injectAllForms() {
+        var forms = document.getElementsByTagName('form');
+        for (var i = 0; i < forms.length; i++) {
+          ensureWinInput(forms[i]);
+        }
+      }
+      injectAllForms();
+      document.addEventListener('DOMContentLoaded', injectAllForms);
+
+      // native form.submit() 패치
+      var nativeSubmit = HTMLFormElement.prototype.submit;
+      HTMLFormElement.prototype.submit = function() {
+        ensureWinInput(this);
+        if (this.getAttribute('action')) {
+          this.setAttribute('action', withWin(this.getAttribute('action')));
+        }
+        return nativeSubmit.apply(this, arguments);
+      };
+
+      if (window.jQuery) {
+        jQuery.ajaxPrefilter(function(opts) {
+          if (opts.url) opts.url = withWin(opts.url);
+          if (opts.data && typeof opts.data === 'string' && opts.data.indexOf('_win=') === -1) {
+            opts.data += (opts.data.length ? '&' : '') + '_win=' + encodeURIComponent(winId);
+          } else if (opts.data && typeof opts.data === 'object' && opts.data._win === undefined) {
+            opts.data._win = winId;
+          }
+        });
+      }
+
+      document.addEventListener('click', function(e) {
+        var a = e.target.closest && e.target.closest('a[href]');
+        if (!a) return;
+        var href = a.getAttribute('href');
+        if (!href || href.indexOf('javascript:') === 0 || href.charAt(0) === '#') return;
+        a.setAttribute('href', withWin(href));
+      }, true);
+
+      document.addEventListener('submit', function(e) {
+        var f = e.target;
+        if (!f || f.tagName !== 'FORM') return;
+        ensureWinInput(f);
+        if (f.getAttribute('action')) f.setAttribute('action', withWin(f.getAttribute('action')));
+      }, true);
+    })();
+    </script>
+
+    <!-- BOOTSTRAP JS -->
+    <script src="../../assets/plugins/bootstrap/js/popper.min.js?ver=<?=$version?>"></script>
+    <script src="../../assets/plugins/bootstrap/js/bootstrap.min.js?ver=<?=$version?>"></script>
+
+    <!-- SPARKLINE JS-->
+    <script src="../../assets/js/jquery.sparkline.min.js?ver=<?=$version?>"></script>
+
+    <!-- CHART-CIRCLE JS-->
+    <script src="../../assets/js/circle-progress.min.js?ver=<?=$version?>"></script>
+
+    <!-- CHARTJS CHART JS-->
+    <script src="../../assets/plugins/chart/Chart.bundle.js?ver=<?=$version?>"></script>
+    <script src="../../assets/plugins/chart/utils.js?ver=<?=$version?>"></script>
+
+    <!-- PIETY CHART JS-->
+    <script src="../../assets/plugins/peitychart/jquery.peity.min.js?ver=<?=$version?>"></script>
+    <script src="../../assets/plugins/peitychart/peitychart.init.js?ver=<?=$version?>"></script>
+
+    <!-- INTERNAL SELECT2 JS -->
+    <script src="../../assets/plugins/select2/select2.full.min.js?ver=<?=$version?>"></script>
+
+    <!-- INTERNAL Data tables js-->
+    <script src="../../assets/plugins/datatable/js/jquery.dataTables.min.js?ver=<?=$version?>"></script>
+    <script src="../../assets/plugins/datatable/js/dataTables.bootstrap5.js?ver=<?=$version?>"></script>
+    <script src="../../assets/plugins/datatable/dataTables.responsive.min.js?ver=<?=$version?>"></script>
+
+    <!-- ECHART JS-->
+    <script src="../../assets/plugins/echarts/echarts.js?ver=<?=$version?>"></script>
+
+    <!-- SIDE-MENU JS-->
+    <script src="../../assets/plugins/sidemenu/sidemenu.js?ver=<?=$version?>"></script>
+
+    <!-- SIDEBAR JS -->
+    <script src="../../assets/plugins/sidebar/sidebar.js?ver=<?=$version?>"></script>
+
+    <!-- Perfect SCROLLBAR JS-->
+    <!--<script src="../../assets/plugins/p-scroll/perfect-scrollbar.js"></script>
+    <script src="../../assets/plugins/p-scroll/pscroll.js"></script>
+    <script src="../../assets/plugins/p-scroll/pscroll-1.js"></script>-->
+
+    <!-- APEXCHART JS -->
+    <!--<script src="../../assets/js/apexcharts.js"></script>-->
+
+    <!-- DATEPICKER JS -->
+    <script src="../../assets/plugins/date-picker/date-picker.js"></script>
+    <script src="../../assets/plugins/date-picker/jquery-ui.js"></script>
+    <script src="../../assets/plugins/input-mask/jquery.maskedinput.js"></script>
+
+    <!-- SELECT2 JS -->
+    <script src="../../assets/plugins/select2/select2.full.min.js"></script>
+
+    <!-- FORMVALIDATION JS -->
+    <script src="../../assets/js/form-validation.js"></script>
+
+    <!-- INDEX JS -->
+    <script src="../../assets/js/index1.js?ver=<?=$version?>"></script>
+
+    <!-- CUSTOM JS -->
+    <script src="../../assets/js/custom.js?ver=<?=$version?>"></script>
+
+    <!-- DEFAULT JS -->
+    <script src="../../assets/js/default.js?ver=<?=$version?>"></script>
+
+  </body>
+</html>
+<script>
+  $(document).ready(function() {
+    $('.slide-menu').show();
+    side_menu_scroll();
+
+    if ($(window).width() > 480) {
+      // 해상도에 따라 높이 조절
+      $('.table-wrapper').css('max-height', $(window).height() - 450);
+    }
+  });
+
+  function side_menu_scroll() {
+    let n = 0;
+    let k = 0;
+    let height_num = 40; // 기본 높이값
+
+    $('.side-menu__item').each(function() {
+      n++;
+      if ($(this).hasClass('active')) k = n;
+    });
+
+    $('.side-menu').find('.slide').each( function(idx, item) {
+      if (k == idx + 1) return false; // 선택된 메뉴면 break;
+      height_num = height_num + Number($('.side-menu').find('.slide').eq(idx).height());
+    });
+    if (k > 0) {
+      if (k == 1) height_num = height_num - 5;
+      $('.side-menu').animate({scrollTop: height_num}, 0); // 메뉴 스크롤 이동
+    }
+  }
+</script>

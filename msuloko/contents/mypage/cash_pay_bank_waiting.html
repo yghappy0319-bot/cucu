@@ -1,0 +1,186 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  $menu_on['cash'] = true;
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}'");
+
+  // 무통장 입금 대기건 확인
+  $bank = $db->get_data("SELECT * FROM CASH WHERE CARDNAME='무통장' AND IS_USE='N' AND USER_ID='{$M_login['user_id']}' ORDER BY CASH_NO DESC LIMIT 1;");
+
+  if (isset($bank['CASH_NO'])) {
+    $bank_waiting = true;
+    $bank['CASH'] = number_format($bank['CASH']);
+    $bank['PRICE'] = number_format($bank['PRICE']);
+    $bank['REG_DATE'] = date("Y년 n월 j일 G시 i분", strtotime($bank['REG_DATE']));
+  }
+?>
+
+<style>
+  .bx_gray.top {
+    padding: 0.5rem 0 0.5rem 0.5rem;
+    font-size: 1rem;
+    color: #545454;
+    line-height: 1.4;
+    font-weight: bold;
+  }
+  .bx_gray {
+    background: #eee;
+  }
+  .bx_gray ul {
+    list-style: none;
+  }
+  .bx_gray .list_bul > li {
+    padding: 0;
+  }
+  .bx_gray .list_bul > li {
+    /*padding-left: 0.6rem;*/
+    position: relative;
+    line-height: 1rem;
+    font-size: 0.5rem;
+    letter-spacing: -0.5px;
+  }
+  .bx_gray .list_bul > li:before {
+    background: none;
+    /*content: "*";*/
+    width: inherit;
+    height: inherit;
+  }
+  .bx_gray .list_bul > li:before {
+    position: absolute;
+    left: -12px;
+    top: 0.2em;
+    display: inline-block;
+    vertical-align: middle;
+    border-radius: 100%;
+  }
+  .bx_gray .list_bul .pd-left { position: absolute; left: 3.7rem; }
+  .sec_charge .pay {
+    margin-top: 20px;
+    text-align: center;
+  }
+  .sec_charge .pay .bx_border {
+    border: 1px solid #5c5c5c;
+    border-radius: 0.25rem;
+  }
+  .sec_charge .btn_pay {
+    width: 100%;
+    height: 2.5rem;
+    line-height: 2.5rem;
+    font-size: 1rem;
+  }
+  .sec_charge .btn_pay2 {
+    width: 100%;
+    height: 2.5rem;
+    line-height: 2.5rem;
+    font-size: 0.9rem;
+  }
+  .f_GmarketSans {
+    font-family: 'GmarketSans', sans-serif !important;
+  }
+  .btn_red {
+    background: #f00 !important;
+    color: #fff;
+  }
+  .btn_gray {
+    background: #494949 !important;
+    color: #fff;
+  }
+  .border_blue {
+    border: 2px solid blue !important;
+  }
+</style>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+    <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage bg">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub bb border_dcdcdc" style="margin-bottom: 0;">
+            <h2 class="title">캐시충전</h2>
+            <a href="/contents/mypage/cash-charge.html" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <section class="sec_charge">
+            <div class="section wrap_com bg_white" style="text-align: center; line-height: 1.2rem;">
+              <img src="/common/images/info_red.png" class="pt30">
+              <h3 class="h_type4">중복 신청 안내<br><br></h3>
+              <div class="bx_gray top fs26" style="text-align:left">
+                <?=$M_login['name']?> 회원님께서 <span class="bank_waiting_reg_date"><?=$bank['REG_DATE']?></span> 신청하신<br>
+                <span class="bank_waiting_cash_num"><?=$bank['CASH']?></span>캐시(<strong class="color_red">입금액 <span class="bank_waiting_price_num"><?=$bank['PRICE']?></span>원</strong>) 무통장(계좌이체)<br>
+                충전이 완료되지 않았습니다.<br>
+                새로운 캐시 충전을 원하시면 입금을 완료하시거나<br>
+                신청을 취소하여 주십시오.
+              </div>
+
+              <div class="pay">
+                <button type="button" class="btn_pay bx_border btn_red f_GmarketSans btn_bank_waiting_close">
+                  <strong>확인</strong>
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+        <input type="hidden" id="account_number" class="account_number" value="010901-04-303859">
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+
+  <form name="form" id="w_frm" method="GET" action="./cash_pay_bank_step2.php">
+    <input type="hidden" class="it1" value="<?=$_GET["ITEMNAME"]?>" name="ITEMNAME" id="ITEMNAME" /><!--상품명-->
+    <input type="hidden" class="it1" value="<?=$_GET["cash_no"]?>" name="cno" id="cno" /><!--구매상품번호-->
+  </form>
+</body>
+
+<script>
+  function confirmEvent() {
+    window.name = "myOpener";
+    var win;
+    var iLeft = (window.screen.width / 2) - (Number(815) / 2);
+    var iTop = (window.screen.height / 2) - (Number(600) / 2);
+    var features = "menubar=no,toolbar=no,status=no,resizable=yes,scrollbars=no,location=no";
+    features += ",left=" + iLeft + ",top=" + iTop + ",width=" + 815 + ",height=" + 600;
+    win = window.open("", "pcPop", features);
+    win.focus();
+
+    $(".btn_pay").hide();
+    $(".btn_pay_loading").show();
+    $("#w_frm").submit();
+
+    var winLoop = setInterval(function() {
+      if (win.closed) {
+        clearInterval(winLoop);
+        location.href = "./cash-charge.html";
+      }
+    }, 1000);
+  }
+
+  $(document).ready(function() {
+    $(document).on("click", ".btn_bank_waiting_close", function() {
+      $(location).attr('href', "/contents/mypage/cash-history.html");
+    });
+  });
+
+  window.onload=function () {
+    document.addEventListener('touchstart', function(event) {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    })
+    var lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+      var now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 100) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    } ,false)
+  }
+</script>
+</html>

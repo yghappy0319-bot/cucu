@@ -1,0 +1,49 @@
+<?
+if(!isset($_SERVER["HTTPS"])) {
+header('Location: https://'.$_SERVER["HTTP_HOST"].$_SERVER['REQUEST_URI']);
+}
+
+$도메인 = "https://ineeclinicseoul.com";
+
+include_once "head.php";
+?>
+    <header></header>
+    <nav></nav>
+    <section>
+      <div class="wrap" >
+        <? include_once "nav.php"; ?>
+        <a href="javascript:;" ><img src="https://d3o55kr5fwe774.cloudfront.net/hey/pc3.jpg" class="pc_img" /></a>
+        <a href="javascript:;" ><img src="https://d3o55kr5fwe774.cloudfront.net/hey/pc3.jpg" class="mo_img" style="display:none;" /></a>
+
+        <? include_once "social.php"; ?>
+      </div>
+
+    </section>
+    <footer>
+
+    </footer>
+</body>
+
+<script>
+  function go_wa(obj){
+    gtag_report_conversion('https://baidclinicinseoul.com');
+    window.open(obj);
+
+  }
+
+function gtag_report_conversion(url) {
+  var callback = function () {
+    if (typeof(url) != 'undefined') {
+      window.location = url;
+    }
+  };
+  gtag('event', 'conversion', {
+      'send_to': 'AW-17544040162/zPzyCMX8p5cbEOKd061B',
+      'value': 1.0,
+      'currency': 'KRW',
+      'event_callback': callback
+  });
+  return false;
+}
+</script>
+</html>

@@ -1,0 +1,189 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+
+  F_admin_chk($S_login);
+
+  // PC 긴급공지
+  $query = "SELECT * FROM BANNER_NOTICE WHERE FGUBUN = 'P' LIMIT 1";
+  $info  = $db->get_data($query);
+
+  $P_NO       = $info['BANNER_NO'];
+  // $P_SUBJECT  = $info['SUBJECT'];
+  $P_SUBJECT  = htmlspecialchars($info['SUBJECT'],ENT_NOQUOTES);
+  $P_LINK     = $info['LINK'];
+  $P_ISUSE    = $info['IS_USE'];
+  $P_FGUBUN   = $info['FGUBUN'];
+  $P_LASTDATE = $info['LASTDATE'];
+
+  // Mobile 긴급공지
+  $query = "SELECT * FROM BANNER_NOTICE WHERE FGUBUN = 'M' LIMIT 1";
+  $info  = $db->get_data($query);
+
+  $M_NO       = $info['BANNER_NO'];
+  // $M_SUBJECT  = $info['SUBJECT'];
+  $M_SUBJECT  = htmlspecialchars($info['SUBJECT'],ENT_NOQUOTES);
+  $M_LINK     = $info['LINK'];
+  $M_ISUSE    = $info['IS_USE'];
+  $M_FGUBUN   = $info['FGUBUN'];
+  $M_LASTDATE = $info['LASTDATE'];
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">긴급공지</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">게시판관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">긴급공지</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row">
+      <div class="col-lg-12 col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">PC 긴급공지</h3>
+          </div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="col-md-6 mb-3">
+                <label for="validationCustom03">출력여부</label>
+                <div class="d-flex">
+                  <div class="custom-control custom-radio me-4">
+                    <input type="radio" class="custom-control-input" id="customControlValidation1" name="PISUSE" value='Y' <?=($P_ISUSE=='Y') ? "checked" : ""?> />
+                    <label class="custom-control-label" for="customControlValidation1">Y</label>
+                  </div>
+                  <div class="custom-control custom-radio mb-3">
+                    <input type="radio" class="custom-control-input" id="customControlValidation2" name="PISUSE" value='N' <?=($P_ISUSE!='Y') ? "checked" : ""?> >
+                    <label class="custom-control-label" for="customControlValidation2">N</label>
+                  </div>
+                </div>
+                <div class="invalid-feedback">Please provide a valid IS HIDE.</div>
+              </div>
+              <div class="col-md-6 mb-3"></div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-9 mb-3">
+                <label for="validationCustom03">제목</label>
+                <textarea class="form-control" name="PSUBJECT" id="PSUBJECT" required><?=$P_SUBJECT?></textarea>
+                <div class="invalid-feedback">Please provide a valid subject.</div>
+              </div>
+              <div class="col-md-3 mb-3"></div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-9 mb-3">
+                <label for="validationCustom03">링크</label>
+                <input type="text" class="form-control" name="PLINK" value="<?=(isset($P_LINK)) ? $P_LINK : ""?>" id="PLINK" required />
+                <div class="invalid-feedback">Please provide a valid subject.</div>
+              </div>
+              <?php if ($S_login['user_id'] != "admin216") { ?>
+              <div class="col-md-3 mb-3" style="padding-top: 30px;">
+                <a class="btn btn-border btn-primary" id="btn-PC-banner-notice-up" data-no="<?=$P_NO?>" data-fgubun="<?=$P_FGUBUN?>" style="width: 6rem;">저 장</a>
+              </div>
+              <?php } ?>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 mb-3">
+                <label for="validationCustom03">마지막 저장일시 : <?=$P_LASTDATE?></label>
+              </div>
+              <div class="col-md-6 mb-3"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Mobile 긴급공지</h3>
+          </div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="col-md-6 mb-3">
+                <label for="validationCustom03">출력여부</label>
+                <div class="d-flex">
+                  <div class="custom-control custom-radio me-4">
+                    <input type="radio" class="custom-control-input" id="customControlValidation3" name="MISUSE" value='Y' <?=($M_ISUSE=='Y') ? "checked" : ""?> />
+                    <label class="custom-control-label" for="customControlValidation3">Y</label>
+                  </div>
+                  <div class="custom-control custom-radio mb-3">
+                    <input type="radio" class="custom-control-input" id="customControlValidation4" name="MISUSE" value='N' <?=($M_ISUSE!='Y') ? "checked" : ""?> />
+                    <label class="custom-control-label" for="customControlValidation4">N</label>
+                  </div>
+                </div>
+                <div class="invalid-feedback">Please provide a valid IS HIDE.</div>
+              </div>
+              <div class="col-md-6 mb-3"></div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-9 mb-3">
+                <label for="validationCustom03">제목</label>
+                <textarea class="form-control" name="MSUBJECT" id="MSUBJECT" required><?=$M_SUBJECT?></textarea>
+                <div class="invalid-feedback">Please provide a valid subject.</div>
+              </div>
+              <div class="col-md-3 mb-3"></div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-9 mb-3">
+                <label for="validationCustom03">링크</label>
+                <input type="text" class="form-control" name="MLINK" value="<?=(isset($M_LINK)) ? $M_LINK : ""?>" id="MLINK" required />
+                <div class="invalid-feedback">Please provide a valid subject.</div>
+              </div>
+              <?php if ($S_login['user_id'] != "admin216") { ?>
+              <div class="col-md-3 mb-3" style="padding-top: 30px;">
+                <a class="btn btn-border btn-primary" id="btn-PC-banner-notice-up" data-no="<?=$M_NO?>" data-fgubun="<?=$M_FGUBUN?>" style="width: 6rem;">저 장</a>
+              </div>
+              <?php } ?>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 mb-3">
+                <label for="validationCustom03">마지막 저장일시 : <?=$M_LASTDATE?></label>
+              </div>
+              <div class="col-md-6 mb-3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(document).ready(function() {
+    $(document).on("click", "#btn-PC-banner-notice-up", function() {
+      var no     = $(this).data("no");
+      var fgubun = $(this).data("fgubun");
+
+      if (fgubun == "P") {
+        var isuse = $("input[name='PISUSE']:checked").val();
+        var subject = $("#PSUBJECT").val();
+        var link = $('#PLINK').val();
+      } else {
+        var isuse = $("input[name='MISUSE']:checked").val();
+        var subject = $("#MSUBJECT").val();
+        var link = $('#MLINK').val();
+      }
+
+      $.post("./default.php", {
+        mode: "banner_notice_up",
+        no: no,
+        isuse: isuse,
+        subject: subject,
+        link: link
+      }, function(e) {
+        alert(e.msg);
+        if (e.error) {
+          window.location.reload();
+        }
+      }, "json");
+    });
+  });
+</script>

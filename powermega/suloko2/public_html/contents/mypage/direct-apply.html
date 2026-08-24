@@ -1,0 +1,166 @@
+<?php
+include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+if ($M_login['user_id'] == '') {
+  meta_go("/login.html");
+  exit;
+}
+
+$mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='".$M_login['user_id']."'");
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html";?>
+  <main id="main">
+    <div class="wrap_mypage clear wrap_com">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/nav-mypage.html";?>
+      <div class="right">
+        <section class="sec_write">
+          <div class="wrap_title bb">
+            <h3 class="heading">새 문의 등록</h3>
+          </div>
+          <form class="f_NotoSansKR" name="w_frm" id="w_frm" method="post" enctype="multipart/form-data" autocomplete="off">
+            <fieldset>
+              <legend class="hide">문의 작성 폼</legend>
+              <ul class="list_reg type2 ls50">
+                <li>
+                  <label for=""><span>구분</span></label>
+                  <div class="bx_input">
+                    <select name="QNA_TYPE" id="qna_type" class="chk_on" alt="구분을 선택해 주세요.">
+                      <option value="">선택해 주세요.</option>
+                      <option value="복권문의">복권문의</option>
+                      <option value="캐시문의">캐시문의</option>
+                      <option value="쿠폰문의">쿠폰문의</option>
+                      <option value="출금문의">출금문의</option>
+                      <option value="결제문의">결제문의</option>
+                      <option value="기타">기타</option>
+                    </select>
+                  </div>
+                </li>
+                <li>
+                  <label for="tel"><span>휴대폰 번호</span></label>
+                  <div>
+                    <div class="bx_input mb5" >
+                      <input type="tel" name="HP" id="tel" value="<?=$mb['HP']?>" placeholder="010-1234-5678" class="chk_on" alt="휴대폰 번호를 입력해 주세요.">
+                    </div>
+                  </div>
+                </li>
+                <li>
+                  <label for=""><span>제목</span></label>
+                  <div class="bx_input gray" style="flex:1">
+                    <input type="text" name="SUBJECT" id="subject" value="" class="chk_on" alt="제목을 입력해 주세요.">
+                  </div>
+                </li>
+                <li>
+                  <label for="refund"><span>내용</span></label>
+                  <div class="bx_input pt20 pb20" style="flex:1; height:8.9rem; border-color:#f00">
+                    <textarea name="CONTENT" id="content" placeholder="내용을 입력해주세요." class="chk_on" alt="내용을 입력해 주세요."></textarea>
+                  </div>
+                </li>
+              </ul>
+              <div class="wrap_btn flex align_center justify_center">
+                <button type="button" class="btn_red2 okBtn">문의하기</button>
+              </div>
+            </fieldset>
+          </form>
+          <div class="bx_gray bx_padding space_btm">
+            <ul class="list_bul gray ">
+              <li><span>한번 등록한 상담내용은 수정이 불가능합니다. 수정을 원하시는 경우, 삭제 후 재등록 하셔야 합니다.</span></li>
+              <li><span>1:1 상담은 24시간 신청가능하며 접수된 내용은 빠른 시간 내에 답변을 드리도록 하겠습니다.</span></li>
+              <li><span>문의하신 1:1 상담은 고객님의 메일로도 확인하실 수 있습니다.</span></li>
+            </ul>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html";?>
+</body>
+
+<script>
+  $(document).ready(function() {
+    let submitting = false;  // 중복 제출 방지
+
+    // 휴대폰 번호 하이픈 자동 입력
+    function autoHypenTel(phoneNum) {
+      phoneNum = phoneNum.replace(/[^0-9]/g, '');
+      let result = [];
+      let restNumber = '';
+
+      result.push(phoneNum.substr(0, 3));
+      restNumber = phoneNum.substring(3);
+
+      if (restNumber.length === 7) {
+        result.push(restNumber.substring(0, 3));
+        result.push(restNumber.substring(3));
+      } else {
+        result.push(restNumber.substring(0, 4));
+        result.push(restNumber.substring(4));
+      }
+
+      return result.filter((val) => val).join('-');
+    }
+
+    $('#tel').keyup(function (event) {
+      event = event || window.event;
+      let _val = this.value.trim();
+      this.value = autoHypenTel(_val);
+    });
+
+    $(document).on("click", ".okBtn", function() {
+      if (submitting) return false;
+
+      let i = true;
+
+      $(".chk_on").each(function() {
+        if ($.trim($(this).val()) == '') {
+          alert($(this).attr("alt"));
+          $(this).focus();
+          i = false;
+          return false;
+        }
+        if ($(this).attr("id") === "subject" && $(this).val().length > 50) {
+          alert("제목은 50자 이내로 작성해 주세요.");
+          $(this).focus();
+          i = false;
+          return false;
+        }
+      });
+
+      if (!i) return false;
+
+      submitting = true;
+      let $btn = $(this);
+      let $frm = $('#w_frm');
+      let formData = new FormData($frm[0]);
+
+      $btn.prop('disabled', true);
+
+      $.ajax({
+        url: './direct-apply-action.php',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        dataType: 'json',
+        async: false
+      }).done(function(res) {
+        if (res.error) {
+          alert(res.msg || '처리 중 오류가 발생했습니다.');
+          submitting = false;
+          $btn.prop('disabled', false);
+          return;
+        }
+        alert(res.msg || '문의가 접수되었습니다.');
+        location.href = res.url || '/contents/cs/direct.html';
+      }).fail(function(xhr, status, err) {
+        alert('전송에 실패했습니다. 다시 시도해 주세요.');
+        submitting = false;
+        $btn.prop('disabled', false);
+      });
+    });
+  });
+</script>
+
+</html>

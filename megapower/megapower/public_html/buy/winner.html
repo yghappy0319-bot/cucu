@@ -1,0 +1,192 @@
+<?php
+  include "../header.html";
+  $오늘 = date("Y-m-d");
+  $한달전 = date("Y-m-d", strtotime("-30 days"));
+?>
+<main>
+    <section>
+      <div class="sub_top_title" >
+        <h1>당첨자 발표</h1>
+      </div>
+
+      <div class="sub_category scrollable_menu_wrap">
+        <a href="/buy/winner.html" class="scrollable_menu <?= $game=='' ? 'on':'' ?>" >전체</a>
+        <a href="/buy/winner.html?game=mm" class="scrollable_menu <?= $game=='mm' ? 'on':'' ?>">메가밀리언 당첨자</a>
+        <a href="/buy/winner.html?game=pb" class="scrollable_menu <?= $game=='pb' ? 'on':'' ?>" >파워볼 당첨자</a>
+      </div>
+
+      <div style="    height: 40px; display:flex;align-items: center; justify-content: right;" >
+        <? if(!$game){?>
+        <div>* 당첨자 전체 데이터는 <?=$한달전?>일 부터의 데이터만 제공합니다.</div>
+        <? } ?>
+        <?
+          if($game=="pb"){
+            $limit = " limit 12 ";
+          }else if($game=="mm"){
+            $limit = " limit 12 ";
+          }else{
+            $전체일경우_한달치만 = " and date_format(regdate, '%Y-%m-%d') > '{$한달전}' ";
+          }
+
+          if($game){
+            $_game_where = " and game = '{$game}' ";
+          }
+
+        $sql = "select game, round from lr_result where 1=1 {$_game_where} order by round desc {$limit} ";
+        $_power_result = db_query($sql);
+          if($game){
+        ?>
+        <div style="    text-align: right;" >
+          <form id="winnerFrm" >
+            <input type="hidden" name="game" value="<?=$game?>" />
+            <select name="round" onchange="$('#winnerFrm').submit();" class="select-box" >
+              <option value="">-회차를 선택해주세요-</option>
+              <?
+                foreach($_power_result as $power){
+              ?>
+              <option value="<?=$power['round']?>" <?=$power['round']==$round ? "selected":"" ?> >
+                <?=$power['round']?>회차
+              </option>
+              <? } ?>
+            </select>
+          </form>
+        </div>
+        <? } ?>
+      </div>
+
+      <div class="winner" >
+        <ul class="winner_list" >
+        <?
+          //$new_round_sql = "select * from lr_result where 1=1 {$_game_where} order by round desc limit 1 ";
+          //echo $new_round_sql;
+          //$new_round = db_select($new_round_sql);
+          if($round){
+            $_round = " and round = {$round} ";
+          }
+
+          //3등이상만
+          $최신결과 = " select * from lr_prize_log where 1=1 {$_game_where} {$_round} and ranking > 3 {$전체일경우_한달치만}
+          order by regdate desc, prizemoney desc ";
+          //echo $최신결과;
+          $_prize = db_query($최신결과);
+          $_prize_cnt = mysqli_num_rows($_prize);
+          foreach($_prize as $prize){
+            $mem = 로그인정보($prize['midx']);
+            $order_sql = "select * from lr_orders where idx = {$prize['orderidx']} and macth_status = 1 ";
+            $order = db_select($order_sql);
+        ?>
+        <li class="winner_list_li" >
+          <div class="winner_inner" >
+
+            <div style="border: 1px solid #eee;" >
+              <div style="height: 80px; display: flex; flex-direction: column; justify-content: center;" >
+                <div  >
+                  <img class="game_logo_pb" src="/assets/image/<?=$prize['game']=='mm' ? 'mega_millions.png':'powerball.png'?>" />
+                </div>
+                <div>
+                  <h2 style="font-size: 16px;"><?=$prize['round']?>회차</h2>
+                </div>
+              </div>
+
+              <div >
+                <div style="height: 200px; overflow: hidden;display: flex; align-items: center; " >
+                  <? if($order['macth_status']==1){?>
+                  <img src="https://img.luckyballkr.com<?=$order['scan_path']?><?=$order['scan_img']?>" style=" width: 100%;position: relative; bottom: 20px;" />
+                  <? }else{ ?>
+                  <div style="background-color:#666;" >
+                    <img src="/assets/wating_scan.png" style="width: 100%;">
+                  </div>
+                  <? } ?>
+                </div>
+                <div style="padding: 10px 0px;" >
+                  <div class="prize_money" >당첨금
+                    <span >$<?=number_format($prize['notax_prizemoney'])?></span>
+                  </div>
+
+                  <div style="display: flex; justify-content: center; align-items: center;" >
+                    <div style="display: flex; align-items: center; margin-right: 10px;">
+                      <span><img src="/assets/icon/trophy.png" ></span>
+                      <span style="font-weight: bold; font-size: 1.5rem;"><font ><?=$prize['ranking']?></font>등</span>
+                    </div>
+                    <div>
+                      <span><?=이름가운데별표처리($prize['user_id'])?>님</span>
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+              <?
+              //내가 누른 내역이 있으면?
+              $sql = "select count(*) as cnt from lr_winner_like where 1=1 {$_game_where} {$_round} and pidx = {$prize['idx']} and midx = {$member['idx']} ";
+              $like = db_select($sql);
+              ?>
+
+            <button style="<?=$like['cnt'] > 0 ? 'background-color: #ccc;color: #333;':'' ?>" class="<?=$prize['game']=='mm' ? 'mm':'pb'?>_title" type="button" onclick="go_cong('<?=$prize['game']?>','<?=$prize['round']?>','<?=$prize['idx']?>')" >
+              <div style="  display: flex;" >
+                <img src="/assets/image/prize_like_heart.png" />
+                <span class="like_cnt<?=$prize['idx']?>" style="padding: 0px 8px;"><?=$prize['plike'] ?></span>
+              </div>
+            </button>
+
+          </div>
+        </li>
+        <? } ?>
+        </ul>
+
+          <? if($_prize_cnt==0){?>
+            <div class="text-center" style="min-height: 300px;">
+            당첨자가 없습니다.
+            </div>
+          <? } ?>
+
+      </div>
+
+
+
+
+    </section>
+    <!-- 필요한 만큼의 섹션 추가 -->
+</main>
+<script>
+  function go_cong(obj1,obj2,obj3){
+    var like_ctn = $(".like_cnt"+obj3).text();
+    var new_like_ctn = parseInt(like_ctn) + 1;
+
+    $.ajax({
+       type : "POST",
+       url: "ajax_winner_like.php",
+       async: false,
+       data: {
+          game : obj1,
+          round : obj2,
+          idx : obj3
+       },
+       success: function(result) {
+          var r = result.trim();
+          console.log(r);
+          if(r=="over"){
+            alert("당첨인증 건당 1회만 가능합니다.");
+          }else if(r=="login"){
+            alert('회원만 가능한 서비스 입니다.');
+            _go_login();
+          }else{
+            $(".like_cnt"+obj3).text(new_like_ctn);
+            alert("럭키포인트 "+ r +"점 적립!");
+          }
+
+
+       },
+       error:function(e) {
+          alert(e.responseText);
+       }
+    });
+  }
+
+</script>
+
+<?php
+  include "../footer.html";
+?>

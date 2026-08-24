@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
+
+@font-face {
+    font-family: 'GmarketSans';
+    src: url('/common/font/GmarketSans/GmarketSansTTFMedium.woff2') format('woff2'),
+        url('/common/font/GmarketSans/GmarketSansTTFMedium.ttf') format('truetype'),
+        url('/common/font/GmarketSans/GmarketSansTTFMedium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GmarketSans';
+    src: url('/common/font/GmarketSans/GmarketSansTTFBold.woff2') format('woff2'),
+        url('/common/font/GmarketSans/GmarketSansTTFBold.ttf') format('truetype'),
+        url('/common/font/GmarketSans/GmarketSansTTFBold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GmarketSans';
+    src: url('/common/font/GmarketSans/GmarketSansTTFLight.woff2') format('woff2'),
+        url('/common/font/GmarketSans/GmarketSansTTFLight.ttf') format('truetype'),
+        url('/common/font/GmarketSans/GmarketSansTTFLight.woff') format('woff');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}

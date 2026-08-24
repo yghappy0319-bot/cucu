@@ -1,0 +1,141 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_UM_COMM_POLICY.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page)  $page  = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit";
+
+  $add_query = "";
+
+  $list = F_UM_COMM_POLICY_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query
+  ));
+
+  if ($list['total'] == 0) {
+    $list['IDX'] = array();
+  }
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">커미션 그룹 관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">언더마케팅</a></li>
+          <li class="breadcrumb-item active" aria-current="page">커미션 관리</li>
+        </ol>
+      </div>
+      <div class="ms-auto pageheader-btn">
+        <a class="btn btn-primary btn-icon text-white me-2" id="btn_add_comm_policy">
+          <span>
+            <i class="fe fe-plus"></i>
+          </span> 커미션 그룹 추가
+        </a>
+        <a href="#" class="btn btn-danger allDelChk">선택 삭제</a>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div class="table-responsive table-wrapper">
+              <table class="table border text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="chkAll" /></th>
+                    <th>No</th>
+                    <th>커미션 그룹명</th>
+                    <th>파트너수</th>
+                    <th>사용유무</th>
+                    <th>등록일</th>
+                    <th>최종수정일시</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['IDX']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                      $default_icon = "";
+                      if ($list['DEFAULT_YN'][$i] == "Y") {
+                        $default_icon = "<span class='btn btn-success' style='height: 22px; line-height: 7px;'>기본</span> ";
+                      }
+                  ?>
+                  <tr class="text-center">
+                    <td><input type="checkbox" name="noChk[]" value="<?=$list['IDX'][$i]?>"></td>
+                    <td><?=$no?></td>
+                    <td><a href="commission_policy_detail.html?idx=<?=$list['IDX'][$i]?>"><?=$default_icon?><?=$list['NAME'][$i]?></a></td>
+                    <td><?=$list['PARTNER_CNT'][$i]?></td>
+                    <td><?=$use_op[$list['STATUS'][$i]]?></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                    <td><?=$list['UPDATE_DATE'][$i]?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(document).ready(function() {
+    // 선택삭제
+    $(document).on("click", ".allDelChk", function() {
+      let chk_no = new Array();
+      let i = 0;
+      $('[name="noChk[]"]:checked').each(function() {
+        chk_no[i] = $(this).val();
+        i++;
+      });
+
+      if (i > 0) {
+        if (confirm("선택한 커미션 그룹을 삭제하시겠습니까?")) {
+          $.post("./default.php", {
+            mode: "all_policy_delete",
+            chk_no: chk_no
+          }, function(e) {
+            alert(e.msg);
+            if (e.error) {
+            } else {
+              window.location.reload();
+            }
+          }, "json");
+        }
+      } else {
+        alert("삭제할 항목을 선택하세요");
+      }
+    });
+
+    // 정책추가
+    $(document).on("click", "#btn_add_comm_policy", function() {
+      window.location.href="commission_policy_detail.html";
+    });
+  });
+</script>

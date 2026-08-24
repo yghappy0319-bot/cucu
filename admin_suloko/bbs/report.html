@@ -1,0 +1,216 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_TIP_OFF.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if ($S_login['limit']) $limit = $S_login['limit'];
+
+  $add_query = "AND TYPE='V'";
+  $PARAM     = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit";
+
+  if ($find_object == "all" && $find_text != "") {
+    $add_query .= " AND (USER_ID = '{$find_text}' OR SUBJECT LIKE '%{$find_text}%' OR CONTENT LIKE '%{$find_text}%')";
+    $find_object = "";
+  }
+
+  $list = F_TIP_OFF_LIST(array(
+    "row"               => $limit,
+    "page"              => $page,
+    "order"             => $order,
+    "find_text"         => $find_text,
+    "find_object"       => $find_object,
+    "add_query"         => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['BBS_NO'] = array();
+  }
+
+  $find_op = array(
+    "all"     => "전체",
+    "SUBJECT" => "제목",
+    "CONTENT" => "내용",
+    "USER_ID" => "아이디"
+  );
+
+  $week = 3;
+  $hour = 10;
+  $pb_manual = false;
+  $mm_manual = true;
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">보이스피싱제보</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">게시판관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">보이스피싱제보</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mx-1 fl-left">
+                  <select name="find_object" id="select-beast" class="form-control form-select select2">
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control" name="find_text" value="<?=$find_text?>">
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+                <div class="form-group fl-left" style="float: right;">
+                  <select name="limit" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <?=option_make($limit_op, $limit)?>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>아이디</th>
+                    <th>제목</th>
+                    <th>내용</th>
+                    <th>등록일시</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['IDX']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+
+                      $content = str_utf_cut(nl2br($list['CONTENT'][$i]), 80);
+                  ?>
+                  <tr class="text-center">
+                    <td><?=$no?></td>
+                    <td><?=$list['USER_ID'][$i]?>
+                      <i class="modal-effect fa fa-search checkUser" title="상세정보"
+                         style="cursor: pointer; margin-left: 3px;"
+                         data-bs-effect="effect-scale" data-bs-target="#memberModal"
+                         data-bs-toggle="modal" data-no="<?=$list['USER_ID'][$i]?>">
+                      </i>
+                    </td>
+                    <td class="text-start" style="max-width: 200px; white-space: normal; word-break: keep-all;"><?=$list['SUBJECT'][$i]?></td>
+                    <td class="text-start" style="max-width: 200px; white-space: normal; word-break: keep-all;"><?=$content?></td>
+                    <td><?=$list['CREATED_AT'][$i]?></td>
+                    <td>
+                      <!-- <button class="btn btn-danger detail_on" data-no="{$list['IDX'][$i]}">상세보기</button> -->
+                      <a class="btn btn-default-light btn-read"
+                         data-bs-target="#detailModal" data-bs-toggle="modal"
+                         data-subject="<?=$list['SUBJECT'][$i]?>"
+                         data-content="<?=$list['CONTENT'][$i]?>"
+                         data-file1="<?=$list['FILE1'][$i]?>"
+                         data-file2="<?=$list['FILE2'][$i]?>"
+                         data-file3="<?=$list['FILE3'][$i]?>"
+                         data-ofile1="<?=$list['ORIGIN_FILE1'][$i]?>"
+                         data-ofile2="<?=$list['ORIGIN_FILE2'][$i]?>"
+                         data-ofile3="<?=$list['ORIGIN_FILE3'][$i]?>"
+                         >상세보기</a>
+                    </td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<!-- BASIC MODAL -->
+<div class="modal fade" id="detailModal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-content-demo">
+      <div class="modal-header">
+        <h6 class="modal-title">제보 상세보기</h6><button aria-label="Close" class="btn-close" data-bs-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="card-body" id="report-view">
+            <div class="form-row">
+              <div class="col-md-12 mb-3">
+                <label for="subject">제목</label>
+                <input type="text" class="form-control" id="subject" readonly />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-12 mb-3">
+                <label for="content">내용</label>
+                <textarea class="form-control h-150" id="content" disabled></textarea>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-12 mb-3">
+                <label for="reply">첨부파일</label>
+                <div><a id="file1" download></a></div>
+                <div><a id="file2" download></a></div>
+                <div><a id="file3" download></a></div>
+              </div>
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_member.html"; ?>
+
+<script>
+  $(function() {
+  });
+
+  $('.btn-read').click(function() {
+    let file1 = $(this).data('file1');
+    let file2 = $(this).data('file2');
+    let file3 = $(this).data('file3');
+    let ofile1 = $(this).data('ofile1');
+    let ofile2 = $(this).data('ofile2');
+    let ofile3 = $(this).data('ofile3');
+
+    $('#report-view').find('#subject').val($(this).data('subject'));
+    $('#report-view').find('#content').val($(this).data('content'));
+
+    $('#report-view').find('#file1').html(ofile1);
+    $('#report-view').find('#file1').attr('href', `/upload/report/${file1}`);
+    $('#report-view').find('#file1').attr('download', `${ofile1}`);
+
+    $('#report-view').find('#file2').html(ofile2);
+    $('#report-view').find('#file2').attr('href', `/upload/report/${file2}`);
+    $('#report-view').find('#file3').attr('download', `${ofile2}`);
+
+    $('#report-view').find('#file3').html(ofile3);
+    $('#report-view').find('#file3').attr('href', `/upload/report/${file3}`);
+    $('#report-view').find('#file3').attr('download', `${ofile3}`);
+  });
+</script>

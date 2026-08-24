@@ -1,0 +1,262 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_INVOCE.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page   = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit&sdate=$sdate&edate=$edate&isuse=$isuse";
+
+  $add_query = "";
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND I.REG_DATE BETWEEN '{$sDate}' AND '{$eDate}'";
+  }
+
+  if (!isset($isuse)) {
+    $add_query .= " AND I.STATUS='N'";
+    $isuse = "N";
+  }
+
+  if ($isuse != "") {
+    $add_query .= " AND I.STATUS='{$isuse}'";
+  }
+
+  if ($find_object == "all") {
+    $find_object = "";
+    $add_query  .= " AND (I.USER_ID LIKE '%{$find_text}%' OR M.NAME LIKE '%{$find_text}%')";
+  }
+
+  $list = F_INVOCE_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['INVOCE_NO'] = array();
+  }
+
+  $find_op = array(
+    "I.USER_ID" => "신청자아이디",
+    "M.NAME"    => "성명",
+  );
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">환급관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">당첨금환급</a></li>
+          <li class="breadcrumb-item active" aria-current="page">환급관리</li>
+        </ol>
+      </div>
+      <div class="ms-auto pageheader-btn">
+        <button class="btn btn-secondary sms-send-invoce">취소 안내 SMS 발송 후 취소</button>
+        <button class="btn btn-info allStatusChk" data-tp="Y">환급 완료</button>
+        <button class="btn btn-danger allStatusChk" data-tp="D">환급 취소</button>
+        <a href="./refund_excel.html?find_text=<?=$find_text?>&find_object=<?=$_GET['find_object']?>&sdate=<?=$sdate?>&edate=<?=$edate?>&isuse=<?=$isuse?>"
+           target="_blank" class="btn btn-icon btn-primary">
+          <span>
+            <i class="fa fa-file-excel-o"></i>
+          </span> Excel Download
+        </a>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+              <div class="form-group mr-3 fl-left">
+                <select name="isuse" id="isuse" class="form-control form-select select2 auto-submit">
+                  <option value="">--환급상태--</option>
+                  <?=option_make($withdraw_op, $isuse)?>
+                </select>
+              </div>
+              <div class="form-group mr-3 fl-left">
+                <select name="schdate" id="schdate" class="form-control form-select select2">
+                  <option value="">--기간선택--</option>
+                  <?=option_make($search_date_op, $schdate)?>
+                </select>
+              </div>
+              <div class="form-group mr-3 fl-left">
+                <div class="input-group">
+                  <div class="input-group-text">
+                    <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                  </div>
+                  <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                  <span style="margin: 8px 5px 0 5px;">~</span>
+                  <div class="input-group-text">
+                    <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                  </div>
+                  <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                </div>
+              </div>
+              <div class="form-group fl-left">
+                <select name="find_object" id="select-beast" class="form-control form-select select2">
+                  <option value="all">--Select--</option>
+                  <?=option_make($find_op, $find_object)?>
+                </select>
+              </div>
+              <div class="input-group col-md-2 fl-left">
+                <input type="text" class="form-control auto-submit" name="find_text" value="<?=$find_text?>">
+                <div class="input-group-text btn btn-primary" id="btn-search">
+                  <i class="fa fa-search" aria-hidden="true"></i>
+                </div>
+              </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="chkAll" /></th>
+                    <th>No</th>
+                    <th>ID</th>
+                    <th>성명</th>
+                    <th>환급액</th>
+                    <th>예금주</th>
+                    <th>은행명</th>
+                    <th>계좌번호</th>
+                    <th>상태</th>
+                    <th>신청일시</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['INVOCE_NO']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+
+                      if ($list['MONEY'][$i] == "") {
+                        $list['MONEY'][$i] = 0;
+                      }
+
+                      if ($list['MONEY2'][$i] == "") {
+                        $list['MONEY2'][$i] = 0;
+                      }
+
+                      $invoice = $list['MONEY'][$i] - $list['MONEY2'][$i];
+                  ?>
+                  <tr>
+                    <td><input type="checkbox" name="noChk[]" value="<?=$list['INVOCE_NO'][$i]?>" data-no="<?=$list['MEMBER_NO'][$i]?>"></td>
+                    <td><?=$no?></td>
+                    <td><?=$list['USER_ID'][$i]?><i class="modal-effect fa fa-search checkUser"
+                        title="상세정보"
+                        style="cursor: pointer; margin-left: 3px;"
+                        data-bs-effect="effect-scale"
+                        data-bs-target="#memberModal"
+                        data-bs-toggle="modal"
+                        data-no="<?=$list['USER_ID'][$i]?>">
+                      </i></td>
+                    <td><?=$list['MNAME'][$i]?></td>
+                    <td class="text-end"><?=number_format($list['MONEY2'][$i])?></td>
+                    <td><?=$list['BANK3'][$i]?></td>
+                    <td><?=$list['BANK1'][$i]?></td>
+                    <td><?=$list['BANK2'][$i]?></td>
+                    <td><?=$withdraw_op[$list['STATUS'][$i]]?></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_sms.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_member.html"; ?>
+
+<script>
+  $(function() {
+  });
+
+  $(document).on('click', '.allStatusChk', function() {
+    let status = $(this).data('tp');
+    let msg    = '환급완료';
+    let chk_no = new Array();
+    let i = 0;
+
+    $('[name="noChk[]"]:checked').each(function() {
+      chk_no[i] = $(this).val();
+      i++;
+    });
+
+    if (status == 'D') {
+      msg = '환급취소';
+    }
+
+    if (i > 0) {
+      if (confirm(msg + ' 처리하시겠습니까?')) {
+        $.post('./default.php', {
+          mode: 'all_status',
+          status: status,
+          chk_no: chk_no
+        }, function(e) {
+          if (e.error) {
+            alert(e.msg);
+          } else {
+            alert(e.msg);
+          }
+          window.location.reload();
+        }, 'json');
+      }
+    } else {
+      alert('환급할 항목을 선택하세요');
+    }
+  });
+
+  $(document).on('click', '.sms-send-invoce', function() {
+    let chk_no = new Array();
+    let chk_mem = new Array();
+    let i = 0;
+    $('[name="noChk[]"]:checked').each(function() {
+      chk_no[i] = $(this).val();
+      chk_mem[i] = $(this).data('no');
+      i++;
+    });
+
+    if (i > 0) {
+      if (confirm(i + '건의 취소안내SMS를 발송 후 취소처리 하시겠습니까?')) {
+        $.post('./default.php', {
+          mode: 'send_sms_invoce_error',
+          chk_no: chk_no,
+          chk_mem: chk_mem
+        }, function(e) {
+          alert(e.msg);
+          window.location.reload();
+        }, 'json');
+      }
+    } else {
+      alert('안내SMS를 발송할 항목을 선택하세요');
+    }
+  });
+</script>

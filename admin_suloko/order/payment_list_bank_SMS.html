@@ -1,0 +1,720 @@
+<?php
+  require_once $_SERVER["DOCUMENT_ROOT"]."/inc/meta.html";
+  require_once $_SERVER["DOCUMENT_ROOT"]."/inc/header.html";
+  require_once $_SERVER["DOCUMENT_ROOT"]."/_library/function_CASH.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if ($S_login['limit']) $limit = $S_login['limit'];
+  if (!isset($find_object_bank)) $find_object_bank = "NN";
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&schdate=$schdate&sdate=$sdate&edate=$edate&limit=$limit";
+  $PARAM .= "&find_object_bank=$find_object_bank";
+
+  $add_query = "";
+  $order_query = "";
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND SMS_DATE BETWEEN '{$sDate}' AND '{$eDate}'";
+  }
+
+  if ($find_object == "all" && $find_text != "") {
+    $add_query .= " AND (USER_ID = '{$find_text}' OR SMS_NAME LIKE '%{$find_text}%' OR SMS_PRICE LIKE '%{$find_text}%')";
+    $find_object = "";
+  }
+
+  if ($find_object_bank) {
+    if ($find_object_bank == "NN") {
+      $add_query .= " AND STATUS IN ('N1', 'N2', 'N3')";
+    } else {
+      $add_query .= " AND STATUS IN ('{$find_object_bank}')";
+    }
+  }
+
+  if ($orderIdx) {
+    $columns = array("", "", "CASH_REG_DATE", "SMS_DATE", "CASH_PRICE", "SMS_PRICE", "SMS_NAME", "USER_ID", "", "", "", "STATUS", "");
+    $orderBy = $columns[$orderIdx];
+    $order_query .= $orderBy." ".$orderDir;
+  }
+
+  $list = F_CASH_MEMBER_list_BANK_SMS(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order_query,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list["total"] <= 0) {
+    $list["REG_DATE"] = array();
+  }
+
+  $find_op = array(
+    "all"       => "전체",
+    "USER_ID"   => "아이디",
+    "SMS_NAME"  => "입금자명",
+    "SMS_PRICE" => "입금액",
+    "idx"       => "NO",
+  );
+
+  $find_bank_op = array(
+    ""   => "전체",
+    "Y"  => "정상 처리",
+    "NN" => "비 정상 건 모두",
+    "N1" => "입금액 다름",
+    "N2" => "주문서 없이 입금만",
+    "N3" => "중복주문서 작성",
+    "N4" => "수동 종료 처리(관리자)",
+    "N5" => "미결"
+  );
+
+  $status_msg = array(
+    ""   => "전체",
+    "Y"  => "정상 입금처리 완료",
+    "N1" => "동일 이름으로 주문서상의 금액과 입금액이 서로 다름",
+    "N2" => "입금자명 기준으로 무통장 주문서 없이 입금만 한 상태",
+    "N3" => "같은 금액으로 2개 이상 주문서 작성 상태",
+    "N4" => "관리자가 수동으로 종료 처리 한 상태",
+    "N5" => "장기간 미처리 건"
+  );
+
+  $status_op = array(
+    "Y"  => "정상처리",
+    "N1" => "입금액 다름",
+    "N2" => "주문서 없이 입금만",
+    "N3" => "중복주문서",
+    "N4" => "수동종료",
+    "N5" => "미결"
+  );
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">무통장입금 SMS 로그</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">무통장관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">무통장입금 SMS 로그</li>
+        </ol>
+      </div>
+      <div class="pageheader-btn">
+        <p id="countdown" class="fw-bold fl-left" style="color: tomato; padding: 0.5rem 1rem;">60 초 후 새로고침</p>
+        <button class="btn btn-info btn-refresh btn-icon fl-right"><i class="fa fa-refresh"></i> 새로고침</button>
+        <button data-bs-target="#modaldemo1" data-bs-toggle="modal" class="btn btn-secondary btn-icon sms-send-all" data-type="log">SMS발송</button>
+        <button class="btn btn-primary btn-chk-pending btn-icon fl-right">미결 처리</button>
+        <button data-bs-target="#modaldemo_memo_admin" data-bs-toggle="modal" class="btn btn-gray-dark btn-icon admin-memo">예외처리</button>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <input type="hidden" name="find_object" value="PLAYDATE" />
+                <div class="form-group mr-3 fl-left">
+                  <select name="find_object_bank" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <?=option_make($find_bank_op, $find_object_bank)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select name="schdate" id="schdate" class="form-control form-select select2">
+                    <option value="">--기간선택--</option>
+                    <?=option_make($search_date_op, $schdate)?>
+                  </select>
+                </div>
+                <input type="hidden" name="find_object" value="PLAYDATE" />
+                <div class="form-group mr-3 fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                    <span style="margin: 8px 5px 0 5px;">~</span>
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                  </div>
+                </div>
+                <div class="form-group fl-left">
+                  <select name="find_object" id="select-beast" class="form-control form-select select2">
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control auto-submit" name="find_text" value="<?=$find_text?>" />
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+                <div class="form-group fl-left" style="float: right;">
+                  <select name="limit" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <?=option_make($limit_op, $limit)?>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <colgroup>
+                  <col width="">
+                  <col width="">
+                  <col width="">
+                  <col width="">
+                  <col width="">
+                  <col width="">
+                  <col width="">
+                  <col width="">
+                  <col width="5%">
+                  <col width="5%">
+                  <col width="5%">
+                  <col width="">
+                  <col width="">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th data-orderable="false"><input type="checkbox" id="chkAll" /></th>
+                    <th data-orderable="false">NO</th>
+                    <th data-orderable="false">신청일시</th>
+                    <th>입금일시</th>
+                    <th data-orderable="false">신청금액</th>
+                    <th>입금액</th>
+                    <th>입금자명</th>
+                    <th>ID</th>
+                    <th colspan=3 data-orderable="false">문자 발송</th>
+                    <th>상태</th>
+                    <th data-orderable="false">처리</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list["REG_DATE"]); $i++) {
+                      $no = $list["total"] - (($page-1) * $list["row"]) - $i;
+
+                      $memoICN = "icn_blank.png";
+                      $memoColor = "#000000";
+                      $STATUS = "";
+
+                      // default
+                      $STATUS = "미상";
+                      $STATUS_CHG_MSG = "";
+                      $pendingBtn = "";
+                      $completeBtn = "";
+                      $smsBtn = "";
+                      $restorationBtn = "";
+
+                      $bgcolor = "";
+                      if ($list["STATUS"][$i] == "N1" || $list["STATUS"][$i] == "N2" || $list["STATUS"][$i] == "N3") {
+                        $SMS_PRICE = number_format($list['SMS_PRICE'][$i]);
+                        $pendingBtn = "<button class='btn btn-primary btn-pending' data-no='{$list["idx"][$i]}' data-status='{$list["STATUS"][$i]}'>미결</button>";
+                        $completeBtn = "
+                          <button class='btn btn-danger btn-done'
+                                  data-no='{$list["idx"][$i]}'
+                                  data-name='{$list["SMS_NAME"][$i]}'
+                                  data-status='{$list["STATUS"][$i]}'
+                                  data-price='{$SMS_PRICE}'>종료</button>";
+                        $bgcolor = "class=\"text-red\"";
+                      }
+
+                      // 종료, 미결 처리 복구 버튼
+                      if ($list["STATUS"][$i] == "N4" || $list["STATUS"][$i] == "N5") {
+                        $restorationBtn = "<button class='btn btn-primary btn-restoration' data-no='{$list["idx"][$i]}'>복구</button>";
+                      }
+
+                      // 수동 처리 담당자 표시
+                      if (strlen($list['CHG_REG_DATE'][$i]) > 1) {
+                        $STATUS_CHG_MSG = "<br>".$list['CHG_REG_DATE'][$i]."/".$list['CHG_STAFF_ID'][$i];
+                      }
+
+                      if (strlen($list["USER_ID"][$i]) > 1 && $list["STATUS"][$i] != "Y") {
+                        $smsBtn = "
+                          <button data-bs-target='#modaldemo1' data-bs-toggle='modal' class='btn btn-secondary btn-icon sms-send'
+                                  data-no='{$list["idx"][$i]}' data-hp='{$list["HP"][$i]}' data-name='{$list["SMS_NAME"][$i]}'>SMS발송</button>";
+                      }
+
+                      // 메모 추가 SLK-989
+                      $memoICON = "fa-file-o";
+                      if ($list["SMS_ADMIN_MEMO"][$i] != "-") {
+                        $memoICON = "fa-file-text-o";
+                        $memoColor = "blue";
+                      }
+
+                      $tr_style = "";
+                      if (strlen($list["STATUS"][$i]) > 1) {
+                        $tr_style="background-color: #F2F2F2;";
+                      }
+                  ?>
+                  <tr style="<?=$tr_style?>">
+                    <td>
+                      <input type="checkbox" name="noChk[]" value="<?=$list['idx'][$i]?>" data-no="<?=$list['MEMBER_NO'][$i]?>" data-status="<?=$list['STATUS'][$i]?>" />
+                    </td>
+                    <td><?=$no?></td>
+                    <td><?=$list["CASH_REG_DATE"][$i]?></td>
+                    <td><?=$list["SMS_DATE"][$i]?></td>
+                    <td><?=number_format($list["CASH_PRICE"][$i])?></td>
+                    <td class="text-end text-red fs-16"><b><?=number_format($list["SMS_PRICE"][$i])?></b></td>
+                    <td style="color: <?=$memoColor?>;">
+                      <?=$list["SMS_NAME"][$i]?><i class="fa fa-info-circle" data-bs-toggle="tooltip" title="<?=$list["SMS_TXT"][$i]?>">
+                      </i><i class="fa <?=$memoICON?> checkUserMemo"
+                        title="메모"
+                        style="cursor: pointer; margin-left: 3px;"
+                        data-bs-target="#memoModal"
+                        data-bs-toggle="modal"
+                        data-no="<?=$list['idx'][$i]?>">
+                      </i></td>
+                    <td><?=$list["USER_ID"][$i]?><?php if (strlen($list["USER_ID"][$i]) > 0) { ?><i class="modal-effect fa fa-search checkUser"
+                        title="상세정보"
+                        style="cursor: pointer; margin-left: 3px;"
+                        data-bs-effect="effect-scale"
+                        data-bs-target="#memberModal"
+                        data-bs-toggle="modal"
+                        data-no="<?=$list['USER_ID'][$i]?>">
+                      </i><?php } ?></td>
+                    <td><?=$smsBtn?></td>
+                    <td><?=$list["MSG_SENT_MEMBER"][$i]?><?php if (strlen($list["MSG_SENT_MEMBER"][$i]) >0) { ?><i class="modal-effect fa fa-search checkUser"
+                        title="상세정보"
+                        style="cursor: pointer; margin-left: 3px;"
+                        data-bs-effect="effect-scale"
+                        data-bs-target="#memberModal"
+                        data-bs-toggle="modal"
+                        data-no="<?=$list['MSG_SENT_MEMBER'][$i]?>">
+                      </i><?php } ?></td>
+                    <td><?=$list["MSG_SENT_CNT"][$i]?>회</td>
+                    <td>
+                      <span <?=$bgcolor?>><?=$find_bank_op[$list['STATUS'][$i]]?></span>
+                      <i class="fa fa-info-circle" data-bs-toggle="tooltip" title="<?=$status_msg[$list['STATUS'][$i]]?>"></i>
+                      <?=$STATUS_CHG_MSG?>
+                    </td>
+                    <td><?=$completeBtn?> <?=$pendingBtn?><?=$restorationBtn?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list["page_string"]?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<!-- 무통장 입금 관리자 메모 -->
+<div class="modal fade" id="memoModal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-content-demo">
+      <div class="modal-header">
+        <h6 class="modal-title">SMS 관리자 Memo</h6><button aria-label="Close" class="btn-close" data-bs-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="card-body" id="order-view" style="padding: 0;">
+          <div class="form-row">
+            <form name="w_frm_memo" id="w_frm_memo" method="post" action="default.php">
+              <input type="hidden" name="idx" id="idx" />
+              <input type="hidden" name="SMS_IDX" id="SMS_IDX" />
+              <div>[입금 정보]</div>
+              <div>* <span id="USER"></span></div>
+              <div>* 현재 상태 : <span id="SMS_STATUS"></span></div>
+              <div>* 상태 변경 :
+                <select name="SMS_STATUS" id="status">
+                  <?=option_make($status_op, "")?>
+                </select>
+              </div>
+              <div>[메모 정보]</div>
+              <div>* 최종 작성일 : <span id="REG_DATE"></span></div>
+              <textarea class="form-control" rows="4" cols="40" name="order_memo"></textarea>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success btn_memo" style="padding: 0.1rem 0.75rem;">저장</button>
+        <button type="button" class="btn btn-light cancel_btn" data-bs-dismiss="modal" style="padding: 0.1rem 0.75rem;">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 예외처리 모달 -->
+<div class="modal fade" id="modaldemo_memo_admin">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content modal-content-demo" style="width: 100%;">
+      <div class="modal-header">
+        <h6 class="modal-title">입금자명 예외처리</h6><button aria-label="Close" class="btn-close" data-bs-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <form name="w_frm_sms" id="w_frm_sms" method="post" action="" target="_blank">
+        <div class="card-body" id="order-view" style="padding: 0;">
+          <div class="form-row">
+            <div class="col-md-12 mb-1" style="padding: 0;">
+            * `실제 입금자명`은 실제 입금된 이름과 동일해야 합니다.<br>
+              <input type="text" size="15" class="form-control-20" name="SMS_FROM_NAME" placeholder="실제 입금자명" onfocus="this.placeholder=''" > →
+              <input type="text" size="15" class="form-control-20" name="SMS_TO_NAME"  placeholder="변경 할 회원명" onfocus="this.placeholder=''">
+            </div>
+            <div class="col-md-12 mb-5" style="padding: 0;">
+              <a href="#" class="btn btn-primary" style="width: 100%;" id="btn_sms">예외처리 등록</a>
+            </div>
+          </div>
+        </div>
+        </form>
+        <div class="card-body" id="order_list_page" style="padding: 0;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light cancel_btn" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_sms.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_member.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+    // setDataTable Start
+    let dataTable = setDataTable(3);
+    setTableOrder(dataTable);
+
+    $('#table-list th').on('click', function() {
+      let isSorting = $(this).hasClass('sorting');
+
+      if (isSorting) {
+        let orderIdx = dataTable.column(this).index();
+        let orderDir = dataTable.order()[0][1];
+        dataTable.clear().draw();
+
+        setReloadToOrder(orderIdx, orderDir);
+      }
+    });
+
+    $('.page-link').click(function(event) {
+      let currentOrder = dataTable.order();
+      let href = $(this).attr('href');
+
+      setReloadToPagination(currentOrder, href);
+    });
+    // setDataTable End
+
+    // 1분마다 새로고침
+    var second = 59;
+    function countdown() {
+      $('#countdown').html(second + ' 초 후 새로고침');
+      second--;
+      if (second <= 0) {
+        second = 59;
+        reload();
+      }
+    }
+    var interval = setInterval(countdown, 1000);
+
+    // sms 개별 발송
+    $('.sms-send').click(function() {
+      clearInterval(interval);
+      let no   = $(this).data('no');
+      let hp   = $(this).data('hp');
+      let name = $(this).data('name');
+      let html = null;
+
+      html = `
+        <tr class="text-end">
+          <td>1</td>
+          <td>${name}</td>
+          <td>${hp}</td>
+          <td class="text-center"><button class="btn btn-danger sms_hp_del" style="padding: 0;">삭제</button></td>
+        </tr>
+      `;
+      $('#smsSaveCount').val(true);
+      $('#smsIdx').val(no);
+      $('#sms_hp_box').append(html);
+    })
+
+    // sms 선택 발송
+    $('.sms-send-all').click(function() {
+      clearInterval(interval);
+      let idx = '';
+      $('#smsSaveCount').val(true);
+      $('[name="noChk[]"]:checked').each(function() {
+        $('#smsSaveCount').val(true);
+        idx += $(this).val() + ',';
+        $('#smsIdx').val(idx);
+      });
+    })
+
+    // modal close
+    $('#modaldemo1').on('hidden.bs.modal', function (e) {
+      interval = setInterval(countdown, 1000);
+      $(this).find('tbody tr').remove()
+      $(this).find('form')[0].reset();
+    });
+
+    // memo modal close
+    $('#memoModal').on('hidden.bs.modal', function (e) {
+      interval = setInterval(countdown, 1000);
+    });
+
+    // member modal close
+    $('#memberModal').on('hidden.bs.modal', function(e) {
+      interval = setInterval(countdown, 1000);
+    });
+
+    // member modal show
+    $('#memberModal').on('show.bs.modal', function(e) {
+      clearInterval(interval);
+    });
+
+    // 메모
+    $(document).on('click', '.checkUserMemo', function() {
+      clearInterval(interval);
+      let no = $(this).data('no');
+      $.post('./default.php', {
+        mode: 'search_order_memo_sms',
+        no: no
+      }, function(e) {
+        if (e.error) {
+          $('#w_frm_memo').find('[name="order_memo"]').val(e.MEMO);
+          $('#w_frm_memo').find('#REG_DATE').html(e.REG_DATE);
+          $('#w_frm_memo').find('#USER').html(e.USER);
+          switch (e.SMS_STATUS) {
+            case 'Y':
+              SMS_STATUS = '정상처리';
+              break;
+            case 'N1':
+              SMS_STATUS = '입금액 다름';
+              break;
+            case 'N2':
+              SMS_STATUS = '주문서 없이 입금만';
+              break;
+            case 'N3':
+              SMS_STATUS = '중복주문서';
+              break;
+            case 'N4':
+              SMS_STATUS = '수동종료';
+              break;
+            case 'N5':
+              SMS_STATUS = '미결';
+              break;
+          }
+          $('#w_frm_memo').find('#SMS_STATUS').html(SMS_STATUS);
+          $('#w_frm_memo').find('[name="SMS_STATUS"]').val(e.SMS_STATUS);
+          $('#w_frm_memo').find('[name="SMS_IDX"]').val(e.SMS_IDX);
+          $('#w_frm_memo').find('[name="idx"]').val(no);
+        } else {
+          alert(e.msg);
+        }
+      }, 'json');
+    });
+
+    // 메모 update(insert)
+    $(document).on('click', '.btn_memo', function() {
+      let memo = $('#w_frm_memo').find('[name="order_memo"]').val();
+      let idx = $('#w_frm_memo').find('[name="idx"]').val();
+      let USER_ID = $('#w_frm_memo').find('[name="USER_ID"]').val();
+      let SMS_STATUS = $('#w_frm_memo').find('[name="SMS_STATUS"]').val();
+
+      if (memo == '') {
+        alert('내용을 입력해 주세요.');
+        return false;
+      }
+
+      $.post('./default.php', {
+        mode: 'insert_order_memo_sms',
+        memo: memo ,
+        idx: idx,
+        USER_ID: USER_ID ,
+        SMS_STATUS: SMS_STATUS
+      }, function(e) {
+        if (e.error) {
+          alert('메모가 저장완료 되었습니다.');
+          $('#memoModal').modal('hide');
+          location.reload();
+        } else {
+          alert(e.msg);
+        }
+      }, 'json');
+    });
+
+    // 예외처리 작성
+    $(document).on("click", "#btn_sms", function() {
+      clearInterval(interval);
+      let SMS_FROM_NAME = $("#w_frm_sms").find('[name="SMS_FROM_NAME"]').val();
+      let SMS_TO_NAME = $("#w_frm_sms").find('[name="SMS_TO_NAME"]').val();
+
+      if (SMS_FROM_NAME == '') {
+        alert("실제 입금자명을 입력해 주세요.");
+        return false;
+      }
+
+      if (SMS_TO_NAME == '') {
+        alert("예외처리 할 이름을 입력해 주세요.");
+        return false;
+      }
+
+      $.post("./default.php", {
+        mode: "insert_sms_exception",
+        SMS_FROM_NAME: SMS_FROM_NAME ,
+        SMS_TO_NAME:SMS_TO_NAME
+      }, function(e) {
+        if (e.error) {
+          alert('예외처리가 저장완료 되었습니다.');
+          $('#modaldemo_memo_admin').modal('hide');
+          location.reload();
+        } else {
+          alert(e.msg);
+        }
+      }, "json");
+    });
+
+    // 예외처리 삭제
+    $(document).on("click", ".asOkBtn", function() {
+      let no = $(this).data("no");
+      if (confirm("해당 예외처리를 삭제 하시겠습니까?")) {
+        $.post("./default.php", {
+          mode: "delete_sms_exception",
+          no: no
+        }, function(e) {
+          if (e.error) {
+            $('.admin-memo').click();
+          } else {
+            alert(e.msg);
+          }
+        }, "json");
+      }
+    });
+
+    // 예외처리 리스트
+    $(document).on("click", ".admin-memo", function() {
+      $.post("./default.php",{
+        mode: "list_sms_exception",
+      }, function(e) {
+        if (e.error) {
+          $("#order_list_page").html(e.page_html);
+        } else {
+          alert(e.msg);
+        }
+      },"json");
+    });
+
+  });
+
+  // 새로고침
+  $('.btn-refresh').click(function() {
+    reload();
+  });
+
+  // 미결 처리 - checkbox
+  $('.btn-chk-pending').click(function() {
+    let chk_no = '';
+    let status = '';
+    let i = 0;
+
+    $('[name="noChk[]"]:checked').each(function() {
+      chk_no += $(this).val() + ',';
+      status += $(this).data('status') + ',';
+      i++;
+    });
+
+    if (i > 0) {
+      if (confirm('미결 처리 하시겠습니까?')) {
+        setPending(chk_no, status);
+      }
+    } else {
+      alert('미결 처리할 건을 선택해주세요.');
+    }
+  });
+
+  // 개별 미결 처리
+  $('.btn-pending').click(function() {
+    let no = $(this).data('no');
+    let status = $(this).data('status');
+    if (confirm('미결 처리 하시겠습니까?')) {
+      setPending(no, status);
+    }
+  });
+
+  // 종료 처리
+  $('.btn-done').click(function() {
+    let no     = $(this).data('no');
+    let status = $(this).data('status');
+    let name   = $(this).data('name');
+    let price  = $(this).data('price');
+
+    if (confirm(`입금자명: ${name}\n입금액: ${price}\n\n입금이 확인된 건은 추가로 무통장입금에서 입금 확인 처리를 해야합니다.\n종료 처리 하겠습니까?`)) {
+      setDone(no, status);
+    }
+  });
+
+  // 종료 건 복구 처리
+  $('.btn-restoration').click(function() {
+    let no = $(this).data('no');
+    setRestoration(no);
+  })
+
+  // 미결
+  function setPending(no, status) {
+    $.post('./mode.php', {
+      mode: 'sms_bank_pending',
+      no: no,
+      status: status
+    }, function(e) {
+      if (!e.error) {
+        alert(e.msg);
+        location.reload();
+      } else {
+        alert(e.msg);
+      }
+    }, 'json');
+  }
+
+  // 종료
+  function setDone(no, status) {
+    $.post('./mode.php', {
+      mode: 'sms_bank_done',
+      no: no,
+      status: status
+    }, function(e) {
+      if (!e.error) {
+        alert(e.msg);
+        location.reload();
+      } else {
+        alert(e.msg);
+      }
+    }, 'json');
+  }
+
+  // 복구
+  function setRestoration(no) {
+    $.post('./mode.php', {
+      mode: 'sms_bank_restoration',
+      no: no
+    }, function(e) {
+      if (!e.error) {
+        alert(e.msg);
+        location.reload();
+      } else {
+        alert(e.msg);
+      }
+    }, 'json');
+  }
+
+  function reload() {
+    console.log("start reload");
+    location.reload();
+  }
+</script>

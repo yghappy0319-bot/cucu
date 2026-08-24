@@ -1,0 +1,246 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_STAFF.php";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/GoogleAuthenticator.php";
+  F_admin_chk($S_login);
+
+  if ($mode == 'update') {
+    $info = F_STAFF(array("mode" => "read", "STAFF_NO" => $no));
+
+    // 본인만 수정 가능
+    if ($S_login['level'] < 4 && $S_login['user_id'] != $info['USER_ID']) {
+      alert_print("잘못된 접근입니다.");
+      history_go();
+      exit;
+    }
+  } else {
+    $info = array();
+  }
+
+  if (!isset($mode)) $mode = "insert";
+  if (!isset($info['LEVEL'])) $info['LEVEL'] = "";
+  if (!isset($info['STOPYN'])) $info['STOPYN'] = "";
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">관리자관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">회원관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">관리자관리</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <div class="row">
+      <div class="col-lg-12 col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">관리자등록/수정</h3>
+          </div>
+          <div class="card-body">
+            <form class="needs-validation" novalidate method="post" name="w_frm" action="admin_action.php">
+              <input type="hidden" name="STAFF_NO" value="<?=(isset($info['STAFF_NO'])) ? $info['STAFF_NO'] : ""?>">
+              <input type="hidden" name="mode" value="<?=$mode?>">
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom01">Admin ID</label>
+                  <input type="text" class="form-control" id="validationCustom01" value="<?=(isset($info['USER_ID'])) ? $info['USER_ID'] : ""?>" name="USER_ID" required <?php if ($mode == 'update') { ?>readonly<?php } ?> />
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please provide a valid Admin ID.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom02">Name</label>
+                  <input type="text" class="form-control" name="NAME" value="<?=(isset($info['NAME'])) ? $info['NAME'] : ""?>" id="validationCustom02" required />
+                  <div class="invalid-feedback">Please provide a valid Name.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom03">Password</label> <? if ($mode == 'update') { ?><span class="text-red">(비밀번호 변경할 경우에만 입력)</span><? } ?>
+                  <input type="password" class="form-control" id="validationCustom03" value="" name="PASSWD" placeholder="비밀번호는 8~20자 영문과 숫자를 섞어서 입력" <?=($mode == 'insert' ? "required" : "")?> />
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please provide a valid Password.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom04">Verify Password</label>
+                  <input type="password" class="form-control" id="validationCustom04" value="" name="VPASSWD" placeholder="동일한 비밀번호 다시 입력" <?=($mode == 'insert' ? "required" : "")?> />
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please provide a valid Password.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom05">Mode</label>
+                  <input type="text" class="form-control" name="HP" value="<?=(isset($info['HP'])) ? $info['HP'] : ""?>" id="validationCustom05" readonly required />
+                  <div class="invalid-feedback">Contact administrator.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom06">Email</label>
+                  <input type="text" class="form-control" name="EMAIL" value="<?=(isset($info['EMAIL'])) ? $info['EMAIL'] : ""?>" id="validationCustom06" placeholder="구글OTP QR발송에 사용됩니다." required />
+                  <div class="invalid-feedback">Please provide a valid Email.</div>
+                </div>
+              </div>
+              <?php if ($S_login['level'] == 4) { ?>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom07">LEVEL</label>
+                  <select class="form-select select2 form-control" name="LEVEL" id="validationCustom07" required>
+                    <option selected disabled value="">선택</option>
+                    <?=option_make($level_op, $info['LEVEL'])?>
+                  </select>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please select a valid LEVEL.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom08">사용여부</label>
+                  <select class="form-select select2 form-control" name="STOPYN" id="validationCustom08" required>
+                    <?=option_make($stop_op, $info['STOPYN'])?>
+                  </select>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please select a valid STOP.</div>
+                </div>
+              </div>
+              <?php } else { ?>
+              <input type="hidden" name="LEVEL" value="<?=$info['LEVEL']?>" />
+              <input type="hidden" name="STOPYN" value="<?=$info['STOPYN']?>" />
+              <?php } ?>
+              <button class="btn btn-success me-3" type="button" onClick="location.replace('./admin.html');" style="width: 100px;">목록</button>
+              <button class="btn btn-primary" type="submit" style="width: 100px;">저장</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <?php if ($S_login['user_id'] == "admin205" && $mode == 'update' && !empty($info['USER_ID'])) {
+      $hide_cfg = get_staff_hide_config($info['USER_ID']);
+    ?>
+    <div class="row">
+      <div class="col-lg-12 col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">카드결제 숨김 설정 (22만 / 12만) <span class="text-muted fs-6">(<?=htmlspecialchars($info['USER_ID'])?>)</span></h3>
+          </div>
+          <div class="card-body">
+            <form class="needs-validation" novalidate method="post" name="hide_frm" action="admin_action.php">
+              <input type="hidden" name="mode" value="update_staff_hide">
+              <input type="hidden" name="STAFF_NO" value="<?=(isset($info['STAFF_NO'])) ? $info['STAFF_NO'] : ""?>">
+              <input type="hidden" name="TARGET_USER_ID" value="<?=htmlspecialchars($info['USER_ID'])?>">
+              <div class="form-row">
+                <div class="col-md-4 mb-3">
+                  <label class="d-block mb-2">카드결제(220000)</label>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="hide_card_wayup" id="hide_card_Y" value="Y" <?=($hide_cfg['hide_card_wayup'] == 'Y' ? 'checked' : '')?>>
+                    <label class="form-check-label" for="hide_card_Y">숨김</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="hide_card_wayup" id="hide_card_N" value="N" <?=($hide_cfg['hide_card_wayup'] != 'Y' ? 'checked' : '')?>>
+                    <label class="form-check-label" for="hide_card_N">해지</label>
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="d-block mb-2">카드결제(132000)</label>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="hide_card_120k" id="hide_card_120k_Y" value="Y" <?=($hide_cfg['hide_card_120k'] == 'Y' ? 'checked' : '')?>>
+                    <label class="form-check-label" for="hide_card_120k_Y">숨김</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="hide_card_120k" id="hide_card_120k_N" value="N" <?=($hide_cfg['hide_card_120k'] != 'Y' ? 'checked' : '')?>>
+                    <label class="form-check-label" for="hide_card_120k_N">해지</label>
+                  </div>
+                </div>
+              </div>
+              <p class="text-muted mb-1"><strong>22만 숨김:</strong> <u>2026-08-07 이후</u> 카드 결제금액 220,000(적립캐시 200,000)만 제외. 그 이전 22만은 매출에 포함. 상품 주문내역 123,000도 적용일 이후만 제외. (무통장 유지)</p>
+              <p class="text-muted mb-3"><strong>12만 숨김:</strong> 카드 결제금액 132,000(적립캐시 120,000) 건을 메인 매출·카드결제로그·캐시관리·통계에서 제외. <u>상품 주문내역 페이지는 적용하지 않음</u>. 기본값 해지. (무통장 유지)</p>
+              <button class="btn btn-primary" type="submit" style="width: 100px;">저장</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <?php } ?>
+
+    <div class="row">
+      <div class="col-lg-12 col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">이중인증(구글OTP) 관리</h3>
+          </div>
+          <div class="card-body">
+            <form class="needs-validation" novalidate method="post" name="otp_frm" action="admin_action.php">
+              <input type="hidden" name="STAFF_NO" value="<?=(isset($info['STAFF_NO'])) ? $info['STAFF_NO'] : ""?>">
+              <input type="hidden" name="mode" id="mode" value="">
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                <?
+                  if (isset($info['SECRETKEY']) && strlen($info['SECRETKEY']) > 0) {
+                    //구글OTP용 class
+                    $ga = new PHPGangsta_GoogleAuthenticator();
+
+                    $qrCodeUrl = $ga->getQRCodeGoogleUrl("슈로코 ".$info['USER_ID'], $info['SECRETKEY']);
+                    echo "{$info['SECRETKEY']}<br><img src='/member/qrOTP.php?images=".urlencode($qrCodeUrl)."' alt='' />";
+                  } else {
+                    echo "발급된 OTP 키가 없습니다.";
+                  }
+                ?>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <button class="btn btn-primary otp_update" type="button" style="width: 100px;" data-mode="update_otp">발급/재발급</button><br><br>
+                  <button class="btn btn-success otp_update" type="button" style="width: 100px;" data-mode="send_otp" <?=(strlen($info['EMAIL']) == 0 ? "data-bs-placement='top' data-bs-toggle='tooltip' title='' data-bs-original-title='이메일이 필요합니다.'" : "")?>>메일발송</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ROW CLOSED -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+    // 왼쪽 메뉴 처리
+    let slide_title = $('.breadcrumb-item').find("a").text();
+    let title = $('.page-title').text();
+    let is_active = false;
+
+    $('.slide').each(function(slide_idx,slide_itm) {
+      $(slide_itm).find('.slide-menu').find('li').each(function(slide_menu_idx,slide_menu_itm) {
+        is_active = false;
+        if ($(slide_menu_itm).find('a').text().indexOf(title) != -1) {
+          $(slide_menu_itm).addClass('active');
+          $(slide_menu_itm).find('a').addClass('active');
+          is_active = true;
+        }
+        if (is_active && $(slide_itm).find('.side-menu__label').text() == slide_title) $(slide_itm).find('.side-menu__item').addClass('active');
+      });
+    });
+    side_menu_scroll();
+
+    $(".otp_update").click(function(e) {
+      let mode = $(this).data('mode');
+
+      if (mode == "send_otp") {
+        if ($("input[name='EMAIL']").val() == "") {
+          alert("발송할 이메일이 필요합니다.\n이메일을 먼저 저장해 주세요.");
+          return false;
+        }
+      }
+
+      $("#mode").val(mode);
+      $("form[name='otp_frm']").submit();
+    });
+
+  });
+</script>

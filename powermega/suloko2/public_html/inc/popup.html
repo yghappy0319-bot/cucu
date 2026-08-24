@@ -1,0 +1,553 @@
+<div class="popup app type1">
+  <section class="inner sec_app wrap_com">
+    <h2 class="f_GmarketSans fw600 ls50"><?=$사이트명1?> 이동하기</h2>
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <p class="txt_type1"><?=$사이트명1?>를 편리하게 즐기는 방법</p>
+    <div>
+      <ul class="list_qr flex space align_center">
+        <li>
+          <div class="wrap_img">
+            <img src="<?=$commonImageURI?>img_qr.jpg" alt="안드로이드 QR">
+          </div>
+          <p>Android OS</p>
+        </li>
+      </ul>
+    </div>
+    <div>
+      <strong class="ls25">APP 설치 URL 보내기</strong>
+      <div class="bx_sendurl flex align_center space">
+        <input type="tel" id="app_phone" placeholder="휴대폰 번호 입력">
+        <button type="button" id="app_hp_btn" class="f_GmarketSans fw500 ls50">동의 후 전송</button>
+      </div>
+    </div>
+    <ul class="list_bul txt_type1">
+      <li><span>APP 설치 URL 전송을 위해 고객님 휴대폰 번호를 수집합니다.</span></li>
+      <li><span>수집된 정보는 문자 발송 완료 후 즉시 삭제됩니다.</span></li>
+    </ul>
+  </section>
+</div>
+
+<div class="popup scan type1">
+  <div class="inner">
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <strong class="ls50 f_GmarketSans">구매하신 복권 스캔본을 확인해 주세요</strong>
+    <div class="wrap_img">
+      <img src="" id="scan_img_poup" alt="">
+    </div>
+  </div>
+</div>
+
+<div class="popup draw type1">
+  <div class="inner bx_padding f_NotoSansKR">
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <div class="flex align_end">
+    <h2 class="f_GmarketSans fw600 ls50 lh12" style="width: 300px;"><span id="wininfo_balls_name">메가밀리언</span> <br><span class="color_red2" id="wininfo_draw">회차</span> 등수별 당첨금</h2>
+    <!-- span class="label" style="text-align:center;"><span style="top: 68px;left: 257px;position: absolute;">당첨<br>이월</span></span-->
+    </div>
+    <p class="time" id="wininfo_time_e"></p>
+    <ul class="list_ball clear" id="wininfo_balls">
+      <li><span></span></li>
+      <li><span></span></li>
+      <li><span></span></li>
+      <li><span></span></li>
+      <li><span></span></li>
+      <li><span></span></li>
+    </ul>
+    <div class="wrap_tb bt bb">
+      <table class="tb_type3">
+        <caption>
+          <div class="hide">
+            메가밀리언 추첨번호에 대한 정보를 제공하는 표
+          </div>
+        </caption>
+        <colgroup>
+          <col width="10%">
+          <col width="">
+          <col width="20%">
+          <col width="15%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>등수</th>
+            <th>당첨조건</th>
+            <th>당첨금</th>
+            <th>당첨수</th>
+          </tr>
+        </thead>
+        <tbody id="wininfo_price"></tbody>
+      </table>
+    </div>
+    <p class="desc"></p>
+    <p class="fw600 pt5 wininfo_multiplier"></p>
+  </div>
+</div>
+
+<div class="popup lastwinner type1">
+  <div class="inner bx_padding f_NotoSansKR pb30 pt5">
+    <button type="button" class="btn_close"><span class="hide">닫기</span></button>
+    <div class="flex" style="justify-content: center;">
+    <h3 style="display: flex; align-items: center;"><img src="<?=$commonImageURI?>logo_powerball_202x56.png" id="wininfo_balls_img"></h3>
+    </div>
+    <div id="nomal_info_div" class="fs15" style="background-color: #eeeeee; border-radius: 0.2rem; padding: 1rem; margin: 1rem 0; line-height: 1rem; text-align: center; width: 20rem;">
+      오레곤주의 복권 당첨금은 고정 금액 방식입니다.<br>
+      1등을 제외한 2 ~ 9등까지는 금액이 항상 동일합니다.<br>
+      <span class="mega_multiplier_msg" style="display:none">2066회차부터 무작위 배수가 포함되어 자동 적용됩니다.<br></span>
+      복권 구매시 참고하여 주십시오.
+    </div>
+    <div id="winner_info_div" class="fs15" style="background-color: #eeeeee; border-radius: 0.2rem; padding: 1rem; margin: 1rem 0; line-height: 1rem; text-align: left; width: 22rem;">
+      오레곤주의 복권 당첨금은 고정 금액 방식입니다.<br>
+      현재 직전회차 1등 당첨자가 발생하여 당첨금이 초기화 되었습니다.<br>
+      <span class="mega_multiplier_msg" style="display:none">2066회차부터 무작위 배수가 포함되어 자동 적용됩니다.<br></span>
+      복권 구매시 참고하여 주십시오.
+    </div>
+    <div class="wrap_tb bt bb">
+      <table class="tb_type3">
+        <caption>
+          <div class="hide">
+            추첨번호에 대한 정보를 제공하는 표
+          </div>
+        </caption>
+        <colgroup>
+          <col width="10%">
+          <col width="">
+          <col width="28%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>등수</th>
+            <th>당첨조건</th>
+            <th>당첨금</th>
+          </tr>
+        </thead>
+        <tbody id="last_wininfo_price_no_cnt"></tbody>
+      </table>
+    </div>
+    <div class="text-center">
+      <button type="button" class="btn_close" style="width: 4rem; height:1.85rem; line-height: 2rem; border-radius: 0.5rem; font-size: 0.9rem; font-weight: 500; letter-spacing: -0.075em; margin-top: 0.5rem; background-color: #000000; color: #FFFFFF;">닫 기</button>
+    </div>
+  </div>
+</div>
+
+<div class="popup charge pay type1">
+  <div class="inner ls50">
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <div class="bx_white">
+      <strong class="title">충전캐시 및 결제금액 확인</strong>
+      <div class="bx_gray top">
+        <ul class="list_bul">
+          <li class="pb5">
+            <span>충전캐시 : </span><strong class="color_000 cash_cash">0</strong><span> 캐시</span>
+            <i class="bonus_point_display"><span class="cash_point_display"> + </span><strong class="color_000 cash_point"> 0</strong><span> 보너스포인트</span></i>
+          </li>
+          <li class="pb5">
+            <span>결제금액 : </span><strong class="color_000 cash_price">0</strong><span> 원 (VAT 10%포함)</span>
+          </li>
+          <li class="none">
+            <span>적립혜택 : </span><span id="cash_ipoint">마일리지 +600</span>
+          </li>
+        </ul>
+      </div>
+      <?php
+        $s_year = date("Y", strtotime(" -18 year"));
+        $e_year = date("Y", strtotime(" -118 year"));
+      ?>
+      <?=$cash_point?>
+
+      <div class="new_card_form" style="display: none;" >
+        <ul class="pt20" style="display: none;" >
+          <p class="fs15 fw500 pb10">카드주성함</p>
+          <li>
+            <input class="spay" type="text" id="c_cardholder" name="c_cardholder" value="<?=$M_login['name']?>" placeholder="카드 소유자명"></input>
+          </li>
+        </ul>
+        <ul class="pt20" style="display: none;" >
+          <p class="fs15 fw500 pb10">연락처</p>
+          <li>
+            <input class="spay" type="tel" id="c_contact" name="c_contact" maxlength="13" value="<?=$M_login['hp']?>" placeholder="연락처를 입력하세요"></input>
+          </li>
+        </ul> 
+          
+      </div>
+
+      <ul class="pt20 spay_birth">
+        <p class="fs15 fw500 pb10">생년월일<!-- 또는 사업자번호 10자리 입력--></p>
+        <li>
+          <select id="c_birth1" name="" fw-filter="isNumber" fw-label="" fw-alone="N" fw-msg="">
+            <option value="">년</option>
+            <?php
+              for ($i = $s_year; $i > $e_year; $i--) {
+                $v = $i;
+                $v = substr($v, 2, 2);
+            ?>
+            <option value="<?=$v?>"><?=$i?></option>
+            <?php } ?>
+          </select>
+          <select id="c_birth2" name="" fw-filter="isNumber" fw-label="" fw-alone="N" fw-msg="">
+            <option value="">월</option>
+            <option value="01">01</option>
+            <option value="02">02</option>
+            <option value="03">03</option>
+            <option value="04">04</option>
+            <option value="05">05</option>
+            <option value="06">06</option>
+            <option value="07">07</option>
+            <option value="08">08</option>
+            <option value="09">09</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+          </select>
+          <select id="c_birth3" name="" fw-filter="isNumber" fw-label="" fw-alone="N" fw-msg="">
+            <option value="">일</option>
+          </select>
+        </li>
+      </ul>
+      <ul class="pt20 spay_card">
+        <p class="fs15 fw500 pb10">카드번호</p>
+        <li>
+          <input class="spay" type="text" id="c_card1" size="4" maxlength="4" name="c_card1" value="" placeholder=""></input>
+          <input class="spay" type="text" id="c_card2" size="4" maxlength="4" name="c_card2" value="" placeholder=""></input>
+          <input class="spay" type="text" id="c_card3" size="4" maxlength="4" name="c_card3" value="" placeholder=""></input>
+          <input class="spay" type="text" id="c_card4" size="4" maxlength="4" name="c_card4" value="" placeholder=""></input>
+        </li>
+      </ul>
+      <ul class="pt20">
+        <li class="fs15 fw500 pb10">유효기간</li>
+        <li>
+          <input class="spay_cvc" type="text" id="c_month" size="2" maxlength="2" name="c_month" value="" placeholder="MM(월)"></input>
+          <input class="spay_cvc ml10" type="text" size="2" maxlength="2" id="c_year_val" name="c_year_val" value="" placeholder="YY(년도)"></input>
+        </li>
+      </ul>
+      <ul class="pt20 spay_birth" id="quota">
+        <p class="fs15 fw500 pb10">할부기간</p>
+        <li>
+          <select id="c_quota">
+            <option value="00">일시불</option>
+            <option value="02">2개월</option>
+            <option value="03">3개월</option>
+            <option value="04">4개월</option>
+            <option value="05">5개월</option>
+            <option value="06">6개월</option>
+          </select>
+        </li>
+      </ul>
+      <ul class="pt20">
+        <li class="fs15 fw500 pb10">비밀번호 (앞2자리 / 숫자만 입력)</li>
+        <li>
+          <input class="spay_pass" type="password" size="2" maxlength="2" autocomplete="new-password" id="c_pwd_val" name="c_pwd_val" value=""></input>
+          <span class="spay_pass_1">●●</span>
+        </li>
+      </ul>
+      <a id="btn_card_buy_cash" class="btn_pay" style="cursor: pointer;">결제하기</a>
+      <div style="text-align: center; margin-top: 2rem; display: none;" class="btn_pay_loading">결제진행중...</div>
+    </div>
+    <div class="bx_gray">
+      <ul class="list_bul notice ls70">
+        <!-- <li><span>캐시 충전 시 결제금액의 VAT(부가세) 10%가 별도로 청구 됩니다.</span></li> -->
+        <li><span>결제가 모두 완료되기 전에 결제창을 닫으시면 오류로 결제가 완료되지 않을 수 있습니다.</span></li>
+        <li><span>충전 캐시는 모두 소진될 때까지 자유롭게 이용하실 수 있습니다.</span></li>
+        <!--<li><span>적립된 캐시 또는 마일리지는 별도로 지정된 사용기간이 없습니다.</span></li>-->
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="popup charge pay_bank type1">
+  <div class="inner ls50 bank_step1" style="display: block;">
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <div class="bx_white">
+      <h3 class="title"><span>충전캐시 및 입금액 확인</span></h3>
+      <div class="bx_gray top">
+        <ul>
+          <li class="pb5"><span>충전캐시 :</span>
+            <strong class="color_000 cash_bank_cash">0</strong>
+            <span>캐시</span>
+            <span class="cash_bank_point_display none"> + <strong class="color_000 cash_bank_point">0</strong>
+              <span>보너스포인트</span>
+            </span>
+          </li>
+          <li class="pb5"><span>입금금액 :</span>
+            <strong class="color_red2 cash_bank_price">0</strong>
+            <span>원 (VAT 포함)</span>
+          </li>
+        </ul>
+      </div>
+      <ul class="pt20 spay_bank">
+        <p class="fs16 fw500 pb10">입금자명</p>
+        <li class="pb5">
+          <input class="spay fs16" type="text" id="bank_name" name="bank_name" style="width: 95%; background-color: whitesmoke;" value="<?=$M_login['name']?>" readonly />
+        </li>
+        <p class="fs15 fw400">*입금자명은 마이페이지 > 회원정보수정 메뉴에서 변경 가능합니다.</p>
+      </ul>
+      <a id="btn_bank_step1_buy_cash" class="btn btn_pay">다 음</a>
+    </div>
+    <div class="bx_gray">
+      <ul class="list_check_red notice ls70">
+        <li class="add_before"><span>이체 시 상단의 입금금액을 반드시 확인하시기 바랍니다.</span></li>
+        <li class="add_before"><span>이체 후 캐시충전은 영업시간 기준 최대 1시간이 소요될 수 있습니다.(평일 오전 10시~저녁 7시)</span></li>
+        <li class="add_before"><span>영업시간 이후의 무통장 입금은 익일 오전 11시까지 캐시 충전이 완료 됩니다.</span></li>
+        <li class="add_before"><span>주말 및 공휴일 무통장 입금은 캐시 충전까지 최대 16시간이 소요될 수 있습니다.</span></li>
+        <li class="add_before"><span>입금 오류 또는 복권 구매전 환불은 고객센터의 1:1문의를 이용해 주십시오.</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="inner ls50 bank_step2" style="display: none; width: 40rem;">
+    <div style="padding-left: 1rem;">
+      <ul class="pt20 spay_bank" style="padding: 1rem;">
+        <p class="fs17 add_before ico_i fs20">입금액 확인</p>
+      </ul>
+    </div>
+    <div class="bx_white">
+      <div class="bx_gray top">
+        <ul class="flex" style="justify-content: center; padding-right: 1.25rem; margin: 0rem 1rem 1rem 1rem;">
+          <span class="fs20 br5" style="background-color: #DFDFDF; padding: 0.3rem 1.3rem;">
+            <img src="<?=$commonImageURI?>check_red.png">
+            <span>입금액 :</span>
+            <strong class="cash_bank_price color_red2">0</strong><strong class="color_red2">원</strong> (VAT 포함)
+          </span>
+        </ul>
+        <ul>
+          <li class="flex fs17 pl3 pb10">입금 후 캐시 충전 확인 및 입금 계좌번호 발송 안내</li>
+          <li class="flex fs14"><span><img src="<?=$commonImageURI?>check_red.png"></span><span class="pl3 pb3">입금 후 캐시 충전 확인은 마이페이지의 My 캐시 또는 복권 구매시 확인 가능합니다.</span></li>
+          <li class="flex fs14"><span><img src="<?=$commonImageURI?>check_red.png"></span><span class="pl3 pb3">이체 후 캐시 충전은 영업시간 기준 최대 1시간이 소요될 수 있습니다.(평일 오전 10시~저녁 7시)</span></li>
+          <li class="flex fs14"><span><img src="<?=$commonImageURI?>check_red.png"></span><span class="pl3 pb3">영업시간 이후의 무통장 입금은 익일 오전 11시까지 캐시 충전 완료 됩니다.</span></li>
+          <li class="flex fs14"><span><img src="<?=$commonImageURI?>check_red.png"></span><span class="pl3 pb3">주말 및 공휴일 무통장 입금은 캐시 충전까지 최대 16시간이 소요될 수 있습니다.</span></li>
+          <li class="flex fs14"><span><img src="<?=$commonImageURI?>check_red.png"></span><span class="pl3 pb3">입금 오류 또는 복권 구매전 환불은 고객센터 1:1문의를 이용해주십시오.</span></li>
+          <li class="flex fs14"><span><img src="<?=$commonImageURI?>check_red.png"></span><span class="pl3 pb3">주식회사 <?=$사이트명1?>의 입금 계좌번호가 회원님의 전화번호로 문자 발송되오나, 스팸으로 분류되어 즉시 확인이 불가할 수 있으니 참고하여 주십시오.</span></li>
+        </ul>
+      </div>
+      <div style="display: flex; justify-content: center;">
+        <a id="btn_bank_step2_buy_cash" class="btn btn_pay" style="margin: 1rem 0 0 0; width: 18rem;">
+          <span class="blink">캐시 충전 신청 및 입금 계좌번호 확인</span>
+        </a>
+        <div class="btn_pay_loading text-center mt20 mb10" style="display: none; width: 18rem;">캐시 충전 신청 중</div>
+      </div>
+      <div style="display: flex; justify-content: center;">
+        <a id="btn_bank_step2_cancel_cash" class="btn btn_pay bg_black" style="margin: 0.4rem 0 0 0; width: 18rem;">캐시 충전 취소</a>
+      </div>
+    </div>
+  </div>
+  <div class="inner ls50 bank_step3" style="display: none;">
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <div class="bx_white2">
+      <span class="title"><img src="<?=$commonImageURI?>icon_green.png"></span>
+      <span class="fs20" style="line-height: 1.7;">캐시 충전은 입금 확인 후 완료됩니다.<br>이용해 주셔서 감사합니다.<br><br></span>
+      <div class="bx_gray top3" style="padding-left: 2.5rem;">
+        <ul>
+          <li style="list-style-type: square;">
+            <span>입금은행 : </span><img src="<?=$commonImageURI?>kb_logo.png" class="pd-left" style="width: 7rem; bottom: 12.3rem;">
+          </li>
+          <li style="list-style-type: square;">
+            <span>계좌번호 : </span>
+            <span class="pd-left"><?=$site_account_number?>
+              <a type="button" id="account_copy" class="btn account_copy">&nbsp;
+                <img src="<?=$commonImageURI?>copy_icon.png" style="width: 0.8rem; padding-bottom: 0.2rem;">
+                <span style="color: #545454; font-size: 0.8rem;">(복사하기)</span>
+              </a>
+            </span>
+          </li>
+          <li style="list-style-type: square;">
+            <span style="word-spacing: 4.3px;">예 금 주</span> : <span class="pd-left"><?=$site_account_name?></span>
+          </li>
+          <li style="list-style-type: square;">
+            <span style="word-spacing: 4.3px;">입 금 액</span> :
+            <span class="pd-left">
+              <strong class="color_red2 cash_bank_price">0</strong>
+              <strong class="color_red2">원</strong> (VAT 포함)
+            </span>
+          </li>
+        </ul>
+      </div>
+      <a id="btn_bank_step3_close" class="btn_pay" style="cursor: pointer;">완 료</a>
+    </div>
+  </div>
+</div>
+
+<div class="popup charge pay_bank_waiting type1">
+  <div class="inner ls50 bank_step1" style="width: 27rem;">
+    <div class="bx_white2">
+      <span class="title" style="padding-bottom: 0.5rem;"><img src="<?=$commonImageURI?>info_red.png"></span>
+      <span class="fs20" style="line-height: 1.7;">중복 신청 안내<br></span>
+      <div class="bx_gray top3" style="padding: 1rem; font-size: 0.9rem; line-height: 1.3rem; text-align: left; border-radius: 0.5rem; margin-top: 0.5rem;">
+        <?=$M_login['name']?> 회원님께서 <span class="bank_waiting_reg_date">0000년 0월 0일 00시 00분</span> 신청하신<br>
+        <span class="bank_waiting_cash_num">000</span>캐시(<strong class="color_red2">입금액 <span class="bank_waiting_price_num">000</span>원</strong>) 무통장(계좌이체)<br>
+        충전이 완료되지 않았습니다.<br>
+        새로운 캐시 충전을 원하시면 입금을 완료하시거나<br>
+        신청을 취소하여 주십시오.
+      </div>
+      <a id="btn_bank_waiting_close" class="btn_pay" style="cursor: pointer;">확인</a>
+    </div>
+  </div>
+</div>
+
+<div class="popup charge pay_card_waiting type1">
+  <div class="inner ls50" style="width: 27rem;">
+    <div class="bx_white2">
+      <span class="title" style="padding-bottom: 0.5rem;"><img src="<?=$commonImageURI?>info_red.png"></span>
+      <span class="fs20" style="line-height: 1.7;">중복 신청 안내<br></span>
+      <div class="bx_gray top3" style="padding: 1rem; font-size: 0.9rem; line-height: 1.3rem; text-align: left; border-radius: 0.5rem; margin-top: 0.5rem;">
+        <?=$M_login['name']?> 회원님께서 <span class="card_waiting_reg_date">0000년 0월 0일 00시 00분</span> 신청하신<br>
+        <span class="card_waiting_cash_num">000</span>캐시(<strong class="color_red2">결제금액 <span class="card_waiting_price_num">000</span>원</strong>) 신용카드<br>
+        충전이 완료되지 않았습니다.<br>
+        새로운 캐시 충전을 원하시면 결제를 완료하시거나<br>
+        신청을 취소하여 주십시오.
+      </div>
+      <a id="btn_card_waiting_close" class="btn_pay" style="cursor: pointer;">확인</a>
+    </div>
+  </div>
+</div>
+
+<div class="popup video type1">
+  <div class="inner sec_app wrap_com">
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <div class="f_GmarketSans fw600 ls50" style="margin-top: -1.2rem;">
+      <h2 class="pb10"><span class="pr5" id="youtube_draw_title">메가밀리언</span><span class="color_red2" id="youtube_draw">1257회차</span> 추첨영상</h2>
+    </div>
+    <div class="bx_gray bx_padding17 mb10">
+      <p class="color_red3 fw500 fs15">※ 한국과 미국의 시차가 있습니다. 유튜브 영상의 날짜는 미국 시간입니다.</p>
+    </div>
+    <div class="wrap_iframe">
+      <iframe id="youtube_ifrm" title="video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </div>
+</div>
+
+<div class="popup hotvideo type1">
+  <div class="inner sec_app wrap_com">
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <div class="f_GmarketSans fw600 ls50 pb15" style="margin-top: -1.2rem;">
+      <h2 class="pb10"><span class="color_red2">HOT!!</span> 추천영상</h2>
+      <h3 class="ls75"><span id="hot_youtube_title"></span></h3>
+    </div>
+    <div class="wrap_iframe">
+      <iframe id="hot_youtube_ifrm" title="hotvideo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </div>
+</div>
+
+<div class="popup myball type1 my_ball_popup">
+  <div class="inner bx_padding f_NotoSansKR">
+    <button type="button" class="btn_close"><span class="hide">닫기</span></button>
+    <div class="flex align_end">
+      <h2 class="f_GmarketSans fw600 ls50 lh12">나의 행운번호</h2>
+    </div>
+    <div class="wrap_tb bt bb" style="display: flex; flex-wrap: wrap; height: 500px; overflow: auto; width: 400px;">
+      <table class="tb_type3">
+        <caption>
+          <div class="hide">
+            나의 행운번호
+          </div>
+        </caption>
+        <colgroup>
+          <col width="20%">
+          <col width="80%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>선택</th>
+            <th>행운번호</th>
+          </tr>
+        </thead>
+        <tbody id="myball_box">
+        </tbody>
+      </table>
+    </div>
+  <div style="margin: 1rem 0; text-align: center;">
+    <a class="btn_myball_chk" style="cursor: pointer; display: block; width: 9.2rem; background-color: #e60012; height: 2.5rem; line-height: 2.5rem; color: #fff; font-size: 0.9rem; border-radius: 0.25rem; text-align: center; margin: 0 auto;">선택한 번호 담기</a></div>
+  </div>
+</div>
+
+<div class="popup cash_receipt type1">
+  <div class="inner ls50 bx_padding">
+    <div class="bx_white2">
+      <span class="title"><img src="<?=$commonImageURI?>icon_green.png"></span>
+      <div class="bx_gray contents">
+        현금영수증 발급신청이 정상 접수되었습니다.<br>
+        국세청-현금영수증(www.hometax.go.kr)에서 1~2일 후에 확인하실 수 있습니다.
+      </div>
+      <button class="btn_cash_receipt btn_close">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="popup cash_refund type1">
+  <div class="inner bx_padding f_NotoSansKR">
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <div class="wrap_tb bt bb" style="margin-top: 20px;">
+      <table class="tb_type3">
+        <caption>
+          <div class="hide">
+            출금 상세내역
+          </div>
+        </caption>
+        <colgroup>
+          <col width="20%">
+          <col width="80%">
+        </colgroup>
+        <thead>
+
+        </thead>
+        <tbody id="cash_refund_box">
+          <tr>
+            <th>출금신청일시</th>
+            <td><span id="date">0000년 00월 00일 00:00</span></td>
+          </tr>
+          <tr>
+            <th>출금요청금액</th>
+            <td><span id="money">0000</span>원</td>
+          </tr>
+          <tr>
+            <th>출금수수료</th>
+            <td><span id="invoce">1000</span>원</td>
+          </tr>
+          <tr>
+            <th>입금은행</th>
+            <td><span id="bank1">OO은행</span></td>
+          </tr>
+          <tr>
+            <th>계좌번호</th>
+            <td><span id="bank2">11123456789</span></td>
+          </tr>
+          <tr>
+            <th>예금주</th>
+            <td><span id="bank3">홍길동</span></td>
+          </tr>
+          <tr>
+            <th>상태</th>
+            <td><span id="tp">승인</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+    <div class="pt10" style="text-align: center;">
+      <button class="btn_gray btn_close2" style="width:100px; height:30px">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="popup scanImg type1">
+  <div class="inner bx_padding f_NotoSansKR" style="max-width: 550px;">
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <div class="wrap_tb" style="height: 600px; width: 380px; overflow: scroll; text-align: center;">
+      <img id="frontScanImg" style="width: 360px;" />
+      <img id="backScanImg" style="width: 360px;" />
+    </div>
+  </div>
+</div>
+
+<div class="popup scanImgSwiper type1">
+  <div class="inner bx_padding sec_event" style="width: 380px;">
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <section class="sec_event">
+      <div class="slide swiper-container">
+        <ul class="swiper-wrapper"></ul>
+      </div>
+      <!-- navigation -->
+      <div class="swiper-button-next" style="right: -25px;"></div>
+      <div class="swiper-button-prev" style="left: -25px;"></div>
+      <!-- pagination -->
+      <div class="paging swiper-pagination"></div>
+    </section>
+  </div>
+</div>

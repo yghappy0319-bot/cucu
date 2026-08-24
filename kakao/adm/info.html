@@ -1,0 +1,139 @@
+<?php
+include_once "../adm/head.php";
+
+$data = db_select("select * from site where idx = {$idx} ");
+?>
+
+<?php include_once "../adm/nav.php";?>
+<div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+  <div class="main-menu-header">
+    <form>
+      <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+    </form>
+  </div>
+  <?php include_once "../adm/menu.php";?>
+</div>
+<style>
+.auth_code{    font-size: 1.2rem; font-weight: bold;}
+</style>
+<div class="app-content content container-fluid">
+  <div class="content-wrapper">
+    <div class="content-header row">
+      <div class="content-header-left col-md-6 col-xs-12 mb-1">
+        <h2 class="content-header-title">API key 변경</h2>
+      </div>
+    </div>
+
+    <div class="content-body">
+      <section id="basic-form-layouts">
+        <form method="POST" id="orderFrm" >
+
+      	<div class="row match-height">
+      		<div class="col-md-6">
+      			<div class="card" >
+      				<div class="card-header">
+      					<h4 class="card-title" id="basic-layout-form">퍼팩트패널 Admin Api Key v2</h4>
+      					<a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+      					<div class="heading-elements">
+      						<ul class="list-inline mb-0">
+      							<li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+      							<li><a data-action="reload"><i class="icon-reload"></i></a></li>
+      							<li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+      							<li><a data-action="close"><i class="icon-cross2"></i></a></li>
+      						</ul>
+      					</div>
+      				</div>
+      				<div class="card-body collapse in">
+      					<div class="card-block">
+      							<div class="form-body">
+
+                      <div class="card-text">
+                        <p><strong>[중요]</strong> 퍼펙트패널 정책에 따라 <strong>2025년 10월부터 Admin API v1 Key 사용이 중단됩니다.</strong></p>
+                        <p>반드시 <strong>Admin API v2 Key로 전환</strong>해주시기 바랍니다.</p>
+                      </div>
+
+<?
+$sql = "select * from site where member_no = {$member['mb_no']} and website = 0 and COALESCE(telegram, 0) = 0 and (api_key_v2 is null || api_key_v2 = '') ";
+$result = db_query($sql);
+$allcnt = mysqli_num_rows($result);
+?>
+<script>
+  var site_cnt = "<?=$allcnt?>";
+  if(site_cnt==0){
+    location.href="/";
+  }
+</script>
+<?
+foreach($result as $data){
+?>
+                      <div class="form-group">
+      									<label for="companyName"><?=$data['site']?> - v2 API Key</label>
+      									<input type="text" class="form-control api_key_v2_<?=$data['idx']?>" placeholder="Api Key v2" >
+                        <button type="button" class="btn btn-primary" onclick="go_add_site('<?=$data['idx']?>')">
+                          <i class="icon-check2"></i> 저장하기
+                        </button>
+      								</div>
+
+<? } ?>
+                      <p>
+                        퍼팩트패널 api key v2는 퍼팩트패널 관리콘솔에서 확인 가능합니다.
+                      </p>
+                      <div>
+                        <ul>
+                          <li>1. Panels 클릭</li>
+                          <li>2. 우측 끝에 Admin area 옆 쩜3개 클릭</li>
+                          <li>3. Admin API v2클릭</li>
+                          <li>4. Create new API Key 버튼 누르기</li>
+                          <li>5. Payments 에 Add payment 체크</li>
+                          <li>6. Generate API Key 버튼을 눌러 v2키 생성</li>
+                        </ul>
+                      </div>
+                      <p><a href="https://my.perfectpanel.com/signin" target="_blank">퍼팩트패널 관리콘솔 이동하기</a></p>
+
+
+
+      							</div>
+
+
+      					</div>
+      				</div>
+      			</div>
+      		</div>
+
+      	</div>
+        </form>
+
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+function go_add_site(idx, key){
+  var adminapikey = $(".api_key_v2_"+idx).val();
+
+  $.ajax({
+     type : "POST",
+     url: "/ajax/_ajax_admin_api_key_update.php",
+     async: false,
+     data: {
+       idx : idx,
+       api_key_v2 : adminapikey
+     },
+     success: function(result) {
+        var r = result.trim();
+        console.log(r);
+        if(r==1){
+          alert("저장되었습니다.");
+          location.reload();
+        }
+
+     },
+     error:function(e) {
+        alert(e.responseText);
+     }
+  });
+}
+</script>
+
+<?php include_once "../adm/footer.php";?>

@@ -1,0 +1,514 @@
+<?php
+include $_SERVER['DOCUMENT_ROOT']."/admin/lib/function.php";
+$이미지경로 = "ticket";
+
+
+
+function 랜덤문자열코드($lengths = [6, 6, 6, 6, 3], $이미지경로) {
+    $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ%&#123456789'; // 허용된 문자 집합
+    $result = [];
+
+    foreach ($lengths as $length) {
+        $part = '';
+        for ($i = 0; $i < $length; $i++) {
+            $part .= $characters[mt_rand(0, strlen($characters) - 1)];
+        }
+        $result[] = $part;
+    }
+
+    $randomString = implode('-', $result); // 각 파트를 하이픈으로 연결
+
+    // 각 문자를 이미지 태그로 변환
+    $imageTags = '';
+    for ($i = 0; $i < strlen($randomString); $i++) {
+        $char = $randomString[$i];
+
+        // 이미지 경로와 alt 설정
+        $imgSrc = '';
+        $alt = $char;
+        if ($char == '%') {
+            $imgSrc = '/N3/sc2.png';
+        } elseif ($char == '&') {
+            $imgSrc = '/N3/sc3.png';
+        } elseif ($char == '#') {
+            $imgSrc = '/N3/sc1.png';
+        } elseif ($char == '-') {
+            $imgSrc = '/N3/hyphen.png?date=2';
+        } elseif ($char) {
+            $imgSrc = '/N3/' . $char . '.png?date='.date('his');
+        }
+
+        $imageTags .= '<img src="' . $이미지경로 . $imgSrc . '" alt="' . $alt . '" />';
+}
+return $imageTags;
+}
+
+
+$랜덤문자열코드 = 랜덤문자열코드('', $이미지경로);
+
+function getImageByDate() {
+// 이미지 목록
+$images = [
+'textpower1.png',
+'textpower2.png',
+'textpower3.png',
+'textpower4.png'
+];
+
+// 현재 날짜를 기준으로 10일 간격으로 번갈아 가며 이미지 선택
+$currentDay = (int)date('z'); // 현재 날짜의 일자 (1년 중 몇 번째 날인지)
+
+// 10일마다 이미지를 번갈아 가며 선택하려면 (현재 일자 % 10) 값을 이용
+$imageIndex = ($currentDay / 10) % count($images);
+
+// 선택된 이미지
+return $images[$imageIndex];
+}
+// 랜덤으로 이미지 출력
+$randomImage = getImageByDate();
+
+
+$sql = "select * from ORDERS where ORDERS_NO = {$ticket_no} ";
+//echo $sql; 
+$data = db_select($sql);
+
+
+if (!empty($data['REG_DATE'])) {
+date_default_timezone_set('Asia/Seoul'); // 한국 시간 기준
+//echo "구매시각 :: ".$data['REG_DATE']."<br>";
+$reg_ts = strtotime($data['REG_DATE']);
+
+// DateTime 객체 만들기
+$regDateTime = new DateTime($data['REG_DATE'], new DateTimeZone('Asia/Seoul'));
+$oregonTimezone = new DateTimeZone('America/Los_Angeles'); // 오리건 시간대
+
+
+// 사용 예시
+$서머타임시간 = 서머타임체크('America/Los_Angeles');
+
+
+// 구매 시각의 '시분' 숫자 추출 (예: 0915, 0810)
+$reg_time = (int)$regDateTime->format('Hi');
+// ✅ 조건 1: 10:00 ~ 23:59 사이에 구매한 경우
+if ($reg_time >= $서머타임시간 && $reg_time <= 2359) {
+    //echo "✅ 10:00 ~ 23:59 사이에 구매한 경우<br>";
+
+    $한국시간새벽4시 = date("Y-m-d", strtotime($data['REG_DATE']." +1 days"));
+
+    // 한국 기준 "오늘 새벽 4시"로 맞춤
+
+    $seoulDate = new DateTime($한국시간새벽4시.' 04:00:01', new DateTimeZone('Asia/Seoul'));
+    //echo "1한국 시간: " . $seoulDate->format('Y-m-d H:i:s') . "<br>";
+
+    $seoulDate->setTimezone($oregonTimezone);
+    //echo "1오리건 기준 시간: " . $seoulDate->format('Y-m-d H:i:s') . "<br>";
+
+    $구매시각 = $seoulDate->format('Y/'.열한시열한시오십구_새벽4시실행());
+    $newtime = 4;
+    $터미널코드 = "33257801";
+}
+
+// ✅ 조건 2: 00:00 ~ 08:59 사이에 구매한 경우
+if ($reg_time >= 0 && $reg_time < $서머타임시간) {
+    //echo "✅ 00:00 ~ 08:59 사이에 구매한 경우<br>";
+    $한국시간아침10시 = date("Y-m-d", strtotime($data['REG_DATE']));
+
+
+
+    // 한국 기준 "오늘 오전 10시 10분"으로 맞춤
+    $seoulDate = new DateTime($한국시간아침10시.' 10:10:00', new DateTimeZone('Asia/Seoul'));
+    //echo "2한국 기준 시간: " . $seoulDate->format('Y-m-d H:i:s') . "<br>";
+
+    $seoulDate->setTimezone($oregonTimezone);
+
+    //echo "2오리건 기준 시간: " . $seoulDate->format('Y-m-d H:i:s') . "<br>";
+
+    $구매시각 = $seoulDate->format('Y/'.십팔시십분_십팔시오십구분_11시실행($서머타임시간));
+    $newtime = 11;
+    $터미널코드 = "31487310";
+}
+
+// drawing_day 처리
+$seoulTimezone = new DateTimeZone('Asia/Seoul');
+
+// 슈로코는 추첨일이 미국날짜 기준으로 데이터가 들어가는데, 한국날짜로 바꿔줘야함
+$한국날짜기준으로 = date('Y-m-d', strtotime($data['PLAYDATE']." +1 days"));
+$drawingDay = new DateTime($한국날짜기준으로, $seoulTimezone); // 한국 기준 날짜 생성
+$drawingDay->setTimezone($oregonTimezone); // 오리건 시간대 변환
+}
+
+
+
+$number = (isset($data['CODE1']) && $data['CODE1'] !== '' && $data['CODE1'] !== 0 && $data['CODE1'] !== '0') ? $data['CODE1'] : $data['DRAWNUM'];
+
+function displayTextImages($number, $이미지경로) {
+    $number = strval($number);  // 입력 값이 숫자일 경우에도 문자열로 처리
+    for ($i = 0; $i < strlen($number); $i++) {
+    $digit = $number[$i];  // 각 자리 문자 추출
+
+    // 소문자인지 대문자인지 체크
+    if (ctype_lower($digit)) {
+    $digit = 's' . $digit;  // 소문자일 경우 's'를 앞에 추가
+    }
+    if($digit === '/') {
+    $digit = "slush";
+    }
+    if($digit === ':'){
+    $digit = "col";
+    }
+    // 숫자에 해당하는 이미지 경로
+    $imageSrc = $이미지경로."/N3/{$digit}.png?date=".date('his');
+
+    if($digit=="col"){
+    $css = "col";
+    }else{
+    $css = "t_number";
+}
+
+// 이미지 출력
+echo '<img src="' . $imageSrc . '" class="'.$css.'"/>';
+}
+}
+
+function 날짜치환($number) {
+$number = strval($number);  // 입력 값이 숫자일 경우에도 문자열로 처리
+for ($i = 0; $i < strlen($number); $i++) {
+$digit = $number[$i];  // 각 자리 문자 추출
+
+// 소문자인지 대문자인지 체크
+if (ctype_lower($digit)) {
+$digit = 's' . $digit;  // 소문자일 경우 's'를 앞에 추가
+}
+if($digit === '/') {
+$digit = "slush";
+}
+if($digit === ':'){
+$digit = "col";
+}
+// 숫자에 해당하는 이미지 경로
+$imageSrc = $이미지경로."/S/{$digit}.png";
+
+if($digit=="col"){
+$css = "col";
+}else{
+$css = "t_number";
+}
+
+// 이미지 출력
+echo '<img src="' . $imageSrc . '" class="'.$css.'"/>';
+}
+}
+
+
+function displayNumberImages($number, $이미지경로) {
+$output = '';  // 출력될 결과를 저장할 변수
+for ($i = 0; $i < strlen($number); $i++) {
+$digit = $number[$i];  // 각 자리 숫자 추출
+
+// 숫자에 해당하는 이미지 경로
+$imageSrc = $이미지경로."/N3/{$digit}.png?date=".date('his');
+
+// 이미지 출력 HTML을 변수에 저장
+$output .= '<img src="' . $imageSrc . '" class="t_number"/>';
+}
+return $output;  // 결과를 반환
+}
+
+function lotto_number($number, $이미지경로) {
+$output = '';  // 출력될 결과를 저장할 변수
+for ($i = 0; $i < strlen($number); $i++) {
+$digit = $number[$i];  // 각 자리 숫자 추출
+
+// 숫자에 해당하는 이미지 경로
+$imageSrc = $이미지경로."/n1/number_{$digit}.png";
+
+// 이미지 출력 HTML을 변수에 저장
+$output .= '<img src="' . $imageSrc . '" class="lotto_number"/>';
+}
+return $output;  // 결과를 반환
+}
+
+function generateRandomNumbersAndImages($number, $이미지경로) {
+$output = '';
+
+$output .= displayNumberImages($number, $이미지경로);
+$output .= "<img src='".$이미지경로."/N3/hyphen.png?date=52' style='width: 8px;' />";
+
+// 첫 두 자리는 00~05, 그 뒤는 007232128 ~ 058247854 범위에서 랜덤 숫자 생성
+$firstTwoDigits = str_pad(rand(0, 5), 2, '0', STR_PAD_LEFT);
+$min = 7232128;
+$max = 8247854;
+$lastSevenDigits = rand($min, $max);
+$center = $firstTwoDigits . $lastSevenDigits;
+
+// 두 번째 숫자 부분 출력
+$output .= displayNumberImages($center, $이미지경로);
+$output .= "<img src='".$이미지경로."/N3/hyphen.png?date=51' style='width: 8px;' />";
+
+// 맨 앞 두 자리는 항상 14, 그 뒤는 0112 ~ 9898 범위에서 랜덤 숫자 생성
+$firstTwoDigits = "12";
+$min = "0111";
+$max = 9978;
+$lastFiveDigits = rand((int)$min, $max);
+$endnumber = $firstTwoDigits . str_pad($lastFiveDigits, 4, '0', STR_PAD_LEFT);
+
+// 세 번째 숫자 부분 출력
+$output .= displayNumberImages($endnumber, $이미지경로);
+
+return $output;  // 결과를 반환
+}
+
+// 호출
+$_drawnumber = generateRandomNumbersAndImages($number, $이미지경로);
+
+function 점선줄($key1, $key2) {
+// 1부터 20까지의 랜덤 숫자 생성
+return rand($key1, $key2);
+}
+
+$게임로고 = $이미지경로."/img_lotto_logo_02.png";
+$게임명eng = $이미지경로."/N2/POWERBALL.png";
+$피어이미지 = $이미지경로."/N2/powerplayNO.png";
+$백이미지 = 점선줄(1,56);
+$바코드이미지 = 점선줄(1,6);
+
+if($data['GAMECNT']==1){
+    $print_height = 665;
+}else if($data['GAMECNT']==2){
+    $print_height = 700;
+}else if($data['GAMECNT']==3){
+    $print_height = 730;
+}else if($data['GAMECNT']==4){
+    $print_height = 755;
+}else if($data['GAMECNT']==5){
+    $print_height = 785;
+}
+
+?>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <link rel="stylesheet" type="text/css" href="<?=$이미지경로?>/css/swiper.min.css" />
+    <link rel="stylesheet" type="text/css" href="<?=$이미지경로?>/css/base.css" />
+    <link rel="stylesheet" type="text/css" href="<?=$이미지경로?>/css/grid.css" />
+    <link rel="stylesheet" type="text/css" href="<?=$이미지경로?>/css/common.css" />
+    <link rel="stylesheet" type="text/css" href="<?=$이미지경로?>/css/new.css?date=<?=date('his')?>" />
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="<?=$이미지경로?>/css/swiper.min.js"></script>
+    <script src="<?=$이미지경로?>/css/common1.js?date=<?=date('his')?>"></script>
+    <script src="<?=$이미지경로?>/css/common2.js?date=<?=date('his')?>"></script>
+</head>
+<style>
+    .lotto-box .lotto-logo{margin-top: 68px; align-items:unset; justify-content: unset;margin-left: 28px;}
+    .lotto-box .lotto-logo img.logo01{width:91%; margin-bottom: 33px;}
+    .popup-lotto .lotto-box .lotto-number>ul>li {    margin: 0 0 14px 16px !important;}
+    .popup-lotto .lotto-box .lotto-date{margin: 13px 26px 31px 39px;}
+    .lotto-box .lotto-text .logo01{width:70%;}
+    .lotto_number {width:14px; height:15px;}
+    .t_number{width:7.5px; height:16px;}
+    .price_t_number {width: 16px; }
+    .col {height: 14px; margin-top: 3px;}
+    .text_mega {width:8px;}
+    .sun {    margin-right: 4px;width:100%;position: relative; right: 4px;}
+    .random-number {margin-top:10px;}
+    .popup-lotto .lotto-box .lotto-number>ul>li .last{    margin-left: 32px;}
+    .popup-lotto .lotto-box .lotto-date{    margin: 13px 26px 28px 39px;}
+    .lotto-box .lotto-text .megaplier{margin-left:20px;}
+    .popup-lotto .lotto-box .lotto-number>ul>li span{margin-right: 17px;}
+</style>
+
+
+
+<body style="background: #ffffff !important" >
+<!-- <?=$서머타임시간?> -->
+<div   data-name="popup04"  >
+    <div class="box" id="popup-box-new" style="max-width: 400px; float: left;">
+        <div class="popup-lotto">
+            <div class="lotto-box" style="height: <?=$print_height?>px;">
+                <img src="<?=$이미지경로?>/back/m<?=$백이미지?>.jpg?date=<?=date('his')?>" />
+                <div class="inner">
+                    <div class="lotto-logo"><img src="<?=$게임로고?>" class="logo01" /></div>
+                    <div class="lotto-text">
+                        <img src="<?=$이미지경로?>/N3/<?=$randomImage?>" class="logo01">
+                        <div style="margin-bottom: 14px;">
+                            <img src="<?=$피어이미지?>?date=<?=date('his')?>" class="megaplier" >
+                        </div>
+                    </div>
+
+                    <div class="lotto-number">
+                        <div style="display: flex; justify-content: right;margin-bottom: 12px;">
+                            <img src="<?=$게임명eng ?>?date=<?=date('his')?>" style="    width: 74px;" />
+                        </div>
+
+                        <ul>
+                            <?php
+                  $labels = ['A', 'B', 'C', 'D', 'E']; // 각 행에 사용할 레이블
+
+                  $labelIndex = 0; // 전체 레이블 인덱스 초기화
+
+                    for ($i = 1; $i <= 5; $i++) {
+                      $lotto = "BALL" . $i;
+
+                      // lotto 데이터 존재 여부 확인
+                      if (empty($data[$lotto])) {
+                          continue; // 데이터가 없으면 다음 반복으로 이동
+                      }
+
+                      // 문자열을 콤마로 분리 후 배열로 변환
+                      $numbers = explode(",", $data[$lotto]);
+
+                      // 한 줄에 6개씩 그룹화
+                      $formattedNumbers = array_chunk($numbers, 6);
+
+                      foreach ($formattedNumbers as $group) {
+                          // 레이블 정의
+                          $label = $labels[$labelIndex] ?? '';
+                          ?>
+                            <li>
+                                <img src="<?=$이미지경로?>/n1/<?= $label ?>dot.png" style="width:14px;" />
+
+                                <?php
+                              foreach ($group as $key => $num) {
+                                // 마지막 숫자에만 'class="last"' 추가
+                                $class = ($key === count($group) - 1) ? "class='last'" : "";
+                                ?>
+                                <span <?= $class ?>>
+                                <?= lotto_number(str_pad($num, 2, '0', STR_PAD_LEFT), $이미지경로) ?>
+                                </span>
+                                <?php } ?>
+                            </li>
+                            <?php
+                          $labelIndex++; // 레이블 인덱스 증가
+                          if ($labelIndex >= count($labels)) {
+                            break; // 레이블이 모두 소진되면 종료
+                            }
+                            }
+                            }
+                            ?>
+                        </ul>
+                    </div>
+
+                    <div >
+                        <img src="<?=$이미지경로?>/N2/dotdotdot1.png" class="sun" style="    margin-bottom: 1px;margin-top: 4px;" />
+                    </div>
+
+                    <div class="draw-number">
+                        <div style="margin-left: 18px;"><?php echo $_drawnumber; ?></div>
+                    </div>
+
+                    <div class="lotto-date">
+                        <div class="text-left">
+                            <!-- <p>SINGLE DRAW</p> -->
+                            <div style="display: flex">
+                                <img src="<?=$이미지경로?>/N2/singledraw.png?date=<?=date('his')?>" style="    width: 86px;" />
+                            </div>
+                        </div>
+
+                        <div class="text-right">
+                            <div style="position: relative; top: -0.5px;" >
+                                <img src="<?=$이미지경로?>/N2/<?=$drawingDay->format('D')?>.png?date=<?=date('his')?>" style="width: 24px; height: 16px;" />
+                                <img src="<?=$이미지경로?>/N2/space.png" style="width:4px;" />
+                                <img src="<?=$이미지경로?>/N2/<?=$drawingDay->format('M')?>.png?date=<?=date('his')?>" style="width: 24px; height: 16px;" />
+                                <img src="<?=$이미지경로?>/N2/space.png" style="width: 6px;" />
+                            </div>
+
+                            <div><?= displayTextImages($drawingDay->format('d'), $이미지경로)?>
+                                <img src="<?=$이미지경로?>/N2/space.png" style="width:4px;" />
+                            </div>
+                            <div><?= displayTextImages($drawingDay->format('Y'), $이미지경로)?></div>
+                        </div>
+                    </div>
+
+                    <div class="lotto-date last" style="margin-bottom: 0px;">
+                        <div class="text-left">
+                            <!-- TERMINAL -->
+                            <div >
+                                <img src="<?=$이미지경로?>/N2/terminal.png?date=<?=date('his')?>" style="width:65px;"/>
+                            </div>
+                            <img src="<?=$이미지경로?>/N2/space.png" class="text_mega" />
+                            <div style="display:flex;">
+                                <?php
+                        
+
+                                function generateImageTagsFromNumber($number, $이미지경로) {
+                                // 숫자를 문자열로 변환하여 각 자릿수를 배열로 나눔
+                                    $number_str = strval($number);
+                                    $img_tags = '';
+
+                                    // 각 자릿수를 반복하여 img 태그 생성
+                                    for ($i = 0; $i < strlen($number_str); $i++) {
+                                    $digit = $number_str[$i]; // 현재 자릿수 (0~9)
+
+                                    $imageSrc = $이미지경로."/N3/{$digit}.png?date=".date('his');
+                                    $img_tags .= '<img src="' . $imageSrc . '" alt="' . $digit . '" class="t_number" />';
+                                    }
+
+                                    // 이미지 태그 문자열 반환
+                                    return $img_tags;
+                                }
+                                echo generateImageTagsFromNumber($터미널코드, $이미지경로);
+                                ?>
+                            </div>
+                        </div>
+
+                        <div class="text-right last" >
+                            <div>
+                                <img src="<?=$이미지경로?>/N2/<?=$seoulDate->format('M')?>.png?date=<?=date('his')?>"
+                                     style="width: 23px; height: 15px;" />
+                                <img src="<?=$이미지경로?>/N2/space.png" class="text_mega" />
+                            </div>
+
+                            <div>
+                                <?= displayTextImages($seoulDate->format('d'), $이미지경로)?>
+                                <img src="<?=$이미지경로?>/N2/space.png" class="text_mega" />
+                            </div>
+
+                            <? if($newtime==4){ ?>
+                            <div>
+                                <?= displayTextImages($seoulDate->format('Y/'.열한시열한시오십구_새벽4시실행()), $이미지경로)?>
+                            </div>
+                            <? }else{ ?>
+                            <div>
+                                <?= displayTextImages($seoulDate->format('Y/'.십팔시십분_십팔시오십구분_11시실행($서머타임시간)), $이미지경로)?>
+                            </div>
+                            <? } ?>
+
+                        </div>
+                    </div>
+
+                    <div>
+                        <img src="<?=$이미지경로?>/N2/dollar<?=$labelIndex * 2?>.png?date=<?=date('his')?>"
+                             style="width: 400px;     height: 23px; margin: 11px 0px 14px -6px;" />
+                    </div>
+
+                    <div >
+                        <img src="<?=$이미지경로?>/N2/dotdotdot1.png" class="sun"  />
+                    </div>
+
+                    <div class="draw-number">
+                        <div style="margin-left: 18px;"><?= $_drawnumber ?></div>
+                    </div>
+
+                    <div class="random-number" style="margin-left: 24px; margin-bottom: 8px;">
+                        <p>
+                            <?=$랜덤문자열코드?>
+                        </p>
+                    </div>
+
+                    <div class="lotto-barcode2">
+                        <img src="<?=$이미지경로?>/N2/barcode<?=$바코드이미지?>.png?date=<?=date('his')?>" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- <div  style="float: left;">
+      <div class="box" style="max-width: 400px">
+        <img src="/admin/assets/power.jpg" style="width:100%;" />
+      </div>
+    </div> -->
+
+</body>
+
+</html>

@@ -1,0 +1,246 @@
+<?php
+  include "../header.html";
+?>
+<style>
+.idpass-find {text-align: center;    min-height: 500px;}
+.idpass-find .login_id {background-color: #EEEEEE; border: 0px; font-size: 18px; padding: 8px; margin-bottom: 12px; border-radius: 4px; width: 250px;}
+.idpass-find .login_id::placeholder {    font-weight: 600;}
+.idpass-find .phonecode {border-radius: 4px; font-weight: 800; font-size: 16px; border: 1px solid; width: 250px; padding: 10px; display: inline-block;text-decoration: none; background-color: #fff;}
+.idpass-find .code_chk {border-radius: 4px; font-weight: 800; font-size: 16px; border: 1px solid; width: 250px; padding: 10px; display: inline-block;text-decoration: none; background-color: #333; color:#fff; margin-bottom: 10px; }
+</style>
+
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">아이디 찾기</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>아이디 찾기</p></li>
+            </ul>
+        </div>
+
+        <div class="modle_menu_01">
+            <ul>
+                <li class="on"><a href="/member/idpass.html"><p>아이디 찾기</p></a></li>
+                <li><a href="/member/pass.html"><p>비밀번호 찾기</p></a></li>
+            </ul>
+        </div>
+
+        <div class="new_member_find">
+            <div class="head_text">
+                <p>이름, 휴대폰번호로 가입된 정보를 조회하여 아이디 찾기가 가능합니다.</p>
+            </div>
+
+            <form method="POST" id="idFindFrm">
+                <input type="hidden" name="sms_send_chk" id="sms_send_chk" />
+                <input type="hidden" name="find_id_result" id="find_id" />
+
+                <div class="in">
+                    <a class="logo" href="/index_new.html"><img src="/images/logo.gif"></a>
+                    <input type="text" name="name" id="user_name" class="login_id" placeholder="이름"/>
+                    <input type="text" name="phone" id="sms_number" maxlength="13" onkeyup="isNumberOrHyphen(this);cvtPhoneNumber(this);" class="login_id" placeholder="휴대폰번호" />
+                    <!-- <input type="text" name="email_address" id="mail_number" class="login_id" placeholder="이메일주소"/> -->
+
+                  <? if($발송타입=="sms"){?>
+                    <div class="code_input" style=" display: none;">
+                        <input type="text" id="smscode" class="login_id" placeholder="4자리 코드를 입력해주세요." />
+                        <button type="button" onclick="go_code_chke('sms')" class="code_chk" >확인</button>
+                    </div>
+                    <button type="button" onclick="go_send_sms()" class="phonecode" >
+                      <?= $아이디찾기=="바로찾기" ? "아이디 찾기":"인증번호요청" ?></button>
+                  <? } ?>
+
+                    <div class="code_input_email" style=" display: none;">
+                        <input type="text" id="mailcode" class="login_id" placeholder="6자리 코드를 입력해주세요." />
+                        <button type="button" onclick="go_code_chke('mail')" class="phonecode code_chk" >확인</button>
+                    </div>
+                    <!-- <button type="button" onclick="go_send_mail()" class="phonecode emailcode" >아이디 찾기 이메일로 발송하기</button>
+                    <p class="txt" style="color:#CC1F3B;" >* 이메일이 도착하지 않았다면 가입 시 이메일을 잘못 입력했거나, 스팸함에 있는지 확인해주세요.</p> -->
+                </div>
+
+
+
+            </form>
+
+            <div class="foot_text">
+                <p class="t1"><i class="xi-info"></i>가입된 정보가 조회되지 않는다면?</p>
+                <p class="t2"><a href="/member/inquiry.html">1:1문의 페이지 바로가기</a></p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+  function go_send_mail(){
+    var email_address = $("#mail_number").val();
+    var sms_send_chk = $("#sms_send_chk").val();
+    var user_name = $("#user_name").val();
+    var sms_number = $("#sms_number").val();
+
+    if(user_name==""){
+      alert("이름을 입력해주세요.");
+      return false;
+    }
+
+    if(sms_number==""){
+      alert("휴대폰번호를 입력해주세요.");
+      return false;
+    }
+
+    if(email_address==""){
+      alert("이메일주소를 입력해주세요.");
+      return false;
+    }
+
+    if(sms_send_chk==1){
+      alert("인증번호가 발송되었습니다.\n인증문자가 도착하지 않았다면 새로고침 후 재발송 해주세요.");
+      $(".emailcode").remove();
+      return false;
+    }
+
+    $.ajax({
+       type : "POST",
+       url: "_ajax_send_code_mail.php",
+       async: true,
+       data: {
+          user_name : user_name,
+          sms_number : sms_number,
+          email_address : email_address,
+          pages : '아이디찾기'
+       },
+       dataType: "json",
+       beforeSend: function() {
+         if(sms_send_chk==1){
+           alert("메일보내기가 진행중 입니다. 결과가 나올때까지 잠시만 기다려주세요.");
+           return false;
+         }
+       },
+       success: function(result) {
+          console.log(result);
+          //return false;
+          if(result.status==1){
+            $("#email_address").prop("readonly", true);
+            $("#sms_send_chk").val(1);
+            //$(".code_input_email").show();
+            alert("귀하의 이메일로 가입시 설정하신 아이디를 전송 하였습니다.\n이메일로 아이디를 확인해주시기 바랍니다.\n*이메일을 받지 못하였다면 1:1문의에 남겨주세요.");
+            $(".emailcode").remove();
+            return false;
+          }else if(result.msg=="over"){
+            alert("금일 인증메일 발송횟수가 초과되었습니다.\n관리자에게 문의해 주시거나 내일 다시 시도해주세요.");
+
+            return false;
+          }else{
+            alert(result.msg);
+            return false;
+          }
+       },
+       error:function(e) {
+          alert(e.responseText);
+       }
+    });
+
+  }
+
+  function go_send_sms(){
+    var authtype = "<?=$아이디찾기?>";
+    var name = $("#user_name").val();
+    var phone = $("#sms_number").val();
+    var sms_send_chk = $("#sms_send_chk").val();
+    if(phone==""){
+      alert("휴대폰번호를 입력해주세요.");
+      return false;
+    }
+
+    if(sms_send_chk==1){
+      alert("인증번호가 발송되었습니다.\n인증문자가 도착하지 않았다면 새로고침 후 재발송 해주세요.");
+      $(".phonecode").remove();
+      return false;
+    }
+
+    $.ajax({
+       type : "POST",
+       url: "ajax_send_sms.php",
+       async: false,
+       data: {
+           name : name,
+          phone : phone,
+          pages : '아이디찾기'
+       },
+       success: function(result) {
+          var r = result.trim();
+          console.log(r);
+          if(r==1){
+            $("#phone").prop("readonly", true);
+            $("#sms_send_chk").val(1);
+
+            if(authtype=="바로찾기"){
+              alert("입력하신 휴대폰번호로 아이디가 발송 되었습니다.");
+              location.reload();
+            }else{
+              $(".code_input").show();
+              alert("인증번호가 발송되었습니다.\n문자가 도착하지 않았다면 새로고침 후 재발송 해주세요.");
+            }
+
+            $(".phonecode").remove();
+            return false;
+          }else if(r=="over"){
+            alert("금일 인증문자 발송개수가 초과되었습니다.\n관리자에게 문의해 주시거나 내일 다시 시도해주세요.");
+            go_chet();
+            return false;
+          }else{
+            alert(r);
+            return false;
+          }
+       },
+       error:function(e) {
+          alert(e.responseText);
+       }
+    });
+  }
+
+  function go_code_chke(obj){
+    var phone = $("#"+obj+"_number").val();
+    var smscode = $("#"+obj+"code").val();
+    if(smscode==""){
+      alert("인증번호를 입력해주세요.");
+      return false;
+    }
+
+    $.ajax({
+       type : "POST",
+       url: "ajax_sms_code_chk.php",
+       async: false,
+       data: {
+          smscode : smscode,
+          phone : phone,
+          page : "idfind",
+          sendtype : obj
+       },
+       success: function(result) {
+         console.log(result);
+        var obj = jQuery.parseJSON(result);
+        if(obj.msg=="success"){
+          $("#smscode").prop("readonly", true);
+          alert("인증번호가 확인되었습니다.");
+          $("#find_id").val(obj.member_id);
+          $("#idFindFrm").attr("action","/member/find_id_result.html");
+          $("#idFindFrm").submit();
+        }else{
+          alert("인증번호를 확인해주세요.");
+        }
+
+       },
+       error:function(e) {
+          alert(e.responseText);
+       }
+    },'json');
+  }
+</script>
+<?php
+  //include_once "../lib/channer_talk.php";
+  include "../footer_new.html";
+?>

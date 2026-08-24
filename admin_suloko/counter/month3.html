@@ -1,0 +1,164 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+  if (!$sdate) $sdate = date("Y");
+
+  // 날짜 목록
+  $date_op = array();
+  $start_month = "2022";
+  for ($i = 0; $i < 10; $i++) {
+    $ndate = date("Y", strtotime("{$start_month}-01 first day of +{$i} year"));
+    $date_op[$ndate] = $ndate;
+    if ($ndate == date("Y")) break;
+  }
+  // $date_op = array_reverse($date_op);
+
+  $add_query = "";
+
+  if ($type == "무통장") {
+    $add_query .= "AND CARDNAME = '무통장'";
+  } else if ($type == '카드') {
+    $add_query .= "AND CARDNAME != '무통장'";
+  }
+
+  // 22만/12만 카드결제 숨김 ON (무통장 유지, 상품 주문내역 미적용)
+  $add_query .= get_sales_page_hide_filter('');
+  $canceled_sql = get_cash_sales_canceled_sql();
+
+  // 해당월 결제 데이터 (승인월 +금액, 취소월 -금액)
+  $query = "
+    SELECT
+      LEFT(DT, 7) AS DATE,
+      SUM(PRICE) AS PRICE,
+      SUM(CNT) AS CNT
+    FROM (
+      SELECT
+        IFNULL(CON_REG_DATE, REG_DATE) AS DT,
+        PRICE,
+        1 AS CNT
+      FROM CASH
+      WHERE
+        LEFT(IFNULL(CON_REG_DATE, REG_DATE), 4) = '{$sdate}'
+        AND (IS_USE = 'Y' OR {$canceled_sql})
+        $add_query
+
+      UNION ALL
+
+      SELECT
+        CANCAL_DATE AS DT,
+        -PRICE AS PRICE,
+        -1 AS CNT
+      FROM CASH
+      WHERE
+        LEFT(CANCAL_DATE, 4) = '{$sdate}'
+        AND {$canceled_sql}
+        $add_query
+    ) sales_net
+    GROUP BY LEFT(DT, 7)
+    ORDER BY LEFT(DT, 7) ASC
+  ";
+  $list = $db->get_list($query);
+
+  $type_op = array(
+    "무통장" => "무통장",
+    "카드" => "카드"
+  );
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">월별 매출</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">매출현황</a></li>
+          <li class="breadcrumb-item active" aria-current="page">월별 매출</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+              <div class="form-group mr-3 fl-left">
+                <select name="type" id="type" class="form-control form-select select2 auto-submit">
+                  <option value="">--전체--</option>
+                  <?=option_make($type_op, $type)?>
+                </select>
+              </div>
+              <div class="form-group mr-3 fl-left">
+                <select name="sdate" id="sdate" class="form-control form-select select2 auto-submit">
+                  <?=option_make($date_op, $sdate)?>
+                </select>
+              </div>
+            </form>
+            <div class="table-responsive">
+              <table class="table table-center border text-nowrap table-bordered">
+                <thead>
+                  <tr style="background: #F2F3F9;">
+                    <th>날짜</th>
+                    <th>매출금액</th>
+                    <th>결제건수</th>
+                    <th>건당 평균 결제금액</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                  $total_price = 0;
+                  $total_cnt   = 0;
+
+                  for ($i = 1; $i <= 12; $i++) {
+                    $chk_date = "{$sdate}-{$i}";
+                    $price    = 0;
+                    $cnt      = 0;
+
+                    $style = "";
+                    if (strtotime($chk_date) == strtotime(date("Y-m"))) {
+                      $style = 'background: #F8E5D0;';
+                    }
+
+                    for ($j = 0; $j < count($list['DATE']); $j++) {
+                      if (strtotime($chk_date) == strtotime($list['DATE'][$j])) {
+                        $price = $list['PRICE'][$j];
+                        $cnt = $list['CNT'][$j];
+                        break;
+                      }
+                    }
+
+                    $total_price += $price + $winmoney;
+                    $total_cnt   += $cnt + $winmoney_cnt;
+                  ?>
+                  <tr style="<?=$style?>">
+                    <td><?=date("Y년 m월", strtotime($chk_date))?></td>
+                    <td class="text-end"><strong><?=number_format($price)?></strong></td>
+                    <td class="text-end"><strong><?=number_format($cnt)?></strong></td>
+                    <td class="text-end"><strong><?=((($cnt) == 0) ? "0" : number_format($price / $cnt))?></strong></td>
+                  </tr>
+                  <?php } ?>
+                  <tr>
+                    <td>합계</td>
+                    <td class="text-end"><strong><?=number_format($total_price)?></strong></td>
+                    <td class="text-end"><strong><?=number_format($total_cnt)?></strong></td>
+                    <td class="text-end"><strong><?=(($total_cnt == 0) ? "0" : number_format($total_price / $total_cnt))?></strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>

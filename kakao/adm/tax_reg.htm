@@ -1,0 +1,374 @@
+<?php
+include_once "../adm/head.php";
+
+$data = db_select("select * from site where idx = {$idx} ");
+?>
+
+<?php include_once "../adm/nav.php";?>
+<div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+  <div class="main-menu-header">
+    <form>
+      <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+    </form>
+  </div>
+  <?php include_once "../adm/menu.php";?>
+</div>
+<style>
+.auth_code{    font-size: 1.2rem; font-weight: bold;}
+</style>
+<div class="app-content content container-fluid">
+  <div class="content-wrapper">
+    <div class="content-header row">
+      <div class="content-header-left col-md-6 col-xs-12 mb-1">
+        <h2 class="content-header-title">사업자 정보 등록</h2>
+      </div>
+    </div>
+
+    <div class="content-body">
+      <section id="basic-form-layouts">
+
+      	<div class="row match-height">
+          <div class="col-md-6">
+            <div class="card" >
+              <div class="card-header">
+                <h4 class="card-title" id="basic-layout-form">현금영수증/전자세금계산서</h4>
+                <a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+                <div class="heading-elements">
+                  <ul class="list-inline mb-0">
+                    <li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+                    <li><a data-action="reload"><i class="icon-reload"></i></a></li>
+                    <li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+                    <li><a data-action="close"><i class="icon-cross2"></i></a></li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="card-body collapse in">
+                <div class="card-block">
+                  <div class="card-text">
+                    <p>현금영수증/전자세금계산서는 <a href="https://www.popbill.com/App/SignUp" target="_blank">팝빌</a>API를 연동하여 발행됩니다.</p>
+                    <p>연동회원 <b>링크아이디 : [ DUDRHKS0319 ]</b> 꼭 기재후 가입해주세요.</p>
+                    <p>전자세금계산서의 경우는 팝빌에 인증서등록 및 포인트 충전이 되어있어야하며 건당 100원이 차감 됩니다.</p>
+                    <p>현금영수증은 무료 입니다.</p>
+                    <p><a href="https://www.popbill.com/Member/Form/Link" target="_blank" class="btn btn-secondary btn-min-width mr-1 mb-1">팝빌가입하러가기</a></p>
+                  </div>
+
+                  <form class="form" id="taxFrm">
+                    <div class="form-body">
+                      <h4 class="form-section"><i class="icon-head"></i> 현금영수증/전자세금계산서</h4>
+
+
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="projectinput3">사업자번호</label>
+                            <input type="text" class="form-control" placeholder="사업자번호" name="biz_number" id="biz_number" value="<?=$data['biz_number']?>">
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="projectinput3">회사명</label>
+                            <input type="text" class="form-control" placeholder="회사명" name="biz_company" id="biz_company" value="<?=$data['biz_company']?>">
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="projectinput3">대표자명</label>
+                            <input type="text" class="form-control" placeholder="대표자명" name="biz_ceoname" id="biz_ceoname" value="<?=$data['biz_ceoname']?>">
+                          </div>
+                        </div>
+
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="projectinput3">종목</label>
+                            <input type="text" class="form-control" placeholder="종목" name="biz_etc2" id="biz_etc2" value="<?=$data['biz_etc2']?>">
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="projectinput4">업태</label>
+                            <input type="text" class="form-control" placeholder="업태" name="biz_etc1" id="biz_etc1" value="<?=$data['biz_etc1']?>">
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="form-group">
+                        <label for="companyName">주소</label>
+                        <input type="text" class="form-control" placeholder="주소" name="biz_address" id="biz_address" value="<?=$data['biz_address']?>">
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="projectinput3">담당자명</label>
+                            <input type="text" class="form-control" placeholder="담당자명" name="biz_manager_name" id="biz_manager_name" value="<?=$data['biz_manager_name']?>">
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="projectinput4">담당자이메일</label>
+                            <input type="text" class="form-control" placeholder="담당자이메일" name="biz_manager_email" id="biz_manager_email" value="<?=$data['biz_manager_email']?>">
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="projectinput3">담당자연락처</label>
+                            <input type="text" class="form-control" placeholder="담당자연락처" name="biz_manager_phone" id="biz_manager_phone" value="<?=$data['biz_manager_phone']?>">
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="form-group">
+                        <label for="companyName">팝필ID</label>
+                        <input type="text" class="form-control" placeholder="팝필ID" name="popbill_id" value="<?=$data['popbill_id']?>">
+                      </div>
+                    </div>
+
+                    <div class="form-actions">
+                      <button type="button" class="btn btn-warning mr-1">
+                        <i class="icon-cross2"></i> 취소
+                      </button>
+                      <button type="button" class="btn btn-primary" onclick="go_add_tax_info('update','<?=$idx?>')">
+                        <i class="icon-check2"></i> 저장하기
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
+      	</div>
+
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+  function go_alram_number_show(){
+    if(login_id=="testuser"){
+      alert("테스트 아이디는 수정/삭제가 불가 합니다.");
+      return false;
+    }
+    var bank = $("#bank").val();
+    var ebox = $('.alram_number').is(':visible');
+
+    if(!bank){
+      alert("은행을 선택해주세요.");
+      return false;
+    }
+    console.log(ebox);
+    $("#alram_box_status").val(ebox);
+    $(".alram_number").toggle();
+    $(".auth_code").show();
+    if(bank=="하나은행" || bank=="국민은행"){
+      alert(bank+"은 인증절차가 없으므로 통보번호만 등록해주시면 됩니다.");
+      $(".auth_code").html(bank+"은 인증절차가 없습니다! 통보번호만 등록해주세요!");
+      go_chk();
+      return false;
+    }
+
+    go_auth_number();
+  }
+
+let pollingTimer;
+function go_auth_number(){
+  console.log('호출');
+  var bank = $("#bank").val();
+  $.ajax({
+     type : "POST",
+     url: "/ajax/_ajax_bank_code_chk.php",
+     async: false,
+     data: {
+       bank : bank
+     },
+     dataType: 'json',
+     success: function(result) {
+       console.log(result);
+       if(result.code>0){
+         var btn = "<button type='button' onclick='go_chk("+ result.idx +")' >확인</button>";
+         $(".auth_code").html("인증번호 <font color='red'>"+result.code+"</font> 을 입력해주세요." +btn);
+       }else{
+         $(".auth_code").html("010-3964-3966 번호로 수신된 인증번호가 없습니다. 잠시만 기다려 주세요.");
+       }
+
+     },
+     error:function(e) {
+        alert(e.responseText);
+     },
+     complete: function() {
+        // 5초 후에 다시 폴링을 실행합니다.
+         pollingTimer = setTimeout(go_auth_number, 5000);
+     }
+  });
+}
+
+function go_chk(obj){
+  clearTimeout(pollingTimer);
+  if(confirm("인증번호를 확인 하셨습니까?")){
+    var bank = $("#bank").val();
+    var acount = $("#user_acount").val();
+    if(!acount){
+      alert("계좌번호를 정확히 입력해주세요.");
+      return false;
+    }
+    $.ajax({
+       type : "POST",
+       url: "/ajax/_ajax_bank_code_ok.php",
+       async: false,
+       data: {
+         idx : obj,
+         bank : bank,
+         acount : acount
+       },
+       success: function(result) {
+          var r = result.trim();
+          $("#o_acount").val(r);
+
+       },
+       error:function(e) {
+          alert(e.responseText);
+       }
+    });
+  }
+}
+
+function go_new_phone(){
+  if(login_id=="testuser"){
+    alert("테스트 아이디는 수정/삭제가 불가 합니다.");
+    return false;
+  }
+
+  var bank = $("#bank").val();
+  var phone = $("#phone").val();
+  var sms_status = $("#sms_status").val();
+
+  if(sms_status==1){
+    alert("문자가 발송되었습니다. 문자가 오지 않았을경우 새로고침 후 다시 신청해주세요.");
+    return false;
+  }
+
+  $.ajax({
+     type : "POST",
+     url: "_ajax_send_number.php",
+     async: false,
+     data: {
+       bank : bank,
+       phone : phone
+     },
+     success: function(result) {
+        var r = result.trim();
+        console.log(r);
+        if(r==1){
+          $("#sms_status").val(1);
+          $("#phone").attr("readonly",true);
+          alert("발송되었습니다.");
+          $("#errorlist_number").show();
+        }else{
+          alert(r);
+        }
+
+     },
+     error:function(e) {
+        alert(e.responseText);
+     }
+  });
+}
+
+
+
+    function go_add_tax_info(status,obj){
+      if(!obj){
+        alert("사이트 정보를 우선 등록해주세요.");
+        return false;
+      }
+      var params = jQuery("#taxFrm").serialize();
+      var biz_number = $("#biz_number").val();
+      var biz_company = $("#biz_company").val();
+      var biz_ceoname = $("#biz_ceoname").val();
+      var biz_etc1 = $("#biz_etc1").val();
+      var biz_etc2 = $("#biz_etc2").val();
+      var biz_address = $("#biz_address").val();
+      var biz_manager_name = $("#biz_manager_name").val();
+      var biz_manager_email = $("#biz_manager_email").val();
+      var biz_manager_phone = $("#biz_manager_phone").val();
+
+      if(biz_number==""){
+        alert("사업자 번호를 입력해주세요.(-제외)");
+        return false;
+      }
+      if(biz_company==""){
+        alert("사업자명을 입력해주세요.");
+        return false;
+      }
+      if(biz_ceoname==""){
+        alert("대표자명을 입력해주세요.");
+        return false;
+      }
+      if(biz_etc1==""){
+        alert("업태를 입력해주세요.");
+        return false;
+      }
+      if(biz_etc2==""){
+        alert("종목을 입력해주세요.");
+        return false;
+      }
+      if(biz_address==""){
+        alert("사업장 주소를 입력해주세요.");
+        return false;
+      }
+
+      if(biz_manager_name==""){
+        alert("담당자 이름을 입력해주세요.");
+        return false;
+      }
+      if(biz_manager_email==""){
+        alert("담당자 이메일을 입력해주세요.");
+        return false;
+      }
+      if(biz_manager_phone==""){
+        alert("담당자 연락처를 입력해주세요.");
+        return false;
+      }
+
+      if(obj>0){
+        params+= "&idx="+obj;
+      }
+      console.log(params);
+        $.ajax({
+          type : "POST",
+          url: "/ajax/_ajax_site_tax_info_update.php",
+          async: false,
+          data: params,
+          success: function(result) {
+          var r = result.trim();
+          console.log(r);
+            if(r==1){
+              alert("저장되었습니다.");
+              location.href="/adm/tax_mng.htm";
+            }else{
+              alert(r);
+              return false;
+            }
+          },
+          error:function(e) {
+            alert(e.responseText);
+          }
+        });
+    }
+
+    </script>
+
+<?php include_once "../adm/footer.php";?>

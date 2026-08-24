@@ -1,0 +1,165 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_T_WCASH_LOG.php";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  if (!$page) $page = 1;
+  $limit       = 20;
+  $find_text   = "";
+  $find_object = "";
+  $add_query   = " AND USER_ID='{$M_login['user_id']}' AND MEMO IN ('당첨금사용', '당첨금적립', '쇼핑상품구매')";
+
+  if($sdate != '' && $edate != '') {
+    $add_query .= " AND REG_DATE BETWEEN '{$sdate} 00:00:00' AND '{$edate} 23:59:59'";
+  }
+
+  $condition = array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => " REG_DATE DESC",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  );
+  $list = F_T_WCASH_LOG_list($condition);
+
+  if ($list['total'] <= 0) {
+    $list['LOG_NO'] = array();
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}'");
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html";?>
+  <main id="main">
+    <div class="wrap_mypage clear wrap_com">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/nav-mypage.html";?>
+      <div class="right">
+        <section>
+          <div class="wrap_title">
+            <h3 class="heading">당첨금관리 - <span class="color_blue">적립 · 사용 내역</span></h3>
+          </div>
+          <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+            <div class="bx_search bx_gray">
+              <div class="clear">
+                <div class="left flex align_center">
+                  <p>조회기간</p>
+                  <ul class="list_sel">
+                    <li><button type="button" data-tp="7D" class='gubun'>1주일</button></li>
+                    <li><button type="button" data-tp="1M" class='gubun'>1개월</button></li>
+                    <li><button type="button" data-tp="3M" class='gubun'>3개월</button></li>
+                    <li><button type="button" data-tp="6M" class='gubun'>6개월</button></li>
+                  </ul>
+                </div>
+                <div class="right">
+                  <span>
+                    <input type="text" autocomplete="off" name="sdate" id="sdate" value="<?php if (isset($sdate)) { echo $sdate; } ?>"> ~
+                    <input type="text" autocomplete="off" name="edate" id="edate" value="<?php if (isset($edate)) { echo $edate; } ?>">
+                  </span>
+                  <button class="btn_gray">조회</button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </section>
+        <section>
+          <div class="wrap_title">
+            <strong class="heading fs23">적립 · 사용내역</strong>
+          </div>
+          <div class="wrap_tb">
+            <table class="tb_type2">
+              <caption>
+                <div class="hide">당첨금</div>
+              </caption>
+              <colgroup>
+                <col width="10%">
+                <col width="">
+                <col width="">
+                <col width="">
+              </colgroup>
+              <thead class="bg_navy">
+                <tr>
+                  <th>NO</th>
+                  <th>등록일시</th>
+                  <th>적립</th>
+                  <th>사용</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php
+                  for ($i = 0; $i < count($list['LOG_NO']); $i++) {
+                    $no = $list['total'] - (($page - 1) * $list['row']) - $i;
+
+                    $WCASH_M = 0;
+                    $WCASH_P = 0;
+
+                    if ($list["WCASH"][$i] == "") {
+                      $list["WCASH"][$i] = 0;
+                    }
+
+                    if ($list["STATUS"][$i] == "M") {
+                      $WCASH_M = $list["WCASH"][$i];
+                    } else if ($list["STATUS"][$i] == "P") {
+                      $WCASH_P = $list["WCASH"][$i];
+                    }
+                ?>
+                <tr>
+                  <td><?=$no?></td>
+                  <td><?=date("Y년 m월 d일 H:i", strtotime($list['REG_DATE'][$i]))?></td>
+                  <td><?=(($WCASH_P > 0) ? number_format($WCASH_P)."원" : "-")?></td>
+                  <td><?=(($WCASH_M > 0) ? number_format($WCASH_M)."원" : "-")?></td>
+                </tr>
+                <?php
+                  }
+                ?>
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <?php if ($list['total'] <= 0) { ?>
+        <div class="nohistory">
+          <div class="wrap_img"><img src="/common/images/img_nohistory.jpg" alt=""></div>
+          <p>적립 · 사용내역이 없습니다.</p>
+        </div>
+        <?php } else { ?>
+        <!-- 페이징 숫자 표시는 5개까지 -->
+        <div class="wrap_paging mb60">
+          <?php
+            $page_info['cur'] = $condition['page'];
+            $page_info['row'] = $condition['row'];
+            $page_info['total'] = $list['total'];
+            $list['page_string'] = print_page_num1($page_info);
+            echo $list['page_string'];
+          ?>
+        </div>
+        <?php } ?>
+      </div>
+    </div>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html";?>
+</body>
+
+<script>
+$(document).ready(function() {
+  $(document).on("click", '.gubun', function() {
+    $.post("/other.php", {
+      mode: "search_date",
+      schdate: $(this).data("tp")
+    }, function(e) {
+      if (e.errNo > 0) {
+      } else {
+        $('#sdate').val(e.sdate);
+        $('#edate').val(e.edate);
+      }
+    }, "json");
+  });
+});
+</script>
+
+</html>

@@ -1,0 +1,591 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_CASH.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if ($S_login['limit']) $limit = $S_login['limit'];
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&schdate=$schdate&sdate=$sdate&edate=$edate&limit=$limit";
+
+  $add_query = "";
+  $order_query = "";
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND c.REG_DATE BETWEEN '{$sDate}' AND '{$eDate}'";
+  }
+
+  if ($find_object == "all" && $find_text != "") {
+    $add_query .= " AND (c.USER_ID = '{$find_text}' OR m.NAME LIKE '%{$find_text}%' OR m.HP LIKE '%{$find_text}%' OR c.AUTHNUM LIKE '%{$find_text}%'   )";
+    $find_object = "";
+  }
+
+  // 22만/12만 카드결제 숨김 ON (무통장 유지, 상품 주문내역 미적용)
+  $add_query .= get_staff_hide_card_payment_filter('c.');
+
+  if ($orderIdx) {
+    $columns = array("", "", "NAME", "USER_ID", "PRICE", "CASH", "ITEMNAME", "CARDNAME", "CARDNO", "AUTHNUM", "QUOTA", "SELLER_GUBUN", "REG_DATE", "", "PG_ID");
+    $orderBy = $columns[$orderIdx];
+    $order_query .= $orderBy." ".$orderDir;
+  }
+
+  $list = F_CASH_MEMBER_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order_query,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] <= 0) {
+    $list['CASH_NO'] = array();
+  }
+
+  $find_op = array(
+    "all" => "전체",
+    "c.USER_ID" => "아이디",
+    "m.NAME" => "성명",
+    "m.HP" => "휴대폰번호",
+    "c.AUTHNUM" => "승인번호"
+  );
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">카드결제로그</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">신용카드관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">카드결제로그</li>
+        </ol>
+      </div>
+      <div>
+        <a href="./payment_list_excel.html?find_text=<?=$find_text?>&find_object=<?=$_GET['find_object']?>&sdate=<?=$sdate?>&edate=<?=$edate?>"
+           target="_blank" class="btn btn-primary btn-icon">
+          <span>
+            <i class="fa fa-file-excel-o"></i>
+          </span> Excel Download
+        </a>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="schdate" id="schdate" class="form-control form-select select2">
+                    <option value="">--기간선택--</option>
+                    <?=option_make($search_date_op, $schdate)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                    <span style="margin: 8px 5px 0 5px;">~</span>
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                  </div>
+                </div>
+                <div class="form-group fl-left">
+                  <select name="find_object" id="select-beast" class="form-control form-select select2">
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control auto-submit" name="find_text" value="<?=$find_text?>" />
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+                <div class="form-group fl-left" style="float: right;">
+                  <select name="limit" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <?=option_make($limit_op, $limit)?>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th data-orderable="false"><input type="checkbox" id="chkAll" /></th>
+                    <th data-orderable="false">No</th>
+                    <th>성명</th>
+                    <th>아이디</th>
+                    <th>결제금액</th>
+                    <th>충전캐시</th>
+                    <th>상품명</th>
+                    <th>카드사</th>
+                    <th data-orderable="false">카드번호</th>
+                    <th data-orderable="false">승인번호</th>
+                    <th>할부</th>
+                    <th>구매경로</th>
+                    <th>구매일시</th>
+                    <th>상태</th>
+                    <th>PG</th>
+                    <th data-orderable="false"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['CASH_NO']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                      
+                      if($list['IS_USE'][$i] == 'Y'){
+                        $tp = "승인";
+                      }else if ($list['IS_USE'][$i] == 'N') {
+                        $tp = "취소";
+                      }else{
+                        $tp = "대기";
+                      }
+
+                      // 할부기간 표시
+                      $quota = "일시불";
+                      if ($list['QUOTA'][$i] != '00') {
+                        $quota = $list['QUOTA'][$i] .= "개월";
+                      }
+                      // PG사
+                      $pg = ($list['PG_ID'][$i] == 'wayup') ? "<strong style='color:blue;'>웨이업</strong>" : (($list['PG_ID'][$i] == 'wizzpay') ? "<strong style='color:red;'>위즈페이</strong>" : "수기");
+
+                      $NAME = $list['NAME'][$i];
+                      $HP   = $list['HP'][$i];
+                      $linethrough = "";
+
+                      // 탈퇴 회원 정보 추가
+                      if (empty($NAME)) {
+                        $out         = $db->get_data("SELECT NAME, HP FROM OUT_MEMBER WHERE USER_ID='{$list['USER_ID'][$i]}' LIMIT 1");
+                        $NAME        = $out['NAME'];
+                        $HP          = $out['HP'];
+                        $linethrough = "line-through";
+                      }
+
+                      // 이벤트 결제건 구분
+                      if (strpos($list["ITEMNAME"][$i], "(E)") !== false) {
+                        $tr_style="background-color: #FFFF99;";
+                      } else {
+                        $tr_style = "";
+                      }
+                  ?>
+                  <tr style="<?=$tr_style?>">
+                    <td><input type="checkbox" name="noChk[]" value="<?=$list['CASH_NO'][$i]?>"></td>
+                    <td><?=$no?></td>
+                    <td><?=$NAME?></td>
+                    <td><?=$list['USER_ID'][$i]?><i class="modal-effect fa fa-search checkUser"
+                        title="상세정보"
+                        style="cursor: pointer; margin-left: 3px;"
+                        data-bs-effect="effect-scale"
+                        data-bs-target="#memberModal"
+                        data-bs-toggle="modal"
+                        data-no="<?=$list['MEMBER_NO'][$i]?>">
+                      </i></td>
+                    <td class="text-end text-red"><b><?=number_format($list['PRICE'][$i])?></b></td>
+                    <td class="text-end"><?=number_format($list['CASH'][$i])?></td>
+                    <td><?=$list['ITEMNAME'][$i]?></td>
+                    <td><?=$list['CARDNAME'][$i]?></td>
+                    <td><?=$list['CARDNO'][$i]?></td>
+                    <td><?=$list['AUTHNUM'][$i]?></td>
+                    <td><?=$quota?></td>
+                    <td><?=$list['SELLER_GUBUN'][$i]?></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                    <td><?=$tp?></td>
+                    <td><?=$pg?></td>
+                    <td>
+                      <span class="modal-effect btn btn-success btn-pay-approve"
+                            data-bs-effect="effect-scale"
+                            data-bs-target="#payApproveModal"
+                            data-bs-toggle="modal"
+                            data-no="<?=$list['CASH_NO'][$i]?>"
+                            data-name="<?=$NAME?>"
+                            data-userid="<?=$list['USER_ID'][$i]?>"
+                            data-cardname="<?=$list['CARDNAME'][$i]?>"
+                            data-cardno="<?=$list['CARDNO'][$i]?>"
+                            data-authnum="<?=$list['AUTHNUM'][$i]?>"
+                            data-regdate="<?=$list['REG_DATE'][$i]?>"
+                            data-price="<?=$list['PRICE'][$i]?>"
+                            data-cash="<?=$list['CASH'][$i]?>"
+                            data-pg="<?=$pg?>">처리</span>
+                      <?php if ($tp == "승인" || $tp == "대기") { ?>
+                      <span class="modal-effect btn btn-danger btn-pay-cancel"
+                            data-bs-effect="effect-scale"
+                            data-bs-target="#payCancelModal"
+                            data-bs-toggle="modal"
+                            data-no="<?=$list['CASH_NO'][$i]?>"
+                            data-name="<?=$NAME?>"
+                            data-userid="<?=$list['USER_ID'][$i]?>"
+                            data-cardname="<?=$list['CARDNAME'][$i]?>"
+                            data-cardno="<?=$list['CARDNO'][$i]?>"
+                            data-authnum="<?=$list['AUTHNUM'][$i]?>"
+                            data-regdate="<?=$list['REG_DATE'][$i]?>"
+                            data-price="<?=$list['PRICE'][$i]?>"
+                            data-cash="<?=$list['CASH'][$i]?>"
+                            data-pg="<?=$pg?>">승인 취소</span>
+                      <?php } ?>
+                    </td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<!-- 승인 처리 -->
+<div class="modal fade" id="payApproveModal">
+  <div class="modal-dialog modal-dialog-scrollable " role="document">
+    <div class="modal-content modal-content-demo col-sm-12">
+      <div class="modal-header">
+        <h6 class="modal-title"><strong>카드 결제 승인 처리</strong></h6><button aria-label="Close" class="btn-close" data-bs-dismiss="modal" ><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-4 mb-3">아이디 :</div>
+          <div class="col-8 mb-3"><span id="approve_userid">xxxxx</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">성명 :</div>
+          <div class="col-8 mb-3"><span id="approve_name">OOO</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">결제금액 :</div>
+          <div class="col-8 mb-3"><span class="number-font text-red" id="approve_price">00,000</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">지급캐시 :</div>
+          <div class="col-8 mb-3"><span class="number-font" id="approve_cash">00,000</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">PG사 :</div>
+          <div class="col-8 mb-3"><span id="approve_pgname">OOO</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">카드사 :</div>
+          <div class="col-8 mb-3"><span id="approve_cardname">OOO</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">카드번호 :</div>
+          <div class="col-8 mb-3"><span id="approve_cardno">OOO</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">승인번호 :</div>
+          <div class="col-8 mb-3"><span id="approve_authnum">OOO</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">신청일자 :</div>
+          <div class="col-8 mb-3"><span id="approve_regdate">0000-00-00 00:00:00</span></div>
+        </div>
+        <div class="row mb-3" style="background-color:var(--bs-gray); height:1px"></div>
+        <form name="a_frm" id="a_frm" method="post" action="card_pay.php">
+        <div class="form-row" style="background-color:var(--bs-light)">
+          <div class="col-4 mb-1 form-label">처리유형 :</div>
+          <div class="col-8 mb-1 form-group ">
+            <label class="custom-control custom-radio">
+              <input type="radio" class="custom-control-input" name="PROCESS_TYPE" id="PROCESS_TYPE_S" value="S" checked>
+              <span class="custom-control-label">승인완료 상태처리</span>
+            </label>
+            <label class="custom-control custom-radio">
+              <input type="radio" class="custom-control-input" name="PROCESS_TYPE" id="PROCESS_TYPE_C" value="C">
+              <span class="custom-control-label">승인완료 + 캐시 지급</span>
+            </label>
+            <label class="custom-control custom-radio">
+              <input type="radio" class="custom-control-input" name="PROCESS_TYPE" id="PROCESS_TYPE_D" value="D">
+              <span class="custom-control-label">결제요청건 삭제</span>
+            </label>
+          </div>
+        </div>
+        <input type="hidden" name="CASH_NO">
+        <input type="hidden" name="PARAM" value="<?=$PARAM?>">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary approve-btn">처리저장</button> <button class="btn btn-light" data-bs-dismiss="modal" >닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 승인 취소 -->
+<div class="modal fade" id="payCancelModal">
+  <div class="modal-dialog modal-dialog-scrollable " role="document">
+    <div class="modal-content modal-content-demo col-sm-12">
+      <div class="modal-header">
+        <h6 class="modal-title"><strong>카드 승인취소 처리</strong></h6><button aria-label="Close" class="btn-close" data-bs-dismiss="modal" ><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-4 mb-3">아이디 :</div>
+          <div class="col-8 mb-3"><span id="userid">xxxxx</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">성명 :</div>
+          <div class="col-8 mb-3"><span id="name">OOO</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">결제금액 :</div>
+          <div class="col-8 mb-3"><span class="number-font text-red" id="price2">00,000</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">지급캐시 :</div>
+          <div class="col-8 mb-3"><span class="number-font" id="cash2">00,000</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">PG사 :</div>
+          <div class="col-8 mb-3"><span id="pgname">OOO</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">카드사 :</div>
+          <div class="col-8 mb-3"><span id="cardname">OOO</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">카드번호 :</div>
+          <div class="col-8 mb-3"><span id="cardno">OOO</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">승인번호 :</div>
+          <div class="col-8 mb-3"><span id="authnum">OOO</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">신청일자 :</div>
+          <div class="col-8 mb-3"><span id="regdate">0000-00-00 00:00:00</span></div>
+        </div>
+        <div class="row mb-3" style="background-color:var(--bs-gray); height:1px"></div>
+        <form name="c_frm" id="c_frm" method="post" action="cancel_pay.php">
+        <div class="form-row" style="background-color:var(--bs-light)">
+          <div class="col-4 mb-1 form-label">처리유형 :</div>
+          <div class="col-8 mb-1 form-group ">
+            <label class="custom-control custom-radio">
+              <input type="radio" class="custom-control-input" name="IS_USE_N" id="IS_USE_N" value="C" checked>
+              <span class="custom-control-label">취소 (캐시 회수)</span>
+            </label>
+            <label class="custom-control custom-radio">
+              <input type="radio" class="custom-control-input" name="IS_USE_N" id="IS_USE_N" value="P">
+              <span class="custom-control-label">부분취소 (캐시 부분 회수)</span>
+            </label>
+
+            <label class="custom-control custom-radio">
+              <input type="radio" class="custom-control-input" name="IS_USE_N" id="IS_USE_N" value="G">
+              <span class="custom-control-label">취소 (캐시 회수x)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row" style="background-color:var(--bs-light)">
+          <div class="col-4 mb-1 form-label">취소금액 :</div>
+          <div class="col-4 mb-1"><input class="form-control" type="text" name="cancel_price" id="cancel_price" readonly></div>
+          <div class="col-4 mb-1"><span class="number-font form-label" id="cancel_cash"></span></div>
+          <input type="hidden" name="CASH_NO">
+          <input type="hidden" name="price" id="price">
+          <input type="hidden" name="PARAM" value="<?=$PARAM?>">
+        </div>
+        <div><div class="col-12 text-center alert-danger">* 부분취소 내역이 있는 결제건은 부분취소만 가능합니다.</div></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary cancel-btn" >취소저장</button> <button class="btn btn-light" data-bs-dismiss="modal" >닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_member.html"; ?>
+
+<script>
+  $(function() {
+    // setDataTable Start
+    let dataTable = setDataTable(12);
+    setTableOrder(dataTable);
+
+    $('#table-list th').on('click', function() {
+      let isSorting = $(this).hasClass('sorting');
+
+      if (isSorting) {
+        let orderIdx = dataTable.column(this).index();
+        let orderDir = dataTable.order()[0][1];
+        dataTable.clear().draw();
+
+        setReloadToOrder(orderIdx, orderDir);
+      }
+    });
+
+    $('.page-link').click(function(event) {
+      event.preventDefault();
+
+      let currentOrder = dataTable.order();
+      let href = $(this).attr('href');
+
+      setReloadToPagination(currentOrder, href);
+    });
+    // setDataTable End
+
+    // 대기건 승인처리용 모달
+    $(document).on('click', '.btn-pay-approve', function() {
+      let no       = $(this).data('no');
+      let name     = $(this).data('name');
+      let userid   = $(this).data('userid');
+      let cardname = $(this).data('cardname');
+      let cardno   = $(this).data('cardno');
+      let authnum  = $(this).data('authnum');
+      let regdate  = $(this).data('regdate');
+      let price    = $(this).data('price');
+      let cash     = $(this).data('cash');
+      let pg       = $(this).data('pg');
+
+      let price2 = addComma(String(price));
+      let cash2  = addComma(String(cash));
+
+      let bam = $('#payApproveModal');
+      bam.find('#approve_name').html(name);
+      bam.find('#approve_userid').html(userid);
+      bam.find('#approve_pgname').html(pg);
+      bam.find('#approve_cardname').html(cardname);
+      bam.find('#approve_cardno').html(cardno);
+      bam.find('#approve_authnum').html(authnum);
+      bam.find('#approve_regdate').html(regdate);
+      bam.find('#approve_price').html(price2);
+      bam.find('#approve_cash').html(cash2);
+      bam.find('#PROCESS_TYPE_S').prop('checked', true);
+      bam.find('input[name=CASH_NO]').val(no);
+    });
+
+    // 승인처리
+    $(document).on('click', '.approve-btn', function() {
+      let processType = $('input[name=PROCESS_TYPE]:checked').val();
+      let msg = '';
+
+      if (processType == 'C') {
+        msg = '승인완료 및 캐시 지급 처리하시겠습니까?';
+      } else if (processType == 'D') {
+        msg = '선택한 결제요청건을 삭제하시겠습니까?';
+      } else {
+        msg = '승인완료 상태로 처리하시겠습니까?';
+      }
+
+      if (confirm(msg)) {
+        $('#a_frm').submit();
+      }
+    });
+
+    // 완료건 취소처리용 모달
+    $(document).on('click', '.btn-pay-cancel', function() {
+      let no       = $(this).data('no');
+      let name     = $(this).data('name');
+      let userid   = $(this).data('userid');
+      let cardname = $(this).data('cardname');
+      let cardno   = $(this).data('cardno');
+      let authnum  = $(this).data('authnum');
+      let regdate  = $(this).data('regdate');
+      let price    = $(this).data('price');
+      let cash     = $(this).data('cash');
+      let pg       = $(this).data('pg');
+
+      price2 = addComma(String(price));
+      cash2  = addComma(String(cash));
+
+      let bcm = $('#payCancelModal')
+      bcm.find('#name').html(name);
+      bcm.find('#userid').html(userid);
+      bcm.find('#pgname').html(pg);
+      bcm.find('#cardname').html(cardname);
+      bcm.find('#cardno').html(cardno);
+      bcm.find('#authnum').html(authnum);
+      bcm.find('#regdate').html(regdate);
+      bcm.find('#price2').html(price2);
+      bcm.find('#cash2').html(cash2);
+      bcm.find('#IS_USE_N').eq(1).prop('checked', true);
+      bcm.find('#cancel_price').val('');
+      bcm.find('#cancel_cash').val('');
+      bcm.find('#cancel_price').prop('readonly', true);
+      bcm.find('input[name=CASH_NO]').val(no);
+      bcm.find('input[name=price]').val(price);
+    });
+
+    // 부분취소시 cancel_price 컨트롤
+    $(document).on('click', '.custom-control-input', function() {
+      let chk = $('#IS_USE_N:checked').val();
+      if (chk == 'P') {
+        $('#cancel_price').prop('readonly', false);
+        $('#cancel_price').focus();
+      } else {
+        $('#cancel_price').prop('readonly', true);
+      }
+    });
+
+    // cancel_cash
+    $(document).on('keyup', '#cancel_price', function() {
+      let cprice = $(this).val();
+      let price = $('#price').val();
+      let ccash = 0;
+      cprice = cprice.replace(',', '');
+      ccash = Math.round(cprice / 11 * 10);
+
+      if (Number(cprice) > Number(price)) {
+        alert('결제금액을 초과하였습니다.');
+        return false;
+      }
+      $('#cancel_cash').html(addComma(String(ccash)) + ' 캐시 차감');
+    });
+
+    // 승인취소
+    $(document).on('click', '.cancel-btn', function() {
+      let chk = $('#IS_USE_N:checked').val();
+      let cprice = $('#cancel_price').val();
+      let price = $('#price').val();
+
+      if (chk == 'P' && Number(cprice) > Number(price)) {
+        alert('부분취소금액이 결제금액을 초과하였습니다.');
+        return false;
+      }
+
+      if (confirm('취소하시겠습니까?')) {
+        $('#c_frm').submit();
+      }
+    });
+  });
+</script>
+
+<script>
+  // 천단위 콤마 펑션
+  function addComma(value) {
+    value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return value;
+  }
+  function inputNumberFormat(obj) {
+    obj.value = comma(uncomma(obj.value));
+  }
+  function comma(str) {
+    str = String(str);
+    return str.replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+  }
+  function uncomma(str) {
+    str = String(str);
+    return str.replace(/[^\d]+/g, '');
+  }
+</script>

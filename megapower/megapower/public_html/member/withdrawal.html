@@ -1,0 +1,60 @@
+<?php
+include "../header.html";
+?>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">정보수정</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>Mypage</p></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>정보수정</p></li>
+            </ul>
+        </div>
+
+        <div class="new_member_join">
+            <div class="wrap join_form" style="margin: 0;">
+              <a class="logo"><img src="/images/logo.gif"></a>
+              <div class="line"><p>계정탈퇴</p></div>
+              <div class="out_text">
+                  <p>2조 8천억 당첨의 기회를 포기하시겠습니까?</p>
+                  <p>회원탈퇴시 보유 포인트/당첨금/쿠폰/구매내역이 모두 삭제 되며 복구 할 수 없습니다.</p>
+                  <p>휘완회원가입시 입력하신 정보는 30일뒤 자동으로 완전 삭제됩니다.</p>
+              </div>
+              <button type="button" onclick="go_withdrawal()" class="reg_btn" style="border-color: #F00; background: #F00;">탈퇴하기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+  function go_withdrawal(){
+    if(confirm("정말로 회원 탈퇴를 하시겠습니까? 즉시 회원탈퇴처리가 진행됩니다.")){
+      $.ajax({
+         type : "POST",
+         url: "_ajax_member_withdrawal.php",
+         async: false,
+         data: {
+         },
+         success: function(result) {
+            var r = result.trim();
+            if(r==1){
+              alert('회원 탈퇴 되었습니다.');
+              go_logout();
+            }
+            console.log(r);
+         },
+         error:function(e) {
+            alert(e.responseText);
+         }
+      });
+    }
+  }
+</script>
+
+<?php
+include "../footer_new.html";
+?>

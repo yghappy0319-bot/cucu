@@ -1,0 +1,216 @@
+<?php
+  header("Location: /");
+  exit;
+
+  $page_title = "회원가입 - 파워볼, 메가밀리언, 미국 로또, 슈로코";
+  $page_description = "미국복권 1위 슈로코만의 다른 서비스, 100만불 미만 당첨 시 당첨금 선지급, 1게임 무료 이벤트 진행 중!";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  if ($M_login['user_id'] != '') {
+    meta_go("/");
+    exit;
+  }
+
+  // 파트너 처리 - SLK-647
+  if (!empty($_GET['cp_id'])) {
+    exec_partner($_GET['cp_id'] , 'MOBILE');
+    $domain = "https://".$_SERVER['HTTP_HOST']."/signup.html";
+    meta_go($domain); // 세션 처리후 cp_id 제거
+    exit;
+  }
+
+  // 마일리지지급 커미션 확인 SLK-771
+  if (!empty($_SESSION["PARTNER_ID"])) {
+    $role_chk = $db->get_data("SELECT COUNT(*) AS CNT FROM UM_PARTNER WHERE COMM_POLICY_IDX = 2 AND PARTNER_ID = '{$_SESSION["PARTNER_ID"]}'");
+    if ($role_chk['CNT'] > 0) {
+      $ADmileage = true;
+    }
+  }
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main">
+        <div class="contents">
+          <div class="wrap_com mt50">
+            <img src="/common/images/signup/signup_banner_mobile.jpg" class="br20" style="width: 100%;" />
+          </div>
+          <section class="sec_reg write wrap_com">
+            <form class="f_NotoSansKR" name="w_frm" id="w_frm">
+              <input type="hidden" name="mode" value="signup" />
+              <fieldset>
+                <legend class="h_type3" style="padding: 0;">무료회원가입</legend>
+                <ul class="list_form list_reg">
+                  <li>
+                    <label for="reg_id"><span>아이디</span></label>
+                    <div class="wrap_type1 flex align_center">
+                      <div class="bx_input">
+                        <input type="text" inputmode="text" id="reg_id" name="REG_ID" maxlength="15" placeholder="5~15자의 영문, 숫자만 사용 가능합니다." />
+                      </div>
+                      <button type="button" class="btn_gray id_check_btn">중복확인</button>
+                    </div>
+                  </li>
+                  <li>
+                    <label for="reg_email"><span>이메일</span></label>
+                    <div class="bx_input">
+                      <input type="text" inputmode="email" id="reg_email" name="REG_EMAIL" maxlength="50" placeholder="이메일을 입력해주세요." />
+                    </div>
+                  </li>
+                  <li>
+                    <label for="reg_country"><span>국적</span></label>
+                    <div class="flex">
+                      <input type="hidden" id="reg_country" name="REG_COUNTRY" />
+                      <div class="bx_input" style="border-radius: 0.2rem 0 0 0.2rem; width: 50%; border-right: 0px;">
+                        <input type="button" class="selector country" value="내국인" data-value="kr" />
+                      </div>
+                      <div class="bx_input" style="border-radius: 0 0.2rem 0.2rem 0; width: 50%;">
+                        <input type="button" class="selector country" value="외국인" data-value="os" />
+                      </div>
+                    </div>
+                  </li>
+                  <li>
+                    <label for="reg_name"><span>이름</span></label>
+                    <div class="bx_input">
+                      <input type="text" inputmode="text" id="reg_name" name="REG_NAME" maxlength="30" placeholder="당첨금 수령을 위해 정확한 본인이름을 입력해주세요." />
+                    </div>
+                  </li>
+                  <li>
+                    <div class="bx_gray bx_padding17">
+                    <p class="color_red3 fw500 fs25" style="padding: 0.5rem 0.1rem;">※ 미국복권 구매 및 당첨금 수령시 반드시 필요합니다.</p>
+                  </div>
+                  </li>
+                  <li style="display: none;">
+                    <label for="reg_name"><span>영문이름</span></label>
+                    <div class="bx_input">
+                      <input type="text" inputmode="text" id="reg_ename" name="REG_ENAME" maxlength="50" placeholder="영문 이름을 입력해주세요." />
+                    </div>
+                  </li>
+                  <li>
+                    <label for="reg_birth"><span>생년월일</span></label>
+                    <div class="flex">
+                      <div class="bx_input" style="width: 50%; margin-right: 0.2rem;">
+                        <input type="text" inputmode="numeric" id="reg_birth" name="REG_BIRTH" maxlength="8" placeholder="예) 20001101" />
+                      </div>
+                      <div class="bx_input" style="border-radius: 0.2rem 0 0 0.2rem; padding: 0 0 0 0; width: 24%; border-right: 0px;">
+                        <input type="button" class="selector gender" value="남성" data-value="M" />
+                      </div>
+                      <div class="bx_input" style="border-radius: 0 0.2rem 0.2rem 0; padding: 0 0 0 0; width: 24%;">
+                        <input type="button" class="selector gender" value="여성" data-value="F" />
+                      </div>
+                      <input type="hidden" id="reg_gender" name="REG_GENDER" />
+                    </div>
+                  </li>
+                  <li>
+                    <label for="reg_phone"><span>휴대폰 번호</span></label>
+                    <div>
+                      <div class="wrap_type1 flex align_center">
+                        <div class="bx_tel type1 bx_input">
+                          <input type="text" inputmode="tel" id="reg_phone" name="REG_PHONE" maxlength="13" />
+                        </div>
+                        <button type="button" class="btn_gray auth_btn">인증번호요청</button>
+                      </div>
+                      <p class="txt_type1">반드시 본인 명의의 정확한 핸드폰 번호를 입력해야 미국복권 구매대행 신청 및 당첨금 수령이 가능합니다.</p>
+                      <div class="wrap_type1 flex align_center auth_chk" style="display: none;">
+                        <div class="bx_num bx_input">
+                          <input type="number" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" id="auth_num" name="AUTH_NUM" maxlength="6" />
+                          <input type="hidden" id="auth_phone" name="AUTH_PHONE" />
+                          <p><span class="hide">남은시간</span><span class="time count_down">03:00</span></p>
+                        </div>
+                        <button type="button" class="btn_gray auth_chk_btn" style="margin-top: 9px;">인증번호확인</button>
+                      </div>
+                      <input type="text" style="width: 1px; height: 1px" />
+                    </div>
+                  </li>
+                  <li>
+                    <label for="reg_pwd"><span>비밀번호</span></label>
+                    <div>
+                      <div class="bx_input">
+                        <input type="password" id="reg_pwd" name="REG_PWD" maxlength="20" autocomplete="new-password" placeholder="비밀번호를 입력해주세요." />
+                      </div>
+                      <p class="txt_type1">비밀번호는 8~20자의 영문과 숫자를 섞어주세요. (단, &,',<,> 특수문자 사용불가)</p>
+                    </div>
+                  </li>
+                  <li>
+                    <label for="reg_pwd_chk"><span>비밀번호 확인</span></label>
+                    <div class="bx_input">
+                      <input type="password" id="reg_pwd_chk" name="REG_PWD_CHK" maxlength="20" autocomplete="new-password" placeholder="동일한 비밀번호를 입력해주세요." />
+                      <p>비밀번호가 일치하지 않습니다. 다시 입력해주세요.</p>
+                    </div>
+                  </li>
+                  <li style="display: none;">
+                    <label for="reg_recomid"><span class="notrequir">추천인 아이디</span></label>
+                    <div class="bx_input">
+                      <input type="text" id="reg_recomid" name="REG_RECOMID" placeholder="추천인 아이디를 입력하세요." <?php if ($ADmileage) echo "value='{$_SESSION["PARTNER_ID"]}' readonly";?> />
+                    </div>
+                  </li>
+                  <li>
+                    <label for="reg_pwd_chk"><span>약관동의</span></label>
+                  </li>
+                  <div class="agree">
+                    <ul class="bx_agree">
+                      <li>
+                        <div>
+                          <input type="checkbox" id="chk_all" class="chk_type1" />
+                          <label for="chk_all">
+                            <span>전체 약관에 동의합니다.</span>
+                          </label>
+                        </div>
+                      </li>
+                      <li style="border-top: 1px solid #cfcfcf; margin-top: 10px;">
+                        <div>
+                          <input type="checkbox" id="chk1" class="chk_type1" />
+                          <label for="chk1">
+                            <span>슈로코 이용약관</span><span class="color_red2"> [필수]</span>
+                          </label>
+                        </div>
+                        <a href="/terms.html" class="view">전문보기</a>
+                      </li>
+                      <li>
+                        <div>
+                          <input type="checkbox" id="chk2" class="chk_type1" />
+                          <label for="chk2">
+                            <span>개인정보 수집/이용안내</span><span class="color_red2"> [필수]</span>
+                          </label>
+                        </div>
+                        <a href="/policy-privacy.html" class="view">전문보기</a>
+                      </li>
+                      <li>
+                        <div>
+                          <input type="checkbox" id="chk3" name="REG_MARKETING" value="Y" class="chk_type1" />
+                          <label for="chk3">
+                            <span>마케팅 동의 [선택]</span>
+                          </label>
+                        </div>
+                      </li>
+                      <li>
+                        <div>
+                          <input type="checkbox" id="chk_19" class="chk_type1">
+                          <label for="chk_19">
+                            <span>만 19세 이상입니다.</span><span class="color_red2"> [필수]</span><span style="color: #999c9f;"> (만 19세미만 회원가입 불가)</span>
+                          </label>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                </ul>
+                <div class="wrap_btn align_center">
+                  <button type="button" class="btn_gray ok_btn" style="width: 100%;">회원가입</button>
+                </div>
+              </fieldset>
+            </form>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script src="/common/js/time.js?version=<?=$version?>" charset="utf-8"></script>
+<script src="/common/js/signup.js?version=<?=$version?>" charset="utf-8"></script>
+<script src="/common/js/member_common.js?version=<?=$version?>" charset="utf-8"></script>
+
+</html>

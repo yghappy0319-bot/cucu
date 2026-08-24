@@ -1,0 +1,74 @@
+<?php include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="service bg">
+        <div class="contents f_NotoSansKR">
+          <section class="sec_service wrap_com section bg_white">
+            <?php if ($_GET['utp'] == 'Y'){ ?>
+            <div class="wrap_tab type2">
+              <ul class="tab_type2 flex wrap">
+                <li class="on">
+                  <a href="service.html">
+                    <p>파메코 소개</p>
+                  </a>
+                </li>
+                <li>
+                  <a href="mega.html">
+                    <p>메가밀리언 소개</p>
+                  </a>
+                </li>
+                <li>
+                  <a href="power.html">
+                    <p>파워볼 소개</p>
+                  </a>
+                </li>
+                <li>
+                  <a href="purchase.html">
+                    <p>구매대행 이용안내</p>
+                  </a>
+                </li>
+                <li>
+                  <a href="receive.html">
+                    <p>당첨금 수령안내</p>
+                  </a>
+                </li>
+                <li>
+                  <a href="policy.html">
+                    <p>회원등급안내</p>
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <?php } ?>
+            <div class="wrap_com bg_white ls50">
+              <div class="top bb">
+                <h3>파메코 소개</h3>
+              </div>
+              <div class="pb40">
+                <div class="wrap_logo wrap_img">
+                  <img src="/common/images/superlottokorea-logo.svg" alt="파워메가볼 로고" style="width: 70%;" />
+                </div>
+                <div class="txt_type_b mt30">
+                  <p>
+                    파메코(http://www.<?=$domain?>)는 미국 복권 구매대행 서비스를 제공합니다.<br/>
+                    파메코은 선 구입한 해외 복권을 재판매 하지 않으며, 본 서비스를 통해 고객이 선택한 번호를 미국 현지 구매대행사에 제공하여 해당 번호로 구매 요청을 하고 실물 복권(유가증권)은 당첨결과 발표시까지 미국 현지 구매대행사에서 안전하게 보관합니다.<br/>
+                    당첨결과는 파메코 홈페이지 및 모바일 앱을 통해 확인하실 수 있습니다.
+                  </p>
+                  <img src="/common/images/m-flow.png" style="width: 100%; padding-top: 30px; display: none;" />
+                </div>
+              </div>
+            </div>
+          </section>
+          <div class="wrap_com">
+            <?php include $_SERVER['DOCUMENT_ROOT']."/inc/quick.html"; ?>
+          </div>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+</html>

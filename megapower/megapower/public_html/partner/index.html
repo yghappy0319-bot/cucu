@@ -1,0 +1,171 @@
+<? include_once "header.php";?>
+  <div class="content">
+    <div class="row">
+      <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card card-stats">
+          <div class="card-body ">
+            <div class="row">
+              <div class="col-5 col-md-4">
+                <div class="icon-big text-center icon-warning">
+                  <i class="nc-icon nc-globe text-warning"></i>
+                </div>
+              </div>
+              <div class="col-7 col-md-8">
+                <div class="numbers">
+                  <p class="card-category">오늘 가입</p>
+                  <?
+                  $sql = "select count(*) as cnt from lr_member where date_format(regdate, '%Y-%m-%d') = '{$오늘}' and recommender = '{$member['code']}' ";
+                  $오늘가입 = db_select($sql);
+                  ?>
+                  <p class="card-title"><?=$오늘가입['cnt']?>명<p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer ">
+            <hr>
+            <div class="stats">
+
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card card-stats">
+          <div class="card-body ">
+            <div class="row">
+              <div class="col-5 col-md-4">
+                <div class="icon-big text-center icon-warning">
+                  <i class="nc-icon nc-vector text-danger"></i>
+                </div>
+              </div>
+<?
+if($member['code']){
+  $referral = " and b.recommender = '{$member['code']}' ";
+}
+
+$_주문일 = date("Y-m-d");
+$_pbsql = "select sum(a.buy_cnt) as buy_cnt
+from lr_orders a left join lr_member b
+on a.midx = b.idx
+where a.gubun = 'pb' and a.regdate like '%{$_주문일}%' {$referral} ";
+//echo $_pbsql."<br />";
+$파워볼 = db_select($_pbsql);
+
+$_mega_sql = "select sum(a.buy_cnt) as buy_cnt
+from lr_orders a left join lr_member b
+on a.midx = b.idx
+where a.gubun = 'mm' {$_장영관계정아닌거} and a.regdate like '%{$_주문일}%' {$referral} ";
+//echo $_mega_sql."<br />";
+$메가볼 = db_select($_mega_sql);
+
+
+$총구매 = $파워볼['buy_cnt'] + $메가볼['buy_cnt'];
+?>
+              <div class="col-7 col-md-8">
+                <div class="numbers">
+                  <p class="card-category">오늘 게임구매</p>
+                  <p class="card-title"><?=$총구매?>건<p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer ">
+            <hr>
+            <div class="stats">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card card-stats">
+          <div class="card-body ">
+            <div class="row">
+              <div class="col-5 col-md-4">
+                <div class="icon-big text-center icon-warning">
+                  <i class="nc-icon nc-money-coins text-success"></i>
+
+                </div>
+              </div>
+<?
+$sql = "
+select
+sum(a.point) as total_point
+from lr_deposit_log a left join lr_member b
+on a.midx = b.idx
+where a.status = 2 and date_format(a.regdate, '%Y-%m-%d') = '{$_주문일}' and b.recommender = '{$member['code']}'";
+
+$오늘매출 = db_select($sql);
+$총매출 = $오늘매출['total_cash'];
+$총매출 = $오늘매출['total_cash'];
+$부가세 = $총매출 * 0.1; //10%
+
+$부가세제외매출 = $오늘매출['total_cash'] - $부가세;
+?>
+              <div class="col-7 col-md-8">
+                <div class="numbers">
+                  <p class="card-category">오늘 충전</p>
+                  <p class="card-title"><?=number_format($부가세제외매출)?>원<p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer ">
+            <hr>
+            <div class="stats">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6 col-sm-6"  >
+        <div class="card card-stats">
+          <div class="card-body ">
+            <div class="row">
+              <div class="col-5 col-md-4">
+                <div class="icon-big text-center icon-warning">
+                  <i class="nc-icon nc-favourite-28 text-primary"></i>
+                </div>
+              </div>
+              <div class="col-7 col-md-8">
+                <div class="numbers">
+                  <p class="card-category">정산</p>
+                  <p class="card-title">0<p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer ">
+            <hr>
+            <div class="stats">
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="display:none;" >
+      <div class="col-md-12">
+        <div class="card ">
+          <div class="card-header ">
+            <h5 class="card-title">Users Behavior</h5>
+            <p class="card-category">24 Hours performance</p>
+          </div>
+          <div class="card-body ">
+            <canvas id=chartHours width="400" height="100"></canvas>
+          </div>
+          <div class="card-footer ">
+            <hr>
+            <div class="stats">
+              <i class="fa fa-history"></i> Updated 3 minutes ago
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<? include_once "footer.php";?>
+<script>
+  $(".nav li").removeClass('active');
+  $(".nav li").eq(0).addClass('active');
+</script>

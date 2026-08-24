@@ -1,0 +1,117 @@
+<?php
+  $page_title = "회원 등급 안내 - 파워볼, 메가밀리언, 미국 복권, 파메코";
+  $page_description = "파워볼, 메가밀리언 소개 및 미국 로또 구매 대행 신청 방법, 복권 당첨금 수령 안내";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  $menu_on['service'] = true;
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html";?>
+  <main id="main">
+    <div class="location ls50">
+      <div class="wrap_com">
+        <ol class="clear">
+          <li><a href="/" class="add_before"><span class="hide">홈</span></a></li>
+          <li><a href="/contents/service/purchase.html">서비스안내</a></li>
+          <li><a href="/contents/service/policy.html">회원 등급 안내</a></li>
+        </ol>
+      </div>
+    </div>
+    <section class="sec_service level sec_tab wrap_com">
+      <h2 class="h_type4">서비스안내</h2>
+      <div class="wrap_tab">
+        <ul class="tab_type1 flex align_center ls75">
+          <li><a href="/contents/service/purchase.html">미국 복권 구매대행 이용안내</a></li>
+          <li><a href="/contents/service/mega.html">메가밀리언 소개</a></li>
+          <li><a href="/contents/service/power.html">파워볼 소개</a></li>
+          <li><a href="/contents/service/receive.html">당첨금 수령 안내</a></li>
+          <li class="on"><a href="/contents/service/policy.html">회원 등급 안내</a></li>
+        </ul>
+      </div>
+      <div class="wrap_board ls50">
+        <div class="top clear bb">
+          <h3 class="left ls50 fw400">회원 등급 안내</h3>
+        </div>
+        <div class="contents">
+          <p class="txt_type2 fs18">온라인 구매실적 통합, 등급에 따라 이용금액의 0.5% ~ 8% 마일리지 적립</p>
+          <div class="wrap_tb">
+            <table class="tb_level bb">
+              <caption>
+                <div class="hide">
+                <?=$사이트명1?> 회원등급에 대한 정보를 제공하는 표
+                </div>
+              </caption>
+              <colgroup>
+                <col width="16%">
+                <col width="23%">
+                <col width="19%">
+                <col width="19%">
+                <col width="23%">
+              </colgroup>
+              <tbody class="txt_type2">
+                <tr>
+                  <th><?=$사이트명1?> <br>회원 등급</th>
+                  <?php foreach ($grade_op as $key => $grade) { ?>
+                  <td>
+                    <div class="bx_level">
+                      <img src="/common/images/img_<?=$key?>.png">
+                      <p><strong><?=strtoupper($grade["eng"])?></strong></p>
+                      <span><?=$grade["name"]?></span>
+                    </div>
+                  </td>
+                  <?php } ?>
+                </tr>
+                <tr>
+                  <th>등급선정 기준</th>
+                  <?php foreach ($grade_op as $key => $grade) { ?>
+                  <td>
+                    <?php if ($key != 'brown') { ?>
+                      <?= $grade['cash'] ?>만 캐시 복권<br> 구매대행 이용 회원
+                    <?php } else { ?>
+                      회원가입과 동시에 부여되는<br> 기본 등급
+                    <?php } ?>
+                  </td>
+                  <?php } ?>
+                </tr>
+                <tr>
+                  <th>회원 등급별 혜택</th>
+                  <?php foreach ($grade_op as $grade) { ?>
+                  <td>복권 구매대행 이용금액의<br> <?= $grade['percent'] ?>% 마일리지 적립</td>
+                  <?php } ?>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="wrap_list space_btm">
+            <ul class="list_level txt_type2">
+              <?php foreach ($grade_op as $key => $grade) { ?>
+                <li class="flex align_center">
+                  <div class="bx_level">
+                    <img src="/common/images/img_<?= $key ?>.png">
+                    <p><strong><?=strtoupper($grade['eng'])?></strong></p>
+                    <span><?=$grade['name']?></span>
+                  </div>
+                  <div>
+                    <ul class="list_bul">
+                      <?php if ($key != 'brown') { ?>
+                        <li><?=$grade['cash']?>만 캐시 복권 구매대행 이용 회원</li>
+                      <?php } else { ?>
+                        <li>회원가입과 동시에 부여되는 기본 등급</li>
+                      <?php } ?>
+                      <li>복권 구매대행 이용금액의 <?=$grade['percent']?>% 마일리지 적립</li>
+                    </ul>
+                  </div>
+                </li>
+              <?php } ?>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html";?>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_UM_TRAFFIC_LOG.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page)  $page  = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit&type_op=$type_op";
+
+  $add_query = "";
+
+  // tmadmin
+  if ($S_login['user_id'] == "tmadmin") $add_query .= " AND T.PARTNER_ID IN (SELECT PARTNER_ID FROM UM_PARTNER WHERE ROLE = 'TM_USER')";
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND REG_DATE BETWEEN '".$sDate."' AND '".$eDate."'";
+  }
+
+  if ($find_object == "all" && $find_text != "") {
+    $add_query .= " AND (T.PARTNER_ID LIKE '%".$find_text."%' OR T.IP LIKE '%".$find_text."%' OR P.NAME LIKE '%".$find_text."%' OR REFERRAL LIKE '%".$find_text."%')";
+    $find_object = "";
+  }
+
+  if ($in_type != "") {
+    $add_query .= " AND IN_TYPE = '{$in_type}'";
+  }
+
+  $type_op = array(
+    "MOBILE" => "MOBILE",
+    "PC"     => "PC"
+  );
+
+  $find_op = array(
+    "all"          => "전체",
+    "P.NAME"       => "이름",
+    "T.IP"         => "아이피",
+    "T.PARTNER_ID" => "아이디",
+    "REFERRAL"     => "리퍼럴"
+  );
+
+  // 파트너 목록
+  $list = F_UM_TRAFFIC_LOG_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query
+  ));
+
+  if ($list['total'] == 0) {
+    $list['IDX'] = array();
+  }
+?>
+
+<style>
+  #modal-subject {
+    text-align: center;
+    background: #F2F3F9;
+    vertical-align: middle;
+    width: 25%;
+  }
+  .input-readonly {
+    background-color: #e2e2e2;
+    border: 1px solid darkgray;
+  }
+</style>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">유입 리퍼럴</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">언더마케팅</a></li>
+          <li class="breadcrumb-item active" aria-current="page">유입 리퍼럴</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="in_type" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <option value="">유입타입</option>
+                    <?=option_make($type_op, $in_type)?>
+                  </select>
+                </div>
+                <div class="form-group fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                    <span style="margin: 8px 5px 0 5px;">~</span>
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker mr-3" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                  </div>
+                </div>
+                <div class="form-group fl-left">
+                  <select name="find_object" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control auto-submit" name="find_text" value="<?=$find_text?>" />
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>파트너정보</th>
+                    <th>유입타입</th>
+                    <th>리퍼럴</th>
+                    <th>아이피</th>
+                    <th>접속일</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['IDX']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                  ?>
+                  <tr class="text-center">
+                    <td><?=$no?></td>
+                    <td><?=$list['PARTNER_NAME'][$i]?>(<?=$list['PARTNER_ID'][$i]?>)</td>
+                    <td><?=$list['IN_TYPE'][$i]?></td>
+                    <td class="text-start"><?=$list['REFERRAL'][$i]?></td>
+                    <td><?=$list['IP'][$i]?></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>

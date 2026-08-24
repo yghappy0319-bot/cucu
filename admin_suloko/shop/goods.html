@@ -1,0 +1,419 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_SHOP.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page   = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit";
+
+  $banner_static_url = "/upload/SHOP/";
+
+  $type_op = array(
+    "P" => "PC",
+    "M" => "MOBILE"
+  );
+
+$order = " sort asc ";
+
+$list = F_PRODUCT_list(array(
+"row"         => $limit,
+"page"        => $page,
+"order"       => $order,
+"find_text"   => $find_text,
+"find_object" => $find_object,
+"add_query"   => $add_query
+));
+
+if ($list['total'] == 0) {
+$list['idx'] = array();
+}
+?>
+
+<style>
+    #modal-subject {
+        text-align: center;
+        background: #F2F3F9;
+        vertical-align: middle;
+    }
+         /* 에디터의 부모 div나 summernote 자체에 적용 가능 */
+    .note-editor {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+
+</style>
+<!-- CSS: Bootstrap + Summernote -->
+
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.css" rel="stylesheet">
+
+
+
+<!--app-content open-->
+<div class="app-content">
+    <div class="side-app">
+
+        <!-- PAGE-HEADER -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">상품관리</h1>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#">쇼핑관리</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">상품관리</li>
+                </ol>
+            </div>
+
+            <div class="ms-auto pageheader-btn">
+                <a href="" class="btn btn-primary btn-icon text-white me-2" data-bs-target="#modaldemo1" data-bs-toggle="modal" onClick="init_form()">
+          <span>
+            <i class="fe fe-plus"></i>
+          </span> 상품추가
+                </a>
+            </div>
+        </div>
+        <!-- PAGE-HEADER END -->
+
+        <!-- Row -->
+        <div class="row row-sm">
+            <div class="col-lg-12">
+                <div class="card custom-card">
+                    <div class="card-body">
+                        <div>
+
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table border text-nowrap table-bordered" id="table-list">
+                                <thead>
+                                <tr style="text-align: center; background-color: #F2F3F9;">
+                                    <th>No</th>
+                                    <th>상품명</th>
+                                    <th>정가</th>
+                                    <th>판매가격</th>
+                                    <th>이미지</th>
+                                    <th>등록일</th>
+                                    <th>출력여부</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <?php
+                                    for ($i = 0; $i < count($list['idx']); $i++) {
+                                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                                  ?>
+                                <tr style="text-align:center; cursor:pointer;" data-bs-target="#modaldemo1" data-bs-toggle="modal" class="add_banner_btn" data-no="<?=$list['idx'][$i]?>">
+                                    <td><?=$no?></td>
+                                    <td><?=$list['product_name'][$i]?></td>
+                                    <td><?= number_format($list['original_price'][$i])?></td>
+                                    <td><?= number_format($list['product_price'][$i])?></td>
+                                    <td><img src="/upload/SHOP/<?=$list['product_img'][$i]?>" style="width: 50px;"></td>
+                                    <td><?=$list['regdate'][$i]?></td>
+                                    <td><?= $list['status'][$i] ? "미출력":"출력" ?></td>
+                                </tr>
+                                <?php } ?>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="card-body">
+                            <?=$list['page_string']?>
+                        </div>
+                        <!-- pagination-wrapper -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Row -->
+    </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+
+<!-- BASIC MODAL -->
+<div class="modal fade" id="modaldemo1">
+    <div class="modal-dialog" role="document" style="        max-width: 800px;" >
+        <div class="modal-content modal-content-demo" >
+            <div class="modal-header">
+                <h6 class="modal-title">상품 등록/수정</h6>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="card-body" id="order-view" style="padding: 0;">
+                    <div class="table-responsive">
+                        <form name="w_frm" id="w_frm" method="post" action="/shop/goods_action.php" enctype='multipart/form-data'>
+                            <input type="hidden" name="mode" value="insert" />
+                            <input type="hidden" class="form-control" name="IDX" class="custom-form-control" />
+                            <table class="table border text-nowrap table-bordered">
+                                <tbody>
+<!--                                <tr style="display: none;" >-->
+<!--                                    <td id="modal-subject">배너타입</td>-->
+<!--                                    <td>-->
+<!--                                        <select name="TYPE" id="type" class="form-select select2 form-control" style="width: 100%;">-->
+<!--                                            <?=option_make($type_op, "")?>-->
+<!--                                        </select>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+
+                                <tr>
+                                    <td id="modal-subject">출력유무</td>
+                                    <td>
+                                        <div class="form-inline">
+                                            <div class="custom-control custom-radio me-4">
+                                                <input type="radio" class="custom-control-input" id="customControlValidation3" name="status" value='0' checked />
+                                                <label class="custom-control-label" for="customControlValidation3">출력</label>
+                                            </div>
+                                            <div class="custom-control custom-radio me-4">
+                                                <input type="radio" class="custom-control-input" id="customControlValidation2" name="status" value='1' />
+                                                <label class="custom-control-label" for="customControlValidation2">미출력</label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td id="modal-subject">상품명</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="product_name" class="custom-form-control" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td id="modal-subject">정가</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="original_price" class="custom-form-control" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td id="modal-subject">판매가격</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="product_price" class="custom-form-control" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td id="modal-subject">설명</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="content1" class="custom-form-control" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td id="modal-subject">순서</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="sort" class="custom-form-control" />
+                                    </td>
+                                </tr>
+
+<!--                                <tr>-->
+<!--                                    <td id="modal-subject">사이즈</td>-->
+<!--                                    <td>-->
+<!--                                        <input type="text" class="form-control" name="SIZE" class="custom-form-control" />-->
+<!--                                        <div>* 300x150 형태, 파일의 이름에 사용됩니다.</div>-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+                                <tr>
+                                    <td id="modal-subject">썸네일 이미지</td>
+                                    <td>
+                                        <div class="form-file">
+                                            <input type="file" class="form-file-input" name="product_img" id="validatedCustomFile1" />
+                                            <label class="form-file-label" for="validatedCustomFile1">Choose file...</label>
+                                            <div>권장사이즈 : 510x510</div>
+                                        </div>
+
+                                        <br><span id="banner_url"></span>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td id="modal-subject">상세 내용</td>
+                                    <td>
+                                        <textarea id="summernote" name="content2"></textarea>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td id="modal-subject">브랜드</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="etc1" class="custom-form-control" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td id="modal-subject">모델명</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="etc2" class="custom-form-control" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td id="modal-subject">연결방식</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="etc3" class="custom-form-control" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td id="modal-subject">배터리</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="etc4" class="custom-form-control" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td id="modal-subject">무게</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="etc5" class="custom-form-control" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td id="modal-subject">색상</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="etc6" class="custom-form-control" />
+                                    </td>
+                                </tr>
+
+
+                                <tr>
+                                    <td id="modal-subject">등록 일시</td>
+                                    <td><span id="REG_DATE"></span></td>
+                                </tr>
+
+                                </tbody>
+                            </table>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: space-between;">
+                <div>
+                    <button type="button" class="btn btn-danger delete_btn">Delete</button>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-success ok_save_btn">Save</button>
+                    <button type="button" class="btn btn-light cancel_btn" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js"></script>
+
+<script>
+    $(function() {
+        $('#summernote').summernote({
+            height: 300,
+            toolbar: [
+                ['insert', ['picture']]  // 파일(이미지) 업로드 버튼만 남김
+            ],
+            callbacks: {
+                onImageUpload: function (files) {
+                    uploadImage(files[0]);
+                }
+            }
+        });
+
+        function uploadImage(file) {
+            let data = new FormData();
+            data.append("image", file);
+
+            $.ajax({
+                url: 'upload.php', // 업로드 처리 PHP
+                method: "POST",
+                data: data,
+                contentType: false,
+                processData: false,
+                success: function (url) {
+                    console.log(url);
+                    $('#summernote').summernote('insertImage', url);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert("이미지 업로드 실패");
+                    console.error(textStatus + " " + errorThrown);
+                }
+            });
+        }
+
+        $(document).on("click", ".delete_btn", function(e) {
+            if (confirm("삭제하시겠습니까?")) {
+                $("#w_frm").find('[name="mode"]').val("delete");
+                $("#w_frm").submit();
+            }
+        });
+
+        $(document).on("click", ".ok_save_btn", function(e) {
+            let f = $("#w_frm");
+            e.preventDefault();
+
+            if (f.find('[name="product_name"]').val() == "") {
+                alert("상품명을 입력해 주세요.");
+                f.find('[name="product_name"]').focus();
+                return false;
+            }
+            if (f.find('[name="product_price"]').val() == "") {
+                alert("판매가격을 입력해 주세요.");
+                f.find('[name="product_price"]').focus();
+                return false;
+            }
+
+            if (f.find('[name="mode"]').val() == "insert" && f.find('[name="product_img"]').val() == "") {
+                alert("상품이미지를 선택해 주세요.");
+                return false;
+            }
+
+            if (confirm("저장하시겠습니까?")) {
+                $("#w_frm").submit();
+            }
+
+        });
+
+        $(document).on("click", ".add_banner_btn", function() {
+            let no = $(this).data("no");
+            init_form();
+
+            $.post("./default.php", {
+                mode: "search_product_info",
+                no: no
+            }, function(e) {
+                if (e.error) {
+                    alert(e.msg);
+                } else {
+                    console.log(e);
+                    $(".delete_btn").show();
+                    $("#w_frm").find('[name="mode"]').val("update");
+                    $("#w_frm").find('[name="IDX"]').val(e.idx);
+
+                    $("#w_frm").find('[name="product_name"]').val(e.product_name);
+                    $("#w_frm").find('[name="original_price"]').val(e.original_price);
+                    $("#w_frm").find('[name="product_price"]').val(e.product_price);
+                    $("#w_frm").find('[name="content1"]').val(e.content1);
+                    $("#w_frm").find('[name="sort"]').val(e.sort);
+                    $('#summernote').summernote('code', e.content2);
+                    $("#w_frm").find('#banner_url').html("<img src='<?=$banner_static_url?>"+e.product_img+"'>");
+                    $("#w_frm").find('[name="status"]:radio[value="'+e.status+'"]').prop("checked",true);
+                    $("#w_frm").find('#REG_DATE').html(e.regdate);
+                }
+            }, "json");
+        });
+    });
+
+    function init_form() {
+        $(".delete_btn").hide();
+        $("#w_frm").find('[name="mode"]').val("insert");
+        $("#w_frm").find('[name="IDX"]').val("");
+
+        $("#w_frm").find('[name="product_name"]').val("");
+        $("#w_frm").find('[name="original_price"]').val("");
+        $("#w_frm").find('[name="product_price"]').val("");
+        $("#w_frm").find('[name="content1"]').val("");
+        $("#w_frm").find('[name="sort"]').val("");
+        $('#summernote').summernote('code', "");
+        $("#w_frm").find('#banner_url').html("");
+        $("#w_frm").find('[name="STATUS"]:radio[value="Y"]').prop("checked",true);
+        $("#w_frm").find('#REG_DATE').html("");
+
+    }
+</script>

@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>카운트다운</title>
+<script src="jquery/jquery-1.8.2.min.js"></script>
+<link href="jquery/jquery-ui-1.9.1.custom.min.css" rel="stylesheet" type="text/css">
+<script src="jquery/jquery-ui-1.9.1.custom.min.js"></script>
+<link href="jcountdown/jcountdown.css" rel="stylesheet" type="text/css">
+<script src="jcountdown/jquery.jcountdown.min.js"></script>
+<link href="index.css" rel="stylesheet" type="text/css">
+<!--<script src="index.min.js"></script>-->
+</head>
+
+<body>
+
+<div id="tip">
+	<div class="arrow">
+	</div>
+	<div class="content">
+	</div>
+</div>
+<div id="content">
+	<div class="page">
+		<div class="countdown">
+		</div>
+	</div>
+</div>
+</body>
+<script>
+$(function(){
+    var b = new Date;
+    var b = -b.getTimezoneOffset() / 60;
+    var i = '2022/06/28 00:00:00';
+    var config = {
+        timeText: i, //마감시간
+        timeZone: b, //현재시간
+        style: "flip", //샘플종류 flip,slide,metal,crystal
+        color: "black", //색상 white,black
+        width: 0, //넓이
+        textGroupSpace: 15, //일자,시, 분, 초사이의 간격
+        textSpace: 0, //숫자간의 간격
+        reflection: 0, //음영처리여부
+        reflectionOpacity: 10, //음영부분 투명도
+        reflectionBlur: 0, //음영부분 흐릿함
+        dayTextNumber: 2, //마감시간 일자개수
+        displayDay: !0, //일자출력여부
+        displayHour: !0, //시간출력여부
+        displayMinute: !0, //분출력여부
+        displaySecond: !0, //초출력여부
+        displayLabel: !0, //하단 label출력여부
+        onFinish: function() {}
+    };
+    $(".countdown").jCountdown(config);
+});
+</script>
+</html>

@@ -1,0 +1,55 @@
+<?php
+include "../header.html";
+
+$sql = "select * from lr_post where gubun = '{$gubun}' and idx = {$idx} ";
+
+$view = db_select($sql);
+if(!$view['idx']){
+  alert('존재하지 않는 게시글 입니다.', '');
+}
+$sql = "update lr_post set cnt = cnt + 1 where gubun = '{$gubun}' and idx = {$idx} ";
+db_query($sql);
+?>
+
+<style>
+    .content a { font-weight: bold; text-decoration: underline;}
+</style>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">공지사항</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>고객센터</p></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>공지사항</p></li>
+            </ul>
+        </div>
+
+        <div class="modle_menu_02">
+            <a class="on" href="/member/notice.html">공지사항</a>
+            <a href="/member/news.html">최신뉴스</a>
+            <a href="/member/faq.html">자주묻는질문</a>
+            <a href="/member/inquiry.html">1:1문의</a>
+        </div>
+
+        <div class="board_view">
+            <div class="head">
+              <div class="title"><?=$view['title']?></div>
+              <div class="date"><?=$view['regdate']?></div>
+            </div>
+            <div class="content">
+                <?= nl2br($view['content'])?>
+            </div>
+        </div>
+        <button type="button" class="list_bnt" onclick="history.back();" >목록으로</button>
+
+
+    </div>
+</div>
+
+<?php
+include "../footer_new.html";
+?>

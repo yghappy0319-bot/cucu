@@ -1,0 +1,985 @@
+<?php
+  require_once $_SERVER["DOCUMENT_ROOT"]."/inc/meta.html";
+  require_once $_SERVER["DOCUMENT_ROOT"]."/inc/header.html";
+  require_once $_SERVER["DOCUMENT_ROOT"]."/_library/function_CASH.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if ($S_login['limit']) $limit = $S_login['limit'];
+  if (!isset($find_object_bank)) $find_object_bank = "N";
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&schdate=$schdate&sdate=$sdate&edate=$edate&limit=$limit";
+  $PARAM .= "&find_object_bank=$find_object_bank&find_object_memo=$find_object_memo";
+
+  $add_query = "";
+  $order_query = "";
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND c.REG_DATE BETWEEN '{$sDate}' AND '{$eDate}'";
+  }
+
+  if ($find_object == "all" && $find_text != "") {
+    $add_query .= " AND (c.USER_ID='{$find_text}' OR m.NAME LIKE '%{$find_text}%' OR m.HP LIKE '%{$find_text}%')";
+    $find_object = "";
+  }
+
+  if ($find_object_bank) {
+    $add_query .= " AND IS_USE='{$find_object_bank}'";
+    // '완료'경우 처리시간을 기본정렬로 변경 : datatable sorting 처리를 위해 페이지 다시 로딩
+    if ($find_object_bank == "Y" && empty($orderIdx)) {
+      echo "<script>location.replace('".admin_url($_SERVER['PHP_SELF']."?".$PARAM."&orderIdx=11&orderDir=desc")."')</script>";
+    }
+  }
+
+  if ($find_object_memo) {
+    $add_query .= " AND b.STATUS='{$find_object_memo}'";
+  }
+
+  if ($orderIdx) {
+    $columns = array("", "", "NAME", "PRICE", "CASH", "", "USER_ID", "HP", "SELLER_GUBUN", "REG_DATE", "STATUS", "CON_REG_DATE", "STAFF_ID");
+    $orderBy = $columns[$orderIdx];
+    $order_query .= $orderBy." ".$orderDir;
+  }
+
+  $list = F_CASH_MEMBER_list_BANK(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order_query,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list["total"] <= 0) {
+    $list["CASH_NO"] = array();
+  }
+
+  $find_op = array(
+    "all"       => "전체",
+    "c.USER_ID" => "아이디",
+    "m.NAME"    => "성명",
+    "m.HP"      => "휴대폰번호",
+  );
+
+  $find_op_bank = array(
+    ""  => "--상태(전쳬)--",
+    "N" => "입금대기",
+    "Y" => "입금완료",
+    "C" => "입금취소",
+  );
+
+  $find_op_memo = array(
+    "Y" => "완료",
+    "N" => "미완료",
+  );
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">무통장입금 관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">구매내역</a></li>
+          <li class="breadcrumb-item active" aria-current="page">무통장입금 관리</li>
+        </ol>
+      </div>
+      <div>
+        <button class="btn btn-danger btn-icon allDelChk">선택 입금취소</button>
+        <button class="btn btn-danger btn-icon allDelChkNoSMS">문자미발송 입금취소</button>
+        <?php if ($S_login['level'] > 2) { ?><button class="btn btn-danger-light allDelNC">대기·취소 삭제</button><? } ?>
+        <button data-bs-target="#modaldemo_bank_admin" data-bs-toggle="modal" class="btn btn-gray-dark btn-icon admin-bank-add">관리자 무통장 신청</button>
+        <button data-bs-target="#modaldemo_memo_admin" data-bs-toggle="modal" class="btn btn-info btn-icon admin-memo">관리자메모(내부용)</button>
+        <button data-bs-target="#modaldemo_memo" data-bs-toggle="modal" class="btn btn-success btn-icon order-memo">관리자메모(주문건)</button>
+        <button data-bs-target="#modaldemo1" data-bs-toggle="modal" class="btn btn-secondary btn-icon sms-send-all">SMS발송</button>
+        <a href="./payment_list_bank_excel.html?find_text=<?=$find_text?>&find_object=<?=$_GET['find_object']?>&find_object_bank=<?=$find_object_bank?>&sdate=<?=$sdate?>&edate=<?=$edate?>" target="_blank" class="btn btn-primary btn-icon">
+          <span><i class="fa fa-file-excel-o"></i></span> Excel Download
+        </a>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="find_object_bank" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <?=option_make($find_op_bank, $find_object_bank)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select name="find_object_memo" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <option value="">--메모(전체)--</option>
+                    <?=option_make($find_op_memo, $find_object_memo)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select name="schdate" id="schdate" class="form-control form-select select2">
+                    <option value="">--기간선택--</option>
+                    <?=option_make($search_date_op, $schdate)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                    <span style="margin: 8px 5px 0 5px;">~</span>
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                  </div>
+                </div>
+                <div class="form-group fl-left">
+                  <select name="find_object" id="select-beast" class="form-control form-select select2">
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control auto-submit" name="find_text" value="<?=$find_text?>" />
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+                <div class="form-group fl-left" style="float: right;">
+                  <select name="limit" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <?=option_make($limit_op, $limit)?>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th data-orderable="false"><input type="checkbox" id="chkAll" /></th>
+                    <th data-orderable="false">No</th>
+                    <th>성명</th>
+                    <th>결제금액</th>
+                    <th>충전캐시</th>
+                    <th data-orderable="false">처리</th>
+                    <th>아이디</th>
+                    <th>휴대폰번호</th>
+                    <th>구매경로</th>
+                    <th>신청일시</th>
+                    <th>상태</th>
+                    <th>처리일시</th>
+                    <th>처리</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list["CASH_NO"]); $i++) {
+                      $memoColor = "#000000";
+                      $no = $list["total"] - (($page-1) * $list["row"]) - $i;
+
+                      $tp = "완료";
+                      $tp_btn = false;
+                      if ($list["IS_USE"][$i] == "N") {
+                        $tp = "대기";
+                        $tp_btn = true;
+                      } else if ($list["IS_USE"][$i] == "C") {
+                        $tp = "<span style='color: blue;'>취소</span>";
+                      }
+
+                      $delayMsg = "";
+                      // 입금 대기 상태에만 메세지 보여준다
+                      if ($tp_btn) {
+                        $timeTarget = strtotime($list['REG_DATE'][$i]);
+                        $timeNow = strtotime(date("Y-m-d H:i:s"));
+                        $diff = $timeNow - $timeTarget;
+                        $hours = floor($diff / 3600);
+                        $diff = $diff-($hours * 3600);
+                        $min = floor($diff / 60);
+
+                        if ($hours < 0) {
+                          $min = 0;
+                        }
+                        if ($hours >= 16) {
+                          $delayMsg = "<br/><font color=crimson>+".$hours."시간 ".$min."분";
+                        } else {
+                          if ($hours <= 0) {
+                            $delayMsg = "<br/><font color=tomato>+".$min."분";
+                          } else {
+                            $delayMsg = "<br/><font color=red>+".$hours."시간 ".$min."분";
+                          }
+                        }
+                      }
+
+                      $memoICON = "fa-file-o";
+                      // 내용이 있는 것만 메모 아이콘 보여주기 (SLK-497)
+                      if (strlen($list["MEMO"][$i]) > 0 ) {
+                        $memoICON = "fa-file-text-o";
+                        if ($list["STATUS"][$i] == "Y") { // 완료
+                          $memoColor = "#0000000";
+                        } else {
+                          $memoColor = "blue";
+                        }
+                      }
+
+                      // 첫 결제 이벤트 항목 구분색 적용
+                      $tr_style = "";
+                      if ($list["PRICE"][$i] < $list["CASH"][$i]) {
+                        $tr_style="background-color: #F1B744;";
+                      }
+
+                      // 이벤트 결제건 구분
+                      if (strpos($list["ITEMNAME"][$i], "(E)") !== false) {
+                        $tr_style="background-color: #FFFF99;";
+                      }
+
+                      $NAME = $list['NAME'][$i];
+                      $HP   = $list['HP'][$i];
+                      $linethrough = "";
+
+                      // 탈퇴 회원 정보 추가
+                      if (empty($NAME)) {
+                        $out  = $db->get_data("SELECT NAME, HP FROM OUT_MEMBER WHERE USER_ID='{$list['USER_ID'][$i]}' LIMIT 1");
+                        $NAME = $out['NAME'];
+                        $HP   = $out['HP'];
+                        $linethrough = "line-through";
+                      }
+                  ?>
+                  <tr style="<?=$tr_style?>">
+                    <td>
+                      <input type="checkbox" name="noChk[]" value="<?=$list['CASH_NO'][$i]?>" data-no="<?=$list['MEMBER_NO'][$i]?>" data-userid="<?=$list['USER_ID'][$i]?>" data-username="<?=$list['NAME'][$i]?>" />
+                    </td>
+                    <td><?=$no?></td>
+                    <td>
+                      <b style="color: <?=$memoColor?>; text-decoration: <?=$linethrough?>"><?=$NAME?></b><i class="fa <?=$memoICON?> checkUserMemo"
+                        title="메모"
+                        style="cursor: pointer; margin-left: 3px;"
+                        data-bs-target="#memoModal"
+                        data-bs-toggle="modal"
+                        data-no="<?=$list['CASH_NO'][$i]?>">
+                      </i>
+                    </td>
+                    <td class="text-end text-red fs-16">
+                      <b><?=number_format($list["PRICE"][$i])?></b>
+                      <?php if ($tp_btn) { ?>
+                      <div style="display: none;" id="price_update_<?=$i?>"><br>
+                        <input type="text" class="form-control h4" name="NEW_PRICE_<?=$i?>" id="NEW_PRICE_<?=$i?>" required />
+                        <span class="btn btn-danger btn-pay-update" data-no="<?=$i?>" data-cash_no="<?=$list['CASH_NO'][$i]?>">입금처리</span>
+                        <span class="btn btn-send btn-pay-custom-cancel" data-no="<?=$i?>">취소</span>
+                      </div>
+                      <?php } ?>
+                    </td>
+                    <td class="text-end"><?=number_format($list["CASH"][$i])?></td>
+                    <td>
+                      <?php if ($list["IS_USE"][$i] == "N") { ?>
+                      <span class="btn btn-danger btn-pay-cancel" data-no="<?=$list['CASH_NO'][$i]?>">입금</span>
+                      <span class="btn btn-primary btn-pay-custom" data-no="<?=$i?>">입력</span>
+                      <?php } else if ($list["IS_USE"][$i] == "Y") { ?>
+                      <span class="modal-effect btn btn-secondary btn-pay-change" style="width:100px"
+                        data-bs-effect="effect-scale"
+                        data-bs-target="#bankCancelModal"
+                        data-bs-toggle="modal"
+                        data-no="<?=$list['CASH_NO'][$i]?>"
+                        data-name="<?=$list['NAME'][$i]?>"
+                        data-userid="<?=$list['USER_ID'][$i]?>"
+                        data-regdate="<?=$list['REG_DATE'][$i]?>"
+                        data-conregdate="<?=$list['CON_REG_DATE'][$i]?>"
+                        data-price="<?=$list['PRICE'][$i]?>"
+                        data-cash="<?=$list['CASH'][$i]?>">
+                        취소처리</span>
+                      <?php } else { ?>
+                      <span class="btn btn-info btn-pay-return" style="width:100px" data-no="<?=$list['CASH_NO'][$i]?>">대기전환</span>
+                      <?php } ?>
+                    </td>
+                    <td>
+                      <?=$list["USER_ID"][$i]?><i class="modal-effect fa fa-search checkUser"
+                        title="상세정보"
+                        style="cursor: pointer; margin-left: 3px;"
+                        data-bs-effect="effect-scale"
+                        data-bs-target="#memberModal"
+                        data-bs-toggle="modal"
+                        data-no="<?=$list['MEMBER_NO'][$i]?>">
+                      </i>
+                    </td>
+                    <td><?=$HP?></td>
+                    <td><?=$list["SELLER_GUBUN"][$i]?></td>
+                    <td>
+                      <?=date("Y-m-d H:i:s", strtotime($list["REG_DATE"][$i]))?>
+                      <?php if ($tp_btn) echo $delayMsg; ?>
+                    </td>
+                    <td><?=$tp?></td>
+                    <td>
+                      <span><?=(($list["IS_USE"][$i] == "Y") ? $list["CON_REG_DATE"][$i] : (($list["IS_USE"][$i] == "C") ? $list["CANCAL_DATE"][$i] : ""))?></span>
+                    </td>
+                    <td>
+                      <?=$list["STAFF_ID"][$i]?>
+                    </td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list["page_string"]?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<!-- 무통장 입금 관리자 메모 -->
+<div class="modal fade" id="memoModal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-content-demo">
+      <div class="modal-header">
+        <h6 class="modal-title">Memo</h6><button aria-label="Close" class="btn-close" data-bs-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="card-body" id="order-view" style="padding: 0;">
+          <div class="form-row">
+            <form name="w_frm_memo" id="w_frm_memo" method="post" action="default.php">
+            <input type="hidden" name="CASH_NO" id="CASH_NO" />
+            <input type="hidden" name="USER_ID" id="USER_ID" />
+                <tr>
+                  <td>
+                    <div>
+                      * <span id="USER"></span>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div>
+                        * 최종 작성일 : <span id="REG_DATE"></span>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div>
+                        * 상태 : <span id="STATUS"></span>
+                        <select name="STATUS" id="status">
+                          <option value="Y">완료</option>
+                          <option value="N">미완료</option>
+                        </select>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <textarea class="form-control" rows="4" cols="40" name="order_memo"></textarea>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success btn_memo" style="padding: 0.1rem 0.75rem;">저장</button>
+        <button type="button" class="btn btn-light cancel_btn" data-bs-dismiss="modal" style="padding: 0.1rem 0.75rem;">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 관리자 내부 메모 -->
+<div class="modal fade" id="modaldemo_memo_admin">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-content-demo" style="width: 100%;">
+      <div class="modal-header">
+        <h6 class="modal-title">관리자 메모(내부용)</h6><button aria-label="Close" class="btn-close" data-bs-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <form name="w_frm_memo_admin" id="w_frm_memo_admin" method="post" action="" target="_blank">
+        <div class="card-body" id="order-view" style="padding: 0;">
+          <div class="form-row">
+            <div class="col-md-12 mb-1" style="padding: 0;">
+              <textarea class="form-control" rows="2" cols="40" name="order_memo_admin"></textarea>
+            </div>
+            <div class="col-md-12 mb-5" style="padding: 0;">
+              <a href="#" class="btn btn-primary" style="width: 100%;" id="btn_memo_admin">등록</a>
+            </div>
+          </div>
+        </div>
+        </form>
+        <div class="card-body" id="order_list_page" style="padding: 0;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light cancel_btn" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 관리자 주문메모 -->
+<div class="modal fade" id="modaldemo_memo">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content modal-content-demo" style="width: 100%;">
+      <div class="modal-header">
+        <h6 class="modal-title">관리자 메모(주문건) - 최근 20개</h6><button aria-label="Close" class="btn-close" data-bs-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body" style="padding: 0;">
+        <div class="card-body" id="order_list_page_memo" style="padding: 0;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light cancel_btn" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 관리자 무통징입금 추가 -->
+<div class="modal fade" id="modaldemo_bank_admin">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-content-demo" style="width: 100%;">
+      <div class="modal-header">
+        <h6 class="modal-title">관리자 무통장 신청</h6><button aria-label="Close" class="btn-close" data-bs-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <form name="w_frm_bank_admin" id="w_frm_bank_admin" method="post" action="" target="_blank">
+        <div class="card-body" id="order-view" style="padding: 0;">
+          <div class="form-row">
+            <div class="col-md-12 mb-1" style="padding: 0;">
+              아이디
+              <input type="text" size="10" class="form-control-30" name="user_id">
+            </div>
+            <div class="col-md-12 mb-1" style="padding: 0;">
+              이름
+              <input type="text" size="10" class="form-control-30" name="user_name">
+            </div>
+            <div class="col-md-12 mb-1" style="padding: 0;">
+              입금액 (VAT포함) <input type="text" class="form-control-30" name="order_price" placeholder="0" onkeyup="inputNumberFormat(this)" maxlength="7">
+            </div>
+            <div class="col-md-12 mb-5" style="padding: 0;">
+              <a href="#" class="btn btn-primary" style="width: 100%;" id="btn_bank_admin">등록</a>
+            </div>
+          </div>
+        </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light cancel_btn" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 무통장 취소 -->
+<div class="modal fade" id="bankCancelModal">
+  <div class="modal-dialog modal-dialog-scrollable " role="document">
+    <div class="modal-content modal-content-demo col-sm-12">
+      <div class="modal-header">
+        <h6 class="modal-title"><strong>무통장 입금완료 취소처리</strong></h6><button aria-label="Close" class="btn-close" data-bs-dismiss="modal" ><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-4 mb-3">아이디 :</div>
+          <div class="col-8 mb-3"><span id="userid">xxxxx</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">성명 :</div>
+          <div class="col-8 mb-3"><span id="name">OOO</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">결제금액 :</div>
+          <div class="col-8 mb-3"><span class="number-font text-red" id="price2">00,000</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">지급캐시 :</div>
+          <div class="col-8 mb-3"><span class="number-font" id="cash2">00,000</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">신청일자 :</div>
+          <div class="col-8 mb-3"><span id="regdate">0000-00-00 00:00:00</span></div>
+        </div>
+        <div class="row">
+          <div class="col-4 mb-3">처리일자 :</div>
+          <div class="col-8 mb-3"><span id="conregdate">0000-00-00 00:00:00</span></div>
+        </div>
+        <div class="row mb-3" style="background-color:var(--bs-gray); height:1px"></div>
+        <form name="c_frm" id="c_frm">
+        <div class="form-row" style="background-color:var(--bs-light)">
+          <div class="col-4 mb-1 form-label">처리유형 :</div>
+          <div class="col-8 mb-1 form-group ">
+            <label class="custom-control custom-radio">
+              <input type="radio" class="custom-control-input" name="IS_USE_N" id="IS_USE_N" value="N">
+              <span class="custom-control-label">대기 (캐시 회수)</span>
+            </label>
+            <label class="custom-control custom-radio">
+              <input type="radio" class="custom-control-input" name="IS_USE_N" id="IS_USE_N" value="C" checked>
+              <span class="custom-control-label">취소 (캐시 회수)</span>
+            </label>
+            <label class="custom-control custom-radio">
+              <input type="radio" class="custom-control-input" name="IS_USE_N" id="IS_USE_N" value="C2">
+              <span class="custom-control-label">부분취소 (캐시 부분 회수)</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-row" style="background-color:var(--bs-light)">
+          <div class="col-4 mb-1 form-label">취소금액 :</div>
+          <div class="col-4 mb-1"><input class="form-control" type="text" name="cancel_price" id="cancel_price" readonly></div>
+          <div class="col-4 mb-1"><span class="number-font form-label" id="cancel_cash"></span></div>
+          <input type="hidden" name="no">
+          <input type="hidden" name="price" id="price">
+          <input type="hidden" name="mode" value="cancel_bank">
+        </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary cancel-btn" >취소저장</button> <button class="btn btn-light" data-bs-dismiss="modal" >닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<form name="w_frm" id="w_frm" method="post" action="bank_pay.php">
+  <input type="hidden" name="CASH_NO" id="CASH_NO" />
+  <input type="hidden" name="MODE" id="MODE" />
+  <input type="hidden" name="N_PRICE" id="N_PRICE" />
+  <input type="hidden" name="PARAM" id="PARAM" value="<?=$PARAM?>" />
+</form>
+<form name="wp_frm" id="wp_frm" method="post" action="bank_pay_cancel.php">
+  <input type="hidden" name="ALL_NO" id="ALL_NO" />
+  <input type="hidden" name="SMS_YN" id="SMS_YN" value="Y" />
+  <input type="hidden" name="PARAM" id="PARAM" value="<?=$PARAM?>" />
+</form>
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_sms.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_member.html"; ?>
+<?php $cash_amount_map = get_cash_amount_map(); ?>
+
+<script>
+  const cashAmountMap = <?=json_encode($cash_amount_map)?>;
+
+  function calcCashByPrice(price) {
+    price = parseInt(String(price).replace(/,/g, ''), 10);
+    if (cashAmountMap[price]) {
+      return cashAmountMap[price];
+    }
+    return Math.round(price / 11 * 10);
+  }
+
+  $(function() {
+    // setDataTable Start
+    let dataTable = setDataTable(9);
+    setTableOrder(dataTable);
+
+    $('#table-list th').on('click', function() {
+      let isSorting = $(this).hasClass('sorting');
+
+      if (isSorting) {
+        let orderIdx = dataTable.column(this).index();
+        let orderDir = dataTable.order()[0][1];
+        dataTable.clear().draw();
+
+        setReloadToOrder(orderIdx, orderDir);
+      }
+    });
+
+    $('.page-link').click(function(event) {
+      event.preventDefault();
+
+      let currentOrder = dataTable.order();
+      let href = $(this).attr('href');
+
+      setReloadToPagination(currentOrder, href);
+    });
+    // setDataTable End
+
+    // 관리자 무통장 신청
+    $(document).on('click', '.admin-bank-add', function() {
+      let chk_no       = $('[name="noChk[]"]:checked').data('no');
+      let chk_userid   = $('[name="noChk[]"]:checked').data('userid');
+      let chk_username = $('[name="noChk[]"]:checked').data('username');
+
+      if (typeof chk_no != undefined) {
+        $('#w_frm_bank_admin').find('input[name="user_id"]').val(chk_userid);
+        $('#w_frm_bank_admin').find('input[name="user_name"]').val(chk_username);
+        $('#w_frm_bank_admin').find('input[name="order_price"]').val('');
+      } else {
+        $('#w_frm_bank_admin').find('input[name="user_id"]').val('');
+        $('#w_frm_bank_admin').find('input[name="user_name"]').val('');
+        $('#w_frm_bank_admin').find('input[name="order_price"]').val('');
+      }
+    });
+
+    // 완료건 취소처리용 모달
+    $(document).on('click', '.btn-pay-change', function() {
+      let no = $(this).data('no');
+      let name = $(this).data('name');
+      let userid = $(this).data('userid');
+      let regdate = $(this).data('regdate');
+      let conregdate = $(this).data('conregdate');
+      let price = $(this).data('price');
+      let cash = $(this).data('cash');
+
+      price2 = addComma(String(price));
+      cash2 = addComma(String(cash));
+
+      let bcm = $('#bankCancelModal')
+      bcm.find('#name').html(name);
+      bcm.find('#userid').html(userid);
+      bcm.find('#regdate').html(regdate);
+      bcm.find('#conregdate').html(conregdate);
+      bcm.find('#price2').html(price2);
+      bcm.find('#cash2').html(cash2);
+      bcm.find('#IS_USE_N').eq(1).prop('checked', true);
+      bcm.find('#cancel_price').val('');
+      bcm.find('#cancel_cash').val('');
+      bcm.find('#cancel_price').prop('readonly', true);
+      bcm.find('input[name=no]').val(no);
+      bcm.find('input[name=price]').val(price);
+    });
+
+    // 부분취소시 cancel_price 컨트롤
+    $(document).on('click', '.custom-control-input', function() {
+      let chk = $('#IS_USE_N:checked').val();
+      if (chk == 'C2') {
+        $('#cancel_price').prop('readonly', false);
+        $('#cancel_price').focus();
+      } else {
+        $('#cancel_price').prop('readonly', true);
+      }
+    });
+
+    // cancel_cash
+    $(document).on('keyup', '#cancel_price', function() {
+      let cprice = $(this).val();
+      let price = $('#price').val();
+      let ccash = 0;
+      cprice = cprice.replace(',', '');
+      ccash = calcCashByPrice(cprice);
+
+      if (Number(cprice) > Number(price)) {
+        alert('결제금액을 초과하였습니다.');
+        return false;
+      }
+      $('#cancel_cash').html(addComma(String(ccash)) + ' 캐시 차감');
+    });
+
+    // 무통장 취소
+    $(document).on('click', '.cancel-btn', function() {
+      let chk = $('#IS_USE_N:checked').val();
+      let cprice = $('#cancel_price').val();
+      let price = $('#price').val();
+
+      if (Number(cprice) > Number(price)) {
+        alert('부분취소금액이 결제금액을 초과하였습니다.');
+        return false;
+      }
+
+      $.post('./default.php', $('#c_frm').serialize(), function(e) {
+        if (!e.error) {
+          alert(e.msg);
+          location.reload();
+        } else {
+          alert(e.msg);
+        }
+      }, 'json');
+    });
+
+    // 취소건 대기 전환
+    $(document).on('click', '.btn-pay-return', function() {
+      let no = $(this).data('no');
+
+      $.post('./default.php', {
+        mode: 'bank_status_n',
+        no: no
+      }, function(e) {
+        if (!e.error) {
+          alert(e.msg);
+          location.reload();
+        } else {
+          alert(e.msg);
+        }
+      }, 'json');
+    });
+
+    $(document).on('click', '.btn-pay-custom', function() {
+      let no = $(this).data('no');
+      $('#price_update_'+no).show();
+    });
+
+    $(document).on('click', '.btn-pay-custom-cancel', function() {
+      let no = $(this).data('no');
+      $('#price_update_'+no).hide();
+    });
+
+    // 금액 변경 입금완료
+    $(document).on('click', '.btn-pay-update', function() {
+      let no      = $(this).data('no');
+      let cash_no = $(this).data('cash_no');
+      let n_price = $('#NEW_PRICE_'+no).val();
+
+      if (n_price == '' || n_price < 0) {
+        alert('변경할 결제금액을 입력해 주세요.');
+        return false;
+      }
+
+      n_price = n_price.replace(',', '');
+
+      let n_cash = calcCashByPrice(n_price);
+
+      if (confirm('결제금액 : ' + addComma(String(n_price)) + ' 원\n충전캐시 : ' + addComma(String(n_cash)) + ' 캐시\n업데이트 후 입금처리 하시겠습니까?')) {
+        $('#w_frm').find('#CASH_NO').val(cash_no);
+        $('#w_frm').find('#N_PRICE').val(n_price);
+        $('#w_frm').find('#MODE').val('PRICE_UPDATE');
+        $('#w_frm').submit();
+      }
+    });
+
+    $(document).on('click', '.btn-pay-cancel', function() {
+      let no = $(this).data('no');
+
+      if (confirm('입금확인 처리를 하시겠습니까?')) {
+        $('#w_frm').find('#CASH_NO').val(no);
+        $('#w_frm').submit();
+      }
+    });
+
+    // 선택삭제
+    $(document).on('click', '.allDelChk', function() {
+      let chk_no = '';
+      let i = 0;
+      $('[name="noChk[]"]:checked').each(function() {
+        chk_no += $(this).val() + ',';
+        i++;
+      });
+
+      if (i > 0) {
+        if (confirm('선택한 항목을 입금취소하시겠습니까?')) {
+          $('#wp_frm').find('#ALL_NO').val(chk_no);
+          $('#wp_frm').submit();
+        }
+      } else {
+        alert('삭제할 항목을 선택하세요');
+      }
+    });
+
+    // 문자미발송 선택삭제
+    $(document).on('click', '.allDelChkNoSMS', function() {
+      let chk_no = '';
+      let i = 0;
+      $('[name="noChk[]"]:checked').each(function() {
+        chk_no += $(this).val() + ',';
+        i++;
+      });
+
+      if (i > 0) {
+        if (confirm('선택한 항목을 문자 미발송 입금취소하시겠습니까?')) {
+          $('#wp_frm').find('#ALL_NO').val(chk_no);
+          $('#wp_frm').find('#SMS_YN').val('N');
+          $('#wp_frm').submit();
+        }
+      } else {
+        alert('삭제할 항목을 선택하세요');
+      }
+    });
+
+    // 메모
+    $(document).on('click', '.checkUserMemo', function() {
+      let no = $(this).data('no');
+
+      $.post('./default.php', {
+        mode: 'search_order_memo',
+        no: no
+      }, function(e) {
+        if (e.error) {
+          $('#w_frm_memo').find('[name="order_memo"]').val(e.MEMO);
+          $('#w_frm_memo').find('#REG_DATE').html(e.REG_DATE);
+          $('#w_frm_memo').find('[name="CASH_NO"]').val(e.CASH_NO);
+          $('#w_frm_memo').find('[name="USER_ID"]').val(e.USER_ID);
+          if (e.STATUS == 'Y') {
+            STATUS = '완료';
+          } else {
+            STATUS = '미완료';
+          }
+          $('#w_frm_memo').find('#STATUS').html(STATUS);
+          $('#w_frm_memo').find('[name="STATUS"]').val(e.STATUS);
+          $('#w_frm_memo').find('#USER').html(e.USER);
+        } else {
+          alert(e.msg);
+        }
+      }, 'json');
+    });
+
+    // 메모 update(insert)
+    $(document).on('click', '.btn_memo', function() {
+      let memo = $('#w_frm_memo').find('[name="order_memo"]').val();
+      let CASH_NO = $('#w_frm_memo').find('[name="CASH_NO"]').val();
+      let USER_ID = $('#w_frm_memo').find('[name="USER_ID"]').val();
+      let STATUS = $('#w_frm_memo').find('[name="STATUS"]').val();
+
+      if (memo == '') {
+        alert('내용을 입력해 주세요.');
+        return false;
+      }
+
+      $.post('./default.php', {
+        mode: 'insert_order_memo',
+        memo: memo ,
+        CASH_NO: CASH_NO,
+        USER_ID: USER_ID ,
+        STATUS: STATUS
+      }, function(e) {
+        if (e.error) {
+          alert('메모가 저장완료 되었습니다.');
+          $('#memoModal').modal('hide');
+          location.reload();
+        } else {
+          alert(e.msg);
+        }
+      }, 'json');
+
+    });
+
+    // 관리자 내부 메모 리스트
+    $(document).on('click', '.admin-memo', function() {
+      $.post('./default.php',{
+        mode: 'list_order_memo_admin',
+      }, function(e) {
+        if (e.error) {
+          $('#order_list_page').html(e.page_html);
+        } else {
+          alert(e.msg);
+        }
+      },'json');
+    });
+
+    // 관리자 무통장입금내역 추가
+    $(document).on('click', '#btn_bank_admin', function() {
+      let user_id = $('#w_frm_bank_admin').find('[name="user_id"]').val();
+      let order_price = $('#w_frm_bank_admin').find('[name="order_price"]').val();
+
+      if (user_id == '') {
+        alert('아이디를 입력해 주세요.');
+        return false;
+      }
+
+      if (order_price == '') {
+        alert('결제금액(부가세포함)을 입력해 주세요.');
+        return false;
+      }
+
+      $.post('./default.php', {
+        mode: 'insert_order_bank_admin',
+        user_id: user_id,
+        order_price: order_price
+      }, function(e) {
+        if (e.error) {
+          alert('저장완료 되었습니다.');
+          $('#modaldemo_bank_admin').modal('hide');
+          location.reload();
+        } else {
+          alert(e.msg);
+        }
+      }, 'json');
+    });
+
+    // 관리자 내부 메모 작성
+    $(document).on('click', '#btn_memo_admin', function() {
+      let memo = $('#w_frm_memo_admin').find('[name="order_memo_admin"]').val();
+
+      if (memo == '') {
+        alert('내용을 입력해 주세요.');
+        return false;
+      }
+
+      $('#w_frm_memo_admin')[0].reset();
+
+      $.post('./default.php', {
+        mode: 'insert_order_memo_admin',
+        memo: memo
+      }, function(e) {
+        if (e.error) {
+          $('.admin-memo').click();
+        } else {
+          alert(e.msg);
+        }
+      }, 'json');
+    });
+
+    // 관리자 내부 메모 삭제
+    $(document).on('click', '.asOkBtn', function() {
+      let no = $(this).data('no');
+      if (confirm('해당 메모를 삭제 하시겠습니까?')) {
+        $.post('./default.php', {
+          mode: 'delete_order_memo_admin',
+          no: no
+        }, function(e) {
+          if (e.error) {
+            $('.admin-memo').click();
+          } else {
+            alert(e.msg);
+          }
+        }, 'json');
+      }
+    });
+
+    // 관리자 주문 메모
+    $(document).on('click', '.order-memo', function() {
+      $.post('./default.php', {
+        mode: 'list_order_memo',
+      }, function(e) {
+        if (e.error) {
+          $('#order_list_page_memo').html(e.page_html);
+        } else {
+          alert(e.msg);
+        }
+      }, 'json');
+    });
+
+    // 대기,취소건 완전삭제
+    $(document).on('click', '.allDelNC', function() {
+      let chk_no = '';
+      let i = 0;
+      $('[name="noChk[]"]:checked').each(function() {
+        chk_no += $(this).val() + ',';
+        i++;
+      });
+
+      if (i > 0) {
+        if (confirm('선택한 항목을 삭제 하시겠습니까?\n고객에게도 동일하게 삭제 됩니다.')) {
+          $('#wp_frm').find('#ALL_NO').val(chk_no);
+          $('#wp_frm').find('#SMS_YN').val('D');
+          $('#wp_frm').submit();
+        }
+      } else {
+        alert('삭제할 항목을 선택하세요');
+      }
+    });
+  });
+</script>
+
+<script>
+  // 천단위 콤마 펑션
+  function addComma(value) {
+    value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return value;
+  }
+  function inputNumberFormat(obj) {
+    obj.value = comma(uncomma(obj.value));
+  }
+  function comma(str) {
+    str = String(str);
+    return str.replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+  }
+  function uncomma(str) {
+    str = String(str);
+    return str.replace(/[^\d]+/g, '');
+  }
+</script>

@@ -1,0 +1,98 @@
+<?php
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/config.php";
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/export.php";
+  include $_SERVER["DOCUMENT_ROOT"]."/_library/function_ORDERS.php";
+
+  F_admin_chk($S_login);
+
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/_check-auth-readonly.php"; // 권한체크
+
+  error_reporting(E_ERROR);
+  ini_set("display_errors", 1);
+  ini_set("memory_limit", $csv_memory);
+
+  // file name
+  $file_name = "orders_".date("Ymd").".csv";
+  $page_name = "구매내역";
+
+  // 데이터 조회
+  $find_text = $_GET["find_text"];
+  $find_object = $_GET["find_object"];
+  $sdate = $_GET["sdate"];
+  $edate = $_GET["edate"];
+  $gubun = $_GET["gubun"];
+
+  $add_query = "AND o.SIGN_YN != 'C'";
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND o.REG_DATE BETWEEN '".$sDate."' AND '".$eDate."'";
+  }
+
+  if ($find_object == "all" && $find_text != "") {
+    $add_query .= " AND (o.ORDERS_NO = '".$find_text."' OR m.NAME LIKE '%".$find_text."%' OR o.HP LIKE '%".$find_text."%')";
+    $find_object = "";
+  }
+
+  if ($gubun != "") {
+    $add_query .= " AND o.GUBUN='".$gubun."'";
+  }
+
+  $list = F_ORDERS_MEMBER_list(array(
+    "row"         => $csv_max_row,
+    "page"        => 1,
+    "order"       => "",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query
+  ));
+
+  // default
+  $csv_dump = "";
+
+  // 컬럼명
+  $titles = array("", "ORDERS NO", "복권명", "ID", "구매자", "휴대폰번호", "회차", "게임수량", "추첨일자", "구매금액","캐시","당첨금","마일리지","보너스포인트", "구매일시", "구매경로", "스캔본등록", "숨김여부");
+  $csv_dump .= implode(",", $titles);
+  $csv_dump .= "\r\n";
+
+  // 데이터 삽입
+  for ($i = 0; $i < count($list["ORDERS_NO"]); $i++) {
+    $scan = "N";
+    if ($list["IMG_PATH"][$i] != "") {
+      $scan = "Y";
+    }
+
+    $NAME = $list['NAME'][$i];
+
+    // 탈퇴 회원 정보 추가
+    if (empty($NAME)) {
+      $out  = $db->get_data("SELECT NAME, HP FROM OUT_MEMBER WHERE USER_ID='{$list['USER_ID'][$i]}' LIMIT 1");
+      $NAME = $out['NAME']."(탈퇴)";
+    }
+
+    $cnt = $i + 1;
+
+    $csv_dump .= $cnt.",";
+    $csv_dump .= $list["ORDERS_NO"][$i].",";
+    $csv_dump .= $ball_op[$list["GUBUN"][$i]].",";
+    $csv_dump .= $list["USER_ID"][$i].",";
+    $csv_dump .= $NAME.",";
+    $csv_dump .= $list["HP"][$i].",";
+    $csv_dump .= $list["DRAWNUM"][$i].",";
+    $csv_dump .= $list["GAMECNT"][$i].",";
+    $csv_dump .= $list["PLAYDATE"][$i].",";
+    $csv_dump .= "\"".number_format($list["PAYMENT"][$i])."\"".",";
+    $csv_dump .= "\"".number_format($list["CASH"][$i])."\"".",";
+    $csv_dump .= "\"".number_format($list["WINCASH"][$i])."\"".",";
+    $csv_dump .= "\"".number_format($list["IPOINT"][$i])."\"".",";
+    $csv_dump .= "\"".number_format($list["POINT"][$i])."\"".",";
+    $csv_dump .= $list["REG_DATE"][$i].",";
+    $csv_dump .= $list["SELLER_GUBUN"][$i].",";
+    $csv_dump .= $scan.",";
+    $csv_dump .= ($list['HIDE_YN'][$i] == 'Y' ? 'Y' : '-');
+    $csv_dump .= "\r\n";
+  }
+
+  export_csv($file_name, $csv_dump, $cnt, $page_name);
+?>

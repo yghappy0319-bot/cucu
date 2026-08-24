@@ -1,0 +1,139 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  if ($M_login['user_id'] == '') {
+    alert_print("회원전용 서비스 입니다.");
+    meta_go("/login.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}'");
+
+  if ($mb['USER_ID'] == '') {
+    alert_print("회원전용 서비스 입니다.");
+    meta_go("/login.html");
+    exit;
+  }
+
+  $title = ($_GET['gubun'] === 'MM') ? "메가밀리언" : "파워볼";
+  $count = $_GET['count'];
+  $style = ($_GET['gubun'] === 'MM') ? "background: #ebc704; color: #fff;" : "background: #e60012; color: #fff;";
+  $url   = ($_GET['gubun'] === 'MM') ? "mega-step2.html" : "power-step2.html";
+
+  $list = $db->get_list("SELECT * FROM MY_BALL WHERE MEMBER_NO='{$mb['MEMBER_NO']}' AND GUBUN='{$_GET['gubun']}'");
+
+  if (!isset($list['BALL_NO'])) {
+    $list['BALL_NO'] = array();
+  }
+?>
+
+<body>
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main">
+        <div class="title_sub bb border_dcdcdc">
+          <h2 class="title"><?=$title?> 구매</h2>
+          <a href="./mega-step1.html" class="btn_back"><span class="hide">뒤로가기</span></a>
+        </div>
+        <div class="contents bg_contents">
+          <section class="sec_info wrap_com f_GmarketSans">
+            <h2 class="hide">나의 관심번호 </h2>
+          </section>
+          <div style="padding-left: 3.5vw; padding-right: 3.5vw">
+            <section class="sec_game">
+              <div class="choice left ls75">
+              <div class="pay right" id="scroll_box">
+                <div class="top clear">
+                  <strong class="left add_before"><span class="va_mid">나의 행운번호</span></strong>
+                </div>
+                <p class="txt_center fs27"
+                   style="margin: 0 0 0.5rem; padding: 0.9rem 0; border-bottom: 1px solid #5c5c5c;">
+                   현재 진행중인 게임은 <strong class="color_ylw"><?=$title?> / <span class="nowball"><?=$_GET['count']?></span>게임</strong> 입니다.</p>
+                <div class="wrap_game bx_border">
+                  <ul class="list_game">
+                    <?php
+                      if (count($list['BALL_NO']) == 0) {
+                        echo "<center>등록된 나의 행운번호가 없습니다.</center>";
+                      }
+
+                      for ($i = 0; $i < count($list['BALL_NO']); $i++) {
+                        for ($j = 1; $j <= 5; $j++) {
+                          if ($list['BALL'.$j][$i] == "") continue;
+                          $ball = explode(",", $list['BALL'.$j][$i]);
+                    ?>
+                    <li class="flex align_center space ballGroup">
+                      <div>
+                        <input type="checkbox" id="chk_all<?=$j?><?=$i?>" class="chk_type_lucky chk_my_ball" value="<?=$list['BALL'.$j][$i]?>">
+                        <label for="chk_all<?=$j?><?=$i?>"></label>
+                      </div>
+                      <ul class="list_num ml20">
+                        <li><a style="background: #fff;"><?=$ball[0]?></a></li>
+                        <li><a style="background: #fff;"><?=$ball[1]?></a></li>
+                        <li><a style="background: #fff;"><?=$ball[2]?></a></li>
+                        <li><a style="background: #fff;"><?=$ball[3]?></a></li>
+                        <li><a style="background: #fff;"><?=$ball[4]?></a></li>
+                        <li class="fw600" style="border: 0px;"> + </li>
+                        <li style="<?=$style?>"><a><?=$ball[5]?></a></li>
+                      </ul>
+                    </li>
+                    <?php
+                        }
+                      }
+                    ?>
+                  </ul>
+                </div>
+                <button type="button" class="btn_pay bx_border btn_red btn_myball_chk">
+                  <strong>선택한 번호 담기</strong>
+                </button>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script>
+  let selectGameCnt;
+
+  $(document).ready(function() {
+    let urlParams = new URLSearchParams(window.location.search);
+    selectGameCnt = urlParams.get('count');
+  });
+
+  $(document).on("click", ".btn_myball_chk", function() {
+    let queryString = window.location.search;
+    let textQueryString = queryString.substring(1);
+
+    let len = $(".chk_my_ball:checked").length;
+    let favorites = [];
+
+    if (len <= 0) {
+      alert("나의 행운번호를 선택해 주세요.");
+      return false;
+    }
+
+    if (len > selectGameCnt) {
+      alert(`번호를 ${selectGameCnt}개 선택해 주세요.`);
+      return false;
+    }
+
+    $(".chk_my_ball:checked").each(function() {
+      favorites.push($(this).val());
+    });
+
+    let jsonData = JSON.stringify(favorites);
+
+    document.cookie =
+      "favorites=" + encodeURIComponent(jsonData) +
+      "; expires=" + new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toUTCString() +
+      "; path=/";
+
+    window.location.href = `/contents/lottery/<?=$url?>?${textQueryString}`;
+  });
+</script>
+
+</html>

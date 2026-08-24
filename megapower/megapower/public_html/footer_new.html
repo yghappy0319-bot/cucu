@@ -1,0 +1,689 @@
+<div class="new_footer w_max">
+    <div class="w_min">
+        <div class="ft">
+            <a class="logo" href="/index.html"><img src="/images/logo_f.png"></a>
+            <div class="menu">
+                <ul>
+                    <li><a href="/buy/service_buy.html">서비스안내</a></li>
+                    <li><a href="/buy/policy.html">개인정보처리방침</a></li>
+                    <li><a href="/buy/clause.html">이용약관</a></li>
+                    <li><a href="/member/inquiry.html">1:1문의</a></li>
+                    <li><a href="/member/inquiry.html">고객센터</a></li>
+                </ul>
+            </div>
+        </div>
+<style>
+
+</style>
+
+        <div class="bg">
+          <? if (strpos($_SERVER['HTTP_HOST'], 'megapower.world') !== false) {
+            if(!empty($_SESSION['midx'])){
+              $캐시유 = db_select("select count(*) as cnt from lr_deposit_log where midx = {$_SESSION['midx']} and status = 2");
+              if($캐시유['cnt'] > 0){ ?>
+                <div class="info">
+                    <? if($config['회사명']){ ?>
+                    <?= $config['회사명'] ?> &nbsp;
+                    <? } ?>
+
+                    <? if($config['대표자']){?>
+                    |&nbsp; 대표이사 : <?= $config['대표자'] ?>
+                    <? } ?>
+
+                    <? if($config['주소']){ ?>
+                      &nbsp;|&nbsp;
+                      <br class="br_m"><?=$config['주소']?>
+                    <? } ?>
+
+                    <? if($config['사업자등록번호']) { ?>
+                      <br>사업자등록번호 : <?=$config['사업자등록번호']?> &nbsp;&nbsp;
+                    <? } ?>
+
+                    <? if($config['통신판매업신고']){ ?>
+                      <br>통신판매등록번호 : <?= $config['통신판매업신고']  ?> &nbsp;&nbsp;
+                    <? } ?>
+                    <!-- 서비스 및 제휴문의 E-MAIL : melottokorea@gmail.com -->
+                </div>
+                <? }
+            }
+          }else{ ?>
+            <div class="info">
+                <? if($config['회사명']){ ?>
+                <?= $config['회사명'] ?> &nbsp;
+                <? } ?>
+
+                <? if($config['대표자']){?>
+                |&nbsp; 대표이사 : <?= $config['대표자'] ?>
+                <? } ?>
+
+                <? if($config['주소']){ ?>
+                  &nbsp;|&nbsp;
+                  <br class="br_m"><?=$config['주소']?>
+                <? } ?>
+
+                <? if($config['사업자등록번호']) { ?>
+                  <br>사업자등록번호 : <?=$config['사업자등록번호']?> &nbsp;&nbsp;
+                <? } ?>
+
+                <? if($config['통신판매업신고']){ ?>
+                  <br>통신판매등록번호 : <?= $config['통신판매업신고']  ?> &nbsp;&nbsp;
+                <? } ?>
+                <!-- 서비스 및 제휴문의 E-MAIL : melottokorea@gmail.com -->
+            </div>
+          <? } ?>
+
+            <div class="tip">
+                19세 미만 청소년은 복권을 구매하거나 당첨금을 수령할 수 없습니다.<br>
+                과도한 복권 구매는 사행성 중독으로 인한 경제적 부담을 불러 올 수 있습니다.
+            </div>
+        </div>
+        <div class="fb">
+            <div class="copy">
+                Copyright © MEGAPOWERWORLD. All rights reserved.
+            </div>
+            <div class="ft_escrow">
+                <img src="https://img.mekosystem.com/images/web/kb-escrow.png" alt="KB에스크로">
+            </div>
+            <!-- <div class="sns">
+                <a><i class="xi-youtube-play"></i></a>
+                <a><i class="xi-kakaostory"></i></a>
+                <a><i class="xi-naver-square"></i></a>
+            </div> -->
+        </div>
+    </div>
+</div>
+
+
+
+<? if($모바일여부){ ?>
+  <div class="new_quick">
+      <div class="new_in" id="install-prompt" >
+        <img src="/images/logo_guide.png">
+        <button id="install-btn">메가파워월드앱 설치</button>
+      </div>
+
+      <div class="list">
+          <a>
+              <i class="xi-emoticon-smiley-o"></i>
+              <p>Quick</p>
+          </a>
+          <a href="/member/notice.html">
+              <i class="xi-comment-o"></i>
+              <p>고객센터</p>
+          </a>
+          <a href="/member/inquiry.html">
+              <i class="xi-forum-o"></i>
+              <p>1:1문의</p>
+          </a>
+      </div>
+      <div class="scroll_top">
+          <i class="xi-angle-up"></i>
+          <p>TOP</p>
+      </div>
+  </div>
+
+
+    <script>
+     // 사용자가 웹사이트를 홈 화면에 추가할 수 있는지 확인
+     if(isPWAInstallable()){
+       // 설치가 됬을경우
+       $("#install-prompt").css("display","none");
+       $(".new_quick .list a:nth-child(2)").css("border-radius","10px 0px 0 0");
+       $(".new_quick .list").css("width","50%");
+       $(".new_quick .scroll_top").css("width","50%");
+     }
+
+     function isPWAInstallable() {
+       return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+     }
+
+     // Android에서 웹앱을 홈 화면에 추가하는 함수
+     function addToHomeScreen() {
+       if (isPWAInstallable()) {
+         return;
+       }
+
+       window.addEventListener('beforeinstallprompt', (event) => {
+         // 이벤트를 중지하여 기본 팝업이 나타나지 않도록 함
+         event.preventDefault();
+
+         // 사용자가 팝업에서 추가 버튼을 클릭하면 설치 팝업을 다시 표시
+         document.getElementById('install-btn').addEventListener('click', () => {
+           event.prompt();
+           event.userChoice.then((choiceResult) => {
+             if (choiceResult.outcome === 'accepted') {
+               console.log('사용자가 설치를 수락했습니다.');
+             } else {
+               alert("사용자가 설치를 거부했습니다.");
+               location.reload();
+             }
+             installPrompt.style.display = 'none';
+
+           });
+         });
+       });
+     }
+
+     // iOS에서 웹사이트를 홈 화면에 추가하는 방법을 안내하는 함수
+     function showIOSInstallInstructions() {
+       if (isPWAInstallable()) {
+         return;
+       }
+
+       // if (window.navigator.standalone === undefined) {
+       //   alert('이 웹사이트를 홈 화면에 추가하려면 공유 아이콘을 터치한 후 "홈 화면에 추가" 옵션을 선택하세요.');
+       // }
+     }
+
+     // 페이지 로드 후 홈 화면 추가 함수 호출
+     window.addEventListener('load', () => {
+       addToHomeScreen();
+       showIOSInstallInstructions();
+     });
+    </script>
+<? } ?>
+
+
+
+
+<div class="new_popup_inquiry" id="bpopup2" style="display: none;">
+    <div class="wrap">
+        <div class="head">
+            <p>1:1문의</p>
+            <a class="b-close"><i class="xi-close"></i></a>
+        </div>
+        <div class="body">
+            <div class="scroll">
+                <ul class="text">
+				 <li>1:1문의는 24시간 등록 가능하며, 답변은 담당자가 확인 후 빠른 시간 내에 답변 드리겠습니다.</li>
+                    <li>전화상담을 원하시는 경우 전화상담 요청 항목을 선택 후에 문의 내용과 함께 등록해 주시면 안내 도와 드리겠습니다.</li>
+                    <!-- <li>1:1문의 접수시 담당자가 5분이내로 확인하여 답변드립니다.</li>
+                    <li>답변이 완료되면 고객님의 문자메세지(SMS)로 답변 상황을 보내드립니다.</li>
+                    <li>메가파워월드 앱을 설치 하시면 실시간으로 답변현황 알람을 받아보실 수 있습니다.</li>
+                    <li>더 빠른 답변을 원하신다면?<a href="javascript:go_chet();" style="font-weight: bold; text-decoration: underline;">채널톡</a>으로 문의 주세요!</li> -->
+                </ul>
+                <a class="btn_show" href="javascript:go_qna(1)">* 입금했는데 포인트 충전이 안되요!</a>
+                <ul class="text q1" style="display: none;">
+                    <li>예)33,000원 신청 후 30,000원 입금시 <font color='red'>충전안됨X</font></li>
+                    <li>3,000원을 추가로 입금해주시면 <font color='blue'>즉시 처리</font> 됩니다.</li>
+                    <li>입금은 했는데 충전이 되지 않았을시에는 이체내역을 확인후 부족한 금액만큼 추가입금 해주시면 즉시 처리 됩니다!</li>
+                    <li>입금자명과 입금금액을 정확히 확인후에 이체해 주시면 지체없이 자동충전 됩니다!</li>
+                </ul>
+                <script>
+                    $(document).ready(function(){
+                        // 클릭 이벤트를 처리하는 함수
+                        $(".copy-button2").on("click", function(){
+                            // 게좌번호를 선택하고 클립보드에 복사
+                            var accountNumber = $(".account-number").text();
+                            copyToClipboard(accountNumber);
+                            alert("게좌번호가 클립보드에 복사되었습니다.");
+                        });
+                    });
+                </script>
+                <script>
+                    // 클립보드에 복사하는 함수
+                    function copyToClipboard(text) {
+                        var dummy = document.createElement("textarea");
+                        document.body.appendChild(dummy);
+                        dummy.value = text;
+                        dummy.select();
+                        document.execCommand("copy");
+                        document.body.removeChild(dummy);
+                    }
+                    function go_my_code_copy(){
+                        // 게좌번호를 선택하고 클립보드에 복사
+                        var accountNumber = $(".my-code").val();
+                        copyToClipboard(accountNumber);
+                        alert("나의 추천인 코드가 복사 되었습니다.");
+                    }
+                    function go_qna(obj){
+                        $(".q"+obj).toggle();
+
+                    }
+                </script>
+                <form method="POST" id="conFrm">
+                    <select class="select-box" name="gubun">
+                        <option value="건의">건의</option>
+                        <option value="구매">구매</option>
+                        <option value="포인트">포인트</option>
+                        <option value="출금">출금</option>
+                        <option value="전화상담">전화상담</option>
+                        <option value="기타">기타</option>
+                    </select>
+                    <input type="text" name="title" id="title" value="" placeholder="제목">
+                    <? if(!$member['idx']){?>
+                    <input type="text" name="phone" id="inquiry_phone" maxlength="13" onkeyup="isNumberOrHyphen(this);cvtPhoneNumber(this);" placeholder="연락처 ( 비회원 상태이므로 남겨주신 연락처로 답변이 처리 됩니다. )">
+                    <? } ?>
+
+
+
+                    <? if(!$member['idx']){?>
+                    <textarea name="content" id="content" rows="8" cols="80" placeholder="현재 로그인되지 않은 상태입니다.&#10;비회원 상태에서는 로그인 관련 문의만 접수 가능합니다.&#10;&#10;기타 문의사항은 회원 로그인 후 1:1 문의를 이용해 주시기 바랍니다."></textarea>
+                    <? }else{ ?>
+                    <textarea name="content" id="content" rows="8" cols="80" placeholder="문의내용 10자 이상"></textarea>
+                    <? } ?>
+
+                    <div class="btn">
+                        <button type="button" onclick="go_contact()" class="search-btn" >문의하기</button>
+                        <button type="button" onclick="location.reload()" class="popup_cancle" >닫기</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--<div class="b-modal __b-popup1__" style="background-color: rgb(0, 0, 0); position: fixed; inset: 0px; opacity: 0.7; z-index: 9998; cursor: pointer;"></div>
+<div class="new_popup_buy_ok" id="completed" style="left: 766.5px; position: absolute; top: 661px; z-index: 9999; opacity: 1;">-->
+<div class="new_popup_buy_ok" id="completed" style="display: none;">
+    <div class="wrap">
+        <div class="head">
+            <p>주문이 완료되었습니다.</p>
+            <a class="b-close"><i class="xi-close"></i></a>
+        </div>
+        <div class="body">
+            <div class="scroll">
+                <i class="xi-check"></i>
+                <div class="t1">당첨을 기원합니다!</div>
+                <div class="t2">구매하신 <span class="sgame">파워볼</span>의 추첨일</div>
+                <div class="date">2024년 12월 24일 수요일 13:00</div>
+                <div class="text">
+                    <p>고객님께서 주문하신 정보는 미국으로 발송되어 실물티켓을 구매 후 스캔본이 업로드 됩니다.</p>
+                    <p>마이페이지 -> 구매/당첨내역에서 구매확인 및 당첨여부 확인이 가능합니다.</p>
+                </div>
+                <a class="btn buy_confim_btn" href="/member/buy.html" >구매 / 당첨내역</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<div class="new_login" id="login_form" style="display: none; width: 100%;">
+    <div class="wrap">
+        <div class="login_close"><a class="b-close" href="/"><i class="xi-close"></i></a></div>
+        <a class="logo" href="/index.html"><img src="/images/logo.gif"></a>
+        <div class="in">
+            <form id="login_frm" method="post">
+                <input type="hidden" name="rurl" value="<?=$rurl?>" />
+                <input type="text" name="member_id" class="login_id" id="my_ids" placeholder="아이디 / 이메일 / 휴대폰번호" value="<?=$_COOKIE['save_id']?>" />
+                <input type="password" name="member_pass" class="login_id input_mb12" id="login_password"
+                placeholder="비밀번호" autocomplete="new-password" />
+            </form>
+        </div>
+        <div class="autologin">
+            <div class="check">
+                <input type="checkbox" name="idsave" value="1" id="chk1" class="auto_login" />
+                <label for="chk1" ></label>
+                <p>아이디 저장</p>
+            </div>
+            <a href="/member/idpass.html" >아이디 / 비밀번호 찾기</a>
+        </div>
+        <button type="button" class="login_btn" onclick="go_login()" >로그인</button>
+        <div class="text">
+            <p class="tit">아직 메가파워월드 회원이 아니신가요?</p>
+            <p class="txt">지금 가입하면 무료 쿠폰 및 다양한 <br>혜택이 시작됩니다.</p>
+        </div>
+        <div class="btn">
+            <a href="/member/join.html">회원가입</a>
+            <!-- <button type="button" class="kakao_btn" onclick="kakaoLogin('<?=$_SESSION['code']?>')" >카카오 로그인</button> -->
+        </div>
+    </div>
+</div>
+
+<div id="point_popup" style="display:none; width:100%;" >
+  <!-- <div class="login_close" >
+    <a href="/" class="b-close" style="color:#FFF;" >×</a>
+  </div> -->
+  포인트충전
+</div>
+
+<style>
+/* #my_number {}
+#my_number_list .btn {text-align: center;    background-color: #fff;    padding: 10px;border-radius: 10px 10px 0px 0px;}
+#my_number_list .btn button { font-size: 20px; border-radius: 50%; height: 40px; width: 40px; border: 1px solid #ccc;}
+#my_number_list .btn5{background-color: #FEDC00;}
+.my_number_inner{background-color: #fff; min-height: 325px; border-radius: 0px 0px 10px 10px;}
+.btn .my_nb_active { background-color: #194A9C; color: #fff; border: 0px solid;}
+.my_number_btn_info {position: absolute; bottom: 0px; display: flex; justify-content: space-around; width: 100%;margin-bottom: 20px;}
+.my_number_btn_info .layer_buy_btn {border: 0px; font-size: 18px; padding: 8px;}
+.my_number_btn_info .layer_del_btn {border: 0px; font-size: 18px; padding: 8px;} */
+#my_number_list{
+  width: 90%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px;
+}
+.mnl_pop_close {
+    content: "";
+    display: block;
+    position: absolute;
+    background: url(/assets/image/btn_close.png) no-repeat;
+    width: 24px;
+    height: 24px;
+    top: 16px;
+    right: 16px;
+}
+.my_number_title{
+  padding: 20px 0;
+  font-size: 18px;
+  color: #666;
+  font-weight: 700;
+}
+.my_number_wrap{
+  padding-bottom: 60px;
+}
+.my_number_wrap table{width: 100%;}
+.my_number_wrap table thead{
+  border-top: 2px solid #555;
+}
+.my_number_wrap table thead th{
+  font-weight: 500;
+  color: #252525;
+  text-align: center;
+  padding: 15px 0;
+  font-size: 16px;
+}
+.my_number_wrap table tr{
+  border-bottom: 1px solid #979797;
+}
+.my_number_wrap table tr td{
+  text-align: center;
+  padding: 10px 0;
+}
+.my_num_chk_wrap input{
+  display: none;
+}
+.my_num_chk_wrap input + label{
+  cursor: pointer;
+}
+.my_num_chk_wrap input:checked + label svg path{
+  stroke: #1186BD;
+}
+.my_number_ball_list span{
+  display: inline-block;
+  width: 28px;
+  line-height: 26px;
+  border: 1px solid #aaa;
+  border-radius: 50%;
+}
+.my_number_ball_list span.power{
+  background-color: #FEDC00 !important;
+  border: 1px solid #FEDC00;
+  color: #333;
+}
+.my_number_ball_list span.mega{
+  background-color: #194A9C !important;
+  border: 1px solid #194A9C;
+  color: #fff;
+}
+.my_number_btn{text-align: center;}
+.my_number_btn button{
+  padding: 10px 20px;
+  border: none;
+  background: #1186BD;
+  color: #fff;
+  border-radius: 4px;;
+}
+</style>
+
+<!-- 내번호 불러오기 -->
+<div id="my_number_list" style="display:none; ">
+  <div style="my_number_wrap">
+    <div class="" style="    text-align: center;" >
+      <a href="/" class="b-close mnl_pop_close"></a>
+    </div>
+    <div id="my_number"></div>
+  </div>
+</div>
+
+<div id="game_youtube" style="display:none;" >
+  <div class="" style="    text-align: center;" >
+    <a href="/" class="b-close" style="color:#FFF;" >×</a>
+  </div>
+  <iframe id="youtube" height="400px" src="" title="Powerball 20240302"
+  frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+</div>
+
+
+</body>
+
+
+
+<script src="//developers.kakao.com/sdk/js/kakao.js"></script>
+<script>
+  $(function(){
+      $("#login_password").keypress(function(e){
+  		//검색어 입력 후 엔터키 입력하면 조회버튼 클릭
+  		// if(e.keyCode && e.keyCode == 13){
+  		//   go_login();
+  		// }
+  	});
+  });
+
+  function get_cookie(cookieName) {
+      var name = cookieName + "=";
+      var decodedCookie = decodeURIComponent(document.cookie);
+      var cookieArray = decodedCookie.split(';');
+      for (var i = 0; i < cookieArray.length; i++) {
+          var cookie = cookieArray[i];
+          while (cookie.charAt(0) == ' ') {
+              cookie = cookie.substring(1);
+          }
+          if (cookie.indexOf(name) == 0) {
+              return cookie.substring(name.length, cookie.length);
+          }
+      }
+      return "";
+  }
+  function _go_login(){
+    if(get_cookie('auto_login')){
+
+    }
+
+    $('#login_form').bPopup({
+         modalClose : true,
+         onClose: function() {
+           location.reload();
+          }
+     });
+  }
+  function go_business_show(){
+    $(".footer_info").slideToggle(1000);
+  }
+
+  function go_page(obj){
+      $("#page").val(obj);
+      $("#searchFrm").submit();
+  }
+
+  function go_quiry_show(obj){
+    $(".quiry_view_"+obj).toggle();
+  }
+
+
+  function go_logout(){
+    $.ajax({
+       type : "POST",
+       url: "/member/ajax_logout.php",
+       async: false,
+       success: function(result) {
+          var r = result.trim();
+          console.log(r);
+          if(r==1){
+            location.reload();
+          }
+       },
+       error:function(e) {
+          alert(e.responseText);
+       }
+    });
+  }
+
+  Kakao.init('330c8bbd3cd5cb49e442f9613cf6009e'); //발급받은 키 중 javascript키를 사용해준다.
+  //카카오로그인
+  function kakaoLogin(code) {
+      Kakao.Auth.login({
+        success: function (response) {
+          Kakao.API.request({
+            url: '/v2/user/me',
+            success: function (response) {
+              console.log(response);
+              _kakao(response.id, '', code)
+
+            },
+            fail: function (error) {
+              console.log(error)
+            },
+          })
+        },
+        fail: function (error) {
+          console.log(error)
+        },
+      })
+    }
+
+  function _kakao(id, email, code){
+    var _code = "";
+    $.ajax({
+     type : "POST",
+     url: "/member/ajax_kakao_register.php",
+     async: false,
+     data: {
+        user_id : id,
+        code : code
+     },
+     success: function(result) {
+        var obj = jQuery.parseJSON(result);
+        if(obj.status=="ok"){
+          location.reload();
+        }else if(obj.status=="register"){
+          if(code){
+            _code = "?code="+code;
+          }else{
+            _code = "";
+          }
+          location.href="/member/kakao_join.html"+_code;
+        }else{
+          alert('가입오류');
+        }
+
+     },
+     error:function(e) {
+        alert(e.responseText);
+     }
+    });
+  }
+
+  function kakaoLogout() {
+    if (Kakao.Auth.getAccessToken()) {
+      Kakao.API.request({
+        url: '/v1/user/unlink',
+        success: function (response) {
+        	console.log(response)
+        },
+        fail: function (error) {
+          console.log(error)
+        },
+      })
+      Kakao.Auth.setAccessToken(undefined)
+    }
+  }
+
+  function go_login(){
+  var chk = $("#chk1").is(":checked");
+  var params = jQuery("#login_frm").serialize();
+
+  if(chk==1){
+    params += "&autologin=1";
+  }
+
+    $.ajax({
+      type : "POST",
+      url: "/member/ajax_login_chk.php",
+      async: false,
+      data: params,
+      success: function(result) {
+        console.log(result);
+        var obj = jQuery.parseJSON(result);
+        if(obj.status=="ok"){
+          if(obj.rurl){
+            location.href=obj.rurl;
+          }else{
+            location.reload();
+          }
+          //top.location.href="/";
+
+        }else{
+          alert(obj.msg);
+          return false;
+        }
+      },
+      error:function(e) {
+          alert(e.responseText);
+      }
+    });
+  }
+  function go_main_game_close(obj){
+    $("."+obj).hide();
+  }
+  function go_game_point_popup(){
+    $('#point_popup').bPopup({
+         modalClose : true,
+         onClose: function() {
+           location.reload();
+          }
+     });
+  }
+
+  function go_acount_sms_send(obj){
+    console.log(" result.deposit_idx ::: " + obj);
+      var params = jQuery("#pointFrm").serialize();
+      params += "&deposit_idx="+obj;
+        $.ajax({
+          type : "POST",
+          url: "_ajax_deposit_sms_send.php",
+          async: false,
+          data: params,
+          success: function(result) {
+            console.log(result);
+          },
+          error:function(e) {
+              alert(e.responseText);
+          }
+        });
+  }
+
+  function go_cancle(obj){
+    if(confirm("입금신청서를 취소 하시겠습니까?")){
+      $.ajax({
+        type : "POST",
+        url: "/buy/ajax_deposit_cancle.php",
+        async: false,
+        data: {
+          idx : obj
+        },
+        success: function(result) {
+          var r = result.trim();
+          console.log(r);
+          if(r==1){
+            alert("취소되었습니다.");
+            location.reload();
+          }else{
+            alert(r);
+            location.reload();
+          }
+        },
+        error:function(e) {
+          alert(e.responseText);
+        }
+      });
+    }
+  }
+  </script>
+
+</html>

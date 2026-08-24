@@ -1,0 +1,38 @@
+<?php
+  $not_mobile = true;
+  include $_SERVER['DOCUMENT_ROOT']."/inc/app-meta.html";
+?>
+
+<body class="body_idx bg_light_gray">
+  <a href="#main" class="skip">본문 바로가기</a>
+  <div class="top wrap_com clear ">
+    <h1 class="left mainlogo">
+      <a href="/index.html" class="ls25 color_blue" style="width: 35%;">
+        <img src="/common/images/superlottokorea-logo.svg" style="width: 60%; margin-top: -7px; margin-left: -5px;">
+      </a>
+    </h1>
+  </div>
+  <div class="mb30">
+    <div class="wrap_com">
+      <div class="bx_app ls25 br10 lh1 mt20 mb20">
+        <h2>미국복권 구매대행<strong><?=$사이트명1?></strong><span>안드로이드 앱 설치하기</span></h2>
+        <ul>
+          <li>
+            <a href="https://play.google.com/store/apps/details?id=com.sulotko">
+              <img src="/common/images/btn_googleplay.png" alt="" style="width: 50%;" />
+            </a>
+          </li>
+        </ul>
+        <div class="bx_mo ls25 br10 lh1 mt30">
+          <h2><strong><?=$사이트명1?></strong><span>모바일 웹페이지 방문하기</span></h2>
+          <div class="btn_mo">
+            <a href="https://m.<?=$domain?>">모바일 웹페이지 바로가기</a>
+          </div>
+        </div>
+      </div>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/app-footer.html";?>
+    </div>
+  </div>
+</body>
+<script src="/common/js/main.js?version=<?=$version?>" charset="utf-8"></script>
+</html>

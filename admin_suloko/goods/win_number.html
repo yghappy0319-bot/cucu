@@ -1,0 +1,191 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_WININFO.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page   = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&gubun=$gubun&limit=$limit";
+
+  $add_query = "";
+
+  $dt = date("Y-m-d");
+  $add_query .= " AND PLAYDATE <= '{$dt}'";
+
+  if ($gubun != "") {
+    $add_query .= " AND GUBUN = '{$gubun}'";
+  }
+
+  $list = F_WININFO_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['WININFO_NO'] = array();
+  }
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">당첨번호내역</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">로또관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">당첨번호내역</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <input type="hidden" name="find_object" value="PLAYDATE" />
+                <div class="form-group mr-3 fl-left">
+                  <select name="gubun" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <option value="">--복권종류--</option>
+                    <?=option_make($ball_op, $gubun)?>
+                  </select>
+                </div>
+                <div class="form-group fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="find_text" id="pdate" type="text" value="<?=$find_text?>" />
+                    <div class="input-group-text btn btn-primary" id="btn-search">
+                      <i class="fa fa-search" aria-hidden="true"></i>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              <div class="input-group col-md-4 fl-left">
+                <input type="text" id="ball1" class="form-control" placeholder="1번볼" />&nbsp;
+                <input type="text" id="ball2" class="form-control" placeholder="2번볼" />&nbsp;
+                <input type="text" id="ball3" class="form-control" placeholder="3번볼" />&nbsp;
+                <input type="text" id="ball4" class="form-control" placeholder="4번볼" />&nbsp;
+                <input type="text" id="ball5" class="form-control" placeholder="5번볼" />&nbsp;
+                <input type="text" id="ballp" class="form-control" placeholder="메가볼" />&nbsp;
+                <a class="btn btn-border btn-primary" id="btn-ball-in">등록</a>
+              </div>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border text-nowrap table-bordered table-scroll">
+                <thead>
+                  <tr>
+                    <th>회차</th>
+                    <th>복권명</th>
+                    <th>추첨일자(한)</th>
+                    <th>추첨일자(미)</th>
+                    <th>1번볼</th>
+                    <th>2번볼</th>
+                    <th>3번볼</th>
+                    <th>4번볼</th>
+                    <th>5번볼</th>
+                    <th>메가/파워볼</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['WININFO_NO']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                      $play_date_kor = "한) ".date("Y-m-d", strtotime($list['PLAYDATE'][$i]." +1 day"));
+                      $play_date_usa = "미) ".$list['PLAYDATE'][$i];
+                  ?>
+                  <tr style="cursor: pointer;" class="ballFunC text-center" data-pdate="<?=$list['PLAYDATE'][$i]?>">
+                    <td><?=$list['DRAWNUM'][$i]?></td>
+                    <td><?=$ball_op[$list['GUBUN'][$i]]?></td>
+                    <td><?=$play_date_kor?></td>
+                    <td><?=$play_date_usa?></td>
+                    <td><?=$list['BALL1'][$i]?></td>
+                    <td><?=$list['BALL2'][$i]?></td>
+                    <td><?=$list['BALL3'][$i]?></td>
+                    <td><?=$list['BALL4'][$i]?></td>
+                    <td><?=$list['BALL5'][$i]?></td>
+                    <td><?=$list['BALLP'][$i]?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+    $(document).on('click', '.ballFunC', function() {
+      let play_date = $(this).data('pdate');
+
+      $.post('./default.php', {
+        mode: 'ball_no',
+        play_date: play_date
+      }, function(e) {
+        if (e.error) {
+          $('#pdate').val(play_date);
+          $('#ball1').val(e.ball1);
+          $('#ball2').val(e.ball2);
+          $('#ball3').val(e.ball3);
+          $('#ball4').val(e.ball4);
+          $('#ball5').val(e.ball5);
+          $('#ballp').val(e.ballp);
+        } else {
+          alert('정확한 추첨일자를 입력해 주세요.');
+        }
+      }, 'json');
+    });
+
+    $(document).on('click', '#btn-ball-in', function() {
+      let play_date = $('#pdate').val();
+
+      let ball1 = $('#ball1').val();
+      let ball2 = $('#ball2').val();
+      let ball3 = $('#ball3').val();
+      let ball4 = $('#ball4').val();
+      let ball5 = $('#ball5').val();
+      let ballp = $('#ballp').val();
+
+      $.post('./default.php', {
+        mode: 'ball_no_in',
+        play_date: play_date,
+        ball1: ball1,
+        ball2: ball2,
+        ball3: ball3,
+        ball4: ball4,
+        ball5: ball5,
+        ballp: ballp
+      }, function(e) {
+        alert(e.msg);
+        if (e.error) {
+          window.location.reload();
+        }
+      }, 'json');
+    });
+  });
+</script>

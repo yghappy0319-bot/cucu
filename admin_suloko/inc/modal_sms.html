@@ -1,0 +1,391 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_SMSCONFIG.php";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_SMSTEMPLET.php";
+
+  // 문자발송번호
+  $list = F_SMSCONFIG_list(array("add_query" => "IS_USE='Y'"));
+
+  // 템플릿
+  $temp = F_SMSTEMPLET_LIST(array(
+    "row"         => 9999,
+    "page"        => 1,
+    "order"       => "",
+    "find_text"   => "",
+    "find_object" => "",
+    "add_query"   => " AND STOPYN = 'N' AND CODESK = 'S' ",
+  ));
+?>
+
+<style>
+  #sms_table_box thead tr {
+    display: block;
+  }
+  #sms_table_box tbody {
+    display: block;
+    height: 600px;
+    overflow: auto;
+  }
+  #sms_table_box thead tr:first-child th:first-child {
+    width: 3%;
+    text-align: center;
+  }
+  #sms_table_box thead tr:first-child th {
+    width: 5%;
+    text-align: center;
+  }
+  #sms_table_box th {
+    width: 7%;
+    text-align: center;
+  }
+  #sms_table_box th:first-child {
+    width: 0%;
+  }
+  #sms_table_box td {
+    width: 4.8%;
+  }
+  #sms_table_box td:first-child {
+    width: 3%;
+  }
+</style>
+
+<!-- BASIC MODAL -->
+<div class="modal fade" id="modaldemo1">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-content-demo">
+      <div class="modal-header">
+        <h6 class="modal-title">SMS 발송</h6><button aria-label="Close" class="btn-close" data-bs-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <form name="w_frm" id="w_frm" method="post" enctype="multipart/form-data" action="" target="_blank">
+          <input type="hidden" name="mode" id="mode" value="upload_image" />
+          <input type="hidden" name="smsSaveCount" id="smsSaveCount" />
+          <input type="hidden" name="smsIdx" id="smsIdx" />
+          <div class="card-body" id="order-view">
+            <div class="form-row">
+              <div class="col-md-10 mb-3">
+                <label for="sms_sender">발송번호 선택</label>
+                <select class="form-select form-control" name="sms_sender" id="sms_sender">
+                  <option value="">========== 번호 선택 ==========</option>
+                  <?php for ($i = 0; $i < count($list['SMS_NO']); $i++) { ?>
+                  <option value="<?=$list['SMS_NO'][$i]?>">[<?=$smssender_op[$list['SENDER'][$i]]?>] <?=$list['HP'][$i]?></option>
+                  <?php } ?>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-10 mb-3">
+                <label for="sms_templet">템플릿 선택</label>
+                <select class="form-select form-control" name="templet" id="sms_templet" required>
+                  <option value="">========== 템플릿 선택 ==========</option>
+                  <?php for ($i = 0; $i < count($temp['TEMPLET_NO']); $i++) { ?>
+                  <option value="<?=$temp['TEMPLET_NO'][$i]?>"><?=$temp['SUBJECT'][$i]?></option>
+                  <?php } ?>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-10 mb-3">
+                <label for="sms_subject">문자제목</label>
+                <input type="text" class="form-control" name="subject" id="sms_subject" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-10 mb-3">
+                <label for="sms_content">내용</label>
+                <textarea class="form-control" name="content" id="sms_content" style="height: 200px;"></textarea>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-10 mb-3">
+                <label for="sms_subject">수시HP</label>
+                <input type="text" class="form-control" name="sms_hp" id="sms_hp" style="width: 40%; display: inline-block;" />
+                <a href="#" class="btn btn-primary" id="sms_send_hp">등록</a>&nbsp;&nbsp;
+                <!--<input type="radio" class="" name="sms_all_mem" id="sms_all_mem" value="Y"><label for="sms_all_mem">&nbsp;전체회원</label>-->
+              </div>
+            </div>
+            <div class="form-row">
+              <table class="table border text-nowrap table-striped" id="sms_table_box">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>이름</th>
+                    <th>휴대폰</th>
+                    <th>삭제</th>
+                  </tr>
+                </thead>
+                <tbody id="sms_hp_box" style="display: block; height: 200px; overflow: auto;"></tbody>
+              </table>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer btn-animation">
+        <button type="button" class="btn btn-success ok_sms_btn">발송</button>
+        <button type="button" class="btn btn-success btn-loaders" style="display: none;"><span class="loading">loading</span></button>
+        <button type="button" class="btn btn-light cancel_btn" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JQUERY JS -->
+<script src="../../assets/js/jquery.min.js?ver=<?=$version?>"></script>
+
+<script>
+  $(function() {
+    function autoHypenTel(str) {
+      str = str.replace(/[^0-9]/g, '');
+      let tmp = '';
+
+      if (str.substring(0, 2) == 02) {
+        // 서울 전화번호일 경우 10자리까지만 나타나고 그 이상의 자리수는 자동삭제
+        if (str.length < 3) {
+          return str;
+        } else if (str.length < 6) {
+          tmp += str.substr(0, 2);
+          tmp += '-';
+          tmp += str.substr(2);
+          return tmp;
+        } else if (str.length < 10) {
+          tmp += str.substr(0, 2);
+          tmp += '-';
+          tmp += str.substr(2, 3);
+          tmp += '-';
+          tmp += str.substr(5);
+          return tmp;
+        } else {
+          tmp += str.substr(0, 2);
+          tmp += '-';
+          tmp += str.substr(2, 4);
+          tmp += '-';
+          tmp += str.substr(6, 4);
+          return tmp;
+        }
+      } else {
+        // 핸드폰 및 다른 지역 전화번호 일 경우
+        if (str.length < 4) {
+          return str;
+        } else if (str.length < 7) {
+          tmp += str.substr(0, 3);
+          tmp += '-';
+          tmp += str.substr(3);
+          return tmp;
+        } else if (str.length < 11) {
+          tmp += str.substr(0, 3);
+          tmp += '-';
+          tmp += str.substr(3, 3);
+          tmp += '-';
+          tmp += str.substr(6);
+          return tmp;
+        } else {
+          tmp += str.substr(0, 3);
+          tmp += '-';
+          tmp += str.substr(3, 4);
+          tmp += '-';
+          tmp += str.substr(7);
+          return tmp;
+        }
+      }
+      return str;
+    }
+
+    let hp_cnt = 0;
+
+    $(document).on('click', '.sms-send-all', function() {
+      let isLog = $(this).data('type');
+
+      let chk_no = new Array();
+      let i = 0;
+
+      $('#sms_hp_box').html('');
+      $('#sms_all_mem').prop('checked', false);
+
+      $('[name="noChk[]"]:checked').each(function() {
+        chk_no[i] = $(this).data('no');
+        i++;
+      });
+
+      if (i > 0) {
+        $.post('/default.php', {
+          mode: 'check_hp_member_all',
+          chk_no: chk_no
+        }, function(e) {
+          if (e.error) {
+            $('#sms_hp_box').append(e.html);
+            hp_cnt += Number(e.cnt);
+
+            if (e.dcnt > 0 && isLog !== 'log') {
+              alert(e.msg);
+            }
+          } else {
+            alert(e.msg);
+          }
+        }, 'json');
+      }
+    });
+
+    $(document).on('click', '.sms_hp_del', function() {
+      $(this).parent().parent().remove();
+      hp_cnt--;
+    });
+
+    $('#sms_hp').keyup(function(event) {
+      event = event || window.event;
+      let _val = this.value.trim();
+      this.value = autoHypenTel(_val);
+    });
+
+    $(document).on('click', '#sms_send_hp', function() {
+      let is_use = false;
+      let hp  = '';
+      $('#sms_all_mem').prop('checked', false);
+
+      if ($('#sms_hp').val() == '') {
+        alert('수신번호를 입력해 주세요.');
+        return false;
+      }
+
+      $('#sms_hp_box').find('tr').each(function() {
+        hp = $.trim($(this).find('td').eq(2).text());
+        if ($('#sms_hp').val() == hp) {
+          is_use = true;
+        }
+      });
+
+      if (is_use) {
+        alert('이미 등록한 수신번호입니다.');
+        return false;
+      }
+
+      $.post('/default.php', {
+        mode: 'check_hp_member',
+        hp: $('#sms_hp').val(),
+        no: hp_cnt
+      }, function(e) {
+        if (e.error) {
+          $('#sms_hp_box').append(e.html);
+          hp_cnt++;
+        } else {
+          alert(e.msg);
+        }
+      }, 'json');
+    });
+
+    $(document).on('change', '#sms_templet', function() {
+      let templet_no = $('#sms_templet option:selected').val();
+
+      if (templet_no == '') {
+        $('#sms_subject').val('');
+        $('#sms_content').text('');
+        return false;
+      }
+
+      $.post('/default.php', {
+        mode: 'change_sms_templet',
+        no: templet_no
+      }, function(e) {
+        if (e.error) {
+          $('#sms_subject').val(e.subject);
+          $('#sms_content').text(e.content);
+        } else {
+          alert(e.msg);
+        }
+      }, 'json');
+    });
+
+    $(document).on('click', '.ok_sms_btn', function() {
+      let sms_no       = $('#sms_sender option:selected').val();
+      let templet_no   = $('#sms_templet option:selected').val();
+      let subject      = $('#sms_subject').val();
+      let con          = $('#sms_content').val();
+      let smsSaveCount = $('#smsSaveCount').val();
+      let smsIdx       = $('#smsIdx').val();
+      let all_mem      = 'N';
+      let mem_arr      = new Array();
+
+      let i = 0;
+
+      if ($.trim(sms_no) == '') {
+        alert('발송번호를 선택해 주세요.');
+        return false;
+      }
+
+      if ($.trim(subject) == '') {
+        alert('문자제목을 입력해 주세요.');
+        return false;
+      }
+
+      if ($.trim(con) == '') {
+        alert('내용을 입력해 주세요.');
+        return false;
+      }
+
+      $('#sms_hp_box').find('tr').each(function() {
+        hp = $.trim($(this).find('td').eq(2).text());
+        mem_arr[i] = hp;
+        i++;
+      });
+
+      if (all_mem == 'N' && i <= 0) {
+        alert('수신할 번호를 등록해 주세요.');
+        return false;
+      }
+
+      // 무통장입금 SMS 로그 페이지에서 문자 발송 시 적용
+      if (smsSaveCount) {
+        let idxCnt = smsIdx.split(',').length - 1;
+
+        if (idxCnt > 1 || mem_arr.length > 1) {
+          alert('SMS는 한 건씩 발송해주세요.');
+          return false;
+        }
+      }
+
+      showLoader();
+
+      if (!templet_no) { templet_no = 0 }
+
+      $.post('/default.php', {
+        mode: 'sms_send',
+        content: con,
+        subject: subject,
+        mem_arr: mem_arr,
+        sms_no: sms_no,
+        templet_no: templet_no
+      }, function(e) {
+        alert(e.msg);
+
+        if (e.error) {
+          // 무통장입금 SMS 로그에서 문자 발송 시 문자 발송 횟수 저장
+          if (smsSaveCount) {
+            let hp = mem_arr.slice(-1).toString();
+            saveCountMsgSent(smsIdx, hp, templet_no);
+          }
+          window.location.reload();
+        }
+        hideLoader();
+      }, 'json');
+    });
+
+    function showLoader() {
+      $('.ok_sms_btn').hide();
+      $('.btn-loaders').show();
+    }
+
+    function hideLoader() {
+      $('.ok_sms_btn').show();
+      $('.btn-loaders').hide();
+    }
+
+    // 문자 발송 횟수 저장
+    function saveCountMsgSent(idx, hp, no) {
+      $.post('/order/mode.php', {
+        mode: 'sms_sent_cnt',
+        idx: idx,
+        hp: hp,
+        no: no
+      }, function(e) {
+      }, 'json');
+    }
+  });
+</script>

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>프로필등록</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      background: linear-gradient(135deg, #ffeef8 0%, #fff5e6 100%);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .wrap {
+      width: 100%;
+      max-width: 480px;
+      background: #fff;
+      padding: 28px 22px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    h2 {
+      margin: 0 0 8px;
+      text-align: center;
+      color: #d6336c;
+      font-size: 22px;
+    }
+    .sub {
+      margin: 0 0 22px;
+      text-align: center;
+      font-size: 13px;
+      color: #888;
+      line-height: 1.45;
+    }
+    .form-group { margin-bottom: 18px; }
+    label.field-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #333;
+    }
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      height: 46px;
+      padding: 12px 14px;
+      font-size: 15px;
+      line-height: 1.2;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      outline: none;
+      font-family: inherit;
+      background: #fff;
+      color: #333;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    textarea:focus { border-color: #ff85a2; }
+    textarea {
+      height: auto;
+      min-height: 72px;
+      resize: vertical;
+      line-height: 1.55;
+    }
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+    .row-2 > div {
+      min-width: 0;
+    }
+    .choice-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .choice-group input[type="radio"] { display: none; }
+    .choice-group label {
+      flex: 1;
+      min-width: 72px;
+      margin: 0;
+      padding: 12px 8px;
+      text-align: center;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      color: #444;
+      transition: all 0.2s;
+    }
+    .choice-group input[type="radio"]:checked + label {
+      background: #ff85a2;
+      border-color: #ff85a2;
+      color: #fff;
+    }
+    .choice-group input[type="radio"]:checked + label.male {
+      background: #4dabf7;
+      border-color: #4dabf7;
+    }
+    .choice-group input[type="radio"]:checked + label.free {
+      background: #69db7c;
+      border-color: #69db7c;
+    }
+    .choice-group input[type="radio"]:checked + label.marital {
+      background: #845ef7;
+      border-color: #845ef7;
+    }
+    .mbti-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .mbti-grid input[type="radio"] { display: none; }
+    .mbti-grid label {
+      margin: 0;
+      padding: 11px 4px;
+      text-align: center;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 750;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      color: #444;
+      background: #fff;
+      transition: all 0.2s;
+    }
+    .mbti-grid input[type="radio"]:checked + label {
+      background: #228be6;
+      border-color: #228be6;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(34, 139, 230, 0.28);
+    }
+    .hint {
+      font-size: 12px;
+      color: #888;
+      margin-top: 6px;
+    }
+    .preview {
+      margin-top: 6px;
+      padding: 14px;
+      background: #fff7fa;
+      border: 1px dashed #ffc9d9;
+      border-radius: 12px;
+      white-space: pre-wrap;
+      font-size: 13px;
+      line-height: 1.65;
+      color: #555;
+      min-height: 120px;
+    }
+    .preview-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #d6336c;
+      margin-bottom: 8px;
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #ff85a2 0%, #ffab73 100%);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: opacity 0.2s;
+    }
+    .submit-btn:hover { opacity: 0.9; }
+    .submit-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>🌸 프로필등록 🌸</h2>
+    <p class="sub">항목을 모두 입력하면 아래 미리보기처럼<br>프로필 내용이 만들어져요.</p>
+    <form id="memberForm">
+      <div class="form-group">
+        <label class="field-label">닉네임•키</label>
+        <div class="row-2">
+          <div>
+            <input type="text" id="name" name="name" maxlength="2" placeholder="닉네임 2글자" autocomplete="off">
+            <div class="hint">닉네임</div>
+          </div>
+          <div>
+            <input type="number" id="height" name="height" inputmode="decimal" step="0.1" min="100" max="250" placeholder="예) 183.3" autocomplete="off">
+            <div class="hint">키 (소수 가능)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label">성별</label>
+        <div class="choice-group">
+          <input type="radio" id="gender_male" name="gender" value="남">
+          <label for="gender_male" class="male">남</label>
+          <input type="radio" id="gender_female" name="gender" value="여">
+          <label for="gender_female">여</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label" for="region">지역 (시•군)</label>
+        <input type="text" id="region" name="region" placeholder="예) 서울 강남 / 경기 수원" autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label class="field-label">프리</label>
+        <div class="choice-group">
+          <input type="radio" id="free_day" name="free" value="낮프">
+          <label for="free_day" class="free">낮프</label>
+          <input type="radio" id="free_night" name="free" value="밤프">
+          <label for="free_night" class="free">밤프</label>
+          <input type="radio" id="free_all" name="free" value="올프">
+          <label for="free_all" class="free">올프</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label">기•미•돌</label>
+        <div class="choice-group">
+          <input type="radio" id="marital_gi" name="marital" value="기혼" checked>
+          <label for="marital_gi" class="marital">기혼</label>
+          <input type="radio" id="marital_mi" name="marital" value="미혼">
+          <label for="marital_mi" class="marital">미혼</label>
+          <input type="radio" id="marital_dol" name="marital" value="돌싱">
+          <label for="marital_dol" class="marital">돌싱</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label">MBTI</label>
+        <div class="mbti-grid" id="mbtiGrid">
+          <input type="radio" id="mbti_ISTJ" name="mbti" value="ISTJ"><label for="mbti_ISTJ">ISTJ</label>
+          <input type="radio" id="mbti_ISFJ" name="mbti" value="ISFJ"><label for="mbti_ISFJ">ISFJ</label>
+          <input type="radio" id="mbti_INFJ" name="mbti" value="INFJ"><label for="mbti_INFJ">INFJ</label>
+          <input type="radio" id="mbti_INTJ" name="mbti" value="INTJ"><label for="mbti_INTJ">INTJ</label>
+          <input type="radio" id="mbti_ISTP" name="mbti" value="ISTP"><label for="mbti_ISTP">ISTP</label>
+          <input type="radio" id="mbti_ISFP" name="mbti" value="ISFP"><label for="mbti_ISFP">ISFP</label>
+          <input type="radio" id="mbti_INFP" name="mbti" value="INFP"><label for="mbti_INFP">INFP</label>
+          <input type="radio" id="mbti_INTP" name="mbti" value="INTP"><label for="mbti_INTP">INTP</label>
+          <input type="radio" id="mbti_ESTP" name="mbti" value="ESTP"><label for="mbti_ESTP">ESTP</label>
+          <input type="radio" id="mbti_ESFP" name="mbti" value="ESFP"><label for="mbti_ESFP">ESFP</label>
+          <input type="radio" id="mbti_ENFP" name="mbti" value="ENFP"><label for="mbti_ENFP">ENFP</label>
+          <input type="radio" id="mbti_ENTP" name="mbti" value="ENTP"><label for="mbti_ENTP">ENTP</label>
+          <input type="radio" id="mbti_ESTJ" name="mbti" value="ESTJ"><label for="mbti_ESTJ">ESTJ</label>
+          <input type="radio" id="mbti_ESFJ" name="mbti" value="ESFJ"><label for="mbti_ESFJ">ESFJ</label>
+          <input type="radio" id="mbti_ENFJ" name="mbti" value="ENFJ"><label for="mbti_ENFJ">ENFJ</label>
+          <input type="radio" id="mbti_ENTJ" name="mbti" value="ENTJ"><label for="mbti_ENTJ">ENTJ</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label" for="ideal">썸 이상형</label>
+        <textarea id="ideal" name="ideal" placeholder="썸 이상형을 적어주세요"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="field-label" for="charm">나의 매력</label>
+        <textarea id="charm" name="charm" placeholder="나의 매력을 적어주세요"></textarea>
+      </div>
+
+      <div class="form-group">
+        <div class="preview-title">최종 프로필 미리보기</div>
+        <div class="preview" id="preview">(항목을 입력하면 여기에 표시돼요)</div>
+      </div>
+
+      <button type="submit" class="submit-btn">등록하기</button>
+    </form>
+  </div>
+
+  <script>
+    function 창닫기() {
+      var ua = navigator.userAgent || '';
+      if (ua.indexOf('KAKAOTALK') > -1) {
+        location.href = 'kakaotalk://inappbrowser/close';
+        return;
+      }
+      if (ua.indexOf('NAVER') > -1) {
+        location.href = 'naversearchapp://inappbrowser/close';
+        return;
+      }
+      try { window.close(); } catch (e) {}
+      setTimeout(function () {
+        try { window.open('', '_self').close(); } catch (e2) {}
+      }, 100);
+    }
+
+    function 값(sel) {
+      return String($(sel).val() || '').trim();
+    }
+
+    function 선택값(name) {
+      return String($('input[name="' + name + '"]:checked').val() || '').trim();
+    }
+
+    function 키정규화() {
+      var raw = 값('#height').replace(/,/g, '');
+      if (!raw) return '';
+      if (!/^\d+(\.\d+)?$/.test(raw)) return '';
+      var n = parseFloat(raw);
+      if (!isFinite(n)) return '';
+      // 183 / 183.3 형태 유지 (불필요한 .0 제거)
+      if (Math.abs(n - Math.round(n)) < 1e-9) {
+        return String(Math.round(n));
+      }
+      return String(Math.round(n * 10) / 10);
+    }
+
+    function 프로필조립() {
+      var name = 값('#name');
+      var gender = 선택값('gender');
+      var height = 키정규화();
+      var nickLine = (name + (gender ? ' ' + gender : '')).trim();
+      if (height) nickLine += ' / ' + height;
+      return [
+        '🌸 닉네임•키 : ' + nickLine,
+        '🌸 지역(시•군) : ' + 값('#region'),
+        '🌸 프리(낮프•밤프•올프) : ' + 선택값('free'),
+        '🌸 기•미•돌 : ' + 선택값('marital'),
+        '🌸 MBTI : ' + 선택값('mbti'),
+        '🌸 썸 이상형 : ' + 값('#ideal'),
+        '🌸 나의 매력 : ' + 값('#charm')
+      ].join('\n');
+    }
+
+    function 미리보기갱신() {
+      var text = 프로필조립();
+      var filled = 값('#name') || 값('#height') || 선택값('gender') || 값('#region') || 선택값('free') ||
+        선택값('marital') || 선택값('mbti') || 값('#ideal') || 값('#charm');
+      $('#preview').text(filled ? text : '(항목을 입력하면 여기에 표시돼요)');
+    }
+
+    function 검증() {
+      if (값('#name').length !== 2) {
+        alert('닉네임은 정확히 2글자로 입력해주세요.');
+        $('#name').focus();
+        return false;
+      }
+      var height = 키정규화();
+      var heightNum = parseFloat(height);
+      if (!height || !isFinite(heightNum) || heightNum < 100 || heightNum > 250) {
+        alert('키는 100~250 사이 숫자로 입력해주세요. (예: 183.3)');
+        $('#height').focus();
+        return false;
+      }
+      if (!선택값('gender')) {
+        alert('성별을 선택해주세요.');
+        return false;
+      }
+      if (!값('#region')) {
+        alert('지역을 입력해주세요.');
+        $('#region').focus();
+        return false;
+      }
+      if (!선택값('free')) {
+        alert('프리(낮프•밤프•올프)를 선택해주세요.');
+        return false;
+      }
+      if (!선택값('marital')) {
+        alert('기혼 / 미혼 / 돌싱을 선택해주세요.');
+        return false;
+      }
+      if (!선택값('mbti')) {
+        alert('MBTI를 선택해주세요.');
+        return false;
+      }
+      if (!값('#ideal')) {
+        alert('썸 이상형을 입력해주세요.');
+        $('#ideal').focus();
+        return false;
+      }
+      if (!값('#charm')) {
+        alert('나의 매력을 입력해주세요.');
+        $('#charm').focus();
+        return false;
+      }
+      return true;
+    }
+
+    $(function () {
+      $('#memberForm').on('input change', 'input, textarea', 미리보기갱신);
+      미리보기갱신();
+
+      $('#memberForm').on('submit', function (e) {
+        e.preventDefault();
+        if (!검증()) return;
+
+        var name = 값('#name');
+        var gender = 선택값('gender');
+        var content = 프로필조립();
+        var $btn = $(this).find('.submit-btn');
+        $btn.prop('disabled', true).text('처리 중...');
+
+        $.ajax({
+          url: '/page/_member_insert.php',
+          type: 'POST',
+          dataType: 'json',
+          data: { name: name, gender: gender, content: content }
+        })
+        .done(function (res) {
+          if (res && res.success) {
+            var msg = res.updated
+              ? '프로필 업데이트 완료! 이어서 색표를 골라주세요.'
+              : '프로필등록 완료! 이어서 색표를 골라주세요.';
+            alert(msg);
+            var next = '/page/color_list.php';
+            if (res.code) {
+              next += '?code=' + encodeURIComponent(res.code);
+            }
+            location.href = next;
+          } else {
+            alert((res && res.message) ? res.message : '프로필등록 실패했습니다.');
+            $btn.prop('disabled', false).text('등록하기');
+          }
+        })
+        .fail(function () {
+          alert('서버 오류가 발생했습니다.');
+          $btn.prop('disabled', false).text('등록하기');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

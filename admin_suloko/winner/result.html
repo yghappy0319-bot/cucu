@@ -1,0 +1,266 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if ($S_login['limit']) $limit = $S_login['limit'];
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit&winyn=$winyn&pdate=$pdate&limit=$limit";
+
+  // superadmin만 1, 2, 3등 조회 가능
+  if ($S_login['level'] == 4) {
+    $add_query = "";
+  } else {
+    $filter = "NOT IN (1,2,3)";
+
+    for ($i = 1; $i <= 5; $i++) {
+      $default = " AND WIN{$i} {$filter}";
+      $add_query .= $default;
+    }
+  }
+
+  $add_query .= " AND SIGN_YN != 'C'";
+
+  // 당첨된 티켓만 조회
+  $add_query .= " AND WIN_YN='Y'";
+
+  // 당첨금이 지급된 이후 데이터만 조회
+  $add_query .= " AND WIN_MONEY_YN = 'Y'";
+
+  if ($gubun != "") {
+    $add_query .= " AND GUBUN='{$gubun}'";
+  }
+
+  if ($pdate != "") {
+    $add_query .= " AND PLAYDATE='{$pdate}'";
+  }
+
+  $list = F_ORDERS_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['ORDERS_NO'] = array();
+  }
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">당첨금처리조회</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">당첨금환급</a></li>
+          <li class="breadcrumb-item active" aria-current="page">당첨금처리조회</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="gubun" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <option value="">--복권(전체)--</option>
+                    <?=option_make($ball_op, $gubun)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="추첨일자(미)" name="pdate" id="pdate" type="text" value="<?=$pdate?>" autocomplete="off" />
+                  </div>
+                </div>
+                <div class="form-group fl-left" style="float: right;">
+                  <select name="limit" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <?=option_make($limit_op, $limit)?>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>복권명</th>
+                    <th>ID</th>
+                    <th>휴대폰번호</th>
+                    <th>주문번호</th>
+                    <th>게임수량</th>
+                    <th>추첨일자(한)</th>
+                    <th>당첨금($)</th>
+                    <th>당첨금(₩)</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['ORDERS_NO']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                      $play_date = date("Y-m-d", strtotime($list['PLAYDATE'][$i]." +1 day"));
+                  ?>
+                  <tr>
+                    <td><?=$no?></td>
+                    <td><?=$ball_op[$list['GUBUN'][$i]]?></td>
+                    <td><?=$list['USER_ID'][$i]?><i class="modal-effect fa fa-search checkUser"
+                        title="상세정보"
+                        style="cursor: pointer; margin-left: 3px;"
+                        data-bs-effect="effect-scale"
+                        data-bs-target="#memberModal"
+                        data-bs-toggle="modal"
+                        data-no="<?=$list['USER_ID'][$i]?>">
+                      </i></td>
+                    <td><?=$list['HP'][$i]?></td>
+                    <td><?=$list['ORDERS_NO'][$i]?></td>
+                    <td><?=$list['GAMECNT'][$i]?></td>
+                    <td><?=$play_date?></td>
+                    <td class="text-end"><?=number_format($list['WIN_MONEY_USD'][$i])?></td>
+                    <td class="text-end"><?=number_format($list['WIN_MONEY'][$i])?></td>
+                    <td><button data-bs-target="#winner-detail" data-bs-toggle="modal" class="btn btn-secondary btn-detail" data-no="<?=$list['ORDERS_NO'][$i]?>">상세보기</button></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<!-- BASIC MODAL -->
+<div class="modal fade" id="winner-detail">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-content-demo">
+      <div class="modal-header">
+        <h6 class="modal-title">당첨자 상세정보</h6>
+        <button aria-label="Close" class="btn-close" data-bs-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="card-body" id="order-view">
+          <div class="form-row">
+            <div class="col-md-6 mb-3">
+              <label for="user_id">아이디</label>
+              <input type="text" class="form-control" id="user_id" readonly />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="hp">휴대폰</label>
+              <input type="text" class="form-control" id="hp" readonly />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col-md-6 mb-3">
+              <label for="gubun">복권명</label>
+              <input type="text" class="form-control" id="gubun" readonly />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="cnt">게임수량</label>
+              <input type="text" class="form-control" id="cnt" readonly />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col-md-6 mb-3">
+              <label for="payment">결제금액</label>
+              <input type="text" class="form-control" id="payment" readonly />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="playdate">추첨일</label>
+              <input type="text" class="form-control" id="playdate" readonly />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col-md-12 mb-3">
+              <label for="ball1">게임1</label>
+              <input type="text" class="form-control" id="ball1" readonly />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col-md-12 mb-3">
+              <label for="ball2">게임2</label>
+              <input type="text" class="form-control" id="ball2" readonly />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col-md-12 mb-3">
+              <label for="ball3">게임3</label>
+              <input type="text" class="form-control" id="ball3" readonly />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col-md-12 mb-3">
+              <label for="ball4">게임4</label>
+              <input type="text" class="form-control" id="ball4" readonly />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col-md-12 mb-3">
+              <label for="ball5">게임5</label>
+              <input type="text" class="form-control" id="ball5" readonly />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_member.html"; ?>
+
+<script>
+  $(function() {
+  });
+
+  $('.btn-detail').click(function() {
+    let no = $(this).data('no');
+    let obj = $('#order-view');
+
+    $.post('./default.php', {
+      mode: 'read_order',
+      no: no
+    }, function(e) {
+      obj.find('#user_id').val(e.USER_ID);
+      obj.find('#gubun').val(e.ball_name);
+      obj.find('#hp').val(e.HP);
+      obj.find('#cnt').val(e.GAMECNT);
+      obj.find('#playdate').val(e.PLAYDATE);
+      obj.find('#authnum').val(e.AUTHNUM);
+      obj.find('#cardcd').val(e.CARDCD);
+      obj.find('#payment').val(e.PAYMENT);
+      obj.find('#vat').val(e.VAT);
+      obj.find('#ball1').val(e.BALL1);
+      obj.find('#ball2').val(e.BALL2);
+      obj.find('#ball3').val(e.BALL3);
+      obj.find('#ball4').val(e.BALL4);
+      obj.find('#ball5').val(e.BALL5);
+    }, 'json');
+  });
+</script>

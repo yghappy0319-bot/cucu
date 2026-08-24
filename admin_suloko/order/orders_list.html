@@ -1,0 +1,474 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if ($S_login['limit']) $limit = $S_login['limit'];
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&sdate=$sdate&edate=$edate&gubun=$gubun&limit=$limit";
+
+  $add_query = "AND o.SIGN_YN != 'C'";
+
+  if ($S_login['level'] == 1) {
+    switch ($S_login['user_id']) {
+      case "3dsys":
+        $add_query .= " AND AGENT_NO = 1 AND o.REG_DATE < '2024-07-21 03:00:00'";
+        break;
+      default: //VoyageX
+        $add_query .= " AND AGENT_NO = 0";
+    }
+  }
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND o.REG_DATE BETWEEN '{$sDate}' AND '{$eDate}'";
+  }
+
+  if ($find_object == "all" && $find_text != "") {
+    $add_query .= " AND (o.ORDERS_NO = '{$find_text}' OR o.USER_ID = '{$find_text}' OR m.NAME LIKE '%{$find_text}%' OR o.HP LIKE '%{$find_text}%')";
+    $find_object = "";
+  }
+
+  if ($gubun != "") {
+    $add_query .= " AND o.GUBUN='{$gubun}'";
+  }
+
+  $list = F_ORDERS_MEMBER_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['ORDERS_NO'] = array();
+  }
+
+  $find_op = array(
+    "all"       => "전체",
+    "ORDERS_NO" => "주문번호",
+    "o.USER_ID" => "아이디",
+    "m.NAME"    => "성명",
+    "o.HP"      => "휴대폰번호",
+    "o.BALL1"   => "A게임번호",
+  );
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">구매내역</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">구매내역</a></li>
+          <li class="breadcrumb-item active" aria-current="page">구매내역</li>
+        </ol>
+      </div>
+      <div class="ms-auto pageheader-btn">
+        <a href="./orders_list_excel.html?find_text=<?=$find_text?>&find_object=<?=$_GET['find_object']?>&sdate=<?=$sdate?>&edate=<?=$edate?>&gubun=<?=$gubun?>"
+          target="_blank" class="btn btn-primary btn-icon">
+          <span>
+            <i class="fa fa-file-excel-o"></i>
+          </span> Excel Download
+        </a>
+        <button type="button" class="btn btn-danger btn-icon allDelChk">선택구매취소(환불)처리</button>
+        <button type="button" class="btn btn-secondary btn-icon allHideChk" data-status="N">선택숨김해제</button>
+        <button type="button" class="btn btn-warning btn-icon allHideChk" data-status="Y">선택숨김</button>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="gubun" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <option value="">--전체--</option>
+                    <?=option_make($ball_op, $gubun)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select name="schdate" id="schdate" class="form-control form-select select2">
+                    <option value="">--기간선택--</option>
+                    <?=option_make($search_date_op, $schdate)?>
+                  </select>
+                </div>
+                <input type="hidden" name="find_object" value="PLAYDATE" />
+                <div class="form-group mr-3 fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                    <span style="margin: 8px 5px 0 5px;">~</span>
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                  </div>
+                </div>
+                <div class="form-group fl-left">
+                  <select name="find_object" id="select-beast" class="form-control form-select select2">
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control auto-submit" name="find_text" value="<?=$find_text?>" />
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+                <div class="form-group fl-left" style="float: right;">
+                  <select name="limit" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <?=option_make($limit_op, $limit)?>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="chkAll" /></th>
+                    <th>No</th>
+                    <th>복권명</th>
+                    <th>ID</th>
+                    <th>성명</th>
+                    <th>휴대폰번호</th>
+                    <th>회차</th>
+                    <th>게임수량</th>
+                    <th>게임번호</th>
+                    <th>추첨일자</th>
+                    <th>구매금액</th>
+                    <th>캐시</th>
+                    <th>당첨금</th>
+                    <th>마일리지</th>
+                    <th>포인트</th>
+                    <th>구매일시(한)</th>
+                    <th>구매경로</th>
+                    <th>스캔본등록</th>
+                    <?php if ($S_login['level'] != 1) {?><th>스캔업체</th><?php } ?>
+                    <th>숨김</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['ORDERS_NO']); $i++) {
+                      $no = $list['total'] - (($page-1)*$list['row']) - $i;
+                      $scan = "<font color='#ff0000'><strong>N</strong></font>";
+                      $ticketImg = $list['IMG_PATH'][$i];
+                      $ticketImgDate = $list['IMG_DATE'][$i];
+                      $ticketTime = strtotime($ticketImgDate);
+                      $scan_agent = "-";
+
+                      if (strpos($ticketImg, "/") === false) {
+                        $ticketTime = strtotime($ticketImgDate);
+                        $ticketDir = date('ymd', $ticketTime);
+                        $ticketUrl = $s3_ticket_url.$ticketDir.'/'.$ticketImg.'';
+                      } else {
+                        $ticketDir = '';
+                        $ticketUrl = $s3_ticket_url.'/'.$ticketImg.'';
+                      }
+
+                      if ($list["IMG_PATH"][$i] != '') {
+                        $scan = '<a data-bs-target="#modaldemo1" data-bs-toggle="modal" data-src="'.$ticketUrl.'" class="img_read" style="cursor: pointer;"><strong>Y</strong></a>';
+                        switch($list["AGENT_NO"][$i]) {
+                          case "1":
+                            $scan_agent = "3Dsys";
+                            break;
+                          default:
+                            $scan_agent = "VoyageX";
+                            break;
+                        }
+                      }
+
+                      $play_date = "한) ".date("Y-m-d", strtotime($list['PLAYDATE'][$i]." +1 day"));
+
+                      $NAME = ($S_login['level'] == 1) ? preg_replace('/.(?=.$)/u', '*', $list['NAME'][$i]) : $list['NAME'][$i];
+                      $linethrough = "";
+
+                      // 탈퇴 회원 정보 추가
+                      if (empty($NAME)) {
+                        $out  = $db->get_data("SELECT NAME, HP FROM OUT_MEMBER WHERE USER_ID='{$list['USER_ID'][$i]}' LIMIT 1");
+                        $NAME = $out['NAME'];
+                        $linethrough = "line-through";
+                      }
+
+                      $game_numbers = gamenumber_style($list['BALL1'][$i], $list['GUBUN'][$i]);
+                      if ($list['BALL2'][$i] != "") $game_numbers .= "<br>". gamenumber_style($list['BALL2'][$i], $list['GUBUN'][$i]);
+                      if ($list['BALL3'][$i] != "") $game_numbers .= "<br>". gamenumber_style($list['BALL3'][$i], $list['GUBUN'][$i]);
+                      if ($list['BALL4'][$i] != "") $game_numbers .= "<br>". gamenumber_style($list['BALL4'][$i], $list['GUBUN'][$i]);
+                      if ($list['BALL5'][$i] != "") $game_numbers .= "<br>". gamenumber_style($list['BALL5'][$i], $list['GUBUN'][$i]);
+                  ?>
+                  <tr>
+                    <td><input type="checkbox" name="noChk[]" value="<?=$list['ORDERS_NO'][$i]?>"></td>
+                    <td><?=$list['ORDERS_NO'][$i]?></td>
+                    <td><?=$ball_op[$list['GUBUN'][$i]]?></td>
+                    <td><?=$list['USER_ID'][$i]?><i class="modal-effect fa fa-search checkUser"
+                        title="상세정보"
+                        style="cursor: pointer; margin-left: 3px;"
+                        data-bs-effect="effect-scale"
+                        data-bs-target="#memberModal"
+                        data-bs-toggle="modal"
+                        data-no="<?=$list['USER_ID'][$i]?>">
+                      </i></td>
+                    <td style="text-decoration: <?=$linethrough?>"><?=$NAME?></td>
+                    <td><?=(($S_login['level'] == 1) ? substr($list['HP'][$i],0,-4)."****" : $list['HP'][$i])?></td>
+                    <td><?=$list['DRAWNUM'][$i]?></td>
+                    <td><?=$list['GAMECNT'][$i]?></td>
+                    <td style="text-align:left">
+                      <?=$game_numbers?>
+                      <div>
+                        <button type="button" data-bs-effect="effect-scale" data-bs-target="#ticketUploadModal" data-bs-toggle="modal" onclick="go_set_orderno('<?=$list["ORDERS_NO"][$i]?>')" >up</button>
+                      </div>
+                    </td>
+                    <td><?=$play_date?></td>
+                    <td class="text-end"><strong><?=number_format($list['PAYMENT'][$i])?></strong></td>
+                    <td class="text-end"><?=number_format($list['CASH'][$i])?></td>
+                    <td class="text-end"><?=number_format($list['WINCASH'][$i])?></td>
+                    <td class="text-end"><?=number_format($list['IPOINT'][$i])?></td>
+                    <td class="text-end"><?=number_format($list['POINT'][$i])?></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                    <td><?=$list['SELLER_GUBUN'][$i]?></td>
+                    <td><?=$scan?></td>
+                    <?php if ($S_login['level'] != 1) {?><td><?=$scan_agent?></td><?php } ?>
+                    <td><?=($list['HIDE_YN'][$i] == 'Y' ? 'Y' : '-')?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<!-- BASIC MODAL -->
+<div class="modal fade" id="modaldemo1">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-content-demo">
+      <div class="modal-header">
+        <h6 class="modal-title">Ticket Images</h6><button aria-label="Close" class="btn-close" data-bs-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="card-body" id="order-view">
+          <div class="form-row">
+            <img id="img_read_pop" src="" style="width: 100%;" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- BASIC MODAL -->
+<div class="modal fade" id="ticketUploadModal">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content modal-content-demo">
+      <div class="modal-header">
+        <h6 class="modal-title">회원 정보</h6>
+        <button aria-label="Close" class="btn-close" data-bs-dismiss="modal">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="card-body modal-card-body">
+
+          <div class="memberInfo" >
+            <form id="w_frm_img">
+              <input type="hidden" name="orderno">
+              <table class="table border text-nowrap border-none">
+                <thead>
+                <tr>
+                  <td width="100px"></td>
+                  <td width=""></td>
+                  <td width="110px"></td>
+                  <td width=""></td>
+                </tr>
+                </thead>
+                <tbody>
+
+                <tr>
+                  <td class="modal-subject text-end">노출여부</td>
+                  <td>
+                    <select name="print" id="print" >
+                      <option value="0" selected="">미노출</option>
+                      <option value="1">노출</option>
+                    </select>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td class="modal-subject text-end">성명</td>
+                  <td><input type="file" name="awsfile" id="awsfile" /></td>
+                  <td class="modal-subject text-end">회원번호</td>
+                  <td><span id="mMEMBER_NO"></span></td>
+                </tr>
+
+                </tbody>
+              </table>
+            </form>
+          </div>
+        </div>
+
+        </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success " onclick="go_aws_upload()" >저장</button>
+        <button type="button" class="btn btn-light cancel_btn" data-bs-dismiss="modal">닫기</button>
+      </div>
+
+      </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_member.html"; ?>
+
+<script>
+
+  function go_set_orderno(idx){
+      $("#orderno").val(idx);
+  }
+
+  function go_aws_upload(){
+    var formData = new FormData();
+    formData.append("print", $("#print").val());
+    formData.append("orderno", $("input[name=orderno]").val());
+    formData.append("uploadfiles", $("input[name=awsfile]")[0].files[0]);
+
+    $.ajax({
+      url: '_ajax_aws_file_upload.php',
+      data: formData,
+      processData: false,
+      contentType: false,
+      type: 'POST',
+      success: function(data){
+        console.log(data);
+
+      }
+    });
+
+  }
+
+  $(function() {
+    $(document).on("click", ".btn-read", function() {
+      let no = $(this).data("no");
+      let obj = $("#order-view");
+
+      $.post("./default.php", {
+        "mode": "read_order",
+        no : no
+      }, function(e) {
+        obj.find("#user_id").val(e.USER_ID);
+        obj.find("#agent").val(e.agent);
+        obj.find("#gubun").val(e.ball_name);
+        obj.find("#hp").val(e.HP);
+        obj.find("#cnt").val(e.GAMECNT);
+        obj.find("#playdate").val(e.PLAYDATE);
+        obj.find("#authnum").val(e.AUTHNUM);
+        obj.find("#cardcd").val(e.CARDCD);
+        obj.find("#payment").val(e.PAYMENT);
+        obj.find("#vat").val(e.VAT);
+        obj.find("#ball1").val(e.BALL1);
+        obj.find("#ball2").val(e.BALL2);
+        obj.find("#ball3").val(e.BALL3);
+        obj.find("#ball4").val(e.BALL4);
+        obj.find("#ball5").val(e.BALL5);
+      }, "json");
+    });
+
+    $(document).on("click", ".img_read", function() {
+      let src = $(this).data("src");
+      $("#img_read_pop").attr("src", src);
+    });
+
+    // 선택구매건 취소(환불)
+    $(document).on("click", ".allDelChk", function() {
+      let chk_no = new Array();
+      let i = 0;
+      $('[name="noChk[]"]:checked').each(function() {
+        chk_no[i] = $(this).val();
+        i++;
+      });
+
+      if (i > 0) {
+        if (confirm("구매 취소(환불) 후 복구는 불가능합니다.(1/2)")) {
+          if (confirm("구매 취소(환불) 후 복구는 불가능합니다.(2/2)")) {
+            $.post("./default.php",{
+              mode: "all_ticked_del",
+              chk_no: chk_no
+            }, function(e) {
+              if (e.error) {
+                alert(e.msg);
+              } else {
+                alert(e.msg);
+              }
+              window.location.reload();
+            }, "json");
+          }
+        }
+      } else {
+        alert("취소할 항목을 선택하세요");
+      }
+    });
+
+    // 선택숨김처리
+    $(document).on("click", ".allHideChk", function() {
+      let status = $(this).data("status");
+      let chk_no = new Array();
+      let i = 0;
+      $('[name="noChk[]"]:checked').each(function() {
+        chk_no[i] = $(this).val();
+        i++;
+      });
+
+      let status_msg = (status == 'Y') ? "숨김" : "원래(표시)";
+
+      if (i > 0) {
+        if (confirm("선택건의 숨김여부를 "+status_msg+" 상태로 변경합니다.")) {
+          $.post("./default.php",{
+            mode   : "all_ticked_hide",
+            status : status,
+            chk_no : chk_no
+          }, function(e) {
+            alert(e.msg);
+            window.location.reload();
+          }, "json");
+        }
+      } else {
+        alert("변경할 항목을 선택하세요");
+      }
+    });
+  });
+</script>

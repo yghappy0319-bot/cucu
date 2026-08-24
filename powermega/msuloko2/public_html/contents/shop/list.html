@@ -1,0 +1,188 @@
+<?php
+  $page_title = "파메코몰 | 쇼핑몰 - 파워볼, 메가밀리언, 미국 복권, 파메코";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_SHOP.php";
+  $menu_on['shop'] = true;
+  
+  if (!$page) $page = 1;
+  $limit = 20;
+  $find_text = "";
+  $find_object = "";
+
+  $order = " sort asc ";
+
+  $condition = array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+    );
+    $list = F_PRODUCT_list($condition);
+
+$이미지주소 = "https://sadmin.mekosystem.com";
+?>
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .header h1 {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+    }
+
+    .product-card {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #eee;
+        transition: box-shadow 0.2s ease;
+    }
+
+    .product-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-image {
+        width: 100%;
+        height: 469px;
+        background-color: #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        color: #ccc;
+        overflow: hidden;
+    }
+
+    .product-info {
+        padding: 20px;
+    }
+
+    .product-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 8px;
+    }
+
+    .product-price {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 16px;
+    }
+
+    .add-to-cart {
+        width: 100%;
+        background-color: #333;
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .add-to-cart:hover {
+        background-color: #555;
+    }
+
+    /* 모바일 반응형 */
+    @media (max-width: 768px) {
+        .container {
+            padding: 20px 16px;
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+        }
+
+        .product-grid {
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .product-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .product-info {
+            padding: 16px;
+        }
+    }
+</style>
+
+<body class="body_idx">
+<div class="wrap_bg">
+    <div id="wrap">
+        <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+        <main id="main" class="cs bg_contents">
+            <div class="contents f_NotoSansKR">
+
+                <section class="sec_cs wrap_com section bg_white">
+
+                    <div class="board_type1 wrap_board ls50">
+
+                        <div class="wrap_list">
+                            <form id="cardFrm" >
+                                <input type="hidden" name="product" id="product">
+                            </form>
+                            <div class="container">
+                                <div class="product-grid">
+                                <?php
+                                   for ($i = 0; $i < count($list['idx']); $i++) {
+                                ?>
+                                    <div class="product-card">
+                                        <div class="product-image">
+                                            <img src="<?=$이미지주소?>/upload/SHOP/<?=$list['product_img'][$i]?>" style="width: 100%;" >
+                                        </div>
+                                        <div class="product-info">
+                                            <h3 class="product-title"><?=$list['product_name'][$i]?></h3>
+                                            <div class="product-price"><?= number_format($list['product_price'][$i]) ?>원</div>
+                                            <button class="add-to-cart" type="button" onclick="go_cart('<?=$list[idx][$i]?>')" >구매하기</button>
+                                        </div>
+                                    </div>
+                                 <?php } ?>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
+                <div class="wrap_com">
+                    <?php include $_SERVER['DOCUMENT_ROOT']."/inc/quick.html"; ?>
+                </div>
+            </div>
+        </main>
+        <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+</div>
+</body>
+
+<script>
+    function go_cart(product){
+        $("#product").val(product);
+        $("#cardFrm").attr("action","detail.html");
+        $("#cardFrm").submit();
+    }
+
+</script>
+</html>

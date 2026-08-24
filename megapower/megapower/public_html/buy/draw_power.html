@@ -1,0 +1,107 @@
+<?php
+$title = "미국복권 파워볼 당첨결과를 확인하세요";
+include "../header.html";
+?>
+<script>
+    $(".new_header .bottom .fl .menu ul li:eq(3)").addClass("on")
+    $(".new_header_m .menu:eq(1) ul li:eq(0)").addClass("on")
+    $(".new_all_menu .menu_fb > ul > li:eq(3)").addClass("on")
+</script>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">당첨 결과</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>당첨 결과</p></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>파워볼</p></li>
+            </ul>
+        </div>
+        <div class="modle_menu_02">
+            <a href="/buy/draw_mega.html">메가밀리언</a>
+            <a class="on" href="/buy/draw_power.html">파워볼</a>
+        </div>
+
+        <div class="new_lotto_banner">
+            <p class="tit">파워볼 당첨결과</p>
+            <a class="btn" style="background: #e13b2c;" target="_blank" href="https://www.powerball.com/"><p>파워볼 공식사이트</p><i class="xi-angle-right"></i></a>
+        </div>
+
+        <form id="searchFrm">
+            <input type="hidden" name="page" id="page" />
+        </form>
+        <div class="new_lotto_win">
+            <?
+            /* paging : 한 블럭 당 페이지 수 */
+            $page_num = 5;
+            /* paging : 현재 페이지 */
+            $page = isset($_GET["page"])? $_GET["page"] : 1;
+
+            if($_GET['list_num']>0){
+            $list_num = $_GET['list_num'];
+            }else{
+            $list_num = 9;
+            }
+
+            $records = 9;
+            $table = "lr_result";
+            $where = "game = 'pb'";
+            include_once "../page_code.php";
+            ?>
+            <ul>
+                <?
+                  $sql = "select * from lr_result where {$where} order by round desc limit $start, $list_num ";
+                  $result = db_query($sql);
+                  for($i=0;$row=db_fetch($result);$i++){
+                  ?>
+                <li>
+                    <div class="wrap">
+                        <?php if($row['prize']==20000000){?>
+                        <div class="tip">
+                            <p>당첨</p>
+                            <img src="/assets/image/img_lots.png">
+                        </div>
+                        <? }else{ ?>
+                        <div class="tip">
+                            <p>이월</p>
+                            <img src="/assets/image/img_lots.png">
+                        </div>
+                        <? } ?>
+
+                        <div class="date">파워볼 추첨일 <span><?=$row['ko_date']?></span></div>
+                        <div class="logo"><img src="/images/lotto_logo_power.png"></div>
+                        <div class="ball" >
+                            <div><span><?=$row['ball1']?></span></div>
+                            <div><span><?=$row['ball2']?></span></div>
+                            <div><span><?=$row['ball3']?></span></div>
+                            <div><span><?=$row['ball4']?></span></div>
+                            <div><span><?=$row['ball5']?></span></div>
+                            <div style="border-color: #e13b2c; background: #e13b2c;"><span style="color: #FFF;"><?=$row['ball6']?></span></div>
+                        </div>
+                        <p class="round"><?=$row['round']?>회차 1등 당첨금</p>
+                        <p class="price_kr"><?= number_format($row['money1'] * 환율())?>원</p>
+                        <p class="price_en">$<?= number_format($row['money1'])?></p>
+                        <div style="display:flex;justify-content: space-around;">
+                          <a class="btn" href="javascript:go_result('pb', <?=$row['round']?>)" style="background: #e13b2c;" >상세보기</a>
+                          <a class="btn" href="javascript:go_youtube('<div>파워볼 <span>'+<?=$row['round']?>+'회차</span> 추첨영상</div>','<?=$row['youtube']?>')" style="background-color:#C1C1C1; color: #333;">추첨영상</a>
+                        </div>
+
+                    </div>
+                </li>
+                <? } ?>
+            </ul>
+        </div>
+        <div class="page">
+            <?php include_once "../pager.php" ?>
+        </div>
+    </div>
+</div>
+
+<?php include "draw_layer.inc.php"; ?>
+
+<?php
+include "../footer_new.html";
+?>

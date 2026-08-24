@@ -1,0 +1,919 @@
+<?php
+include_once __DIR__ . '/../head.php';
+
+$is_admin = ($member['mb_id'] === 'admin');
+
+$form_status = 'insert';
+$form_idx = 0;
+$data = array(
+    'panel_name_ko' => '',
+    'panel_name_en' => '',
+    'contact_phone' => '',
+    'status' => 1,
+);
+
+if (!empty($_GET['idx'])) {
+    $form_idx = (int)$_GET['idx'];
+    if ($form_idx > 0) {
+        $_row = db_select("select * from tb_panel where idx = {$form_idx} limit 1 ");
+        if ($_row && isset($_row['idx'])) {
+            if ($member['mb_id'] !== 'admin' && (int)$_row['member_no'] !== (int)$member['mb_no']) {
+                echo '<script>alert("권한이 없습니다.");location.href="/adm/panel/list.html";</script>';
+                exit;
+            }
+            $data = $_row;
+            if (!isset($data['status'])) {
+                $data['status'] = 1;
+            }
+            $form_status = 'update';
+        }
+    }
+}
+$panel_status_raw = isset($data['status']) ? (int)$data['status'] : 1;
+$panel_is_locked = ($form_status === 'update' && $panel_status_raw === 2);
+$panel_status_val = $panel_status_raw;
+if (!$panel_is_locked && $panel_status_val !== 0) {
+    $panel_status_val = 1;
+}
+
+function panel_admin_pw_display_value($row)
+{
+    if (!empty($row['admin_pw_plain'])) {
+        return $row['admin_pw_plain'];
+    }
+    if (!empty($row['admin_pw'])) {
+        $pw_info = password_get_info($row['admin_pw']);
+        if (empty($pw_info['algo'])) {
+            return $row['admin_pw'];
+        }
+    }
+
+    return '';
+}
+$admin_pw_display = panel_admin_pw_display_value($data);
+
+function panel_bank_site_enddate_display($site_row)
+{
+    if (!$site_row || !isset($site_row['luckypanel_bankdata'])) {
+        return '';
+    }
+    $raw = trim($site_row['luckypanel_bankdata']);
+    if ($raw === '') {
+        return '';
+    }
+    $ts = strtotime($raw);
+    if ($ts === false) {
+        return $raw;
+    }
+
+    return date('Y-m-d H:i', $ts);
+}
+
+function panel_bank_site_option_label($row)
+{
+    $parts = array();
+    $bank_enddate = panel_bank_site_enddate_display($row);
+    if ($bank_enddate !== '') {
+        $parts[] = '이용 종료일: ' . $bank_enddate;
+    } elseif (isset($row['luckypanel_bankdata'])) {
+        $parts[] = '이용 종료일: 미설정';
+    }
+    if (!empty($row['site'])) {
+        $parts[] = '사이트: ' . $row['site'];
+    }
+    if (!empty($row['bank'])) {
+        $parts[] = '은행: ' . $row['bank'];
+    }
+    if (!empty($row['o_acount'])) {
+        $parts[] = '계좌: ' . $row['o_acount'];
+    }
+    if (!empty($row['acount_name'])) {
+        $parts[] = '예금주: ' . $row['acount_name'];
+    }
+    if (!empty($row['phone'])) {
+        $parts[] = '연락처: ' . $row['phone'];
+    }
+    if (isset($row['status'])) {
+        $parts[] = '상태: ' . ((int)$row['status'] === 1 ? '정상' : '중지');
+    }
+
+    return implode(' | ', $parts);
+}
+
+function panel_bank_site_info_fields($site_row)
+{
+    if (!$site_row || !isset($site_row['idx'])) {
+        return;
+    }
+    ?>
+                    <div class="form-body panel-account-readonly">
+                      <div class="panel-account-section">
+                        <?php
+                        $bank_enddate = panel_bank_site_enddate_display($site_row);
+                        ?>
+                        <div class="form-group">
+                          <label>이용 종료일</label>
+                          <input type="text" class="form-control" value="<?= $bank_enddate !== '' ? htmlspecialchars($bank_enddate) : '미설정' ?>" readonly />
+                        </div>
+                        <div class="form-group">
+                          <label>웹사이트 주소</label>
+                          <input type="text" class="form-control" value="<?= htmlspecialchars($site_row['site']) ?>" readonly />
+                        </div>
+                        <div class="form-group">
+                          <label>은행</label>
+                          <input type="text" class="form-control" value="<?= htmlspecialchars($site_row['bank']) ?>" readonly />
+                        </div>
+                        <div class="form-group">
+                          <label>계좌번호</label>
+                          <input type="text" class="form-control" value="<?= htmlspecialchars($site_row['o_acount']) ?>" readonly />
+                        </div>
+                        <div class="form-group">
+                          <label>예금주</label>
+                          <input type="text" class="form-control" value="<?= htmlspecialchars($site_row['acount_name']) ?>" readonly />
+                        </div>
+                        <div class="form-group mb-0">
+                          <label>관리자 연락처</label>
+                          <input type="text" class="form-control" value="<?= htmlspecialchars($site_row['phone']) ?>" readonly />
+                        </div>
+                      </div>
+                    </div>
+    <?php
+}
+
+$panel_bank_sites = array();
+$panel_bank_site_selected = 0;
+$panel_linked_site = null;
+$panel_bank_configured = false;
+if ($form_status === 'update' && $form_idx > 0) {
+    $panel_mno = (int)$data['member_no'];
+    $panel_linked_site = db_select("select * from site where luckypanel = 1 and luckypanel_idx = {$form_idx} limit 1 ");
+    if ($panel_linked_site && isset($panel_linked_site['idx'])) {
+        $panel_bank_site_selected = (int)$panel_linked_site['idx'];
+        $panel_bank_configured = true;
+    }
+    if ($is_admin) {
+        $site_res = db_query("select * from site where luckypanel = 1 and luckypanel_idx = 0 and member_no = {$panel_mno} order by regdate desc ");
+        while ($site_row = db_fetch($site_res)) {
+            $panel_bank_sites[] = $site_row;
+        }
+        if ($panel_bank_site_selected > 0 && $panel_linked_site && isset($panel_linked_site['idx'])) {
+            $already_listed = false;
+            foreach ($panel_bank_sites as $site_row) {
+                if ((int)$site_row['idx'] === $panel_bank_site_selected) {
+                    $already_listed = true;
+                    break;
+                }
+            }
+            if (!$already_listed) {
+                array_unshift($panel_bank_sites, $panel_linked_site);
+            }
+        }
+    }
+}
+?>
+<style>
+.panel-reg-hint { font-size: 0.875rem; color: #6b6b6b; }
+.panel-en-locked { background-color: #f0f4f8 !important; cursor: not-allowed; }
+.panel-form-locked .form-control { background-color: #f0f4f8 !important; cursor: not-allowed; }
+.panel-locked-alert { margin-bottom: 1rem; }
+.panel-temp-url-loading { color: #6b6b6b; }
+.panel-temp-url-loading .icon-spin { margin-right: 0.35rem; }
+.panel-delete-layer { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1050; }
+.panel-delete-layer.is-open { display: block; }
+.panel-delete-layer-backdrop { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); }
+.panel-delete-layer-dialog {
+  position: relative;
+  max-width: 420px;
+  margin: 12vh auto 0;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+.panel-delete-layer-title { margin: 0 0 0.75rem; font-size: 1.25rem; font-weight: 600; }
+.panel-delete-layer-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; }
+.panel-delete-layer-actions .btn { flex: 1 1 auto; min-width: 110px; }
+.panel-reg-tabs { margin-bottom: 1rem; }
+.panel-account-section { margin-bottom: 1.5rem; padding-bottom: 0.25rem; border-bottom: 1px solid #eceff1; }
+.panel-account-section:last-child { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
+.panel-account-section-title { margin: 0 0 0.85rem; font-size: 1rem; font-weight: 600; color: #37474f; }
+.panel-account-readonly .form-control { background-color: #f0f4f8 !important; cursor: default; }
+</style>
+<?php include_once __DIR__ . '/../nav.php'; ?>
+<div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+  <div class="main-menu-header">
+    <form>
+      <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+    </form>
+  </div>
+  <?php include_once __DIR__ . '/../menu.php'; ?>
+</div>
+
+<div class="app-content content container-fluid">
+  <div class="content-wrapper">
+    <div class="content-header row">
+      <div class="content-header-left col-md-8 col-xs-12 mb-1">
+        <h2 class="content-header-title"><?= $panel_is_locked ? '패널 조회' : ($form_status === 'update' ? '패널 수정' : '패널 등록') ?></h2>
+        <p class="text-muted mb-0">신규 등록 시 <strong>종료일은 등록일 기준 31일 후</strong>로 자동 설정됩니다.</p>
+      </div>
+    </div>
+    <div class="content-body">
+      <div class="row match-height">
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">등록 정보</h4>
+              <a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+              <div class="heading-elements">
+                <ul class="list-inline mb-0">
+                  <li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+                  <li><a data-action="reload"><i class="icon-reload"></i></a></li>
+                  <li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+                  <li><a data-action="close"><i class="icon-cross2"></i></a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="card-body collapse in">
+              <div class="card-block">
+                <input type="hidden" id="form_idx" value="<?= (int)$form_idx ?>" />
+                <input type="hidden" id="form_save_action" value="<?= htmlspecialchars($form_status) ?>" />
+                <input type="hidden" id="form_panel_locked" value="<?= $panel_is_locked ? '1' : '0' ?>" />
+
+                <ul class="nav nav-tabs panel-reg-tabs" role="tablist">
+                  <li class="nav-item">
+                    <a class="nav-link active" id="panel-tab-reg" data-toggle="tab" href="#panel_tab_reg" role="tab" aria-controls="panel_tab_reg" aria-selected="true">등록 정보</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link<?= $form_status !== 'update' ? ' disabled' : '' ?>" id="panel-tab-account" data-toggle="tab" href="#panel_tab_account" role="tab" aria-controls="panel_tab_account" aria-selected="false"<?= $form_status !== 'update' ? ' tabindex="-1" aria-disabled="true"' : '' ?>>계정 정보</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link<?= $form_status !== 'update' ? ' disabled' : '' ?>" id="panel-tab-bank" data-toggle="tab" href="#panel_tab_bank" role="tab" aria-controls="panel_tab_bank" aria-selected="false"<?= $form_status !== 'update' ? ' tabindex="-1" aria-disabled="true"' : '' ?>>무통장</a>
+                  </li>
+                </ul>
+
+                <div class="tab-content pt-1">
+                  <div class="tab-pane active" id="panel_tab_reg" role="tabpanel" aria-labelledby="panel-tab-reg">
+                <div class="form-body<?= $panel_is_locked ? ' panel-form-locked' : '' ?>">
+
+                  <?php if ($panel_is_locked) { ?>
+                  <div class="alert alert-danger panel-locked-alert" role="alert">
+                    <strong>삭제 완료된 패널입니다.</strong> 럭키패널 서버에서 삭제가 진행되어 저장·삭제 등 모든 변경이 불가능합니다.
+                  </div>
+                  <?php } ?>
+
+                  <?php if ($form_status === 'update') {
+                      $enddate_input_val = '';
+                      if (!empty($data['enddate'])) {
+                          $end_ts = strtotime($data['enddate']);
+                          if ($end_ts !== false) {
+                              $enddate_input_val = date('Y-m-d\TH:i', $end_ts);
+                          }
+                      }
+                  ?>
+                  <div class="form-group">
+                    <label for="panel_enddate">이용 종료일</label>
+                    <?php if ($is_admin && !$panel_is_locked) { ?>
+                    <input type="datetime-local" id="panel_enddate" class="form-control" value="<?= htmlspecialchars($enddate_input_val) ?>" />
+                    <p class="panel-reg-hint mb-0">관리자는 이용 종료일을 직접 변경할 수 있습니다. 저장 시 연결된 무통장 이용 종료일도 함께 맞춰집니다.</p>
+                    <?php } else { ?>
+                    <p class="form-control-static mb-0">
+                      <?php
+                      if ($enddate_input_val !== '') {
+                          echo htmlspecialchars(date('Y-m-d H:i', strtotime(str_replace('T', ' ', $enddate_input_val))));
+                      } else {
+                          echo '<span class="text-muted">미설정 (구 데이터)</span>';
+                      }
+                      ?>
+                    </p>
+                    <p class="panel-reg-hint mb-0">종료일은 신규 등록 시에만 자동 부여되며, 수정으로는 변경되지 않습니다.</p>
+                    <?php } ?>
+                  </div>
+                  <?php } else { ?>
+                  <div class="form-group">
+                    <label>이용 종료일</label>
+                    <p class="form-control-static mb-0 text-muted">저장 후 등록 시각 기준 31일 뒤로 자동 저장됩니다.</p>
+                  </div>
+                  <?php } ?>
+
+                  <div class="form-group">
+                    <label>패널 상태 <span class="danger">*</span></label>
+                    <?php if ($panel_is_locked) { ?>
+                    <p class="form-control-static mb-0"><span class="tag tag-danger">삭제 완료</span></p>
+                    <p class="panel-reg-hint mb-0">서버에서 삭제가 완료된 패널은 상태를 변경할 수 없습니다.</p>
+                    <?php } else { ?>
+                    <div class="input-group">
+                      <label class="display-inline-block custom-control custom-radio ml-1">
+                        <input type="radio" name="panel_status" class="custom-control-input" value="1" <?= $panel_status_val === 1 ? 'checked' : '' ?> />
+                        <span class="custom-control-indicator"></span>
+                        <span class="custom-control-description ml-0">정상</span>
+                      </label>
+                      <label class="display-inline-block custom-control custom-radio">
+                        <input type="radio" name="panel_status" class="custom-control-input" value="0" <?= $panel_status_val === 0 ? 'checked' : '' ?> />
+                        <span class="custom-control-indicator"></span>
+                        <span class="custom-control-description ml-0">중지</span>
+                      </label>
+                    </div>
+                    <p class="panel-reg-hint mb-0">중지로 두면 목록에 중지로 표시됩니다.</p>
+                    <?php } ?>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="panel_name_ko">패널명 (한글) <span class="danger">*</span></label>
+                    <input type="text" id="panel_name_ko" class="form-control" maxlength="64"
+                      value="<?= htmlspecialchars($data['panel_name_ko']) ?>" placeholder="예: 럭키" autocomplete="off"<?= $panel_is_locked ? ' readonly' : '' ?> />
+                    <p class="panel-reg-hint mb-0">완성형 한글(가~힣)이 2글자 이상 포함되면 됩니다.</p>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="panel_name_en">패널명 (영문) <span class="danger">*</span></label>
+                    <?php
+                    $panel_en_readonly = ($form_status === 'update' || $panel_is_locked);
+                    ?>
+                    <?php if (!$panel_en_readonly) { ?>
+                    <div class="input-group">
+                    <input type="text" id="panel_name_en" class="form-control" maxlength="128"
+                      value="<?= htmlspecialchars($data['panel_name_en']) ?>" placeholder="예: luckysmm" autocomplete="off" />
+                    <span class="input-group-btn">
+                      <button type="button" class="btn btn-secondary" id="btn_panel_en_dup_check"><i class="icon-search4"></i> 중복 조회</button>
+                    </span>
+                    </div>
+                    <p id="panel_en_dup_msg" class="panel-reg-hint mb-0" style="display:none;" role="status"></p>
+                    <?php } else { ?>
+                    <input type="text" id="panel_name_en" class="form-control panel-en-locked" maxlength="128"
+                      value="<?= htmlspecialchars($data['panel_name_en']) ?>" placeholder="예: luckysmm" autocomplete="off" readonly />
+                    <?php } ?>
+                    <p class="panel-reg-hint mb-0">영문 대·소문자만 6자 이상 (숫자·특수문자 불가). <strong>등록 후에는 변경할 수 없습니다.</strong></p>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="contact_phone">담당자 연락처 <span class="danger">*</span></label>
+                    <input type="text" id="contact_phone" class="form-control" maxlength="32"
+                      value="<?= htmlspecialchars($data['contact_phone']) ?>" placeholder="010-1234-5678" autocomplete="tel"<?= $panel_is_locked ? ' readonly' : '' ?> />
+                  </div>
+
+                  <?php if ($form_status === 'update') {
+                      $temp_panel_url = isset($data['test_panel_url']) ? trim($data['test_panel_url']) : '';
+                      $temp_url_poll = ($temp_panel_url === '' && !$panel_is_locked);
+                  ?>
+                  <div class="form-group">
+                    <label>임시 도메인</label>
+                    <div id="panel_temp_domain_wrap" class="panel-temp-domain-wrap" data-idx="<?= (int)$form_idx ?>" data-poll="<?= $temp_url_poll ? '1' : '0' ?>">
+                      <?php if ($temp_panel_url !== '') { ?>
+                      <p class="form-control-static mb-0">
+                        <a href="<?= htmlspecialchars($temp_panel_url) ?>" target="_blank" rel="noopener noreferrer"><?= htmlspecialchars($temp_panel_url) ?></a>
+                      </p>
+                      <?php } elseif ($panel_is_locked) { ?>
+                      <p class="form-control-static mb-0 text-muted">—</p>
+                      <?php } else { ?>
+                      <p class="form-control-static mb-0 panel-temp-url-loading">
+                        <span class="icon-spinner9 icon-spin"></span> 임시 도메인 생성 중…
+                      </p>
+                      <?php } ?>
+                    </div>
+                    <p class="panel-reg-hint mb-0">패널 서버 설정이 완료되면 자동으로 표시됩니다.</p>
+                  </div>
+                  <?php } ?>
+
+                </div>
+                <?php if (!$panel_is_locked) { ?>
+                <div class="mt-1">
+                  <button type="button" class="btn btn-primary" id="btn_panel_save"><i class="icon-check2"></i> 저장</button>
+                  <?php if ($form_status === 'update' && $is_admin) { ?>
+                  <button type="button" class="btn btn-danger" id="btn_panel_delete"><i class="icon-trash4"></i> 삭제</button>
+                  <?php } ?>
+                  <a href="/adm/panel/list.html" class="btn btn-secondary">목록</a>
+                </div>
+                <?php } else { ?>
+                <div class="mt-1">
+                  <a href="/adm/panel/list.html" class="btn btn-secondary">목록</a>
+                </div>
+                <?php } ?>
+                  </div>
+
+                  <div class="tab-pane" id="panel_tab_account" role="tabpanel" aria-labelledby="panel-tab-account">
+                <?php if ($form_status !== 'update') { ?>
+                    <p class="text-muted mb-0">패널을 등록한 뒤 계정 정보를 관리할 수 있습니다.</p>
+                <?php } else {
+                    $acct_readonly = ($panel_is_locked || !$is_admin);
+                    $acct_fields_class = $acct_readonly ? ' panel-account-readonly' : '';
+                ?>
+                    <?php if (!$is_admin) { ?>
+                    <p class="panel-reg-hint mb-1">관리자 아이디·비밀번호만 조회할 수 있습니다. FTP·DB 정보는 시스템 관리자만 확인할 수 있습니다.</p>
+                    <?php } elseif ($panel_is_locked) { ?>
+                    <p class="panel-reg-hint mb-1">삭제 완료된 패널은 계정 정보를 변경할 수 없습니다.</p>
+                    <?php } ?>
+                    <div class="form-body<?= $acct_fields_class ?>">
+                      <div class="panel-account-section">
+                        <h5 class="panel-account-section-title">관리자</h5>
+                        <div class="form-group">
+                          <label for="acct_admin_id">관리자 아이디</label>
+                          <input type="text" id="acct_admin_id" class="form-control" maxlength="64"
+                            value="<?= htmlspecialchars(isset($data['admin_id']) ? $data['admin_id'] : '') ?>" autocomplete="off"<?= $acct_readonly ? ' readonly' : '' ?> />
+                        </div>
+                        <div class="form-group mb-0">
+                          <label for="acct_admin_pw">관리자 비밀번호</label>
+                          <input type="text" id="acct_admin_pw" class="form-control" maxlength="128"
+                            value="<?= htmlspecialchars($admin_pw_display) ?>" autocomplete="off"<?= $acct_readonly ? ' readonly' : '' ?> />
+                        </div>
+                      </div>
+
+                      <?php if ($is_admin) { ?>
+                      <div class="panel-account-section">
+                        <h5 class="panel-account-section-title">FTP</h5>
+                        <div class="form-group">
+                          <label for="acct_ftp_id">FTP 아이디</label>
+                          <input type="text" id="acct_ftp_id" class="form-control" maxlength="64"
+                            value="<?= htmlspecialchars(isset($data['ftp_id']) ? $data['ftp_id'] : '') ?>" autocomplete="off"<?= $panel_is_locked ? ' readonly' : '' ?> />
+                        </div>
+                        <div class="form-group mb-0">
+                          <label for="acct_ftp_pw">FTP 비밀번호</label>
+                          <input type="text" id="acct_ftp_pw" class="form-control" maxlength="128"
+                            value="<?= htmlspecialchars(isset($data['ftp_pw']) ? $data['ftp_pw'] : '') ?>" autocomplete="off"<?= $panel_is_locked ? ' readonly' : '' ?> />
+                        </div>
+                      </div>
+
+                      <div class="panel-account-section">
+                        <h5 class="panel-account-section-title">DB</h5>
+                        <div class="form-group">
+                          <label for="acct_db_name">DB명</label>
+                          <input type="text" id="acct_db_name" class="form-control" maxlength="64"
+                            value="<?= htmlspecialchars(isset($data['db_name']) ? $data['db_name'] : '') ?>" autocomplete="off"<?= $panel_is_locked ? ' readonly' : '' ?> />
+                        </div>
+                        <div class="form-group">
+                          <label for="acct_db_id">DB 아이디</label>
+                          <input type="text" id="acct_db_id" class="form-control" maxlength="64"
+                            value="<?= htmlspecialchars(isset($data['db_id']) ? $data['db_id'] : '') ?>" autocomplete="off"<?= $panel_is_locked ? ' readonly' : '' ?> />
+                        </div>
+                        <div class="form-group mb-0">
+                          <label for="acct_db_pw">DB 비밀번호</label>
+                          <input type="text" id="acct_db_pw" class="form-control" maxlength="128"
+                            value="<?= htmlspecialchars(isset($data['db_pw']) ? $data['db_pw'] : '') ?>" autocomplete="off"<?= $panel_is_locked ? ' readonly' : '' ?> />
+                        </div>
+                      </div>
+                      <?php } ?>
+                    </div>
+                <?php if ($is_admin && !$panel_is_locked) { ?>
+                    <div class="mt-1">
+                      <button type="button" class="btn btn-primary" id="btn_panel_account_save"><i class="icon-check2"></i> 계정 정보 저장</button>
+                      <a href="/adm/panel/list.html" class="btn btn-secondary">목록</a>
+                    </div>
+                <?php } else { ?>
+                    <div class="mt-1">
+                      <a href="/adm/panel/list.html" class="btn btn-secondary">목록</a>
+                    </div>
+                <?php } ?>
+                <?php } ?>
+                  </div>
+
+                  <div class="tab-pane" id="panel_tab_bank" role="tabpanel" aria-labelledby="panel-tab-bank">
+                <?php if ($form_status !== 'update') { ?>
+                    <p class="text-muted mb-0">패널을 등록한 뒤 무통장 사이트를 연결할 수 있습니다.</p>
+                <?php } elseif (!$is_admin) {
+                    if ($panel_bank_configured && $panel_linked_site) {
+                ?>
+                    <p class="panel-reg-hint mb-1">연결된 무통장 사이트 정보입니다. 연결 변경은 관리자만 할 수 있습니다.</p>
+                    <?php panel_bank_site_info_fields($panel_linked_site); ?>
+                <?php } else { ?>
+                    <div class="alert alert-info mb-0" role="alert">관리자에게 무통장 연결 설정을 요청해주세요.</div>
+                <?php }
+                } elseif ($panel_is_locked) {
+                    if ($panel_bank_configured && $panel_linked_site) {
+                ?>
+                    <p class="panel-reg-hint mb-1">삭제 완료된 패널은 무통장 연결을 변경할 수 없습니다.</p>
+                    <?php panel_bank_site_info_fields($panel_linked_site); ?>
+                <?php } else { ?>
+                    <p class="text-muted mb-0">연결된 무통장 사이트가 없습니다.</p>
+                <?php }
+                } else {
+                    if ($panel_bank_configured && $panel_linked_site) {
+                ?>
+                    <p class="panel-reg-hint mb-1">현재 연결된 무통장 사이트 정보입니다.</p>
+                    <?php panel_bank_site_info_fields($panel_linked_site); ?>
+                    <div class="mt-1">
+                      <button type="button" class="btn btn-warning" id="btn_panel_bank_disconnect"><i class="icon-unlink2"></i> 연결 해지</button>
+                      <a href="/adm/panel/list.html" class="btn btn-secondary">목록</a>
+                    </div>
+                <?php } else { ?>
+                    <p class="panel-reg-hint mb-1">럭키패널 무통장 사이트 중 이 패널에 연결할 사이트를 선택하세요.</p>
+                    <div class="form-body">
+                      <div class="form-group mb-0">
+                        <label for="panel_bank_site">무통장 사이트</label>
+                        <select id="panel_bank_site" class="form-control">
+                          <option value="">사이트 선택</option>
+                          <?php foreach ($panel_bank_sites as $site_row) {
+                              $site_idx = (int)$site_row['idx'];
+                          ?>
+                          <option value="<?= $site_idx ?>"<?= $panel_bank_site_selected === $site_idx ? ' selected' : '' ?>><?= htmlspecialchars(panel_bank_site_option_label($site_row)) ?></option>
+                          <?php } ?>
+                        </select>
+                        <?php if (empty($panel_bank_sites)) { ?>
+                        <p class="panel-reg-hint mb-0 mt-1">연결 가능한 무통장 사이트가 없습니다.</p>
+                        <?php } ?>
+                      </div>
+                    </div>
+                    <div class="mt-1">
+                      <button type="button" class="btn btn-primary" id="btn_panel_bank_save"><i class="icon-check2"></i> 무통장 연결 저장</button>
+                      <a href="/adm/panel/list.html" class="btn btn-secondary">목록</a>
+                    </div>
+                <?php }
+                } ?>
+                    <?php if ($form_status === 'update' && (!$is_admin || $panel_is_locked)) { ?>
+                    <div class="mt-1">
+                      <a href="/adm/panel/list.html" class="btn btn-secondary">목록</a>
+                    </div>
+                    <?php } ?>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="panel_delete_layer" class="panel-delete-layer" role="dialog" aria-modal="true" aria-labelledby="panel_delete_layer_title" aria-hidden="true">
+  <div class="panel-delete-layer-backdrop" id="panel_delete_layer_backdrop"></div>
+  <div class="panel-delete-layer-dialog">
+    <h4 id="panel_delete_layer_title" class="panel-delete-layer-title">패널 삭제</h4>
+    <p class="mb-1">삭제 방식을 선택해 주세요.</p>
+    <p class="panel-reg-hint mb-1">※ 삭제가 진행되면 복원 및 복구할 수 없습니다.</p>
+    <p id="panel_delete_schedule_10m" class="panel-reg-hint mb-0"></p>
+    <p id="panel_delete_schedule_3d" class="panel-reg-hint mb-0"></p>
+    <div class="panel-delete-layer-actions">
+      <button type="button" class="btn btn-warning" id="btn_panel_delete_10m">10분 뒤 삭제</button>
+      <button type="button" class="btn btn-danger" id="btn_panel_delete_3d">3일 뒤 삭제</button>
+      <button type="button" class="btn btn-secondary" id="btn_panel_delete_cancel">취소</button>
+    </div>
+  </div>
+</div>
+
+<script src="/app-assets/js/core/libraries/jquery.min.js" type="text/javascript"></script>
+<script>
+(function(){
+  function hangulCount(str) {
+    var m = str.match(/[가-힣]/g);
+    return m ? m.length : 0;
+  }
+  function digitsOnly(str) {
+    return str.replace(/\D/g, '');
+  }
+
+  var isLocked = $('#form_panel_locked').val() === '1';
+
+  function renderTempPanelUrl($wrap, url) {
+    var safe = $('<div>').text(url).html();
+    $wrap.attr('data-poll', '0').html(
+      '<p class="form-control-static mb-0">' +
+      '<a href="' + safe + '" target="_blank" rel="noopener noreferrer">' + safe + '</a>' +
+      '</p>'
+    );
+  }
+
+  function pollTempPanelUrl($wrap) {
+    if (!$wrap.length || $wrap.attr('data-poll') !== '1') {
+      return;
+    }
+    var idx = parseInt($wrap.attr('data-idx'), 10) || 0;
+    if (idx <= 0) {
+      return;
+    }
+    $.ajax({
+      type: 'GET',
+      url: '/adm/panel/ajax/_ajax_panel_temp_url.php',
+      data: { idx: idx },
+      dataType: 'json',
+      success: function(res) {
+        var url = res && res.url ? $.trim(res.url) : '';
+        if (url) {
+          renderTempPanelUrl($wrap, url);
+          return;
+        }
+        setTimeout(function() { pollTempPanelUrl($wrap); }, 5000);
+      },
+      error: function() {
+        setTimeout(function() { pollTempPanelUrl($wrap); }, 5000);
+      }
+    });
+  }
+
+  var $tempDomainWrap = $('#panel_temp_domain_wrap');
+  if ($tempDomainWrap.length && $tempDomainWrap.attr('data-poll') === '1') {
+    pollTempPanelUrl($tempDomainWrap);
+  }
+
+  var $dupMsg = $('#panel_en_dup_msg');
+  if ($dupMsg.length && !isLocked) {
+    $('#panel_name_en').on('input', function() {
+      $dupMsg.hide().empty().removeClass('text-success text-danger');
+    });
+    $('#btn_panel_en_dup_check').on('click', function() {
+      var en = $.trim($('#panel_name_en').val());
+      if (!/^[A-Za-z]{6,}$/.test(en)) {
+        alert('패널명(영문)은 영문만 6자 이상 입력한 뒤 조회해 주세요.');
+        $('#panel_name_en').focus();
+        return;
+      }
+      $dupMsg.hide().empty().removeClass('text-success text-danger');
+      $.ajax({
+        type: 'POST',
+        url: '/adm/panel/ajax/_ajax_panel_en_dup_check.php',
+        data: { panel_name_en: en },
+        success: function(result) {
+          var r = (result || '').toString().trim();
+          if (r === '1') {
+            $dupMsg.removeClass('text-danger').addClass('text-success').text('등록 가능합니다. (내 계정에 동일 영문명 없음)').show();
+          } else {
+            $dupMsg.removeClass('text-success').addClass('text-danger').text(r || '조회에 실패했습니다.').show();
+          }
+        },
+        error: function(xhr) {
+          $dupMsg.removeClass('text-success').addClass('text-danger').text((xhr.responseText || '').trim() || '요청 오류').show();
+        }
+      });
+    });
+  }
+
+  $('#btn_panel_save').on('click', function(){
+    if (isLocked) {
+      alert('삭제 완료된 패널은 저장할 수 없습니다.');
+      return;
+    }
+    var ko = $.trim($('#panel_name_ko').val());
+    var en = $.trim($('#panel_name_en').val());
+    var phone = $.trim($('#contact_phone').val());
+    var st = $('#form_save_action').val();
+    var fid = parseInt($('#form_idx').val(), 10) || 0;
+    var pstat = $('input[name="panel_status"]:checked').val();
+    if (pstat === undefined) {
+      alert('패널 상태를 선택해 주세요.');
+      return;
+    }
+
+    if (hangulCount(ko) < 2) {
+      alert('패널명(한글)은 한글 2글자 이상 입력해 주세요.');
+      $('#panel_name_ko').focus();
+      return;
+    }
+    if (st !== 'update') {
+      if (!/^[A-Za-z]{6,}$/.test(en)) {
+        alert('패널명(영문)은 영문만 6자 이상 입력해 주세요.');
+        $('#panel_name_en').focus();
+        return;
+      }
+    }
+    var d = digitsOnly(phone);
+    if (d.length < 9 || d.length > 15) {
+      alert('담당자 연락처를 올바르게 입력해 주세요.');
+      $('#contact_phone').focus();
+      return;
+    }
+
+    var params =
+      'panel_name_ko=' + encodeURIComponent(ko) +
+      '&panel_name_en=' + encodeURIComponent(en) +
+      '&contact_phone=' + encodeURIComponent(phone) +
+      '&save_action=' + encodeURIComponent(st) +
+      '&panel_status=' + encodeURIComponent(pstat);
+    if (st === 'update' && fid > 0) {
+      params += '&idx=' + fid;
+    }
+    var $enddate = $('#panel_enddate');
+    if ($enddate.length) {
+      var enddateVal = $.trim($enddate.val());
+      if (!enddateVal) {
+        alert('이용 종료일을 입력해 주세요.');
+        $enddate.focus();
+        return;
+      }
+      params += '&enddate=' + encodeURIComponent(enddateVal);
+    }
+
+    $.ajax({
+      type: 'POST',
+      url: '/adm/panel/ajax/_ajax_panel_save.php',
+      data: params,
+      success: function(result) {
+        var r = (result || '').toString().trim();
+        if (r === '1') {
+          alert(st === 'update' ? '수정되었습니다.' : '등록되었습니다.');
+          location.href = '/adm/panel/list.html';
+        } else {
+          alert(r || '저장에 실패했습니다.');
+        }
+      },
+      error: function(xhr) {
+        alert(xhr.responseText || '요청 오류');
+      }
+    });
+  });
+
+  function formatDeleteSchedule(dateObj) {
+    var y = dateObj.getFullYear();
+    var mo = ('0' + (dateObj.getMonth() + 1)).slice(-2);
+    var d = ('0' + dateObj.getDate()).slice(-2);
+    var h = ('0' + dateObj.getHours()).slice(-2);
+    var mi = ('0' + dateObj.getMinutes()).slice(-2);
+    return y + '-' + mo + '-' + d + ' ' + h + ':' + mi;
+  }
+
+  var $deleteLayer = $('#panel_delete_layer');
+  var deleteLayerBusy = false;
+
+  function openPanelDeleteLayer() {
+    var now = new Date();
+    var delete10m = new Date(now.getTime() + (10 * 60 * 1000));
+    var delete3d = new Date(now.getTime());
+    delete3d.setDate(delete3d.getDate() + 3);
+    $('#panel_delete_schedule_10m').text('10분 뒤 삭제 예정: ' + formatDeleteSchedule(delete10m));
+    $('#panel_delete_schedule_3d').text('3일 뒤 삭제 예정: ' + formatDeleteSchedule(delete3d));
+    $deleteLayer.addClass('is-open').attr('aria-hidden', 'false');
+  }
+
+  function closePanelDeleteLayer() {
+    if (deleteLayerBusy) {
+      return;
+    }
+    $deleteLayer.removeClass('is-open').attr('aria-hidden', 'true');
+  }
+
+  function submitPanelDelete(deleteDelay) {
+    if (deleteLayerBusy) {
+      return;
+    }
+    var fid = parseInt($('#form_idx').val(), 10) || 0;
+    if (fid <= 0) {
+      alert('삭제할 패널을 찾을 수 없습니다.');
+      closePanelDeleteLayer();
+      return;
+    }
+    var now = new Date();
+    var finalDelete = new Date(now.getTime());
+    if (deleteDelay === '10m') {
+      finalDelete.setTime(now.getTime() + (10 * 60 * 1000));
+    } else {
+      finalDelete.setDate(finalDelete.getDate() + 3);
+    }
+    var finalDeleteStr = formatDeleteSchedule(finalDelete);
+    deleteLayerBusy = true;
+    $('#btn_panel_delete_10m, #btn_panel_delete_3d, #btn_panel_delete_cancel').prop('disabled', true);
+    $.ajax({
+      type: 'POST',
+      url: '/adm/panel/ajax/_ajax_panel_delete.php',
+      data: { idx: fid, delete_delay: deleteDelay },
+      success: function(result) {
+        var r = (result || '').toString().trim();
+        if (r === '1') {
+          alert('삭제 예정 처리되었습니다.\n최종 삭제 예정일: ' + finalDeleteStr);
+          location.href = '/adm/panel/list.html';
+        } else {
+          alert(r || '삭제에 실패했습니다.');
+          deleteLayerBusy = false;
+          $('#btn_panel_delete_10m, #btn_panel_delete_3d, #btn_panel_delete_cancel').prop('disabled', false);
+        }
+      },
+      error: function(xhr) {
+        alert(xhr.responseText || '요청 오류');
+        deleteLayerBusy = false;
+        $('#btn_panel_delete_10m, #btn_panel_delete_3d, #btn_panel_delete_cancel').prop('disabled', false);
+      }
+    });
+  }
+
+  $('#btn_panel_delete').on('click', function(){
+    if (isLocked) {
+      alert('삭제 완료된 패널은 삭제할 수 없습니다.');
+      return;
+    }
+    var fid = parseInt($('#form_idx').val(), 10) || 0;
+    if (fid <= 0) {
+      alert('삭제할 패널을 찾을 수 없습니다.');
+      return;
+    }
+    openPanelDeleteLayer();
+  });
+
+  $('#btn_panel_delete_10m').on('click', function() {
+    submitPanelDelete('10m');
+  });
+  $('#btn_panel_delete_3d').on('click', function() {
+    submitPanelDelete('3d');
+  });
+  $('#btn_panel_delete_cancel, #panel_delete_layer_backdrop').on('click', function() {
+    closePanelDeleteLayer();
+  });
+
+  $('#panel-tab-account.disabled, #panel-tab-bank.disabled').on('click', function(e) {
+    e.preventDefault();
+    return false;
+  });
+
+  $('#btn_panel_bank_disconnect').on('click', function() {
+    if (isLocked) {
+      alert('삭제 완료된 패널은 연결 해지할 수 없습니다.');
+      return;
+    }
+    if (!confirm('무통장 연결을 해지하시겠습니까?')) {
+      return;
+    }
+    var fid = parseInt($('#form_idx').val(), 10) || 0;
+    if (fid <= 0) {
+      alert('패널을 찾을 수 없습니다.');
+      return;
+    }
+    $.ajax({
+      type: 'POST',
+      url: '/adm/panel/ajax/_ajax_panel_bank_disconnect.php',
+      data: { idx: fid },
+      success: function(result) {
+        var r = (result || '').toString().trim();
+        if (r === '1') {
+          alert('무통장 연결이 해지되었습니다.');
+          location.reload();
+        } else {
+          alert(r || '연결 해지에 실패했습니다.');
+        }
+      },
+      error: function(xhr) {
+        alert(xhr.responseText || '요청 오류');
+      }
+    });
+  });
+
+  $('#btn_panel_bank_save').on('click', function() {
+    if (isLocked) {
+      alert('삭제 완료된 패널은 저장할 수 없습니다.');
+      return;
+    }
+    var fid = parseInt($('#form_idx').val(), 10) || 0;
+    if (fid <= 0) {
+      alert('저장할 패널을 찾을 수 없습니다.');
+      return;
+    }
+    var siteIdx = parseInt($('#panel_bank_site').val(), 10) || 0;
+    if (siteIdx <= 0) {
+      alert('연결할 무통장 사이트를 선택해 주세요.');
+      $('#panel_bank_site').focus();
+      return;
+    }
+    $.ajax({
+      type: 'POST',
+      url: '/adm/panel/ajax/_ajax_panel_bank_save.php',
+      data: { idx: fid, site_idx: siteIdx },
+      success: function(result) {
+        var r = (result || '').toString().trim();
+        if (r === '1') {
+          alert('무통장 연결이 저장되었습니다.');
+          location.reload();
+        } else {
+          alert(r || '저장에 실패했습니다.');
+        }
+      },
+      error: function(xhr) {
+        alert(xhr.responseText || '요청 오류');
+      }
+    });
+  });
+
+  $('#btn_panel_account_save').on('click', function() {
+    if (isLocked) {
+      alert('삭제 완료된 패널은 저장할 수 없습니다.');
+      return;
+    }
+    var fid = parseInt($('#form_idx').val(), 10) || 0;
+    if (fid <= 0) {
+      alert('저장할 패널을 찾을 수 없습니다.');
+      return;
+    }
+    var params =
+      'idx=' + fid +
+      '&admin_id=' + encodeURIComponent($.trim($('#acct_admin_id').val())) +
+      '&admin_pw=' + encodeURIComponent($.trim($('#acct_admin_pw').val())) +
+      '&ftp_id=' + encodeURIComponent($.trim($('#acct_ftp_id').val())) +
+      '&ftp_pw=' + encodeURIComponent($.trim($('#acct_ftp_pw').val())) +
+      '&db_name=' + encodeURIComponent($.trim($('#acct_db_name').val())) +
+      '&db_id=' + encodeURIComponent($.trim($('#acct_db_id').val())) +
+      '&db_pw=' + encodeURIComponent($.trim($('#acct_db_pw').val()));
+    $.ajax({
+      type: 'POST',
+      url: '/adm/panel/ajax/_ajax_panel_account_save.php',
+      data: params,
+      success: function(result) {
+        var r = (result || '').toString().trim();
+        if (r === '1') {
+          alert('계정 정보가 저장되었습니다.');
+          location.reload();
+        } else {
+          alert(r || '저장에 실패했습니다.');
+        }
+      },
+      error: function(xhr) {
+        alert(xhr.responseText || '요청 오류');
+      }
+    });
+  });
+})();
+</script>
+
+<?php include_once __DIR__ . '/../footer.php'; ?>

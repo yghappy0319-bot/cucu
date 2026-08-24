@@ -1,0 +1,831 @@
+/* 구매하기 */
+.lotto-box{  margin: 0px 14px;border: 1px solid #DDD; border-radius: 10px;margin-bottom: 14px; }
+#lotto-container{ }
+
+#lotto-last-container{ }
+
+.select_list {display: flex;justify-content: center; padding: 2px 0px; text-align:center; }
+.select_list .gball {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    background-color:#fff;
+  }
+
+.buy_popup_ctn {background-color: #FEDC00;
+    font-size: 1.2rem;
+    border-radius: 12px;
+    width: 200px;
+    display: inline-block;
+  }
+
+.last_ball{background-color:#FEDC00 !important;}
+.game_btn_active{ background-color: #194A9C !important; color: white!important;}
+.reset_btn {}
+.reset_btn button{background-color: #fff; border: 1px solid;}
+
+
+.po_rtive {position: relative;}
+.text-center {text-align: center;}
+
+.sub_box_sha {box-shadow: 0px 0px 12px 0px #00000040;}
+.game_number {background-color: #fff; padding: 5px 6px; position: relative; top: 2px; margin-right: 4px; width: 52px; display: inline-block;}
+.sub_top_title {text-align: center; font-size: 26px; line-height: 4; font-weight: 800;}
+.sub_result_box {width: 300px;    padding: 10px 0px;}
+.sub_result_box .sub_title {font-size: 1.5rem; font-weight: bold; margin-bottom: 10px;}
+.sub_result_box .sub_us_money {color: #666;}
+.sub_result_box .sub_priz_money {font-size: 2rem; font-weight: 800;}
+.sub_result_sub_box{padding: 10px 0px;}
+.game_rules {display:flex;background-color: #F4F4F4; border-radius: 0px 0px 10px 10px;}
+.game_rules_sub {background-color: #F4F4F4; padding: 14px; text-align: center;}
+.game_round {     font-weight: 700; background-color: #CC1F3B; color: #fff; text-align: center; font-size: 19px; padding: 10px;border-radius: 10px 10px 0px 0px;}
+
+.game_mm_round { background-color: #194A9C; color: #fff; text-align: center; font-size: 19px; padding: 10px;border-radius: 10px 10px 0px 0px;}
+
+.lotto_limit {    background-color: #F4F4F4;
+    margin: 0px 20px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 12px;
+    border-radius: 5px;}
+.game_round_info {border-left: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; border-right: 1px solid #DDDDDD; border-radius: 0px 0px 10px 10px;}
+.sub_result_buy_time {color: #CC1F3B; font-weight: 800;}
+.korea_result_date {}
+.game_buy_count {border-radius: 10px;}
+.game_buy_count .title {font-size: 20px;font-weight: 800;text-align: center;padding: 30px 0px;margin-top: 10px;}
+.game_buy_count .status {font-size: 20px;font-weight: 600;text-align: center;padding: 15px 0px 0px;margin-top: 10px;}
+.game_buy_count .amount {color: #666; text-align: center; padding: 3px 0px 25px; }
+.pb_red {color: #CC1F3B;}
+.mm_red {color: #194A9C;}
+
+.game_buy_point {margin-left: 16px;}
+.gamebtn {
+  border: 1px solid #DDD;
+padding: 10px 11px;
+background-color: #fff;
+color: #333;
+}
+.step2_btn {font-size: 16px; width: 194px;border: 1px solid #DDD;padding: 10px;background-color: #fff;}
+.my_number_save_btn {background-color: #CC1F3B; color: #fff; font-size: 14px; border: 0px; font-weight: 600; margin: 10px 5px; padding: 4px 10px;}
+.reset_btn {background-color: #999;color: #fff;font-size: 15px;width: 100px;height: 40px; border: 0px; border-radius: 16px; font-weight: 600; margin: 10px 5px;}
+.cart_btn { background-color: #FEDC00; font-size: 15px; width: 100px; height: 40px; border: 0px; border-radius: 16px; font-weight: 600; margin: 10px 5px; }
+.order_info {background-color: #F4F4F4;padding: 14px 14px;}
+.order_info .subject {font-size:12px;    margin-bottom: 2px;}
+.order_info_sub {margin-top: 6px; border-top: 1px solid #DDD; padding-top: 6px;}
+.view_total_amount {margin-right:10px;}
+.order_info_total {margin-top: 6px; border-top: 1px solid #DDD; padding: 14px 0px; border-bottom: 2px solid; margin-bottom: 8px;}
+
+.order_result {font-size: 18px; font-weight: 800;}
+.point_btn {background-color: #CC1F3B; border: 0px; color: #fff; font-weight: 600; font-size: 15px; padding: 6px 12px;width: 90px;}
+.amount_input {border: 0px; height: 31px; width: 110px; font-size: 17px; text-align: right; padding-right: 20px;}
+.order_buy_btn {background-color: #FEDC00; border: 0px; font-size: 20px; padding: 10px 66px; border-radius: 10px; margin: 14px;}
+.order_btn_active{background-color: #194A9C; color:#fff;}
+
+.display-flex{display: flex;}
+
+
+/* 서비스안내 */
+.scrollable_menu_wrap {
+  width:100%;
+  padding:10px;
+  white-space:nowrap;
+  overflow-x:auto;
+  text-align: center;
+  margin-bottom: 40px;
+}
+.scrollable_menu_wrap::-webkit-scrollbar{
+  width:100%;
+  height:3px;
+  background-color: black;
+}
+.scrollable_menu_wrap::-webkit-scrollbar-thumb {
+  width:10%;
+  height:3px;
+  background-color: #CC1F3B;
+}
+.scrollable_menu_wrap .scrollable_menu {
+  display:inline-block;
+  padding:0 15px;
+  color: black;
+  text-decoration:none;
+  font-size: 18px;
+}
+.scrollable_menu_wrap .scrollable_menu:hover, .scrollable_menu_wrap .scrollable_menu.on {
+  color: #CC1F3B;
+  font-weight:bold;
+}
+
+
+
+
+
+
+
+.sub_category { position: relative;margin-bottom: 20px;}
+.sub_category::before { content: ""; position: absolute; left: 0; bottom: -1px; width: 100%; height: 2px; background-color: #EEE; z-index: -9;}
+.sub_category {}
+.sub_category a {font-size: 18px; font-weight: 600; color: #999; display: inline-block; padding: 5px 12px; }
+.ct_active {color: #333 !important; border-bottom: 2px solid #CC1F3B; }
+
+
+.mypage {border-radius: 18px;}
+.mypage h1{padding-top: 25px;}
+.mypage .my_grade_box {margin: 10px 0px 25px;}
+.mypage .my_grade_box b {font-size: 16px;}
+.mypage .my_grade{background-color: #FFF; padding: 9px; display: inline-block; border-radius: 20px;}
+.mypage .my_grade_box .sub_inner{margin-top: 10px;}
+.mypage .my_grade_box .sub_inner a {text-decoration: underline;}
+.bgc-y {background-color: #FEDC00;}
+
+.mypage_status {display: flex; justify-content: center;padding: 25px 0px; border-top: 1px solid #EEE;}
+.mypage_status .amount {font-weight: 800; font-size: 22px; }
+.mypage_status .title {color:#666;font-weight: 500;}
+.mypage_status .sub_status {line-height: 1.5;}
+.mypage_status .gubun {color: #EEE; font-size: 26px; font-weight: 100; margin: 0px 40px; height: 30px; position: relative; top: 10px;}
+.mypage_status .icon_gubun {color: #EEE; font-size: 26px; font-weight: 100; margin: 0px 40px; position: relative; top: 10px;}
+.mypage_point_list {display: flex;     align-items: baseline;}
+
+.mypage_icon {display: flex; justify-content: center;padding: 25px 0px; border-top: 1px solid #EEE;}
+.mypage_icon .sub_status {text-align: center;}
+.mypage_icon .gubun {color: #EEE; font-size: 26px; font-weight: 100; margin: 0px 40px; height: 30px; position: relative; top: 10px;}
+.mypage_icon .icon_gubun {border-right: 1px solid #EEE; margin: 0px 40px; height: 45px; position: relative; top: 12px;}
+
+.mypage_withdraw_list {font-size: 20px; font-weight: 600; border-bottom: 1px solid; padding: 13px 0px; margin: 13px 0px;}
+
+
+.history_list .mypage_main_list{
+
+}
+.history_list  .mypage_main_list li {line-height: 1.7;
+  margin: 18px 0px;
+    border-bottom: 1px solid #EEE;
+    padding-bottom: 13px;}
+.history_list .withd_list {font-size: 18px;}
+
+.history_list .withd_list .amount{font-weight: bold; font-size: 18px;}
+.history_list .withd_list .date{float: right;  font-size: 16px;color: #666;}
+
+
+/* 추첨결과  */
+
+
+.mypage_withdraw_sub_list .pb_title{background-color: #CC1F3B; color: #fff;    margin-bottom: 10px;}
+.mypage_withdraw_sub_list .pb_title h2{font-size: 1rem;}
+.mypage_withdraw_sub_list .mm_title{background-color: #194A9C; color: #fff;    margin-bottom: 10px;}
+.mypage_withdraw_sub_list .mm_title h2{font-size: 1rem;}
+
+
+/* 당첨자발표 */
+
+.winner .winner_list {display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    text-align: center;}
+.winner .winner_list .winner_inner {   min-width: 264px; margin: 18px;}
+.winner .winner_list li { border-bottom: 1px solid #EEE;}
+.winner .winner_list .winner_inner .pb_title{background-color: #CC1F3B; color: #fff; margin:10px 0px; font-size: 16px; padding: 4px;    border: 0px solid;    border-radius: 10px;}
+.winner .winner_list .winner_inner .mm_title{background-color: #194A9C; color: #fff; margin:10px 0px; font-size: 16px; padding: 4px;    border: 0px solid;    border-radius: 10px;}
+.winner .winner_list .winner_inner .prize_money span {font-weight: bold; font-size: 18px;}
+.winner_list_li {width: 300px;}
+.game_logo_pb {    width: 150px;}
+
+/* 충전하기 */
+.sct_text_center {text-align: center;}
+.sub_content {height: 100%; border-radius: 10px; box-shadow: 0px 0px 12px 0px #00000040;}
+
+
+
+.sct_text_content {font-size: 16px; font-weight: 700;  margin: 15px;}
+.sub_content .key {color:#CC1F3B;}
+.sub_content .vat {color:#666}
+.sub_content .request {font-weight: 700;}
+.bank_info {border-top: 1px solid #eee; margin-top: 15px; padding: 15px;line-height: 1.4;}
+.bank_acount {font-size: 18px; font-weight: 800;}
+
+
+
+.point_sub_r_content{ display: flex; justify-content: center; grid-gap: 0 10px;}
+.point_sub_r_content a{ display: flex; align-items: center; padding: 0 30px; height: 45px; border-radius: 30px; border: 1px solid #e5e5e5; font-size: 16px; color: #666; cursor: pointer; transition: all .2s;}
+.point_sub_r_content a:hover{ background: #f5f5f5; transform: scale(.95);}
+.point_sub_r_content .active a{ border-color: #537db2; background: #537db2; font-weight: 600; color: #FFF;}
+@media(max-width: 769px){
+    .point_sub_r_content{ grid-gap: 0 5px;}
+    .point_sub_r_content a{ padding: 0 15px; height: 40px; font-size: 14px;}
+    .point_sub_r_content a:hover{ transform: scale(1);}
+}
+
+
+.active{}
+.bank.active a{}
+
+.point_sub_rb_content{}
+.point_sub_rb_content .amount_btn{}
+.point_sub_rb_content .amount_btn_card{}
+
+
+.point_rb_sct_text_center .poa {color: #999; font-size: 22px;}
+.poitn_rb_amount{ background-color: #fff; border: 1px solid #DDD; font-size: 20px; padding: 8px 0px;width: 24.4%;margin-bottom: 4px;}
+.point_rb_high_amonut_box{ }
+.poitn_rb_amount_high {    background-color: #fff; border: 1px solid #DDD; font-size: 20px; padding: 12px 0px; text-align: left; padding-left: 10px; width: 100%;}
+.rb_input { margin: 0px 20px; border-top: 1px solid #DDD; padding: 20px 0px;}
+.point_rb_amount_name { }
+.point_rb_input {border: 1px solid #EEE; width: 100%; font-size: 16px; padding: 14px;     border-radius: 10px;}
+.point_rb_go_pay {background-color: #537db2; color:#fff; border: 0px; width: 100%; font-size: 16px; padding: 10px; border-radius: 10px;}
+.point_rb_go_pay.cencle{ background-color: #CC1F3B; color: #fff;    margin-top: 10px;}
+.rb_btn {background-color: #fff; padding: 20px;}
+.deposit_info {margin: 20px; text-align: center; font-size: 20px;}
+
+.fontw800 {    font-weight: 800;}
+.prize_money{ }
+
+.point_guide {border: 1px solid #EEE;
+    padding: 10px;
+    margin-bottom: 10px;    font-size: 18px;    font-family: monospace;}
+.point_guide_btn{ width: 100%;
+    margin-bottom: 8px;
+    background-color: #CC1F3B;
+    border: 0px;
+    color:#fff;
+    padding: 10px;
+    font-weight: 400;
+    font-size: 16px;
+    border-radius: 10px;}
+
+.point_sms_send_btn {background-color: #FEDC00;
+    padding: 10px;
+    display: inline-block;
+    font-weight: bold;}
+
+/* 구매 당첨내역 */
+
+.buy_list {  display:flex;  justify-content: space-between;align-items: center;  }
+.buy_list .status {font-size: 16px;}
+.buy_list .amount {font-size: 16px;font-weight: 700;}
+.buy_list .game_img_pb {padding: 20px 0px;}
+.buy_list .game_img_mm {padding: 20px 0px;}
+.buy_list .date {color:#666; font-weight: 200; float: right;font-size: 14px;}
+.pay_before {color:#194A9C;}
+.pay_complete {color:#999;}
+.buy_list .game_img_mm img{height: 78px;}
+.buy_list .game_img_pb img{    width: 200px;}
+
+.buy_list .pb_detail_btn a{background-color: #CC1F3B;
+    color: #fff;
+    display: inline-block;
+    width: 100px;
+    border-radius: 12px;}
+
+.buy_list .mm_detail_btn a{background-color: #194A9C;
+    color: #fff;
+    display: inline-block;
+    width: 100px;
+    border-radius: 12px;}
+.my_login_id {    font-weight: 600;}
+.buy_list .krw_prize {font-size: 1.4rem;height: 28px;}
+.buy_list .en_prize {font-weight: 300;margin-bottom: 10px;}
+.draw_ball_list {margin-bottom: 10px;}
+/* 쿠폰 */
+.coupon_content {min-height: 800px;}
+.coupon_list {border: 1px solid #EEE; width: 49%;margin-bottom: 20px; border-radius: 10px;}
+.my_cp_list {display: flex; flex-wrap: wrap; justify-content: space-between;}
+.my_cp_list .my_cp_inner {padding: 30px;}
+.my_cp_box_list {display: flex;}
+.my_coupon_list{border: 1px solid #EEE;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    padding: 18px;
+  }
+.popup_coupon_btn {    background-color: #333;
+    color: #fff;
+    border: 0px;
+    width: 100%;
+    font-size: 16px;
+    padding: 6px;
+    margin-top: 4px;}
+
+.my_cp_box_list .cp_name {font-size: 18px; margin-bottom: 4px; font-weight: bold;}
+
+.coupon_list .cp_name {font-size: 16px; font-weight: 700;    padding: 10px 0px;}
+.coupon_download {position: absolute; right: 40px; top: 0; margin-top: 31px; text-align: center;}
+.coupon_download .text {color: #CC1F3B; font-weight: 600; font-size: 14px;}
+.coupon_download_ok { color: #666; font-weight: 400;}
+
+.coupon_img {    width: 100%;}
+.coupon_box {position: absolute; padding: 18px;}
+.my_cp_inner {position: relative;    margin-bottom: 15px;}
+.popup_coupon_box {position: absolute; padding: 18px;}
+.img_10_board {border: 1px solid #ef924f; border-radius: 18px; box-shadow: 5px 5px 8px 5px #ccc;}
+.img_30_board {border: 1px solid #a7a9ac; border-radius: 18px; box-shadow: 5px 5px 8px 5px #ccc;}
+.img_50_board {border: 1px solid #e0c264; border-radius: 18px; box-shadow: 5px 5px 8px 5px #ccc;}
+
+/* 공지사항 */
+
+
+.board{ width: 100%; border-collapse: collapse;}
+.board thead tr th{ padding: 20px 0; border-top: 1px solid #e5e5e5; border-bottom: 2px solid #317f70; font-size: 16px; font-weight: 500; color: #000;}
+.board tbody tr td{ padding: 25px 0; border-bottom: 1px solid #e5e5e5; font-size: 14px; color: #666; transition: all .2s;}
+.board tbody tr td a{ display: block; padding: 0 10px; font-size: 16px; font-weight: 500; color: #000; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden;}
+.board tbody tr:hover td{ background: #fafafa;}
+
+.board.faq{ margin: 40px 0 0 0; border-top: 2px solid #317f70;}
+.board.faq tbody tr td a{ padding: 0 30px;}
+.board.faq tbody tr td a span{ padding: 0 10px 0 0; font-weight: 700; color: #317f70;}
+.board.faq tbody tr.faq_a td{ display: flex; align-items: flex-start; padding: 25px 30px; line-height: 1.4;}
+.board.faq tbody tr.faq_a td span{ margin: -6px 0 0 0; padding: 0 12px 0 0;}
+@media(max-width: 769px){
+    .board thead tr th{ font-size: 15px;}
+    .board tbody tr td a{ font-size: 14px;}
+
+    .board.faq{ margin: 30px 0 0 0;}
+    .board.faq tbody tr td a{ padding: 0 20px;}
+    .board.faq tbody tr.faq_a td{ padding: 25px 20px;}
+}
+
+.select-box{border: 1px solid #E0E0E0; padding: 10px; border-radius: 4px;}
+.search-input {    border: 0px; background-color: #F6F6F6; padding: 11px; color: #868686;}
+.search-btn {background-color: #333333; border: 0px; color: #fff; padding: 10px; border-radius: 4px;}
+
+
+.board th:first-child {}
+.board th:nth-child(2) {text-align: center; }
+.board th:last-child {width: 12%;text-align: center;}
+@media(max-width: 769px){
+}
+
+
+.board_view{ border-radius: 20px; border: 1px solid #e5e5e5;}
+.board_view .head{ padding: 50px; border-bottom: 1px solid #e5e5e5;}
+.board_view .head .title{ line-height: 1.4; font-size: 22px; font-weight: 600; color: #000;}
+.board_view .head .date{ margin: 10px 0 0 0; font-size: 14px; color: #999;}
+.board_view .content{ padding: 50px;}
+.board_view .content *{ line-height: 1.8; font-size: 16px; color: #000;}
+.board_view .content * img{ display: block; margin: 0 0 20px 0; max-width: 100%;}
+.list_bnt{ display: flex; justify-content: center; align-items: center; margin: 30px auto 0 auto; padding: 0 30px; height: 50px; border-radius: 30px; background: #000; font-size: 16px; font-weight: 500; color: #FFF; cursor: pointer;}
+@media(max-width: 769px){
+    .board_view .head{ padding: 30px 20px;}
+    .board_view .head .title{ font-size: 18px;}
+    .board_view .content{ padding: 30px 20px;}
+    .board_view .content *{ font-size: 14px;}
+    .list_bnt{ height: 45px; font-size: 15px;}
+}
+
+
+
+
+
+
+.top_category{ display: flex; flex-wrap: wrap; justify-content: center; align-items: center; grid-gap: 10px;}
+.top_category a{ display: flex; align-items: center; padding: 0 25px; height: 35px; border-radius: 20px; border: 1px solid #e5e5e5; font-size: 14px; color: #666; cursor: pointer; transition: all .2s;}
+.top_category a:hover{ background: #f5f5f5; color: #000;}
+@media(max-width: 769px){
+    .top_category{ grid-gap: 5px;}
+    .top_category a{ padding: 0 15px;}
+}
+
+.board .question {color: #CC1F3B;font-weight: bold; font-size: 22px;}
+.board .comment {color: #194A9C; font-size: 22px; font-weight: bold;}
+.ft16px {font-size: 16px;}
+.ftw900 {font-weight: 800;}
+.text-right {text-align: right;}
+
+.board .comment_ok { color: #999;}
+.board .unanswered { color:#194A9C;}
+.cancle_btn{ background-color: #333; border: 0px; padding: 4px 14px; color: #fff;}
+.board_write .content {border: 1px solid #E0E0E0;
+    margin: 0px 10px;
+    padding: 10px;width: 100%;}
+
+.board_write .search-btn {    font-size: 16px; background-color: #333333; border: 0px; color: #fff; padding: 10px 22px; border-radius: 4px;}
+.board_write .popup_cancle { font-size: 16px; padding: 9px 22px; border-radius: 4px; border: 1px solid #E0E0E0;}
+
+
+
+
+
+
+
+
+
+
+.join_form { background-color: #F4F4F4; border-radius: 10px; text-align: center; padding: 40px 40px; width: 550px; margin: 0px auto 100px;}
+.join_form .login_id {background-color: #fff; border: 0px; font-size: 18px; padding: 8px; margin-bottom: 12px; border-radius: 4px; width: 100%;}
+.birthday_box {display: flex; justify-content: space-between;     align-items: baseline; font-weight: bold; font-size: 1rem;}
+.join_form .birthday {      text-align: center;  display: flex;
+    justify-content: space-between;
+    background-color: #fff; border: 0px; font-size: 18px; padding: 8px; margin-bottom: 12px; border-radius: 4px; width: 28%;}
+.agree_info {text-align: left;position: relative;}
+.agree_info div {height: 40px;}
+.agree_info label {}
+.agree_info .reg_form {clear: both;}
+.reg_form .reg_btn {border-radius: 4px; font-weight: 800; font-size: 1.3rem; border: 1px solid; width: 100%; padding: 10px; display: inline-block;text-decoration: none; background-color: #333; color:#fff; margin-bottom: 10px; }
+.reg_form .prv_btn {border-radius: 4px; font-weight: 800; font-size: 16px; border: 1px solid #ccc; width: 100%; padding: 9px; display: inline-block; text-decoration: none; background-color: #fff; margin-bottom: 10px;}
+.reg_form .out_btn {border-radius: 4px; font-weight: 200; font-size: 16px; border: 1px solid #ccc; width: 100%; padding: 9px; display: inline-block; text-decoration: none; margin-bottom: 10px; color: #666;}
+
+.agree {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: dodgerblue;
+  vertical-align: middle;
+  -webkit-appearance: none;
+  background: none;
+  border: 0;
+  outline: 0;
+  flex-grow: 0;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  transition: background 300ms;
+  cursor: pointer;
+}
+
+.agree::before {
+  content: "";
+  color: transparent;
+  display: block;
+  width: inherit;
+  height: inherit;
+  border-radius: inherit;
+  border: 0;
+  background-color: transparent;
+  background-size: contain;
+  box-shadow: inset 0 0 0 1px #CCD3D8;
+}
+
+.agree:checked {
+  background-color: currentcolor;
+}
+
+.agree:checked::before {
+  box-shadow: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E %3Cpath d='M15.88 8.29L10 14.17l-1.88-1.88a.996.996 0 1 0-1.41 1.41l2.59 2.59c.39.39 1.02.39 1.41 0L17.3 9.7a.996.996 0 0 0 0-1.41c-.39-.39-1.03-.39-1.42 0z' fill='%23fff'/%3E %3C/svg%3E");
+}
+.underline {text-decoration: underline;}
+
+.join_agree_form1 {
+    width: 700px;
+    border-radius: 10px;
+    background-color: #fff;
+    border: 1px solid #AAA;
+}
+.join_agree_form1 .content{
+   -ms-overflow-style: none;
+   height: 400px;
+}
+.join_agree_form1 .content::-webkit-scrollbar{
+  display:none;
+}
+
+.join_form .sms_code_btn {border-radius: 4px; background-color: #fff; font-weight: 800; font-size: 16px; border: 1px solid #333; width: 100%; padding: 10px;margin-bottom: 20px;}
+.join_form .code_chk_btn {border-radius: 4px;background-color: #CC1F3B; color: #fff; font-weight: 800; font-size: 16px; border: 0px solid; width: 100%; padding: 10px;}
+
+
+/* 당첨결과 */
+.draw_ball_list div{background-color: #fff; border-radius: 50%; font-weight: bold; text-align: center; margin: 0px 6px;border: 1px solid #DDD;  width: 32px; height: 32px;line-height: 2;}
+.draw_ball_list div:last-child {background-color: #FEDC00;}
+.draw_ball_list div span{width: 30px; display: block; height: 30px;}
+
+
+/* 로그인 */
+#login_form {width: 550px !important;}
+.login_close{text-align: center; width:550px; margin: 0px auto 24px;}
+.login {text-align: center; margin: 0px 10px; border: 1px solid #EEE;border-radius: 10px;background-color: #FFF; padding: 0px 10px;}
+.login .title {padding: 30px 0px; font-size: 26px; font-weight: 600;}
+.login .login_id {background-color: #EEEEEE; border: 0px; font-size: 18px; padding: 8px; border-radius: 4px; width: 100%;}
+.login .input_mb12 {margin-bottom: 12px; }
+.login .sub_inner {}
+.login .login_btn {border-radius: 4px;background-color: #CC1F3B; color: #fff; font-weight: 800; font-size: 16px; border: 0px solid; width: 100%; padding: 10px;}
+.login .site_info {margin-bottom: 20px;}
+.login .login_id::placeholder {    font-weight: 600;}
+
+.login .kakao_btn {border-radius: 4px;background-color: #FEDC00; font-weight: 800; font-size: 16px; border: 0px solid; width: 100%; padding: 10px;}
+.login .regis_btn {border-radius: 4px;    font-weight: 800; font-size: 16px; border: 1px solid; width: 100%; padding: 10px; display: inline-block;text-decoration: none;}
+
+.login .btn_box {margin-bottom: 10px; }
+.login .autologin {display: flex; justify-content: space-between;    margin: 16px 0px; font-size: 15px;}
+.b-close {color: #fff;text-decoration: none; font-size: 4rem;}
+.no_member { margin: 10px; font-weight: bold; color: #666;}
+.regster_btn_box {margin: 10px 0px 25px;}
+
+.auto_login{ display: none; }
+.auto_login + label{ display: inline-block; width: 22px; height: 22px; border: 1px solid #EEE; position: relative; background-color: #FEDC00; }
+.auto_login:checked + label::after{ content:'✔'; font-size: 18px; text-align: center; }
+
+
+.essential{text-align: left; color: #CC1F3B; margin-bottom: 10px;}
+.lucky_intro {    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #666;}
+.idpass_info {margin: 30px 0px;}
+.withdraw_none {font-size: 16px; font-weight: bold;}
+.point_coupon{color: #666; font-size: 14px;}
+.point_coupon.active{  color: #fff;background-color: #194A9C;}
+
+.point_game_cnt{font-size: 14px; color: #194A9C;}
+
+
+.text-right{text-align: right;}
+
+
+/* 구매/당첨내역 */
+.buy_info a {font-size: 16px; font-weight: 600; color: #666;}
+
+
+/* 정보수정  */
+.mypage_info_update .info_text1 {font-weight: bold; margin-bottom: 10px; display: inline-block;}
+.mypage_info_update .reg_id{background-color: #fff;
+border: 0px;
+font-size: 18px;
+padding: 8px;
+margin-bottom: 12px;
+border-radius: 4px;
+width: 100%;}
+.mgb10 {margin-bottom: 10px;}
+
+
+
+.board_inner{}
+
+.page_status {    margin: 10px 0px;}
+
+.customer_bnt.show::after{content:"|";padding: 0px 10px;}
+
+/* 이용약관 */
+.clause .mgt20 li{}
+.clause .title {text-align: center;}
+.clause .pb20 {line-height: 1.4;}
+.clause .pt20 {margin:10px 0px;}
+
+/* 개인정보취급방침 */
+.policy .mgt20 li{}
+.policy .title {text-align: center;}
+.policy .pb20 {line-height: 1.4;}
+.policy .pt20 {margin:10px 0px;}
+
+.service_info_2 {margin-bottom: 50px;}
+.service_info_2 table, th, td {font-size: 15px;}
+.service_info_2 h2 {margin: 40px 0 25px 0;color:#252525;font-size: 23px; font-weight: 700;}
+.sv_type2 {width:100%;border-spacing:0;border-collapse:collapse;}
+.sv_type2 {text-align: center; border-bottom: 1px solid #d2d2d2; line-height: 1.3}
+.sv_type2 col ~ col { border-left:1px solid #e8e8e8}
+.sv_type2 thead th { padding: 0.6rem 0.5rem; box-sizing: border-box; font-weight: 500}
+.sv_type2 tbody td { padding: 0.7rem 0.5rem; min-height: 2.75rem; box-sizing: border-box; color: #676767}
+.sv_type2 tbody tr ~ tr { border-top : 1px solid #d2d2d2}
+.bg_mega { background: #fff;border-top: 2px solid #194A9C;border-bottom: 1px solid #979797;}
+.bg_power { background: #fff;border-top: 2px solid #CC1F3B;border-bottom: 1px solid #979797;}
+
+.page_login_form .login_logo {text-align: center; margin: 20px 0px;}
+
+/* 포인트충전 */
+
+.point_deposit_info{ display: flex; justify-content: space-between; align-items: center; margin: 20px 0 0 0; padding: 20px 50px; border-radius: 20px; border: 1px solid #F00;}
+.point_deposit_info .fl{ display: block;}
+.point_deposit_info .fl .ft{ line-height: 1.4; font-size: 18px; color: #000;}
+.point_deposit_info .fl .ft strong{ color: #F00;}
+.point_deposit_info .fl .fb{ margin: 5px 0 0 15px; line-height: 1.4; font-size: 16px; color: #666;}
+.point_deposit_info .fl .fb font{ font-weight: 700; color: #000;}
+.point_deposit_info .btn{ display: flex; align-items: center; padding: 0 20px; height: 35px; border-radius: 30px; background: #F00; font-size: 15px; font-weight: 500; color: #FFF; cursor: pointer; transition: all .2s;}
+.point_deposit_info .btn:hover{ transform: scale(.95);}
+@media(max-width: 769px){
+    .point_deposit_info{ padding: 20px;}
+    .point_deposit_info .fl .ft{ font-size: 16px;}
+    .point_deposit_info .fl .fb{ margin: 5px 0 0 12px; font-size: 14px;}
+    .point_deposit_info .btn{ flex: 0 0 80px; justify-content: center; margin: 0 0 0 15px; padding: 0; font-size: 14px;}
+    .point_deposit_info .btn:hover{ transform: scale(1);}
+}
+
+.mega_my_number_chk {text-align: center; margin-bottom: 20px;}
+.mega_my_number_chk a {text-decoration: underline;font-weight: bold;}
+
+.mypage_icon_status {display:flex; justify-content: center;}
+
+.event_add_point {
+  background-color: #FEDC00;
+font-size: 14px;
+border-radius: 10px 0px 0px 10px;
+padding: 2px;
+border: 1px solid;
+}
+.copy-button1 {
+  border: 0px;
+  background-color: #333;
+  color: #fff;
+  padding: 5px;
+  font-size: 1.2rem;
+  width: 200px;
+}
+.copy-button2 {
+  border: 0px;
+  background-color: #333;
+  color: #fff;
+  padding: 5px;
+  font-size: 1.2rem;
+  width: 200px;
+}
+.coupon_set {color: #CC1F3B; font-weight: bold;}
+.depo_amount {}
+
+/* 미디어 쿼리를 사용하여 반응형 스타일 적용 */
+@media screen and (max-width: 768px) {
+
+  .mypage_icon_status {display:unset; justify-content: unset;}
+  .pc_gubun{display: none;}
+
+  #login_form {width: 100% !important;}
+  .join_agree_form1 { width: 100%; }
+  #agree_1 {margin: 0px 10px;}
+  #agree_2 {margin: 0px 10px;}
+  .board th:first-child {width: 15%;}
+  .board th:nth-child(2) {text-align: center; }
+  .board th:last-child {width: 25%;text-align: center;}
+  .login_close {width:unset;}
+  .login {}
+  .game_round {padding: 14px;}
+  .game_round_info .flex {    display: unset;}
+  .game_round_info {padding: 0px;}
+  .sub_top_title {line-height: 3; font-size: 1rem;}
+  .sub_result_box {width: unset;}
+  .sub_result_box .sub_title {    font-size: 20px;}
+  .sub_result_box .sub_priz_money {font-size: 34px;}
+
+  .game_step2.flex {display: unset;}
+  .game_step2 .title {text-align: center; font-size: 24px; font-weight: 700; margin: 30px;}
+  .game_rules_sub {    padding: 14px 10px 8px;}
+  .game_rules_sub.game_select {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .gamebtn {font-size: 16px; width: 18%; padding: 10px 0px; margin-bottom: 6px;}
+  .game_100_form {margin: 0px 14px; border-top: 1px solid #DDD; padding: 14px 0px;}
+  .game_100_form select{width: 100%; font-size: 16px; padding: 12px;background-color: #fff;}
+  .game_100_select_button {background-color: #194A9C;
+    color: #fff;
+    font-size: 18px;
+    width: 100%;
+    padding: 10px;
+    border: 0px;}
+
+  .game_rules_sub.flex_between {display: unset;}
+  .game_rules_sub .step2_btn {width: 100%;margin-bottom: 10px;}
+
+  .game_step1_sbox{background-color: #fff; text-align: center; border-radius: 0px 0px 10px 10px;    display: flex; justify-content: space-around;padding: 10px;    padding: 14px 10px;}
+  .game_step1_sbox div{width: 100%; }
+
+  .game_rules {display: unset;}
+  .game_buy_point{margin: 0px;}
+  .status.pb_red {padding: 0px; margin:0px;}
+  .status.mm_red {padding: 0px; margin:0px;}
+
+  .game_buy_count .amount{padding: 0px;margin: 10px 0px 12px;}
+
+  .game_status_var{padding: 24px;}
+  .game_list_box {position: relative;}
+  .select_list{
+    justify-content: space-between;
+    padding:4px 0px;
+  }
+  .reset_btn {background-color: #333;}
+  .reset_btn, .cart_btn{
+    width: 95%;
+    border-radius: 10px;
+    margin: 0px;
+  }
+
+  .select_list .gball{font-weight: 900}
+  .back_btn {
+    background-color: #999;
+    color: #fff;
+    font-size: 15px;
+    width: 95%;
+    height: 40px;
+    border: 0px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  .btn-3 {margin: 0px;}
+  .border-dashed {border: 1px dashed #194A9C;}
+  .game_number {    padding: 6px 6px;}
+  .m_game_count_box {margin: 0px 14px; padding-bottom:14px;}
+  .white_ball_box {text-align: center; padding: 20px 0px 5px 0px; font-weight: 600; background-color: #F4F4F4;}
+    #lotto-container {    width: 90%; margin: 0px auto;}
+
+  .point_btn{width: 100px;}
+
+
+
+  .ball_number_chk_btn {border: 1px solid #DDD;
+    background-color: #fff;
+    font-size: 14px;
+    padding: 6px;}
+  .ball_select_sudon {border: 1px solid #194A9C;}
+  .order_result {font-size: 24px;}
+  .game_add_btn {    padding: 0px 15px;}
+  .game_add_btn button {    background-color: #fff;
+    border: 1px solid;
+    border-radius: 10px;
+    width: 100%;
+    margin-top: 10px;
+    padding: 6px;
+    font-weight: 800;}
+
+  .login .sub_inner{}
+  .page_login_form {width:100% !important;}
+
+
+  /* 포인트충전  */
+  .point_form {display: block;}
+  .mgr20 {margin-right: 0px !important; margin-bottom: 40px;}
+  .poitn_rb_amount {width:32%; font-size: 18px;}
+  .poitn_rb_amount_high {width:100%;}
+
+  .mobile_category {border-top: 1px solid #EEE; margin: 20px 0px;  }
+  .mobile_category li{padding: 10px 12px;}
+  .mobile_category li a{font-size: 20px;}
+  .login_btn {margin: 10px 0px;}
+  .header-sub-menu-buy {margin: 12px 12px; display: inline-block;}
+  .mobile_sub_category {background-color: #F4F4F4;}
+  .mobile_sub_category li{font-size: 16px; padding-left: 24px;}
+  .point_deposit_info {}
+
+  .point_game_cnt {font-size: 12px;}
+  .point_guide {    font-size: 16px;}
+
+  /* 회원가입 */
+  .join_form{width: 100%;padding: 10px;}
+  .essential{text-align: center;}
+  .reg_form .prv_btn{width:100%;}
+  .reg_form .reg_btn{width: 100%;}
+  .idpass_info{margin: 30px 48px;}
+
+  /* 당첨금전환출금 */
+  .withdraw a{}
+
+  /* 마이페이지 */
+  .mypage_status {display: flex;
+    padding: 20px 2px;
+    flex-wrap: wrap;
+    justify-content: space-around;}
+  .mypage_status .gubun {margin:0px;}
+  .mypage .my_grade_box{margin:10px 0px 40px;}
+
+  .mypage_status .amount{font-size: 18px;}
+  .mypage {border-radius: 0px;}
+  .mypage_main {padding: 0px;}
+  .history_list{    padding: 10px;}
+  .mypage h1{padding-top: 40px;}
+  .mypage_icon { justify-content: space-evenly;}
+  .mypage_icon .icon_gubun{margin:0px;}
+  .status.po_rtive span {font-size: 12px; color: #CC1F3B; font-weight: 500;}
+  .my_cp_list .my_cp_inner {padding:20px;}
+  .coupon_list{width:100%;margin-bottom: 10px;}
+  .my_cp_inner span{font-weight: bold;}
+  .coupon_download_ok {font-weight: bold;}
+  .mypage_point_list {display: unset;}
+
+  /* 추첨결과  */
+  .mypage_withdraw_sub_list{ display:unset; }
+  .mypage_withdraw_sub_list .draw_ball_list{ justify-content: center; }
+
+  /* 당첨자발표  */
+  .winner .winner_list li { border-bottom: 1px solid #EEE;}
+  .scrollable_menu_wrap {margin-bottom: 20px;}
+
+  .buy_list {display: unset;text-align: center;}
+  .draw_ball_list {margin: 10px 0px;}
+
+  .policy_table1{overflow-x: scroll;}
+  .policy_table2{width: 1000px;}
+
+  .coupon_box{padding: 10px !important;    margin-top: 10px;}
+  .coupon_list .cp_name {padding: 5px 0px;}
+  .popup_coupon_box{padding: 10px !important;}
+
+  .winner_list_li {width: 50%;}
+  .history_list .withd_list{font-size: 14px;}
+  .join_form2 {width:100% !important;}
+
+
+  .birthday_box select:nth-child(1){width: 30%}
+  .birthday_box select:nth-child(2){width: 20%}
+  .birthday_box select:nth-child(3){width: 20%}
+
+}
+
+@media screen and (max-width: 398px) {
+  .winner_list {display: unset !important;}
+    .winner_list_li {width: 100%;}
+  #bpopup1 {    margin: 0px 10px;}
+}
+
+
+.guide_box {position: absolute; right: 100px;}
+.coupon_guide { background-color: #0054a1; color: #fff; padding: 10px; border-radius: 10px; display: inline-block;}
+@media(max-width: 768px){
+  .guide_box {    bottom: 22px;  right: 0px;}
+}

@@ -1,0 +1,84 @@
+<?php
+  header("Cache-Control: no-cache");
+  require_once $_SERVER['DOCUMENT_ROOT']."/_common/config.php";
+
+  F_admin_chk($S_login);
+?>
+
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+
+    <!-- META DATA -->
+    <meta charset="UTF-8">
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=0'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="SuperLottoKorea - Admin">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+
+    <!-- FAVICON -->
+    <link rel="icon" href="../../assets/images/suloko/favicon-blue.png" sizes="32x32" />
+    <link rel="icon" href="../../assets/images/suloko/favicon-blue.png" sizes="192x192" />
+    <link rel="apple-touch-icon-precomposed" href="../../assets/images/suloko/favicon-blue.png" />
+    <meta name="msapplication-TileImage" content="../../assets/images/suloko/favicon-blue.png" />
+
+    <!-- cache control-->
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+
+    <!-- TITLE -->
+    <title>슈로코 관리자</title>
+    <script>
+    (function() {
+      // window.name 우선, 없으면 URL _win 을 채택(새로 만들면 로그인 세션이 끊김)
+      var params = new URLSearchParams(location.search);
+      var urlWin = params.get('_win') || '';
+      urlWin = urlWin.replace(/[^a-zA-Z0-9]/g, '').slice(0, 32);
+      var namedWin = (window.name && window.name.indexOf('ADMIN_WIN_') === 0)
+        ? window.name.replace(/^ADMIN_WIN_/, '')
+        : '';
+      var winId = namedWin || urlWin || Math.random().toString(36).slice(2, 12);
+      window.name = 'ADMIN_WIN_' + winId;
+      if (params.get('_win') !== winId) {
+        params.set('_win', winId);
+        location.replace(location.pathname + '?' + params.toString() + location.hash);
+      }
+    })();
+    </script>
+
+    <!-- BOOTSTRAP CSS -->
+    <link href="../../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- STYLE CSS -->
+    <link href="../../assets/css/style.css?ver=<?=$version?>" rel="stylesheet"/>
+    <link href="../../assets/css/dark-style.css?ver=<?=$version?>" rel="stylesheet"/>
+    <link href="../../assets/css/skin-modes.css?ver=<?=$version?>" rel="stylesheet" />
+
+    <!-- SIDE-MENU CSS -->
+    <link href="../../assets/css/sidemenu.css?ver=<?=$version?>" rel="stylesheet" id="sidemenu-theme">
+
+    <!--C3 CHARTS CSS -->
+    <link href="../../assets/plugins/charts-c3/c3-chart.css?ver=<?=$version?>" rel="stylesheet"/>
+
+    <!-- P-scroll bar css-->
+    <link href="../../assets/plugins/p-scroll/perfect-scrollbar.css?ver=<?=$version?>" rel="stylesheet" />
+
+    <!--- FONT-ICONS CSS -->
+    <link href="../../assets/css/icons.css?ver=<?=$version?>" rel="stylesheet"/>
+
+    <!-- SIDEBAR CSS -->
+    <link href="../../assets/plugins/sidebar/sidebar.css?ver=<?=$version?>" rel="stylesheet">
+
+    <!-- SELECT2 CSS -->
+    <link href="../../assets/plugins/select2/select2.min.css?ver=<?=$version?>" rel="stylesheet"/>
+
+    <!-- INTERNAL Data table css -->
+    <link href="../../assets/plugins/datatable/css/dataTables.bootstrap5.css?ver=<?=$version?>" rel="stylesheet" />
+    <link href="../../assets/plugins/datatable/responsive.bootstrap5.css?ver=<?=$version?>" rel="stylesheet" />
+
+    <!-- COLOR SKIN CSS -->
+    <link id="theme" rel="stylesheet" type="text/css" media="all" href="../../assets/colors/color1.css?ver=<?=$version?>" />
+
+  </head>

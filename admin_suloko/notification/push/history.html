@@ -1,0 +1,210 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_NOTIFICATION_LOG.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&type=$type&sdate=$sdate&edate=$edate&find_text=$find_text&find_object=$find_object";
+
+  $add_query = "";
+
+  if ($type != "") {
+    $add_query .= " AND TYPE = '{$type}'";
+  }
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND CREATED_AT BETWEEN '{$sDate}' AND '{$eDate}'";
+  }
+
+  if ($find_object == "all" && $find_text != "") {
+    $add_query .= " AND (replace(USER_ID, ' ', '') LIKE '%{$find_text}%' OR replace(TITLE, ' ', '') LIKE '%{$find_text}%')";
+    $find_object = "";
+  }
+
+  $list = F_NOTIFICATION_LOG_LIST(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['LOG_NO'] = array();
+  }
+
+  $type_op = array(
+    ""  => "--구분(전체)--",
+    "S" => "개별",
+    "M" => "전체"
+  );
+
+  $find_op = array(
+    "all"     => "전체",
+    "USER_ID" => "회원ID",
+    "TITLE"   => "제목"
+  );
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">푸시발송내역</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">알림관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">푸시발송내역</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select id="select-beast" name="type" class="form-control form-select select2 auto-submit">
+                    <?=option_make($type_op, $type)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select id="schdate" name="schdate" class="form-control form-select select2">
+                    <option value="">--기간--</option>
+                    <?=option_make($search_date_op, $schdate)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                    <span style="margin: 8px 5px 0 5px;">~</span>
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                  </div>
+                </div>
+                <div class="form-group fl-left">
+                  <select name="find_object" id="select-beast" class="form-control form-select select2">
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control auto-submit" name="find_text" value="<?=$find_text?>" />
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>구분</th>
+                    <th>구독ID</th>
+                    <th>회원ID</th>
+                    <th>제목</th>
+                    <th>결과</th>
+                    <th>발송일시</th>
+                    <th>오류코드</th>
+                    <th>오류메시지</th>
+                    <th>상세보기</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['IDX']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+
+                      $user_id = '-';
+                      $topic = $list['TOPIC'][$i];
+                      $error_code = '-';
+                      $error_msg = '-';
+                      $type = "전체";
+                      $is_success = '성공';
+
+                      if ($list['TYPE'][$i] == "S") {
+                        $type = "개별";
+                        $user_id = $list['USER_ID'][$i].'<i class="modal-effect fa fa-search checkUser"
+                            title="상세정보"
+                            style="cursor: pointer; margin-left: 3px;"
+                            data-bs-effect="effect-scale"
+                            data-bs-target="#memberModal"
+                            data-bs-toggle="modal"
+                            data-no="'.$list['USER_ID'][$i].'">
+                          </i>';
+                        $topic = "-";
+                      }
+
+                      if ($list['ERROR_CODE'][$i]) {
+                        $error_code = $list['ERROR_CODE'][$i];
+                        $error_msg = str_utf_cut($list['ERROR_MESSAGE'][$i], 30);
+                        $is_success = '실패';
+                      }
+                  ?>
+                  <tr>
+                    <td><?=$no?></td>
+                    <td><?=$type?></td>
+                    <td><?=$topic?></td>
+                    <td><?=$user_id?></td>
+                    <td><?=$list['TITLE'][$i]?></td>
+                    <td><?=$is_success?></td>
+                    <td><?=$list['CREATED_AT'][$i]?></td>
+                    <td><?=$error_code?></td>
+                    <td><i data-bs-toggle="tooltip" title="<?=$list['ERROR_MESSAGE'][$i]?>"><?=$error_msg?></i></td>
+                    <td><button class="btn btn-radius btn-secondary read-con" data-no="<?=$i?>">상세보기</a></td>
+                  </tr>
+                  <tr class="noEls noEls<?=$i?>">
+                    <td colspan="11"><?=nl2br($list['CONTENT'][$i])?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_push.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_member.html"; ?>
+
+<script>
+  $(function() {
+    $('.noEls').hide();
+  });
+
+  $('.read-con').click(function() {
+    let no = $(this).data('no');
+    let ns = $('.noEls' + no).index('.noEls');
+
+    $('.noEls').not(':eq(' + ns + ')').hide();
+    $('.noEls' + no).toggle('slow');
+  });
+</script>

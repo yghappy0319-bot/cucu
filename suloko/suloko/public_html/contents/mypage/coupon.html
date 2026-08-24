@@ -1,0 +1,282 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_COUPON_LOG.php";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $member = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}'");
+
+  if ($sdate != '' && $edate != '') {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND C.REG_DATE BETWEEN '{$sDate}' AND '{$eDate}'";
+  }
+
+  $sql = "
+    SELECT
+      C.*,
+      C2.NUM,
+      C2.TITLE
+    FROM
+      COUPON_LOG AS C
+        LEFT JOIN
+      COUPON AS C2 ON C.COUPON_NO = C2.COUPON_NO
+    WHERE
+      C.MEMBER_NO='{$member['MEMBER_NO']}'
+    {$add_query}
+  ";
+
+  $list = $db->get_list($sql);
+
+  if (!isset($list['COUPON_NO'])) {
+    $list['COUPON_NO'] = array();
+  }
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html";?>
+  <main id="main">
+    <div class="wrap_mypage clear wrap_com">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/nav-mypage.html";?>
+      <div class="right">
+        <section class="sec_coupon">
+          <div class="wrap_title">
+            <h3 class="heading">쿠폰등록</h3>
+          </div>
+          <div class="bx_gray ls50">
+            <p class="fwB">슈로코 VIP쿠폰 등록</p>
+            <h5 class="mb30 text-center fw400 pt10">보유하신 쿠폰의 종류에 따라 선택 하십시오</h5>
+            <div class="wrap_tab">
+              <ul class="tab_type2 flex align_center ls75">
+                <li class="on"><a style="cursor: pointer;" id="coupon16btn">쿠폰번호 16자리</a></li>
+                <li><a style="cursor: pointer;" id="coupon6btn">쿠폰번호 6자리</a></li>
+              </ul>
+            </div>
+            <div>
+              <div class="wrap_input" id="coupon16"><!-- 쿠폰 16자리 -->
+                <input type="text" name="coupon_num" maxlength="4" id="coupon_num1" style="width: 5.9rem;">
+                <input type="text" name="coupon_num" maxlength="4" id="coupon_num2" style="width: 5.9rem;">
+                <input type="text" name="coupon_num" maxlength="4" id="coupon_num3" style="width: 5.9rem;">
+                <input type="text" name="coupon_num" maxlength="4" id="coupon_num4" style="width: 5.9rem;">
+                <button type="button" class="bg_gray coupon_btn">쿠폰 등록</button>
+              </div>
+              <div class="wrap_input" id="coupon6"><!-- 쿠폰 6자리 -->
+                <input type="text" name="coupon_num" maxlength="6" id="coupon_num6" placeholder="쿠폰 일련번호 6자리 (-생략)" style="width: 23.5rem;">
+                <button type="button" class="bg_gray coupon_btn6">쿠폰 등록</button>
+              </div>
+              <ul class="list_bul">
+                <li>본 쿠폰은 한 아이디(ID)당 1개의 쿠폰만 등록할 수 있습니다.</li>
+                <li>쿠폰은 중복 사용할 수 없습니다.</li>
+                <li>본 쿠폰은 슈로코 내에서만 사용할 수 있습니다.</li>
+                <!--<li>본 쿠폰은 번호 1개당 1회씩만 사용이 가능하며, 쿠폰번호가 다를경우 30일에 1회씩 재등록 가능합니다.</li>-->
+                <li>쿠폰 등록 및 이용 관련 문의는 1:1 문의 또는 고객센터로 문의해 주시기 바랍니다.</li>
+                <li>쿠폰으로 지급받은 보너스 포인트는 캐시 전환 또는 현금으로 출금 할 수 없습니다.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+        <section class="sec_point mb100">
+          <div class="wrap_title">
+            <h3 class="heading">쿠폰 등록 내역</h3>
+          </div>
+          <div class="bx_search bx_gray">
+            <div class="clear">
+              <div class="left flex align_center">
+                <p>조회기간</p>
+                <ul class="list_sel">
+                  <li><button type="button" class="schdate" data-tp="7D">1주일</button></li>
+                  <li><button type="button" class="schdate" data-tp="1M">1개월</button></li>
+                  <li><button type="button" class="schdate" data-tp="3M">3개월</button></li>
+                  <li><button type="button" class="schdate" data-tp="6M">6개월</button></li>
+                </ul>
+              </div>
+              <div class="right">
+                <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>" autocomplete="off">
+                  <span>
+                    <input type="text" name="sdate" id="sdate" value="<?=isset($sdate) ? $sdate : ""?>"> ~
+                    <input type="text" name="edate" id="edate" value="<?=isset($edate) ? $edate : ""?>">
+                  </span>
+                  <button type="submit" class="btn_gray">조회</button>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="wrap_tb">
+            <table class="tb_type2">
+              <caption>
+                <div class="hide">보너스 포인트</div>
+              </caption>
+              <colgroup>
+                <col width="5.38%">
+                <col width="17.4%">
+                <col width="17.4%">
+                <col width="24.4%">
+                <col width="">
+              </colgroup>
+              <thead class="bg_navy">
+                <tr>
+                  <th>번호</th>
+                  <th>쿠폰명</th>
+                  <th>쿠폰번호</th>
+                  <th>쿠폰등록일</th>
+                  <th>적립내역</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php
+                  for ($i = 0; $i < count($list['COUPON_NO']); $i++) {
+                    $no = count($list['COUPON_NO']) - $i;
+                    $msg = "미사용";
+                    $NUM = substr($list["NUM"][$i], 0, 4)." ".substr($list["NUM"][$i], 4, 4)." ".substr($list["NUM"][$i], 8, 4)." ".substr($list["NUM"][$i], 12, 4);
+                  ?>
+                <tr>
+                  <td><?=$no?></td>
+                  <td><?=$list["TITLE"][$i]?></td>
+                  <td><?=$NUM?></td>
+                  <td><?=$list["REG_DATE"][$i]?></td>
+                  <td><?=$list["LOG_MEMO"][$i]?></td>
+                </tr>
+                <?php } ?>
+                <?php if (count($list['COUPON_NO']) <= 0) { ?>
+                <tr>
+                  <td class="align_center" colspan="5">쿠폰등록내역이 없습니다.</td>
+                </tr>
+                <?php } ?>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html";?>
+</body>
+
+<script>
+  $(document).ready(function() {
+    $('#coupon16').show();
+    $('#coupon6').hide();
+
+    $(document).on('click', '.coupon_btn', function() {
+      let num1 = $('#coupon_num1').val();
+      let num2 = $('#coupon_num2').val();
+      let num3 = $('#coupon_num3').val();
+      let num4 = $('#coupon_num4').val();
+      let num = num1 + num2 + num3 + num4;
+
+      if (num1 == '' || num2 == '' || num3 == '' || num4 == '') {
+        alert('쿠폰 번호를 입력해 주세요.');
+        return false;
+      }
+
+      $.post('/other.php', {
+        mode: 'search_coupon',
+        coupon_num: num
+      }, function(e) {
+        alert(e.msg);
+
+        if (e.error) {
+          window.location.reload();
+        }
+      }, 'json');
+    });
+
+    $(document).on('click', '.schdate', function() {
+      let date = $(this).data('tp');
+
+      if (date == '') {
+        $('#sdate').val('');
+        $('#edate').val('');
+      } else {
+        $.post('/other.php', {
+          mode: 'search_date',
+          schdate: date
+        }, function(e) {
+          if (e.errNo > 0) {
+          } else {
+            $('#sdate').val(e.sdate);
+            $('#edate').val(e.edate);
+          }
+        }, 'json');
+      }
+    });
+
+    $(document).on('input propertychange', '#coupon_num1', function() {
+      $(this).val($(this).val().toUpperCase());
+      if ($(this).val().length == 4) {
+        $('#coupon_num2').focus();
+      }
+    });
+
+    $(document).on('input propertychange', '#coupon_num2', function() {
+      $(this).val($(this).val().toUpperCase());
+      if ($(this).val().length == 4) {
+        $('#coupon_num3').focus();
+      }
+    });
+
+    $(document).on('input propertychange', '#coupon_num3', function() {
+      $(this).val($(this).val().toUpperCase());
+      if ($(this).val().length == 4) {
+        $('#coupon_num4').focus();
+      }
+    });
+
+    $(document).on('input propertychange', '#coupon_num4', function() {
+      $(this).val($(this).val().toUpperCase());
+    });
+
+    $(document).on('input propertychange', '#coupon_num6', function() {
+      $(this).val($(this).val().toUpperCase());
+    });
+
+    $(document).on('click', '#coupon16btn', function() {
+      $(this).parent().parent().find('.on').removeClass('on');
+      $(this).parent().addClass('on');
+      $('#coupon16').show();
+      $('#coupon6').hide();
+      $('#coupon_num1').val('');
+      $('#coupon_num2').val('');
+      $('#coupon_num3').val('');
+      $('#coupon_num4').val('');
+      $('#coupon_num6').val('');
+    });
+
+    $(document).on('click', '#coupon6btn', function() {
+      $(this).parent().parent().find('.on').removeClass('on');
+      $(this).parent().addClass('on');
+      $('#coupon16').hide();
+      $('#coupon6').show();
+      $('#coupon_num1').val('');
+      $('#coupon_num2').val('');
+      $('#coupon_num3').val('');
+      $('#coupon_num4').val('');
+      $('#coupon_num6').val('');
+    });
+
+    $(document).on('click', '.coupon_btn6', function() {
+      let num = $('#coupon_num6').val();
+
+      if (num == '') {
+        alert('쿠폰 번호를 입력해 주세요.');
+        return false;
+      }
+
+      $.post('/other.php', {
+        mode: 'search_coupon',
+        coupon_num: num
+      }, function(e) {
+        alert(e.msg);
+        if (e.error) {
+          window.location.reload();
+        }
+      }, 'json');
+    });
+  });
+</script>
+
+</html>

@@ -1,0 +1,233 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  $menu_on['cash'] = true;
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}' LIMIT 1");
+
+  // 결제 이벤트 대상 확인
+  $cash_op = select_event_cash_op($M_login['user_id']);
+
+  $cash = $cash_op[$_GET["cash_no"]];
+
+  $RES["price"]       = $cash["price"];
+  $RES["price_text"]  = number_format($cash["price"]);
+  $RES["ipoint"]      = $cash["ipoint"];
+  $RES["ipoint_text"] = $cash["ipoint_text"];
+  $RES["cash"]        = $cash["cash"];
+  $RES["cash_text"]   = number_format($cash["cash"]);
+?>
+
+<style>
+  .bx_gray.top {
+    padding: 1.15rem 0 1.15rem 1.25rem;
+    font-size: 1rem;
+    color: #545454;
+    line-height: 1.4;
+    font-weight: bold;
+  }
+  .bx_gray {
+      background: #eee;
+  }
+  .bx_gray ul {
+    list-style: none;
+  }
+  .bx_gray .list_bul > li {
+    padding: 0;
+  }
+  .bx_gray .list_bul > li {
+    /*padding-left: 0.6rem;*/
+    position: relative;
+    line-height: 1.2rem;
+    font-size: 0.8rem;
+    letter-spacing: -0.5px;
+  }
+  .bx_gray .list_bul > li:before {
+    background: none;
+    content: "*";
+    width: inherit;
+    height: inherit;
+  }
+  .bx_gray .list_bul > li:before {
+    position: absolute;
+    left: -12px;
+    top: 0.2em;
+    display: inline-block;
+    vertical-align: middle;
+    border-radius: 100%;
+  }
+  .sec_charge .pay {
+    margin-top: 20px;
+    text-align: center;
+  }
+  .sec_charge .pay .bx_border {
+    border: 1px solid #5c5c5c;
+    border-radius: 0.25rem;
+  }
+  .sec_charge .btn_pay {
+    width: 100%;
+    height: 2.5rem;
+    line-height: 2.5rem;
+    font-size: 1rem;
+  }
+  .f_GmarketSans {
+    font-family: 'GmarketSans', sans-serif !important;
+  }
+  .btn_red {
+      background: #f00 !important;
+      color: #fff;
+  }
+  .border_blue {
+    border: 2px solid blue !important;
+  }
+</style>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage bg">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub bb border_dcdcdc" style="margin-bottom: 0;">
+            <h2 class="title">캐시충전</h2>
+            <a href="/contents/mypage/cash-charge.html" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <section class="sec_charge">
+            <div class="section wrap_com bg_white">
+              <h3 class="h_type4 pt30">충전캐시 및 입금액 확인</h3>
+              <div class="bx_gray top">
+                <ul class="list_bul">
+                  <li>
+                    <span>충전캐시 :</span>
+                    <strong id="cash_point"><?=number_format($cash["cash"])?></strong>
+                    <span>캐시</span><?php if ($cash['point'] > 0) {?> + <?=number_format($cash['point'])?>보너스포인트<?php } ?>
+                  </li>
+                  <li>
+                    <span>입금금액 :</span>
+                    <strong id="cash_cash" class="color_red3"><?=number_format($cash["price"])?></strong>
+                    <span>원 (VAT 포함)</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="pt40 spay_bank">
+                <p class="fs27 fw500 mb20">입금자명</p>
+                <input class="spay fs30 bg_light_gray2 mb10" style="width: 93%;" type="text" id="bank_name" name="bank_name" value="<?=$M_login['name']?>" readonly />
+                <p class="fs23 fw500">*입금자명은 마이페이지 > 회원정보수정 메뉴에서 변경 가능합니다.</p>
+              </div>
+              <div class="pay">
+                <button type="button" class="btn_pay bx_border btn_red f_GmarketSans btm_bank_buy_cash"><strong>다 음</strong></button>
+                <div class="btn_pay_loading txt_center mt50 dim">잠시만 기다려주세요.</div>
+              </div>
+            </div>
+            <div class="section wrap_com pt10">
+              <ul class="txt_type1 fs23 lh16">
+                <li class="flex">
+                  <span><img src="/common/images/check_red.png" width="13"></span>
+                  <span style="padding:0 0 0.2rem 0.2rem">이체 시 상단의 입금금액을 반드시 확인하시기 바랍니다.</span>
+                </li>
+                <li class="flex">
+                  <span><img src="/common/images/check_red.png" width="13"></span>
+                  <span style="padding:0 0 0.2rem 0.2rem">이체 후 캐시 충전은 영업시간 기준 최대 1시간이 소요될 수 있습니다.<br>(평일 오전 10시 ~ 저녁 7시)</spen>
+                </li>
+                <li class="flex">
+                  <span><img src="/common/images/check_red.png" width="13"></span>
+                  <span style="padding:0 0 0.2rem 0.2rem">영업시간 이후의 무통장 입금은 다음날 오전 11시까지 캐시 충전 완료됩니다.</span>
+                </li>
+                <li class="flex">
+                  <span><img src="/common/images/check_red.png" width="13"></span>
+                  <span style="padding:0 0 0.2rem 0.2rem">주말 및 공휴일 무통장 입금은 캐시 충전까지 최대 16시간이 소요될 수 있습니다.</span>
+                </li>
+                <li class="flex">
+                  <span><img src="/common/images/check_red.png" width="13"></span>
+                  <span style="padding:0 0 0.2rem 0.2rem">입금 오류 또는 복권 구매전 환불은 고객센터의 1:1문의를 이용해 주십시오.</span>
+                </li>
+              </ul>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+
+  <form name="form" id="w_frm" method="GET" action="./cash_pay_bank_step2.html">
+    <input type="hidden" class="it1" value="<?=$cash["itemname"]?>" name="ITEMNAME" id="ITEMNAME" /><!--상품명-->
+    <input type="hidden" class="it1" value="<?=$_GET["cash_no"]?>" name="cash_no" id="cash_no" />
+  </form>
+</body>
+
+<script>
+  function confirmEvent() {
+    window.name = "myOpener";
+    var win;
+    var iLeft = (window.screen.width / 2) - (Number(815) / 2);
+    var iTop = (window.screen.height / 2) - (Number(600) / 2);
+    var features = "menubar=no,toolbar=no,status=no,resizable=yes,scrollbars=no,location=no";
+    features += ",left=" + iLeft + ",top=" + iTop + ",width=" + 815 + ",height=" + 600;
+    win = window.open("", "pcPop", features);
+    win.focus();
+
+    $(".btn_pay").hide();
+    $(".btn_pay_loading").show();
+    $("#w_frm").submit();
+
+    var winLoop = setInterval(function() {
+      if (win.closed) {
+        clearInterval(winLoop);
+        location.href = "./cash-charge.html";
+      }
+    }, 1000);
+  }
+
+  $(document).ready(function() {
+    $(document).on("click", ".btm_bank_buy_cash", function() {
+      var bank_name = $("#bank_name").val();
+      if (bank_name == '') {
+        alert("입금자명을 입력해 주세요.");
+        $("#bank_name").focus();
+        return false;
+      }
+
+      $.post("/other.php",{
+        mode: "pay_bank_name_chk",
+        name: bank_name
+      }, function(e) {
+        var res = JSON.parse(e);
+        if (res.error == false) {
+          alert(res.msg);
+          return false;
+        } else {
+          // $(this).hide();
+          // $(".btn_pay_loading").show();
+          $("#w_frm").submit();
+        }
+      });
+    });
+  });
+
+  window.onload=function() {
+    document.addEventListener('touchstart', function(event) {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    })
+    var lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+      var now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 100) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false)
+  }
+</script>
+<script>
+  // Meta Pixel Event Code
+  fbq('track', 'InitiateCheckout');
+</script>
+</html>

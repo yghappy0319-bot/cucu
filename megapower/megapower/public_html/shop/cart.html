@@ -1,0 +1,496 @@
+<?php
+$title = "메가파워몰 ";
+include "../header.html";
+
+$item = db_select("SELECT * FROM lr_product WHERE idx = '{$product}' ");
+$이미지주소 = "https://shop.megapower.world";
+?>
+
+<style>
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .header h1 {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .section {
+        background: white;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    /* 주문 상품 */
+    .order-item {
+        display: flex;
+        align-items: center;
+        padding: 16px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .order-item:last-child {
+        border-bottom: none;
+    }
+
+    .item-image {
+        width: 60px;
+        height: 60px;
+        background-color: #f5f5f5;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-right: 16px;
+        flex-shrink: 0;
+    }
+
+    .item-details {
+        flex: 1;
+    }
+
+    .item-name {
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+
+    .item-price {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        margin-left: 16px;
+    }
+
+    .quantity-btn {
+        width: 32px;
+        height: 32px;
+        border: 1px solid #ddd;
+        background: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: #666;
+    }
+
+    .quantity-btn:hover {
+        background-color: #f5f5f5;
+    }
+
+    .quantity-input {
+        width: 50px;
+        height: 32px;
+        text-align: center;
+        border: 1px solid #ddd;
+        border-left: none;
+        border-right: none;
+        outline: none;
+    }
+
+    .item-total {
+        margin-left: 16px;
+        font-weight: 600;
+        min-width: 80px;
+        text-align: right;
+    }
+
+    /* 총 금액 */
+    .total-section {
+        border-top: 2px solid #333;
+        padding-top: 16px;
+        margin-top: 16px;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .total-final {
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+
+    /* 폼 */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 0px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.2s ease;
+        text-indent: 10px;
+    }
+
+    .form-input:focus {
+        border-color: #333;
+    }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    /* 주문 버튼 */
+    .order-button {
+        width: 100%;
+        background-color: #333;
+        color: white;
+        border: none;
+        padding: 16px;
+        border-radius: 4px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .order-button:hover {
+        background-color: #555;
+    }
+
+    .order-button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    /* 모바일 반응형 */
+    @media (max-width: 768px) {
+        .container {
+            padding: 20px 16px;
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+        }
+
+        .section {
+            padding: 20px;
+        }
+
+        .order-item {
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .item-image {
+            margin-right: 0;
+        }
+
+        .item-details {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .quantity-control {
+            margin-left: 0;
+        }
+
+        .item-total {
+            margin-left: 0;
+            text-align: left;
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .order-item {
+            padding: 12px 0;
+        }
+
+        .quantity-control {
+            transform: scale(0.9);
+        }
+
+        .total-row {
+            font-size: 0.9rem;
+        }
+
+        .total-final {
+            font-size: 1.1rem;
+        }
+    }
+</style>
+
+<!-- 다음 주소 API -->
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
+<div class="container">
+    <div class="header">
+        <h1>주문하기</h1>
+    </div>
+
+    <!-- 주문 상품 -->
+    <div class="section">
+        <div class="section-title">주문 상품</div>
+
+        <div class="order-item">
+            <div class="item-image">
+                <img src="<?=$이미지주소?>/data/shop/<?=$item['product_img']?>" style="width: 60px;" >
+            </div>
+            <div class="item-details">
+                <div class="item-name"><?=$item['product_name']?></div>
+                <div class="item-price">
+                    <?= number_format($item['product_price'] * $quantity) ?>원
+                </div>
+            </div>
+
+<!--            <div class="quantity-control">-->
+<!--                <button class="quantity-btn" onclick="changeQuantity(0, -1)">-</button>-->
+<!--                <input type="number" class="quantity-input" value="1" min="1" onchange="updateQuantity(0, this.value)">-->
+<!--                <button class="quantity-btn" onclick="changeQuantity(0, 1)">+</button>-->
+<!--            </div>-->
+
+            <div class="item-total" id="total-0"><?= number_format($item['product_price'] * $quantity) ?>원</div>
+        </div>
+
+        <div class="total-section">
+            <div class="total-row">
+                <span>상품금액</span>
+                <span id="subtotal"><?= number_format($item['product_price'] * $quantity) ?>원</span>
+            </div>
+            <div class="total-row">
+                <span>배송비</span>
+                <span>3,000원</span>
+            </div>
+            <div class="total-row total-final">
+                <span>총 결제금액</span>
+                <?
+                    $총결제금액 = ($item['product_price'] * $quantity) + 3000;
+                ?>
+                <span id="final-total"><?= number_format($총결제금액) ?>원</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 주문자 정보 -->
+    <div class="section">
+        <form id="orderFrm" method="POST">
+            <input type="hidden" name="pidx" value="<?=$product?>">
+            <input type="hidden" name="product_name" value="<?=$item['product_name']?>">
+            <input type="hidden" name="price" value="<?=$item['product_price']?>">
+            <input type="hidden" name="quantity" value="<?=$quantity?>">
+            <input type="hidden" name="delivery" value="3000">
+            <input type="hidden" name="total" id="total" value="<?=$총결제금액?>">
+
+
+            <div class="section-title">주문자 정보</div>
+
+            <div class="form-group">
+                <label class="form-label">이름</label>
+                <input type="text" name="order_name" class="form-input" placeholder="이름을 입력해주세요" value="<?=$M_login['name']?>">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">연락처</label>
+                <input type="tel" name="order_phone" class="form-input" placeholder="010-0000-0000" value="<?=$M_login['hp']?>">
+            </div>
+
+            <div class="form-group" style="position: relative;">
+                <label class="form-label">우편번호</label>
+                <input type="text" name="order_zipcode" class="form-input" id="order_zipcode" placeholder="우편번호" readonly onclick="execDaumPostcode()" required>
+
+                <!-- 주소 검색 레이어 -->
+                <div id="daum_postcode_layer" style="display: none; position: absolute; top: 100%; left: 0; z-index: 999; width: 400px; height: 300px; border: 1px solid #ccc; background: #fff;"></div>
+            </div>
+
+
+            <div class="form-group">
+                <label class="form-label">주소</label>
+                <input type="text" name="order_address1" id="order_address1" class="form-input" placeholder="배송받을 주소를 입력해주세요" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">상세주소</label>
+                <input type="text" name="order_address2" id="order_address2" class="form-input" placeholder="배송받을 상세주소를 입력해주세요" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">배송메모</label>
+                <textarea name="order_memo" class="form-input form-textarea" placeholder="배송 시 요청사항이 있으시면 입력해주세요 (선택사항)"></textarea>
+            </div>
+        </form>
+    </div>
+
+    <button class="order-button" onclick="submitOrder()">주문하기</button>
+</div>
+
+
+<script>
+    // 상품 데이터
+    var product_name = "<?=$item['product_name']?>";
+    var product_price = "<?=$item['product_price'] * $quantity?>";
+    const products = [
+        { name: product_name, price: product_price, quantity: 1 }
+    ];
+
+    // 수량 변경
+    function changeQuantity(index, change) {
+        const quantityInput = document.querySelectorAll('.quantity-input')[index];
+        let newQuantity = parseInt(quantityInput.value) + change;
+
+        if (newQuantity < 1) newQuantity = 1;
+
+        quantityInput.value = newQuantity;
+        updateQuantity(index, newQuantity);
+    }
+
+    // 수량 업데이트
+    function updateQuantity(index, quantity) {
+        quantity = parseInt(quantity);
+        if (quantity < 1) quantity = 1;
+
+        products[index].quantity = quantity;
+
+        // 개별 상품 총액 업데이트
+        const itemTotal = products[index].price * quantity;
+        document.getElementById(`total-${index}`).textContent = itemTotal.toLocaleString() + '원';
+
+        // 전체 총액 업데이트
+        updateTotals();
+    }
+
+    // 총액 계산
+    function updateTotals() {
+        const subtotal = products.reduce((sum, product) => sum + (product.price * product.quantity), 0);
+        const shipping = 3000;
+        const finalTotal = subtotal + shipping;
+
+        document.getElementById('subtotal').textContent = subtotal.toLocaleString() + '원';
+        document.getElementById('final-total').textContent = finalTotal.toLocaleString() + '원';
+    }
+
+    // 주문하기
+    function submitOrder() {
+        const name = document.querySelector('input[name="order_name"]').value;
+        const phone = document.querySelector('input[name="order_phone"]').value;
+        const zipcode = document.querySelector('input[name="order_zipcode"]').value;
+        const address1 = document.querySelector('input[name="order_address1"]').value;
+        const address2 = document.querySelector('input[name="order_address2"]').value;
+
+        if (!name || !phone || !zipcode || !address1 || !address2) {
+            alert('필수 정보를 모두 입력해주세요.');
+            return;
+        }
+
+        var total = $("#total").val();
+        var totalamount = total.toLocaleString();
+        if(confirm(totalamount+"원이 차감됩니다. 구매하시겠습니까?")){
+
+            const button = document.querySelector('.order-button');
+            button.textContent = '주문 처리중...';
+            button.disabled = true;
+
+            var params = jQuery("#orderFrm").serialize();
+            $.ajax({
+                type : "POST",
+                url: "order_action.php",
+                async: false,
+                data: params,
+                dataType: "json",
+                success: function(result) {
+                    console.log(result);
+                    if(result.status==1){
+                        alert(result.msg);
+                        location.href="/shop/order-list.html";
+                    }else{
+                        alert(result.msg);
+                        button.textContent = '주문하기';
+                        button.disabled = false;
+                    }
+
+                },
+                error:function(e) {
+                    alert(e.responseText);
+                }
+            });
+        }
+
+    }
+
+    // 초기 총액 계산
+    updateTotals();
+</script>
+<script>
+    function execDaumPostcode() {
+        var element_layer = document.getElementById('daum_postcode_layer');
+
+        new daum.Postcode({
+            oncomplete: function(data) {
+                // 주소 조립
+                var fullAddress = data.roadAddress; // 기본 주소
+                var extraAddress = '';
+
+                // 참고항목 추가
+                if(data.userSelectedType === 'R'){
+                    if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+                        extraAddress += data.bname;
+                    }
+                    if(data.buildingName !== ''){
+                        extraAddress += (extraAddress !== '' ? ', ' + data.buildingName : data.buildingName);
+                    }
+                    if(extraAddress !== ''){
+                        fullAddress += ' (' + extraAddress + ')';
+                    }
+                }
+
+                // 값 채우기
+                document.getElementById('order_zipcode').value = data.zonecode;
+                document.getElementById('order_address1').value = fullAddress;
+
+                // 상세주소로 포커스 이동
+                document.getElementById('order_address2').focus();
+
+                // 레이어 숨김
+                element_layer.style.display = 'none';
+            },
+            width : '100%',
+            height : '100%',
+            maxSuggestItems: 5
+        }).embed(element_layer);  // 레이어 팝업으로 띄움
+
+        // 레이어 표시
+        element_layer.style.display = 'block';
+    }
+</script>
+
+<?php
+include "../footer_new.html";
+?>

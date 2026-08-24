@@ -1,0 +1,4 @@
+# 운영 피드는 저장소에 올리지 않고 서버에서만 관리할 수 있습니다.
+card_price_offers.json
+admin_sess/*
+!admin_sess/.htaccess

@@ -1,0 +1,408 @@
+<?php
+  header("Location: /");
+  exit;
+
+  $title = "미국복권 구매대행 신규 회원가입 50% 할인쿠폰";
+  include "../header.html";
+  $deviceType = PC모바일체크();
+
+  if($_SESSION['code']){
+    echo "<script>alert('추천인 코드가 적용 되었습니다!');$('#login_id').focus();</script>";
+  }
+
+?>
+<style>
+  .top_register_btn {display:none;}
+  .reg_login {margin:0px auto; padding:0px;    border: 0px; margin-bottom: 20px;}
+  .reg_login .kakao_btn {border-radius: 4px;background-color: #FEDC00; font-weight: 800; font-size: 16px; border: 0px solid; width: 100%; padding: 10px;}
+  .join_form2 {text-align: center;width: 550px;margin: 0px auto;}
+</style>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">회원가입</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>회원가입</p></li>
+            </ul>
+        </div>
+
+        <div class="new_member_join">
+            <div class="banner"><img src="/images/join_banner.png"></div>
+
+            <div class="wrap join_form">
+                <a class="logo"><img src="/images/logo.gif"></a>
+                <form id="memberFrm" method="POST">
+                    <input type="hidden" id="sms_send_chk" />
+                    <input type="hidden" id="sms_send_status" />
+                    <input type="hidden" name="ads" value="<?=$_SESSION['ads']?>"/>
+                    <input type="hidden" name="access" value="<?=$deviceType?>" />
+                    <input type="hidden" id="reg_prosess" />
+
+                    <div class="line"><p>계정정보</p></div>
+                    <div class="row">
+                        <div class="tit">아이디 <span style="color:#CC1F3B;">[필수]</span></div>
+                        <input type="text" name="user_id" id="login_id" maxlength="15" class="in login_id chkids" pattern="[A-Za-z0-9]+" autocomplete="off" placeholder="6~14자의 영문 소문자 숫자" />
+                    </div>
+                    <div class="row">
+                        <div class="tit">비밀번호 <span style="color:#CC1F3B;">[필수]</span></div>
+                        <input type="password" name="password" id="password" class="in login_id" autocomplete="new-password" placeholder="비밀번호" />
+                    </div>
+                    <div class="row">
+                        <div class="tit">비밀번호 재확인 <span style="color:#CC1F3B;">[필수]</span></div>
+                        <input type="password" name="repassword" id="repassword" class="in login_id" placeholder="비밀번호 재입력" />
+                        <p class="txt">* 당첨 시 고객님의 소중한 당첨금을 보호하기 위하여 아이디와 비밀번호를 분실하지 않도록 따로 메모해두시는것을 권장드립니다.</p>
+                    </div>
+
+                    <div class="line"><p>개인정보</p></div>
+                    <div class="row">
+                        <div class="tit">이름  <span style="color:#CC1F3B;">[필수]</span></div>
+                        <input type="text" name="member_name" class="in login_id" id="member_name" placeholder="성함" />
+                    </div>
+
+                    <div class="row">
+                        <div class="tit">휴대폰번호  <span style="color:#CC1F3B;">[필수]</span></div>
+                        <input type="text" name="phone" id="phone" maxlength="13" onkeyup="isNumberOrHyphen(this);cvtPhoneNumber(this);" class="in login_id" placeholder="휴대폰 번호" />
+                        <p class="txt">본인인증 및 당첨시 꼭 필요하므로 정확한 휴대폰 번호를 입력해주세요.</p>
+
+                        <? if($config['SMS인증']==1){?>
+                        <p class="txt">인증 번호가 오지 않는 경우 <a href="/member/inquiry.html" class="txt">고객센터 1:1문의</a> 비회원으로 문의 주세요. </p>
+                        <div class="sms_form">
+                            <div class="codechk_form" style="display: none;">
+                                <input type="text" id="smscode" class="in login_id" maxlength="4" placeholder="인증번호를 입력해주세요." />
+                                <button type="button" onclick="go_code_chke()" class="code_chk_btn">인증번호 확인</button>
+                            </div>
+                            <button type="button" onclick="go_send_sms()" class="sms_code_btn">인증번호 요청</button>
+                        </div>
+                        <? } ?>
+                    </div>
+
+                    <div class="row">
+                        <div class="tit">생년월일</div>
+                        <div class="date">
+                            <div class="li">
+                                <select name="birth_yy" class="birthday byy">
+                                    <option value=""></option>
+                                    <?
+                                    $현재년도 = date("Y-m-d", strtotime("-19 years"));
+                                    for($a=1930;$a<=$현재년도;$a++){ ?>
+                                    <option value="<?=$a?>" <?=$a==$birth[0] ? "selected":""; ?>><?=$a?></option>
+                                    <? } ?>
+                                </select>
+                                <p>년</p>
+                            </div>
+                          <div class="li">
+                              <select name="birth_mm" class="birthday bmm">
+                                <option value=""></option>
+                                <? for($a=1;$a<=12;$a++){
+                                  $a = sprintf("%02d",$a);
+                                  ?>
+                                <option value="<?=$a?>" <?=$a==$birth[1] ? "selected":""; ?>><?=$a?></option>
+                                <? } ?>
+                              </select>
+                              <p>월</p>
+                          </div>
+                          <div class="li">
+                              <select name="birth_dd" class="birthday bdd">
+                                  <option value=""></option>
+                                  <? for($a=1;$a<=31;$a++){
+                                    $a = sprintf("%02d",$a);
+                                  ?>
+                                  <option value="<?=$a?>" <?=$a==$birth[2] ? "selected":""; ?>><?=$a?></option>
+                                  <? } ?>
+                              </select>
+                              <p>일</p>
+                          </div>
+                        </div>
+                        <? if(!$member['birthday']){?>
+                        <div class="txt">당첨금 지급에 꼭 필요하므로 정확한 생년월일을 입력해주세요.</div>
+                        <? } ?>
+                    </div>
+
+                    <div class="row">
+                        <div class="tit">이메일 주소 <span style="color:#CC1F3B;">[필수]</span></div>
+                        <input type="text" name="email" id="user_email" class="in user_email" autocomplete="off" placeholder="이메일 주소" />
+                        <p class="txt">* 아이디찾기,비밀번호찾기, 당첨금 수령 및 중요안내 메일을 받기 위하여 정확한 이메일주소가 꼭 필요합니다. </p>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="tit">추천인(코드) <span style="color:#194A9C;">[선택]</span></div>
+                        <input type="text" name="recommender" value="<?=$_SESSION['code']?>" <?=$_SESSION['code'] ? 'readonly':'' ?> id="recommender" class="in login_id chkids" placeholder="추천인의 아이디 또는 추천코드"  />
+                        <? if($_SESSION['code']){?>
+                        <p class="txt">추천인 코드가 적용되어 있습니다.<a href="/member/join.html?code=0">[해제하기]</a></p>
+                        <? }else{ ?>
+                        <p class="txt" style="color:#194A9C;" >추천인이 없다면 비워두고 가입하시면 됩니다.</p>
+                        <? } ?>
+                        <p class="txt">추천해주신분/신규회원에게 50% 할인쿠폰을 드립니다.</p>
+                    </div>
+
+                    <div class="line"><p>이용약관</p></div>
+                    <div class="agree_info">
+                        <div class="li">
+                          <label for="agree1">
+                              <input type="checkbox" name="agree1" class="agree" id="agree1" value="1" checked />
+                          </label>
+                          <p>
+                              <span style="color:#CC1F3B;">[필수]</span>
+                              <a href="javascript:agree(1)" class="underline">이용약관 동의</a>
+                          </p>
+                        </div>
+                        <div class="li">
+                            <label for="agree2">
+                                <input type="checkbox" name="agree2" class="agree" id="agree2" value="1" checked />
+                            </label>
+                            <p>
+                                <span style="color:#CC1F3B;">[필수]</span>
+                                <a href="javascript:agree(2)" class="underline">개인정보처리방침 동의</a>
+                            </p>
+                        </div>
+                        <div class="li">
+                            <label for="agree3">
+                                <input type="checkbox" name="marketing" class="agree" id="agree3" value="1" checked />
+                            </label>
+                            <p>
+                                <span style="color:#194A9C;">[선택]</span>
+                                마케팅 동의
+                            </p>
+                        </div>
+                        <div class="li">
+                            <label for="all_agree" >
+                                <input type="checkbox" id="all_agree" class="agree" value="1" checked />
+                            </label>
+                            <p style="font-weight: 500;">전체 약관 동의</p>
+                        </div>
+                    </div>
+
+                    <span id="reg_msg" ></span>
+                    <button type="button" onclick="go_regs()" class="reg_btn">회원가입</button>
+                    <p class="tip"><b>19세 미만</b>은 회원가입이 불가 합니다.</p>
+                </form>
+            </div>
+        </div>
+
+        <div class="new_member_find">
+            <div class="foot_text">
+                <p class="t1"><i class="xi-info"></i>도움이 필요하신가요?</p>
+                <p class="t2"><a href="/member/inquiry.html">1:1고객센터</a> / <a href="javascript:go_chet()">채널톡</a>으로 문의 주세요!</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="new_popup_join_agree" id="agree_1" style="display: none;">
+    <div class="wrap">
+        <div class="head">
+            <p>이용약관</p>
+            <div class="close"><a class="b-close"><i class="xi-close"></i></a></div>
+        </div>
+        <div class="body">
+            <div class="scroll join_agree_form1">
+                <div class="content clause">
+                    <?
+                    $originalString = $config['이용약관'];
+                    $replacements = array(
+                        "{사이트명}" => $config['사이트명'],
+                        "{회사명}" => $config['회사명'],
+                        "{사업자등록번호}" => $config['사업자등록번호'],
+                        "{주소}" => $config['주소']
+                    );
+                    foreach ($replacements as $wordToReplace => $newValue) {
+                        $originalString = str_replace($wordToReplace, $newValue, $originalString);
+                    }
+                    ?>
+                    <?=$originalString?>
+                </div>
+                <div class="btn">
+                    <a class="close">닫기</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="new_popup_join_agree" id="agree_2" style="display: none;">
+    <div class="wrap">
+        <div class="head">
+            <p>개인정보취급방침</p>
+            <div class="close"><a class="b-close"><i class="xi-close"></i></a></div>
+        </div>
+        <div class="body">
+            <div class="scroll join_agree_form1">
+                <div class="content policy">
+                    <?
+                    $_사이트명 = "{사이트명}";
+                    $개인정보처리방침_사이트명 = $config['사이트명'];
+                    $_개인정보처리방침 = str_replace($_사이트명, $개인정보처리방침_사이트명, $config['개인정보처리방침']);
+                    echo $_개인정보처리방침;
+                    ?>
+                </div>
+                <div class="btn">
+                    <a class="close">닫기</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function agree(obj){
+  $('#agree_'+obj).bPopup({
+       modalClose : true
+   });
+}
+var sms인증여부 = "<?=$config['SMS인증']?>";
+</script>
+<script src="/assets/js/join.js?date=<?=date("His")?>"></script>
+<script>
+
+  $('.chkids').on("blur keyup", function() {
+      var val = $(this).val();
+      var cleaned = val.replace(/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣\s\W]/g, '');
+
+      // 한글이 포함되어 있었으면 얼럿 띄우기
+      if (val !== cleaned) {
+          alert("*아이디는 영문과 숫자 조합으로만 6자에서 14자까지 사용이 가능합니다.");
+      }
+
+      $(this).val(cleaned);
+  });
+
+  function go_regs(){
+    var agree1 = $("#agree1").is(":checked");
+    var agree2 = $("#agree2").is(":checked");
+    var agree3 = $("#agree3").is(":checked");
+
+    var RegExp = /^[a-z0-9]{6,14}$/;
+    var member_id = $("#login_id").val();
+    if(member_id==""){
+      alert('아이디를 입력해주세요.');
+      return false;
+    }
+
+    if(!RegExp.test(member_id)){ //아이디 유효성검사
+      alert("ID는 6~14자의 영문 소문자와 숫자로만 입력하여 주세요.");
+      $("#login_id").val("");
+      return false;
+    }
+
+    if(!agree1){
+      alert("이용약관에 동의하여야만 회원가입이 가능합니다.");
+      return false;
+    }
+    if(!agree2){
+      alert("개인정보처리방침에 동의하여야만 회원가입이 가능합니다.");
+      return false;
+    }
+
+    if(sms인증여부==1){
+      var sms_send_status = $("#sms_send_status").val();
+      if(sms_send_status==""){
+        alert("인증번호를 확인해주세요.");
+        return false;
+      }
+    }
+
+    var password = $("#password").val();
+    if(password==""){
+      alert('비밀번호를 입력해주세요.');
+      return false;
+    }
+    var repassword = $("#repassword").val();
+    if(password!=repassword){
+      alert('비밀번호가 일치하지 않습니다.');
+      return false;
+    }
+
+    if(!isPasswordValid()){
+      alert('6자 이상 20자 이하의 비밀번호를 입력해주세요.');
+      return false;
+    }
+
+    var phone = $("#phone").val();
+    // 사용 예시
+    if (!isValidPhoneNumber(phone)) {
+      alert("휴대폰번호가 올바르지 않습니다. 올바른 휴대폰번호를 입력해주세요.");
+      return false;
+    }
+
+    if(phone==""){
+      alert('연락처를 입력해주세요.');
+      return false;
+    }
+
+    var user_email = $("#user_email").val();
+    if(user_email==""){
+      alert('이메일을 입력해주세요.');
+      return false;
+    }
+
+    var reg_prosess = $("#reg_prosess").val();
+    $("#reg_prosess").val(1);
+    var params = jQuery("#memberFrm").serialize();
+      $.ajax({
+        type : "POST",
+        url: "ajax_member_join.php",
+        async: true,
+        data: params,
+        // beforeSend: function() {
+        //   alert("회원가입이 진행중 입니다. 가입완료 메세지가 나올때까지 잠시만 기다려주세요.");
+        // },
+        success: function(result) {
+          console.log(result);
+          var r = result.trim();
+          console.log(r);
+          if(r==1){
+            alert("회원가입이 완료되었습니다.");
+<?=$config['script_register']?>
+
+            $("#memberFrm").attr("action","/member/login.html");
+            $("#memberFrm").submit();
+            $("#memberFrm").attr("action","");
+            //가입완료
+          }else if(r=="id_overlap"){
+            alert("사용할 수 없는 아이디 입니다.");
+            $("#reg_msg").html("<font color='red' >사용할 수 없는 아이디 입니다.</font>");
+            $("#login_id").focus();
+            return false;
+          }else if(r=="phone_overlap"){
+            alert("이미 가입된 이력이 있는 휴대폰번호 입니다.");
+            $("#reg_msg").html("<font color='red' >이미 가입된 이력이 있는 휴대폰번호 입니다.</font>");
+            $("#phone").focus();
+            return false;
+          }else if(r=="email_overlap"){
+            alert("사용할 수 없는 이메일 주소 입니다.");
+            $("#reg_msg").html("<font color='red' >사용할 수 없는 이메일 주소 입니다.</font>");
+            $("#phone").focus();
+            return false;
+          }else if(r=="no_id"){
+            alert("아이디는 영문 소문자와 숫자 조합 6자 이상 14자 이하로 입력해주세요.");
+            $("#reg_msg").html("<font color='red' >아이디는 영문 대/소문자와 숫자 조합 6자 이상 14자 이하로 입력해주세요.</font>");
+            $("#login_id").focus();
+            return false;
+          }else if(r=="password_null"){
+            alert("비밀번호를 입력해주세요.");
+            $("#reg_msg").html("<font color='red' >비밀번호를 입력해주세요.</font>");
+            $("#password").focus();
+          }else if(r=="recommender_id_null"){
+            alert("존재하지 않는 추천인 코드 입니다.\n추천인 코드를 정확히 입력해주세요.");
+            return false;
+          }
+
+
+        },
+        error:function(e) {
+            alert(e.responseText);
+        }
+      });
+  }
+</script>
+
+
+
+<?php
+  include "../footer_new.html";
+?>

@@ -1,0 +1,248 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+  $add_query  =  "";
+
+  if ($year == '') {
+    $year = date("Y");
+  }
+
+  if ($month == '') {
+    $month = date("m");
+  }
+
+  $sdate = $year."-".$month;
+
+  // 이번달일 경우 오늘만
+  if ($sdate == date("Y-m")) {
+    $lastday = date("d");
+  } else {
+    $lastday = date('d', strtotime($sdate."-01 +1 month -1 day"));
+  }
+
+  $s_year = date("Y");
+  $e_year = date("Y", strtotime(" -1 year"));
+
+  if (isset($patner_id)) {
+    if (trim($patner_id) != '') {
+      $add_query = " AND PATNER_ID='".$patner_id."'";
+      $add_query2 = " AND P.USER_ID='".$patner_id."'";
+    }
+  }
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">일별실적통계</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">제휴파트너관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">일별실적통계</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="year" id="year" class="form-control form-select select2 auto-submit">
+                    <option value="">--기간선택(년)--</option>
+                    <?php
+                      for ($i = $s_year; $i > $e_year; $i--) {
+                    ?>
+                    <option value="<?php echo $i; ?>" <?php echo ($year==$i)?"selected":""; ?>><?php echo $i; ?>년</option>
+                    <?php } ?>
+                  </select>
+                </div>
+                <div class="form-group fl-left">
+                  <select name="month" id="month" class="form-control form-select select2 auto-submit">
+                    <option value="">--기간선택(월)--</option>
+                    <option value="01" <?php echo ($month=="01")?"selected":""; ?>>01월</option>
+                    <option value="02" <?php echo ($month=="02")?"selected":""; ?>>02월</option>
+                    <option value="03" <?php echo ($month=="03")?"selected":""; ?>>03월</option>
+                    <option value="04" <?php echo ($month=="04")?"selected":""; ?>>04월</option>
+                    <option value="05" <?php echo ($month=="05")?"selected":""; ?>>05월</option>
+                    <option value="06" <?php echo ($month=="06")?"selected":""; ?>>06월</option>
+                    <option value="07" <?php echo ($month=="07")?"selected":""; ?>>07월</option>
+                    <option value="08" <?php echo ($month=="08")?"selected":""; ?>>08월</option>
+                    <option value="09" <?php echo ($month=="09")?"selected":""; ?>>09월</option>
+                    <option value="10" <?php echo ($month=="10")?"selected":""; ?>>10월</option>
+                    <option value="11" <?php echo ($month=="11")?"selected":""; ?>>11월</option>
+                    <option value="12" <?php echo ($month=="12")?"selected":""; ?>>12월</option>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <select name="find_object_refer" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <option value="">-- 파트너 전체 --</option>
+                    <?php
+                      $query = "SELECT Idx, NAME FROM REFERRAL_PARTNER ORDER BY Idx";
+                      $refer_list = $db->get_list($query);
+
+                      for ($i = 0; $i < count($refer_list['Idx']); $i++) {
+                        $refer_idx = $refer_list["Idx"][$i];
+                        $refer_name = $refer_list["NAME"][$i];
+                    ?>
+                    <option value="<?=$refer_idx?>" <? if ($find_object_refer == $refer_idx) echo "selected"; ?> ><?=$refer_name?></option>
+                    <?php } ?>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive">
+              <table class="table border text-nowrap table-bordered" id="table-list">
+                <thead>
+                  <tr style="text-align: center; background: #F2F3F9;">
+                    <th>일자</th>
+                    <th>방문자수</th>
+                    <th>신규회원 가입수</th>
+                    <th>첫결제수 <i data-bs-placement="top" data-bs-toggle="tooltip" title="제휴를 통해 가입한 회원의 첫번째 결제건수" ><svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" data-tip="true" data-for="subs-rank" currentItem="false"><circle cx="8" cy="8" r="6" stroke="#8B8B8B" stroke-width="1.5"></circle><path d="M8.75 11.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" fill="#8B8B8B"></path><path d="M8 9v-.5c0-.552.462-.983.979-1.177C9.512 7.123 10 6.726 10 6c0-1.2-1.333-1.5-2-1.5S6 4.8 6 6" stroke="#8B8B8B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="bevel"></path></svg></i></th>
+                    <th>첫결제금액 <i data-bs-placement="top" data-bs-toggle="tooltip" title="제휴를 통해 가입한 회원의 첫번째 결제금액" ><svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" data-tip="true" data-for="subs-rank" currentItem="false"><circle cx="8" cy="8" r="6" stroke="#8B8B8B" stroke-width="1.5"></circle><path d="M8.75 11.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" fill="#8B8B8B"></path><path d="M8 9v-.5c0-.552.462-.983.979-1.177C9.512 7.123 10 6.726 10 6c0-1.2-1.333-1.5-2-1.5S6 4.8 6 6" stroke="#8B8B8B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="bevel"></path></svg></i></th>
+                    <th>가입 전환율 <i data-bs-placement="top" data-bs-toggle="tooltip" title="방문자 수 대비 신규가입 전환비율" ><svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" data-tip="true" data-for="subs-rank" currentItem="false"><circle cx="8" cy="8" r="6" stroke="#8B8B8B" stroke-width="1.5"></circle><path d="M8.75 11.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" fill="#8B8B8B"></path><path d="M8 9v-.5c0-.552.462-.983.979-1.177C9.512 7.123 10 6.726 10 6c0-1.2-1.333-1.5-2-1.5S6 4.8 6 6" stroke="#8B8B8B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="bevel"></path></svg></i></th>
+                    <th>결제 전환율 <i data-bs-placement="top" data-bs-toggle="tooltip" title="신규가입 수 대비 첫결제 전환비율" ><svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" data-tip="true" data-for="subs-rank" currentItem="false"><circle cx="8" cy="8" r="6" stroke="#8B8B8B" stroke-width="1.5"></circle><path d="M8.75 11.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" fill="#8B8B8B"></path><path d="M8 9v-.5c0-.552.462-.983.979-1.177C9.512 7.123 10 6.726 10 6c0-1.2-1.333-1.5-2-1.5S6 4.8 6 6" stroke="#8B8B8B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="bevel"></path></svg></i></th>
+                    <th>평균 결제금액(건당) <i data-bs-placement="top" data-bs-toggle="tooltip" title="결제 건당 평균 결제금액" ><svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" data-tip="true" data-for="subs-rank" currentItem="false"><circle cx="8" cy="8" r="6" stroke="#8B8B8B" stroke-width="1.5"></circle><path d="M8.75 11.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" fill="#8B8B8B"></path><path d="M8 9v-.5c0-.552.462-.983.979-1.177C9.512 7.123 10 6.726 10 6c0-1.2-1.333-1.5-2-1.5S6 4.8 6 6" stroke="#8B8B8B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="bevel"></path></svg></i></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    $total_price = array();
+                    $total_cnt = array();
+                    $i = 0;
+
+                    if ($find_object_refer) {
+                      $add_query = " AND `REFERRAL_CODE` = ".$find_object_refer;
+                      $add_query_member = " AND REFERRAL_NO = ".$find_object_refer;
+                    }
+
+                    for ($s = 1; $s <= $lastday; $s++) {
+                      $day = $s;
+                      $price_cnt = 0;
+                      $price_amount_tmp = 0;
+
+                      if ($day < 10) {
+                        $day = "0".$day;
+                      }
+
+                      $date = $sdate."-".$day;
+                      $sDate = $date." 00:00:01";
+                      $eDate = $date." 23:59:59";
+                      $style = "";
+
+                      if ($date == date("Y-m-d")) {
+                        $style = 'background: #F8E5D0;';
+                      }
+
+                      // 유입수
+                      $cnt_visit = $db->get_data("SELECT SUM(VISIT_NUM) AS cnt FROM `REFERRAL_VISIT` WHERE VISIT_DATE = '".$date."' ".$add_query);
+
+                      // 신규 가입수
+                      $cnt_regist = $db->get_data("SELECT COUNT(*) AS cnt FROM MEMBER WHERE `REFERRAL_NO` > 0 AND REG_DATE BETWEEN '".$sDate."' AND '".$eDate."' ".$add_query_member);
+
+                      // 신규회원 첫 결제수
+                      $query = " SELECT  SUM( IF((SELECT COUNT(*) AS CNT FROM CASH WHERE MEMBER_NO = C.MEMBER_NO AND IS_USE='Y' AND REG_DATE <= C.REG_DATE) = 1,1,0)) AS CNT ";
+                      $query .= " FROM CASH AS C INNER JOIN MEMBER AS M ON C.MEMBER_NO = M.MEMBER_NO ";
+                      $query .= " WHERE  IS_USE='Y' AND REFERRAL_NO > 0 ";
+                      $query .= " AND C.REG_DATE BETWEEN '".$sDate."' AND '".$eDate."' " ;
+                      $query .= $add_query_member;
+                      $c_price_cnt = $db->get_data($query);
+                      $price_cnt = 0;
+
+                      if (isset($c_price_cnt['CNT'])) {
+                        $price_cnt = $c_price_cnt['CNT'];
+                      }
+
+                      // 신규회원 결제금액
+                      $query = " SELECT  SUM(IF((SELECT COUNT(*) AS CNT FROM CASH WHERE MEMBER_NO=C.MEMBER_NO AND IS_USE='Y' AND REG_DATE <= C.REG_DATE) = 1,C.PRICE,0)) AS PRICE  ";
+                      $query .= " FROM CASH AS C INNER JOIN MEMBER AS M ON C.MEMBER_NO = M.MEMBER_NO ";
+                      $query .= " WHERE  IS_USE='Y' AND REFERRAL_NO > 0 ";
+                      $query .= " AND C.REG_DATE BETWEEN '".$sDate."' AND '".$eDate."' " ;
+                      $query .= $add_query_member;
+                      $c_price_amount = $db->get_data($query);
+
+                      // 결제금액
+                      if ($c_price_cnt['CNT'] > 0) {
+                        $price_amount_tmp = $c_price_amount['PRICE'];
+                        $price_amount = "₩ ".number_format($price_amount_tmp);
+                      } else {
+                        $price_amount = "";
+                      }
+
+                      // 가입 전환율
+                      $rate_regist = round(($cnt_regist['cnt'] / $cnt_visit['cnt']) * 100, 2);
+                      if ($cnt_regist['cnt'] && $cnt_visit['cnt']) {
+                        $rate_regist .= " %";
+                      } else {
+                        $rate_regist = "";
+                      }
+
+                      // 결제 전환율
+                      $rate_order = round(( $price_cnt /$cnt_regist['cnt'] ) * 100, 2);
+                      if ($cnt_regist['cnt'] && $price_cnt) {
+                        $rate_order .= " %";
+                      } else {
+                        $rate_order = "";
+                      }
+
+                      //평균 결제금액
+                      if ($price_amount_tmp > 0) {
+                        $avg_order = "₩ ".number_format(round($price_amount_tmp / $price_cnt, 0));
+                      } else {
+                        $avg_order = "";
+                      }
+
+                      ## total
+                      $total_cnt_visit = $total_cnt_visit + $cnt_visit['cnt'];
+                      $total_cnt_regist = $total_cnt_regist + $cnt_regist['cnt'];
+                      $total_c_price_cnt = $total_c_price_cnt + $c_price_cnt['CNT'];
+                      $total_c_price_amount = $total_c_price_amount + $c_price_amount['PRICE'];
+                      $total_price_cnt = $total_price_cnt + $price_cnt['CNT'];
+                      $total_price_amount = $total_price_amount + $price_amount['PRICE'];
+
+                      $week = array("일", "월", "화", "수", "목", "금", "토");
+                  ?>
+                  <tr style="<?php echo $style; ?>">
+                    <!--td style="text-align:center"><?php echo date("Y년 m월 d일",strtotime($date)); ?></td-->
+                    <td style="text-align: center;"><?php echo date("Y년 m월 d일",strtotime($date)); ?></td>
+                    <td style="text-align: center;"><?php echo number_format($cnt_visit['cnt']); ?></td>
+                    <td style="text-align: center;"><a href="./partner_member.html"><?php echo number_format($cnt_regist['cnt']); ?></a></td>
+                    <td style="text-align: center;"><?php echo number_format($price_cnt); ?></td>
+                    <td style="text-align: center;"><?php echo $price_amount; ?></td>
+                    <td style="text-align: center;"><?php echo $rate_regist; ?></td>
+                    <td style="text-align: center;"><?php echo $rate_order; ?></td>
+                    <td style="text-align: center;"><?php echo $avg_order; ?></td>
+                  </tr>
+                  <?php } ?>
+                  <tr style="text-align: center; background: #F8E5D0;">
+                    <td style="text-align: center;"><strong>합계</strong></td>
+                    <td style="text-align: center;"><?=number_format($total_cnt_visit)?> 건</td>
+                    <td style="text-align: center;"><?=number_format($total_cnt_regist)?> 명</td>
+                    <td style="text-align: center;"><?=number_format($total_c_price_cnt)?> 건</td>
+                    <td style="text-align: center;">₩ <?=number_format($total_c_price_amount)?> </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>

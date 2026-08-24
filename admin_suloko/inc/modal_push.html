@@ -1,0 +1,269 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_TOPIC.php";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_SMSTEMPLET.php";
+
+  // 구독
+  $topics = F_TOPIC_LIST(array(
+    "row"         => 9999,
+    "page"        => 1,
+    "order"       => "",
+    "find_text"   => "",
+    "find_object" => "",
+    "add_query"   => ""
+  ));
+
+  // 템플릿
+  $templets = F_SMSTEMPLET_LIST(array(
+    "row"         => 9999,
+    "page"        => 1,
+    "order"       => "",
+    "find_text"   => "",
+    "find_object" => "",
+    "add_query"   => " AND STOPYN = 'N' AND CODESK = 'P' ",
+  ));
+?>
+
+<style>
+  #sms_table_box thead tr {
+    display: block;
+  }
+  #sms_table_box tbody {
+    display: block;
+    height: 600px;
+    overflow: auto;
+  }
+  #sms_table_box thead tr:first-child th:first-child {
+    width: 3%;
+    text-align: center;
+  }
+  #sms_table_box thead tr:first-child th {
+    width: 5%;
+    text-align: center;
+  }
+  #sms_table_box th {
+    width: 7%;
+    text-align: center;
+  }
+  #sms_table_box th:first-child {
+    width: 0%;
+  }
+  #sms_table_box td {
+    width: 4.8%;
+  }
+  #sms_table_box td:first-child {
+    width: 3%;
+  }
+  .ui-datepicker{ z-index: 9999 !important;}
+</style>
+
+<!-- BASIC MODAL -->
+<div class="modal fade" id="webPushModal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-content-demo">
+      <div class="modal-header">
+        <h6 class="modal-title">푸시 발송</h6>
+        <button aria-label="Close" class="btn-close" data-bs-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <form name="w_frm" id="w_frm" method="post" action="">
+          <div class="card-body" id="order-view">
+            <div class="form-row">
+              <div class="col-md-12 mb-3">
+                <label for="templet">구독</label>
+                <select class="form-select form-control" name="topic" id="topic" required>
+                  <option selected disabled value="">선택</option>
+                  <?php for ($i = 0; $i < count($topics['IDX']); $i++) { ?>
+                  <option value="<?=$topics['NAME'][$i]?>"><?=$topics['NAME'][$i]?></option>
+                  <?php } ?>
+                </select>
+              </div>
+              <div class="col-md-12 mb-3">
+                <label for="templet">템플릿</label>
+                <select class="form-select form-control" name="templet" id="templet" required>
+                  <option selected disabled value="">선택</option>
+                  <?php for ($i = 0; $i < count($templets['TEMPLET_NO']); $i++) { ?>
+                  <option value="<?=$templets['TEMPLET_NO'][$i]?>"><?=$templets['SUBJECT'][$i]?></option>
+                  <?php } ?>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-12 mb-3">
+                <label for="sms_subject">제목</label>
+                <input type="text" class="form-control" name="subject" id="subject" maxlength="30" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-12 mb-3">
+                <label for="sms_content">내용</label>
+                <textarea class="form-control" name="content" id="content" style="height:200px;"></textarea>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-12 mb-3">
+                <label for="sms_content">발송시간</label>
+                <div>
+                  <label class="custom-control custom-radio">
+                    <input type="radio" class="custom-control-input" name="is_reserve" id="is_reserve" value="N" checked>
+                    <span class="custom-control-label">즉시발송</span>
+                  </label>
+                  <label class="custom-control custom-radio">
+                    <input type="radio" class="custom-control-input" name="is_reserve" id="is_reserve" value="Y">
+                    <span class="custom-control-label">예약발송</span>
+                    <div>
+                      <div class="form-group fl-left">
+                        <div class="input-group">
+                          <div class="input-group-text fl-left">
+                            <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                          </div><input class="form-control fc-datepicker mr-3" placeholder="YYYY-MM-DD" name="r_date" id="r_date" type="text" value="<?=date("Y-m-d")?>" />
+                        </div>
+                      </div>
+                      <div class="form-group fl-left mr-3">
+                        <select name="r_hour" id="r_hour" class="form-control form-select select2">
+                        <?php
+                          for($i = 0 ; $i < 24 ; $i++) {
+                            $tmp = substr("0".$i,-2);
+                            $selected_status = ($i == date("G")) ? "selected" : "";
+                            echo "<option value='{$tmp}' {$selected_status}>{$tmp}</option>";
+                          }
+                        ?>
+                        </select>시
+                      </div>
+                      <div class="form-group fl-left">
+                        <select name="r_min" id="r_min" class="form-control form-select select2">
+                        <?php
+                          for($i = 0 ; $i < 60 ; $i++) {
+                            $tmp = substr("0".$i,-2);
+                            if ($i == date("i")) {
+                              echo "<option value='{$tmp}' selected>{$tmp}</option>";
+                            } else {
+                              echo "<option value='{$tmp}'>{$tmp}</option>";
+                            }
+                          }
+                        ?>
+                        </select>분
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success btn_push">발송</button>
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">취소</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/jquery.min.js?ver=<?=$version?>"></script>
+
+<script>
+  $(function() {
+  });
+
+  $('#templet').change(function() {
+    let templet_no = $(this).val();
+
+    if (templet_no == '') {
+      $('#subject').val('');
+      $('#content').text('');
+      return false;
+    }
+
+    $.post('/default.php', {
+      mode: 'change_sms_templet',
+      no: templet_no
+    }, function(e) {
+      if (e.error) {
+        $('#subject').val(e.subject);
+        $('#content').text(e.content);
+      } else {
+        alert(e.msg);
+      }
+    }, 'json');
+  });
+
+  $('.btn_push').click(function() {
+    let topic = $('#topic').val();
+    let subject = $('#subject').val();
+    let content = $('#content').val();
+    let is_reserve = $('#is_reserve:checked').val();
+
+    if (!topic) {
+      alert('구독을 선택해주세요.');
+      return false;
+    }
+
+    if (!subject) {
+      alert('제목을 작성해주세요.');
+      return false;
+    }
+
+    if (!content) {
+      alert('내용을 작성해주세요.');
+      return false;
+    }
+
+    // 즉시 발송
+    if (is_reserve == 'N') {
+      if (confirm('알림을 발송하시겠습니까?')) {
+        $.post('/default.php', {
+          mode: 'send_push',
+          topic : topic,
+          subject : subject,
+          content : content
+        }, function(e) {
+          alert(e.msg);
+          if (e.error) {
+            // 예약 실패시..
+          } else {
+            $(".btn-close").click();
+          }
+        },"json");
+      }
+
+    // 예약 발송
+    } else {
+      let r_date = $('#r_date').val();
+      let r_hour = $('#r_hour').val();
+      let r_min = $('#r_min').val();
+      let r_datetime = r_date + ' ' + r_hour + ':' + r_min + ':00';
+
+      if (!r_date) {
+        alert("예약일을 선택해 주세요.");
+        $('#r_date').focus();
+        return false;
+      }
+
+      const date1 = new Date(); // 현재시간
+      const date2 = new Date(r_datetime); // 예약 시간
+
+      if (date1 >= date2) {
+        alert("예약시간이 현재시간보다 이전입니다.");
+        return false;
+      }
+
+      if (confirm('푸시알림을 에약하시겠습니까?')) {
+        $.post('/default.php', {
+          mode: 'save_push_reservation',
+          topic : topic,
+          subject : subject,
+          content : content,
+          r_datetime : r_datetime
+        }, function(e) {
+          alert(e.msg);
+          if (e.error) {
+            // 예약 실패시..
+          } else {
+            $(".btn-close").click();
+          }
+        },"json");
+      }
+
+    }
+  })
+</script>

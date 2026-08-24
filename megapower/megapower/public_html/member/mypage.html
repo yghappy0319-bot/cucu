@@ -1,0 +1,146 @@
+<?php
+include "../header.html";
+include "../_chk.php";
+
+$page_num = 5;
+$page = isset($_GET["page"])? $_GET["page"] : 1;
+
+if($_GET['list_num']>0){
+  $list_num = $_GET['list_num'];
+}else{
+  $list_num = 9;
+}
+
+$지급퍼센트 = 구매금액_마일리지_지급퍼센트($member['grade']) * 100;
+$_신청내역 = db_select("select * from lr_deposit_log where midx = {$member['idx']} and (status = 1 || status = 4) ");
+?>
+
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/cssprogress.css">
+
+<style>
+  .new_point_charge .list{ margin: 0px 0px 20px;}
+</style>
+
+<script>
+    $(".new_header .bottom .fr .menu ul li:eq(2)").addClass("on")
+    $(".new_header_m .menu:eq(1) ul li:eq(3)").addClass("on")
+    $(".new_all_menu .menu_fb > ul:eq(1) > li:eq(1)").addClass("on")
+</script>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">Mypage</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>Mypage</p></li>
+            </ul>
+        </div>
+
+
+        <div class="new_point_charge">
+            <div class="list">
+                <div class="point_sub_rb_content bank">
+
+                    <? if($_신청내역['cash']>0){ ?>
+                      <div class="info point_rb_sct_text_center">
+
+                          <a href="/member/mypage.html" class="ft blink"> 현재 캐시 충전이 일시 중단되어 입금 계좌는 안내되지 않습니다.</a>
+                          <div class="fb">
+                              <p>기존 무통장입금 신청건이 있는 경우 아래 버튼으로 취소해 주세요.</p>
+                          </div>
+
+                          <div class="btn">
+                              <a href="javascript:go_cancle('<?=$_신청내역['idx']?>')">기존 무통장입금 신청건 취소하기</a>
+                          </div>
+                      </div>
+                    <? } ?>
+
+
+
+                </div>
+
+            </div>
+        </div>
+
+
+
+        <?php
+        include_once "mypage_menu.php";
+        ?>
+
+        <?php
+        include_once "mypage_myinfo.php";
+        ?>
+
+        <?
+        $전체 = 3000000;
+        $부분 = $member['cash'];
+        $퍼센티지 = round(($부분 / $전체) * 100);
+        ?>
+        <style>
+            .lucky1 {width: 17.3%; background-color: <?=$member['grade']>=1 ? '#537db2':'#537db2' ?>; color:#fff; margin-right: 2px; position: relative;}
+            .lucky2 {width: 17.3%; background-color: <?=$member['grade']>=2 ? '#2ec571':'#2ec571' ?>; color:#fff; margin-right: 2px; position: relative;}
+            .lucky3 {width: 17.3%; background-color: <?=$member['grade']>=3 ? '#cdcdcd':'#cdcdcd' ?>; color:#fff; margin-right: 2px; position: relative;}
+            .lucky4 {width: 25%; background-color: <?=$member['grade']>=4 ? '#f3bf02':'#f3bf02' ?>; color:#fff; margin-right: 2px; position: relative;}
+            .lucky5 {width: 25%; background-color: <?=$member['grade']>=5 ? '#040404':'#040404' ?>; color:#fff; margin-right: 2px; position: relative;}
+        </style>
+        <div class="new_mypage_level cssProgress">
+            <div class="ft">
+                <p class="lucky1"><span class="lucky_grade_text1" ><?= $member['grade']==1 ? "<font color='blue'><b>L1.white</b></font>":"L1.white" ?></span></p>
+                <p class="lucky2"><span class="lucky_grade_text2`" ><?= $member['grade']==2 ? "<font color='blue'><b>L2.green</b></font>":"L2.green" ?></span></p>
+                <p class="lucky3"><span class="lucky_grade_text3" ><?= $member['grade']==3 ? "<font color='blue'><b>L3.silver</b></font>":"L3.silver" ?></span></p>
+                <p class="lucky4"><span class="lucky_grade_text4" ><?= $member['grade']==4 ? "<font color='blue'><b>L4.gold</b></font>":"L4.gold" ?></span></p>
+                <p class="lucky5"><span class="lucky_grade_text5" ><?= $member['grade']==5 ? "<font color='blue'><b>L5.black</b></font>":"L5.black" ?></span></p>
+            </div>
+            <div class="progress1">
+                <span class="cssProgress-label"><?=$퍼센티지?>% ( <?=number_format($member['cash'])?> )</span>
+                <div class="cssProgress-bar cssProgress-active" data-percent="<?=$퍼센티지?>" style="width: <?=$퍼센티지?>%;"></div>
+            </div>
+        </div>
+
+        <form id="searchFrm">
+            <input type="hidden" name="page" id="page" />
+        </form>
+
+        <?
+        $_신청내역 = db_select("select * from lr_deposit_log where midx = {$member['idx']} and status = 1 ");
+        ?>
+        <? if($_신청내역['cash']>0){?>
+        <div class="point_deposit_info">
+            <div class="fl">
+                <div class="ft"><strong>* 입금예정</strong> 신청건이 있습니다.</div>
+                <div class="fb">현재 캐시 충전이 일시 중단되어 입금 계좌는 안내되지 않습니다. 기존 신청건은 취소해 주세요.</div>
+            </div>
+            <a class="btn" href="javascript:go_cancle(<?=$_신청내역['idx']?>)">취소하기</a>
+        </div>
+        <? } ?>
+
+
+
+    </div>
+</div>
+
+<script>
+    $(function(){
+        $(".mypage_logout_bnt").show();
+        $(".my_login_id").css("display","none");
+    });
+
+
+    function go_bank_show(obj){
+      if(obj>0){
+        $(".bank_acount").toggle();
+      }else{
+        alert("결제하기를 신청후 확인해주세요.");
+        return false;
+      }
+    }
+</script>
+
+<?php
+include_once "../lib/channer_talk.php";
+include "../footer_new.html";
+?>

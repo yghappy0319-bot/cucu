@@ -1,0 +1,157 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_COUPON.php";
+
+  F_admin_chk($S_login);
+
+  if ($mode == 'update') {
+    $info = F_COUPON(array("mode"=>"read", "COUPON_NO"=>$no));
+    $EXPIRED = $db->get_data_one("SELECT `EXPIRED_AT` FROM `COUPON_EXPIRED` WHERE `NUM` = '{$info["NUM"]}'");
+  } else {
+    $info = array();
+  }
+
+  if (!isset($mode)) $mode = "insert";
+  if (!isset($info['GUBUN'])) $info['GUBUN'] = "";
+  if (!isset($info['PATNER_ID'])) $info['PATNER_ID'] = "";
+  if (!isset($info['ONOFF'])) $info['ONOFF'] = "";
+
+  $patner_op = F_get_option("SELECT USER_ID, CONCAT(CEO,'(',USER_ID,')') AS CEO FROM PATNER WHERE 1 ORDER BY CEO ASC", $info['PATNER_ID']);
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">쿠폰발행</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">쿠폰발행</a></li>
+          <li class="breadcrumb-item active" aria-current="page">쿠폰발행</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <div class="row">
+      <div class="col-lg-12 col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">쿠폰등록/수정</h3>
+          </div>
+          <div class="card-body">
+            <form class="needs-validation" novalidate method="post" name="w_frm" action="coupon_action.php" enctype='multipart/form-data'>
+              <input type="hidden" name="COUPON_NO" value="<?=(isset($info['COUPON_NO'])) ? $info['COUPON_NO'] : ""?>">
+              <input type="hidden" name="mode" value="<?=$mode?>">
+              <div class="form-row">
+                <?php if ($mode == 'insert') { ?>
+                <div class="form-row col-md-6">
+                    <label for="validationCustom01">쿠폰번호</label>
+                    <input type="text" class="form-control" id="validationCustom01" value="<?=(isset($info['NUM'])) ? $info['NUM'] : ""; ?>" name="NUM" required>
+                    <div class="valid-feedback">Looks good!</div>
+                    <div class="invalid-feedback">Please provide a valid Coupon Number.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom03">구분</label>
+                  <select class="form-select select2 form-control" name="GUBUN" id="validationCustom03" required>
+                    <option selected disabled value="">선택</option>
+                    <?=option_make($coupon_op, $info['GUBUN'])?>
+                  </select>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please provide a valid Gubun.</div>
+                </div>
+                <?php } else { ?>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom01">쿠폰번호</label>
+                  <div>
+                    <?=(isset($info['NUM'])) ? $info['NUM'] : ""?>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom03">구분</label>
+                  <div>
+                    <?=$coupon_op[$info['GUBUN']]?>
+                  </div>
+                </div>
+                <?php } ?>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom04">제목</label>
+                  <input type="text" class="form-control" name="TITLE" value="<?=(isset($info['TITLE'])) ? $info['TITLE'] : ""?>" id="validationCustom04" required>
+                  <div class="invalid-feedback">Please provide a valid Subject.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom05">파트너</label>
+                  <select class="form-select select2 form-control" name="PATNER_ID" id="validationCustom05" required>
+                    <option selected disabled value="">선택</option>
+                    <?=$patner_op?>
+                  </select>
+                  <div class="valid-feedback">Looks good!</div>
+                  <div class="invalid-feedback">Please select a valid Patner.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom06">금액</label>
+                  <input type="text" class="form-control" name="PRICE" value="<?=(isset($info['PRICE'])) ? $info['PRICE'] : ""?>" id="validationCustom06" onkeyup="onlyNum(this)" required>
+                  <div class="invalid-feedback">Please provide a valid Price.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom07">횟수</label>
+                  <input type="text" class="form-control" name="TIME_CNT" value="<?=(isset($info['TIME_CNT']))? $info['TIME_CNT'] : "1"?>" id="validationCustom07" onkeyup="onlyNum(this)" required>
+                  <div class="invalid-feedback">Please provide a valid Times.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom09">쿠폰버전</label>
+                  <input type="text" class="form-control" name="GRPCODE" value="<?=(isset($info['GRPCODE']))? $info['GRPCODE'] : ""?>" id="validationCustom09" required>
+                  <div class="invalid-feedback">Please provide a valid Version.</div>
+                </div>
+                <div class="col-md-6 mb-3" style="display:none;">
+                  <label for="validationCustom08">생성갯수</label>
+                  <input type="text" class="form-control" name="CNTS" value="1" id="validationCustom08" onkeyup="onlyNum(this)" required>
+                  <div class="invalid-feedback">Please provide a valid 생성갯수.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom10">유효기간</label>
+                  <input type="text" class="form-control" name="EXPIRED" value="<?=(isset($EXPIRED) ? $EXPIRED : "")?>" placeholder="yyyy-MM-dd HH:mm:ss" id="validationCustom10" required>
+                  <div class="invalid-feedback">Please provide a valid expired date.</div>
+                </div>
+              </div>
+              <button class="btn btn-primary" type="submit">Submit form</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ROW CLOSED -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script language="javascript">
+$(document).ready(function() {
+  //왼쪽 메뉴 처리
+  let slide_title = $('.breadcrumb-item').find("a").text();
+  let title = $('.page-title').text();
+  let is_active = false;
+  $(".slide").each(function(slide_idx,slide_itm) {
+    $(slide_itm).find(".slide-menu").find("li").each(function(slide_menu_idx,slide_menu_itm) {
+      is_active = false;
+      if ($(slide_menu_itm).find("a").text().indexOf(title) != -1) {
+        $(slide_menu_itm).addClass("active");
+        $(slide_menu_itm).find("a").addClass("active");
+        is_active = true;
+      }
+      if (is_active && $(slide_itm).find('.side-menu__label').text() == slide_title) $(slide_itm).find(".side-menu__item").addClass("active");
+    });
+  });
+  side_menu_scroll();
+});
+</script>

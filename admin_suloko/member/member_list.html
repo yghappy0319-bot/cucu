@@ -1,0 +1,395 @@
+<?php
+  require_once $_SERVER["DOCUMENT_ROOT"]."/inc/meta.html";
+  require_once $_SERVER["DOCUMENT_ROOT"]."/inc/header.html";
+  include $_SERVER["DOCUMENT_ROOT"]."/_library/function_MEMBER.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if ($S_login['limit']) $limit = $S_login['limit'];
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&schdate=$schdate&sdate=$sdate&edate=$edate&limit=$limit";
+  $PARAM .= "&gender=$gender&level=$level&marketing=$marketing&notification=$notification&country=$country";
+  $PARAM .= "&standard=$standard&cashtype=$cashtype&separator=$separator&cash=$cash";
+
+  $add_query = "";
+  $order_query = "";
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND M.{$standard} BETWEEN '{$sDate}' AND '{$eDate}'";
+  }
+
+  $find_text = preg_replace("/\s+/", "", $find_text);
+
+  if ($find_object == "all" && $find_text != "") {
+    if ($S_login['level'] == 2) {
+      if (strstr($find_text, '-') == false) {
+        $add_query .= " AND (M.USER_ID = '{$find_text}' OR replace(M.NAME, ' ', '') = '{$find_text}' OR replace(M.HP, '-', '') = '{$find_text}')";
+      } else {
+        $add_query .= " AND (M.USER_ID = '{$find_text}' OR replace(M.NAME, ' ', '') = '{$find_text}' OR M.HP = '{$find_text}')";
+      }
+    } else {
+      if (strstr($find_text, '-') == false) {
+        $add_query .= " AND (M.USER_ID LIKE '%{$find_text}%' OR replace(M.NAME, ' ', '') LIKE '%{$find_text}%' OR replace(M.HP, '-', '') LIKE '%{$find_text}%')";
+      } else {
+        $add_query .= " AND (M.USER_ID LIKE '%{$find_text}%' OR replace(M.NAME, ' ', '') LIKE '%{$find_text}%' OR M.HP LIKE '%{$find_text}%')";
+      }
+    }
+    $find_object = "";
+  }
+
+  if ($country != "") {
+    $add_query .= " AND M.COUNTRY='{$country}'";
+  }
+
+  if ($gender != "") {
+    $add_query .= " AND M.GENDER='{$gender}'";
+  }
+
+  if ($level != "") {
+    $add_query .= " AND M.LEVEL='{$level}'";
+  }
+
+  if ($marketing != "") {
+    $add_query .= " AND M.IS_MARKETING='{$marketing}'";
+  }
+
+  if ($notification != "") {
+    $add_query .= " AND M.TOKEN='{$notification}'";
+  }
+
+  if ($cashtype != "") {
+    if ($cashtype == "C.CASH") {
+      $add_query .= " AND USER_ID IN (SELECT USER_ID FROM CASH WHERE IS_USE = 'Y' GROUP BY USER_ID HAVING SUM(CASH) {$separator} {$cash})";
+    } else if ($cashtype == "O.CASH" || $cashtype == "O.WIN_MONEY") {
+      $add_query .= " AND USER_ID IN (SELECT USER_ID FROM ORDERS AS O GROUP BY USER_ID HAVING SUM({$cashtype}) {$separator} {$cash})";
+    } else {
+      $add_query .= " AND {$cashtype} {$separator} {$cash}";
+    }
+  }
+
+  if ($orderIdx) {
+    $columns = array("", "USER_ID", "NAME", "COUNTRY", "GENDER", "HP", "LEVEL", "IS_MARKETING", "IS_NOTIFICATION", "REG_DATE", "LASTDATE", "SUM_CASH", "SUM_WIN_MONEY", "SUM_ORDERS", "CASH", "WINCASH", "IPOINT", "POINT");
+    $orderBy = $columns[$orderIdx];
+    $order_query .= $orderBy." ".$orderDir;
+  }
+
+  // SLK-1218 member list limited
+  if ($S_login['level'] > 2 || ($S_login['level'] == 2 && $find_text != "")) {
+    $list = F_MEMBER_list(array(
+      "row"         => $limit,
+      "page"        => $page,
+      "order"       => $order_query,
+      "find_text"   => $find_text,
+      "find_object" => $find_object,
+      "add_query"   => $add_query,
+    ));
+  }
+
+  if ($list["total"] == 0) {
+    $list["MEMBER_NO"] = array();
+  }
+
+  $find_op = array(
+    "M.USER_ID" => "아이디",
+    "M.HP"      => "휴대폰번호",
+    "M.NAME"    => "성명"
+  );
+
+  $marketing_op = array(
+    "Y" => "Y",
+    "N" => "N"
+  );
+
+  $notification_op = array(
+    "Y" => "Y",
+    "N" => "N"
+  );
+
+  $gender_op = array(
+    "M" => "남",
+    "F" => "여"
+  );
+
+  $standard_op = array(
+    "REG_DATE" => "가입일시",
+    "LASTDATE" => "마지막 접속일시"
+  );
+
+  $cashtype_op = array(
+    "C.CASH"      => "결제캐시",
+    "O.WIN_MONEY" => "당첨금",
+    "O.CASH"      => "사용캐시",
+    "IFNULL(M.CASH, 0)"      => "잔여캐시",
+    "IFNULL(M.WINCASH, 0)"   => "잔여당첨금",
+    "IFNULL(M.IPOINT, 0)"    => "마일리지",
+    "IFNULL(M.POINT, 0)"     => "보너스포인트"
+  );
+
+  $separator_op = array(
+    ">"  => ">",
+    "<"  => "<",
+    "="  => "=",
+    "<=" => "<=",
+    ">=" => ">="
+  );
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">회원관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">회원관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">회원관리</li>
+        </ol>
+      </div>
+      <div class="ms-auto pageheader-btn">
+        <a href="./member_list_excel.html?
+            find_text=<?=$find_text?>&find_object=<?=$_GET['find_object']?>&sdate=<?=$sdate?>&edate=<?=$edate?>&country=<?=$country?>&
+            gender=<?=$gender?>&level=<?=$level?>&marketing=<?=$marketing?>&notification=<?=$notification?>&standard=<?=$standard?>
+            &cashtype=<?=$cashtype?>&separator=<?=$separator?>&cash=<?=$cash?>"
+            target="_blank" class="btn btn-primary btn-icon text-white me-2">
+          <span>
+            <i class="fa fa-file-excel-o"></i>
+          </span> Excel Download
+        </a>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select id="select-beast" name="country" class="form-control form-select select2 auto-submit">
+                    <option value="">--국적--</option>
+                    <?=option_make($country_op, $country)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select id="select-beast" name="gender" class="form-control form-select select2 auto-submit">
+                    <option value="">--성별--</option>
+                    <?=option_make($gender_op, $gender)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select id="select-beast" name="level" class="form-control form-select select2 auto-submit">
+                    <option value="">--등급--</option>
+                    <?=option_make($mlevel_op, $level)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select id="select-beast" name="marketing" class="form-control form-select select2 auto-submit">
+                    <option value="">--마케팅--</option>
+                    <?=option_make($marketing_op, $marketing)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select id="select-beast" name="notification" class="form-control form-select select2 auto-submit">
+                    <option value="">--알림--</option>
+                    <?=option_make($notification_op, $notification)?>
+                  </select>
+                </div>
+                <div class="form-group fl-left">
+                  <select id="select-beast" name="find_object" class="form-control form-select select2">
+                    <option value="all">--전체--</option>
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control auto-submit" name="find_text" value="<?=$find_text?>">
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+                <div>
+                  <div class="form-group mr-3 fl-left" style="clear: both;">
+                    <select name="schdate" id="schdate" class="form-control form-select select2">
+                      <option value="">--기간선택--</option>
+                      <?=option_make($search_date_op, $schdate)?>
+                    </select>
+                  </div>
+                  <div class="form-group mr-3 fl-left">
+                    <select id="select-beast" name="standard" class="form-control form-select select2 auto-submit">
+                    <?=option_make($standard_op, $standard)?>
+                    </select>
+                  </div>
+                  <div class="form-group mr-3 fl-left">
+                    <div class="input-group">
+                      <div class="input-group-text">
+                        <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                      </div>
+                      <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                      <span style="margin: 8px 5px 0 5px;">~</span>
+                      <div class="input-group-text">
+                        <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                      </div>
+                      <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                    </div>
+                  </div>
+                  <div class="form-group mr-3 fl-left">
+                    <select id="select-beast" name="cashtype" class="form-control form-select select2">
+                    <option value="">--캐시--</option>
+                    <?=option_make($cashtype_op, $cashtype)?>
+                    </select>
+                  </div>
+                  <div class="form-group mr-3 fl-left">
+                    <select id="select-beast" name="separator" class="form-control form-select select2">
+                    <?=option_make($separator_op, $separator)?>
+                    </select>
+                  </div>
+                  <div class="form-group fl-left">
+                    <input type="number" class="form-control auto-submit" id="cash" name="cash" value="<?=$cash?>" placeholder="금액 입력 후 엔터" />
+                  </div>
+                </div>
+                <div class="form-group fl-left" style="float: right;">
+                  <select name="limit" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <?=option_make($limit_op, $limit)?>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th data-orderable="false">NO</th>
+                    <th>ID</th>
+                    <th>성명</th>
+                    <th>국적</th>
+                    <th>성별</th>
+                    <th data-orderable="false">휴대폰번호</th>
+                    <th>등급</th>
+                    <th>마케팅</th>
+                    <th>알림</th>
+                    <th>가입일시</th>
+                    <th>마지막 접속일시</th>
+                    <th>결제캐시</th>
+                    <th>당첨금</th>
+                    <th>사용캐시</th>
+                    <th>잔여캐시</th>
+                    <th>잔여당첨금</th>
+                    <th>마일리지</th>
+                    <th>보너스포인트</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list["MEMBER_NO"]); $i++) {
+                      $no = $list["total"] - (($page-1) * $list["row"]) - $i;
+
+                      // 보너스포인트 5차이벤트 추가자(접속일이 24/03/01~24/11/30) 구별처리
+                      $is_bonus_event_5th_2 = $db->get_data_one("SELECT COUNT(*) FROM `MEMBER_EVENT_250310` WHERE `USER_ID` = '{$list["USER_ID"][$i]}' AND EVENT_AT = '2025-03-21 00:00:00' LIMIT 1");
+                  ?>
+                  <tr <?php if ($is_bonus_event_5th_2) {?>style="background-color: lightgreen;"<?php }?>>
+                    <td><?=$no?></td>
+                    <td>
+                      <a href="javascript:go_login('<?=$list["USER_ID"][$i]?>')"><?=$list["USER_ID"][$i]?></a>
+                      <i class="modal-effect fa fa-search checkUser"
+                        title="상세정보"
+                        style="cursor: pointer; margin-left: 3px;"
+                        data-bs-effect="effect-scale"
+                        data-bs-target="#memberModal"
+                        data-bs-toggle="modal"
+                        data-no="<?=$list['MEMBER_NO'][$i]?>">
+                      </i></td>
+                    <td><a href="javascript:go_login('<?=$list["USER_ID"][$i]?>')"><?=$list["NAME"][$i]?></a></td>
+                    <td><?=(strlen($list["COUNTRY"][$i]) > 0 ? $country_op[$list["COUNTRY"][$i]] : "-")?></td>
+                    <td><?=(strlen($list["GENDER"][$i]) > 0 ? $gender_op[$list["GENDER"][$i]] : "-")?></td>
+                    <td><?=$list["HP"][$i]?></td>
+                    <td><?=$mlevel_op[$list["LEVEL"][$i]]?></td>
+                    <td><?=$list['IS_MARKETING'][$i]?></td>
+                    <td><?=$list['IS_NOTIFICATION'][$i]?></td>
+                    <td><?=$list["REG_DATE"][$i]?></td>
+                    <td><?=$list["LASTDATE"][$i]?></td>
+                    <td class="text-end"><?=number_format($list["SUM_CASH"][$i])?></td>
+                    <td class="text-end"><?=number_format($list["SUM_WIN_MONEY"][$i])?></td>
+                    <td class="text-end"><?=number_format($list["SUM_ORDERS"][$i])?></td>
+                    <td class="text-end"><?=number_format($list["CASH"][$i])?></td>
+                    <td class="text-end"><?=number_format($list["WINCASH"][$i])?></td>
+                    <td class="text-end"><?=number_format($list["IPOINT"][$i])?></td>
+                    <td class="text-end"><?=number_format($list["POINT"][$i])?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <?php if ($S_login['level'] != 2) { ?>
+            <div class="card-body">
+              <?=$list["page_string"]?>
+            </div>
+            <?php } ?>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER["DOCUMENT_ROOT"]."/inc/footer.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_member.html"; ?>
+
+<script>
+  $(function() {
+    // setDataTable Start
+    let dataTable = setDataTable(9);
+    setTableOrder(dataTable);
+
+    $('#table-list th').on('click', function() {
+      let isSorting = $(this).hasClass('sorting');
+
+      if (isSorting) {
+        let orderIdx = dataTable.column(this).index();
+        let orderDir = dataTable.order()[0][1];
+        dataTable.clear().draw();
+
+        setReloadToOrder(orderIdx, orderDir);
+      }
+    });
+
+    $('.page-link').click(function(event) {
+      event.preventDefault();
+
+      let currentOrder = dataTable.order();
+      let href = $(this).attr('href');
+
+      setReloadToPagination(currentOrder, href);
+    });
+    // setDataTable End
+
+    // 해상도에 따라 높이 조절
+    let getHeight = $('.table-wrapper').css('max-height');
+    let setHeight = Number(getHeight.slice(0, -2)) - 50;
+
+    $('.table-wrapper').css('max-height', setHeight);
+  })
+
+  function isMobile() {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+    // 모바일 기기에서 주로 사용되는 문자열 체크
+    return /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+  }
+
+  function go_login(mid){
+    if (isMobile()) {
+      window.open("https://m.surokolink.com/_common/_super_login.php?mid="+encodeURIComponent(mid), "_blank");
+    } else {
+      window.open("https://surokolink.com/_common/_super_login.php?mid="+encodeURIComponent(mid), "_blank");
+    }
+  }
+
+</script>

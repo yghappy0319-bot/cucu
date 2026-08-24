@@ -1,0 +1,140 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  if ($M_login['user_id'] == "") {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $menu_on['bbs'] = true;
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage bg">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub border_dcdcdc" style="margin-bottom: 0;">
+            <a href="/contents/cs/direct.html" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <?php
+            $bbs_sub['report'] = true;
+            include $_SERVER['DOCUMENT_ROOT']."/contents/cs/inc_bbs.html";
+          ?>
+          <section class="sec_refund">
+            <div class="wrap_form section wrap_com bg_white">
+              <h3 class="h_type4 bb">보이스피싱 제보 등록</h3>
+              <form class="f_NotoSansKR fs25" name="w_frm" id="w_frm" method="post" action="./report-action.php" enctype="multipart/form-data" autocomplete="off">
+                <fieldset>
+                  <legend class="hide">제보 작성 폼</legend>
+                  <ul class="list_form">
+                    <li class="required">
+                      <label for="bank3"><span>제목</span></label>
+                      <div class="bx_input">
+                        <input type="text" name="SUBJECT" id="subject" class="chk_on" alt="제목을 입력해 주세요." />
+                      </div>
+                    </li>
+                    <li class="required">
+                      <label for="money"><span>내용</span></label>
+                      <div class="bx_input pt20 pb20" style="height: 5rem;">
+                        <textarea name="CONTENT" id="content" placeholder="내용을 입력해주세요." class="chk_on" alt="내용을 입력해 주세요."></textarea>
+                      </div>
+                    </li>
+                    <li>
+                      <label class="nocursor"><span>증거자료 파일첨부</span></label>
+                      <div>
+                        <div>
+                          <ul class="list_file">
+                            <li>
+                              <label for="file1" class="btn_file">파일첨부 01.</label>
+                              <input type="file" id="file1" class="check_file" name="uploadFile1" />
+                              <input class="fileName" readonly />
+                            </li>
+                            <li>
+                              <label for="file2" class="btn_file">파일첨부 02.</label>
+                              <input type="file" id="file2" class="check_file" name="uploadFile2" />
+                              <input class="fileName" readonly />
+                            </li>
+                            <li>
+                              <label for="file3" class="btn_file">파일첨부 03.</label>
+                              <input type="file" id="file3" class="check_file" name="uploadFile3" />
+                              <input class="fileName" readonly />
+                            </li>
+                          </ul>
+                          <p class="fs26 ls75">최대 30MB이하의 이미지, m4a, mp4 파일을 최대 3개까지 첨부 가능합니다.</p>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                  <button type="button" class="btn_navy type2 dp_b mt30 okBtn" style="width: 100%; margin-bottom: 30px;">제보하기</button>
+                </fieldset>
+              </form>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script>
+  $(function() {
+    let ok_check = false;
+
+    $('.okBtn').click(function() {
+      let i = true;
+
+      if (ok_check) {
+        return false;
+      }
+
+      ok_check = true;
+
+      $('.chk_on').each(function() {
+        if ($.trim($(this).val()) == '') {
+          alert($(this).attr('alt'));
+          $(this).focus();
+          i = false;
+          return false;
+        }
+      });
+
+      if (i) {
+        $('[name="w_frm"]').submit();
+      } else {
+        ok_check = false;
+      }
+    });
+
+    $('.check_file').change(function() {
+      let fileName = $(this).val();
+      $(this).next('.fileName').val(fileName);
+
+      let val = $(this)[0].files[0];
+      let reader = new FileReader();
+      let filePath = $(this).val().toLowerCase().split('.');
+      let fileType = filePath[filePath.length - 1];
+
+      if (/image\/\w+/.test(val.type)) {
+      } else if (fileType === 'm4a' || fileType === 'mp4') {
+      } else {
+        alert('업로드 할 수 없는 파일입니다.');
+        $(this).next('.fileName').val('');
+        return false;
+      }
+
+      let size = (val.size / 1024).toFixed(1);
+      size = (size / 1024).toFixed(30)
+
+      if (size > 30) {
+        alert('파일의 최대용량(30MB)을 초과하였습니다.');
+        $(this).next('.fileName').val('');
+        return false;
+      }
+      reader.readAsDataURL(val);
+    });
+  });
+</script>
+</html>

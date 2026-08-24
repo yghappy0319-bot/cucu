@@ -1,0 +1,261 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_WININFO.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit&gubun=$gubun&sdate=$sdate&edate=$edate";
+
+  $add_query = "";
+
+  if ($gubun != "") {
+    $add_query .= " AND GUBUN='{$gubun}'";
+  }
+
+  if ($sdate != "" && $edate != "") {
+    $add_query .= " AND PLAYDATE BETWEEN '{$sdate}' AND '{$edate}'";
+  } else {
+    $dt = date("Y-m-d");
+    $add_query .= " AND PLAYDATE <= '{$dt}'";
+  }
+
+  $list = F_WININFO_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['WININFO_NO'] = array();
+  }
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">당첨금현황</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">로또관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">당첨금현황</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="gubun" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <option value="">--복권종류--</option>
+                    <?=option_make($ball_op, $gubun)?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select name="schdate" id="schdate" class="form-control form-select select2">
+                    <option value="">--기간선택--</option>
+                    <?=option_make($search_date_op, $schdate)?>
+                  </select>
+                </div>
+                <input type="hidden" name="find_object" value="PLAYDATE" />
+                <div class="form-group fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                    <span style="margin: 8px 5px 0 5px;">~</span>
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive mb-3">
+              <div class="input-group col-md-10 fl-left">
+                <input type="text" id="ball_gubun" class="form-control" placeholder="복권명" readonly />&nbsp;
+                <input type="text" id="play_date" class="form-control" placeholder="추첨일" readonly />&nbsp;
+                <input type="text" id="PRIZ1" class="form-control" placeholder="1등" onkeyup="setComma(this)" />&nbsp;
+                <input type="text" id="PRIZ2" class="form-control" placeholder="2등" onkeyup="setComma(this)" />&nbsp;
+                <input type="text" id="PRIZ3" class="form-control" placeholder="3등" onkeyup="setComma(this)" />&nbsp;
+                <input type="text" id="PRIZ4" class="form-control" placeholder="4등" onkeyup="setComma(this)" />&nbsp;
+                <input type="text" id="PRIZ5" class="form-control" placeholder="5등" onkeyup="setComma(this)" />&nbsp;
+                <input type="text" id="PRIZ6" class="form-control" placeholder="6등" onkeyup="setComma(this)" />&nbsp;
+                <input type="text" id="PRIZ7" class="form-control" placeholder="7등" onkeyup="setComma(this)" />&nbsp;
+                <input type="text" id="PRIZ8" class="form-control" placeholder="8등" onkeyup="setComma(this)" />&nbsp;
+                <input type="text" id="PRIZ9" class="form-control" placeholder="9등" onkeyup="setComma(this)" />&nbsp;
+                <select name="gubun" id="IS_TYPE" class="form-control form-select select2">
+                  <option value="">--당첨여부--</option>
+                  <option value="N">이월</option>
+                  <option value="Y">당첨</option>
+                </select>&nbsp;
+                <a class="btn btn-border btn-primary" id="btn-priz-in">등록</a>
+              </div>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border text-nowrap table-bordered table-scroll">
+                <thead>
+                  <tr>
+                    <th>회차</th>
+                    <th>복권명</th>
+                    <th>추첨일자</th>
+                    <th>1등</th>
+                    <th>2등</th>
+                    <th>3등</th>
+                    <th>4등</th>
+                    <th>5등</th>
+                    <th>6등</th>
+                    <th>7등</th>
+                    <th>8등</th>
+                    <th>9등</th>
+                    <th>당첨금변경</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['WININFO_NO']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                      // $play_date = "한) ".date("Y-m-d", strtotime($list['PLAYDATE'][$i]." +1 day"))."<br>미) ".$list['PLAYDATE'][$i];
+                      $play_date = "한) ".date("Y-m-d", strtotime($list['PLAYDATE'][$i]." +1 day"));
+                  ?>
+                  <tr style="cursor: pointer;" class="ballFunC text-center" data-pdate="<?=$list['PLAYDATE'][$i]?>">
+                    <td><?=$list['DRAWNUM'][$i]?></td>
+                    <td><?=$ball_op[$list['GUBUN'][$i]]?></td>
+                    <td><?=$play_date?></td>
+                    <td class="text-end"><?=number_format($list['PRIZ1'][$i])?></td>
+                    <td class="text-end"><?=number_format($list['PRIZ2'][$i])?></td>
+                    <td class="text-end"><?=number_format($list['PRIZ3'][$i])?></td>
+                    <td class="text-end"><?=number_format($list['PRIZ4'][$i])?></td>
+                    <td class="text-end"><?=number_format($list['PRIZ5'][$i])?></td>
+                    <td class="text-end"><?=number_format($list['PRIZ6'][$i])?></td>
+                    <td class="text-end"><?=number_format($list['PRIZ7'][$i])?></td>
+                    <td class="text-end"><?=number_format($list['PRIZ8'][$i])?></td>
+                    <td class="text-end"><?=number_format($list['PRIZ9'][$i])?></td>
+                    <td><a href="#" class="btn btn-primary priceUpdateBtn" data-dt="<?=$list['WININFO_NO'][$i]?>">당첨금변경</a></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<form role="form" name="pricefrm" id="pricefrm" method="post" action="./win_money_action.php">
+  <input type="hidden" name="winno" id="winno" />
+</form>
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+    $(document).on('click', '.ballFunC', function() {
+      let play_date = $(this).data('pdate');
+
+      $.post('./default.php', {
+        mode: 'wininfo_price',
+        play_date: play_date
+      }, function(e) {
+        if (e.error) {
+          $('#ball_gubun').val(e.gubun);
+          $('#play_date').val(play_date);
+          $('#PRIZ1').val(e.priz1);
+          $('#PRIZ2').val(e.priz2);
+          $('#PRIZ3').val(e.priz3);
+          $('#PRIZ4').val(e.priz4);
+          $('#PRIZ5').val(e.priz5);
+          $('#PRIZ6').val(e.priz6);
+          $('#PRIZ7').val(e.priz7);
+          $('#PRIZ8').val(e.priz8);
+          $('#PRIZ9').val(e.priz9);
+          $('#IS_TYPE').find('option').prop('selected', false);
+          $('#IS_TYPE').find('option[value="' + e.is_type + '"]').prop('selected', true);
+
+          let txt = $('#IS_TYPE').find('option[value="' + e.is_type + '"]').text();
+          $('#select2-IS_TYPE-container').attr('title', txt);
+          $('#select2-IS_TYPE-container').html(txt);
+        } else {
+          alert('정확한 추첨일자를 입력해 주세요.');
+        }
+      }, 'json');
+    });
+
+    $(document).on('click', '#btn-priz-in', function() {
+      let gubun = $('#ball_gubun').val();
+      let play_date = $('#play_date').val();
+      let priz1 = $('#PRIZ1').val();
+      let priz2 = $('#PRIZ2').val();
+      let priz3 = $('#PRIZ3').val();
+      let priz4 = $('#PRIZ4').val();
+      let priz5 = $('#PRIZ5').val();
+      let priz6 = $('#PRIZ6').val();
+      let priz7 = $('#PRIZ7').val();
+      let priz8 = $('#PRIZ8').val();
+      let priz9 = $('#PRIZ9').val();
+      let is_type = $('#IS_TYPE').val();
+
+      $.post('./default.php', {
+        mode: 'ball_priz_in',
+        play_date: play_date,
+        priz1: priz1,
+        priz2: priz2,
+        priz3: priz3,
+        priz4: priz4,
+        priz5: priz5,
+        priz6: priz6,
+        priz7: priz7,
+        priz8: priz8,
+        priz9: priz9,
+        is_type: is_type
+      }, function(e) {
+        alert(e.msg);
+        if (e.error) {
+          window.location.reload();
+        }
+      }, 'json');
+    });
+
+    $(document).on('click', '.priceUpdateBtn', function() {
+      let no = $(this).data('dt');
+      if (no == '') {
+        alert('추첨일이 누락되였습니다.\r\n새로 고침해 주세요.');
+        return false;
+      }
+      if (confirm('등록한 당첨금적용하시겠습니까?')) {
+        $('#winno').val(no);
+        $('#pricefrm').submit();
+      }
+    });
+
+    let getHeight = $('.table-wrapper').css('max-height');
+    let setHeight = Number(getHeight.slice(0, -2)) - 50;
+
+    // 해상도에 따라 높이 조절
+    $('.table-wrapper').css('max-height', setHeight);
+  });
+</script>

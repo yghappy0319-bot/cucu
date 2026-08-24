@@ -1,0 +1,147 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+  F_admin_chk($S_login);
+
+  $gubun = $_GET['gubun'];
+  $drawnum = $_GET['drawnum'];
+
+  $query = "
+    SELECT
+      ORDERS_NO, WIN1, WIN2, WIN3, WIN4, WIN5, WIN_MONEY, WIN_MONEY_USD
+    FROM
+      ORDERS
+    WHERE
+      WIN_YN='Y' AND WIN_MONEY_YN='Y' AND GUBUN='{$gubun}' AND DRAWNUM='{$drawnum}'";
+  $list = $db->get_list($query);
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">당첨 분석</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">당첨금환급</a></li>
+          <li class="breadcrumb-item active" aria-current="page">당첨 분석</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+              <div class="form-group fl-left">
+                <select name="gubun" id="select-beast" class="form-control form-select select2">
+                  <option selected disabled value="">--복권(전체)--</option>
+                  <?=option_make($ball_op, $gubun)?>
+                </select>
+              </div>
+              <div class="input-group col-md-2 fl-left">
+                <select name="drawnum" id="select-beast" class="form-control form-select select2 auto-submit">
+                  <option selected disabled value="">--회차--</option>
+                </select>
+              </div>
+              <div style="float: right;"><p style="padding-top: 1.1rem;">* 한 티켓에 2개 이상의 당첨이 발생할 경우 당첨금이 통합 계산되어 있음 (당첨금: 대략의 수치 / 당첨수: 정확)</p></div>
+            </form>
+            <div class="table-responsive table-wrapper">
+              <table class="table border table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th>등수</th>
+                    <th>총 당첨수</th>
+                    <th>총 당첨금($)</th>
+                    <th>총 당첨금(₩)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    $statistics[] = array();
+                    if (is_array($list['ORDERS_NO'])) {
+                      for ($order = 0; $order < count($list['ORDERS_NO']); $order++) {
+                        for ($game = 1; $game <= 5; $game++) {
+                          $tmp = "WIN".$game;
+                          if ($list[$tmp][$order] > 0) {
+                            for ($rank = 1; $rank <= 9; $rank++) {
+                              if ($list[$tmp][$order] == $rank) {
+                                $statistics[$rank]['CNT'] += 1;
+                                $statistics[$rank]['USD'] += $list['WIN_MONEY_USD'][$order];
+                                $statistics[$rank]['KRW'] += $list['WIN_MONEY'][$order];
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                    for ($result = 1; $result <= 9; $result++) {
+                      $total_cnt += $statistics[$result]['CNT'];
+                      $total_usd += $statistics[$result]['USD'];
+                      $total_krw += $statistics[$result]['KRW'];
+                  ?>
+                  <tr>
+                    <td><?=$result?> 등</td>
+                    <td><?=number_format($statistics[$result]['CNT'])?></td>
+                    <td class="text-end"><?=number_format($statistics[$result]['USD'])?></td>
+                    <td class="text-end"><?=number_format($statistics[$result]['KRW'])?></td>
+                  </tr>
+                  <?php } ?>
+                  <tr style="background: #F2F3F9;">
+                    <td class="semibold-text">합계</td>
+                    <td class="semibold-text"><?=number_format($total_cnt)?></td>
+                    <td class="text-end semibold-text"><?=number_format($total_usd)?></td>
+                    <td class="text-end semibold-text"><?=number_format($total_krw)?></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+  });
+
+  $('select[name=gubun]').change(function() {
+    let type = $(this).val();
+
+    if (type) {
+      $.post('./default.php', {
+        mode: 'getDrawnum',
+        type: type
+      }, function(e) {
+        if (!e.error) {
+          $('select[name=drawnum]').empty();
+          setDrawnum(e)
+        }
+      }, 'json');
+    }
+  });
+
+  function setDrawnum(drawnum) {
+    let option = '<option selected disabled value="">--회차--</option>';
+    $('select[name=drawnum]').append(option);
+
+    $.each(drawnum, function(key, value) {
+      $('select[name=drawnum]').append($('<option></option>').attr('value', value).text(value));
+    });
+
+    // 회차 선택
+    $('select[name=drawnum]').val('<?=$drawnum?>').prop('selected', true);
+  }
+</script>

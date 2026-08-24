@@ -1,0 +1,85 @@
+<?php
+include "../header.html";
+
+if(!$sms_send_chk){ ?>
+  <script>
+    alert("비정상 접근 입니다.");
+    location.href="/member/idpass.html";
+  </script>
+  <?
+    exit;
+  }
+
+  if(!$find_id_result){ ?>
+    <script>
+      alert("비정상 접근 입니다.");
+      location.href="/member/idpass.html";
+    </script>
+    <?
+      exit;
+  }
+
+?>
+<style>
+  .id_find_content { text-align: center; font-size: 1rem; border: 1px solid #eee; border-radius: 10px;}
+  .my_id { font-size: 1.3rem; font-weight: bold;}
+  .box_btn {    text-align: center;}
+  .box_btn button {font-size: 1.2rem;
+    width: 300px;
+    margin: 5px;
+    background-color: #fff;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 6px;}
+</style>
+<main>
+    <section>
+      <div class="sub_top_title">
+          <h1>아이디 찾기</h1>
+      </div>
+
+      <div class="id_find_content" >
+        <div style="    padding: 40px;">
+          <p>
+            고객님의 아이디는
+          </p>
+          <div>
+            <span class="my_id"><?=문자열2와3자리별표처리($find_id_result)?></span> 입니다.
+          </div>
+        </div>
+      </div>
+      <div class="box_btn" >
+        <div>
+          <button type="button" onclick="location.href='/member/login.html'">로그인</button>
+        </div>
+        <div>
+          <button type="button" onclick="go_find_pass()">비밀번호찾기</button>
+        </div>
+        <div>
+          <button type="button" onclick="location.href='/'">홈으로</button>
+        </div>
+
+      </div>
+    </section>
+    <!-- 필요한 만큼의 섹션 추가 -->
+</main>
+
+<form method="post" id="find_pass_frm" action="/member/pass.html">
+  <input type="hidden" name="myid" value="<?=$find_id_result?>" />
+  <input type="hidden" name="sms_send_chk" value="<?=$sms_send_chk?>" />
+
+</form>
+
+<script>
+  function go_find_pass(){
+    $("#find_pass_frm").submit();
+  }
+  function go_my_id_login(obj){
+    $("#my_ids").val(obj);
+    _go_login();
+  }
+</script>
+
+<?php
+  include "../footer.html";
+?>

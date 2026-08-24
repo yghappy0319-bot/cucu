@@ -1,0 +1,552 @@
+.location { margin-bottom: 1.8rem; background: #f8f8fa; font-size: 0.7rem; font-family: 'Noto Sans KR',sans-serif;}
+.location a { display: inline-block;line-height: 2rem; color: #666666;  vertical-align: middle;}
+.location ol li { float: left}
+.location ol li ~ li:before { content: ""; display: inline-block; margin-right: 5px; margin-left: 10px;  width: 5px; height: 9px; background: url(../images/ico_arr_right_loca.png) no-repeat center /100% 100%; vertical-align: middle;}
+.location ol li:first-child a:before { width: 0.8rem; height: 2rem; background: url(/common/images/ico_home_loca.png) no-repeat left 0 center }
+
+
+
+.popup .sec_login { padding:3.5rem 2.8rem ; width:28rem; }
+.sec_login { text-align: center; box-sizing: border-box;}
+.sec_login form * { font-family: 'Noto Sans KR',sans-serif;}
+.sec_login h2 { padding:0 0 2.35rem; font-size: 2rem; }
+.sec_login h2 span { display: block; font-weight: 400}
+.sec_login > .login_super .logo_main { margin:0 0 2.6rem; padding: 1.2rem 0 0.25rem; border:2px solid #444; border-bottom: none; color:#444 ; font-size: 1.1rem}
+.sec_login > .login_super form ul li { position: relative; margin:0 0 0.5rem; border: 1px solid #ddd}
+.sec_login > .login_super form ul li:after { position: absolute; left: 1rem; top: 0; width: 1rem; height: 100%; background-repeat: no-repeat; background-position: center; background-size: 100% auto; }
+.sec_login > .login_super form ul li.id:after { background-image: url(/common/images/ico_id.png)}
+.sec_login > .login_super form ul li.pw:after { background-image: url(/common/images/ico_pw.png)}
+.sec_login > .login_super form ul li input { padding:0 0 0 2.5rem; width: 100%; line-height: 2.4rem; box-sizing: border-box; color: #000}
+
+.sec_login > .login_super form .btn_login { margin:1.5rem 0 1.65rem; width:100%; background:#444 }
+.sec_login .wrap_chk { text-align: left;}
+.sec_login .wrap_chk label { cursor: pointer; color: #444; font-weight: 400; font-size: 0.75rem}
+.sec_login .btn_login { display: block; line-height: 3rem; border-radius: 3px; color: #fff; font-size: 0.75rem}
+.sec_login .list_find { font-size: 0}
+.sec_login .list_find li {  position: relative; display: inline-block; padding: 0 0.95rem }
+.sec_login .list_find li:after { content: ""; position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 1px; background: #e9e9e9; height: 13px}
+.sec_login .list_find li a { display: block; padding: 0.25rem 0; font-size: 0.75rem; color: #444; font-weight: 500; }
+.sec_login .login_sns ul li { margin: 0 0 0.5rem}
+
+.list_reg { padding-left:5%; padding-right: 5%; text-align: left}
+.list_reg .bx_input { display: block; padding-left: 1rem; padding-right: 1rem; border: 1px solid #bbb; border-radius: 0.2rem; height: 2.4rem; line-height: 1; overflow: hidden; box-sizing: border-box;}
+.list_reg .bx_input.type1 input { width: auto}
+.list_reg .bx_input.type1 > div { position: relative; flex:1}
+.list_reg .bx_input.gray { background: #f5f5f5}
+.list_reg .bx_input > * { height: 100%; width: 100%; background: none; box-sizing: border-box;}
+.list_reg > li { display: flex;}
+.list_reg > li ~ li { margin-top: 1rem}
+.list_reg > li > div { flex: 1; }
+.list_reg > li > label { display: block; width: 21.7%; line-height:2.4rem; font-size: 0.75rem; cursor: pointer;}
+.list_reg > li > label.nocursor { cursor: default;}
+.list_reg > li .wrap_type1 > div { flex: 1}
+.list_reg > li .wrap_type1 ~ .wrap_type1  { margin: 0.5rem 0 0}
+.list_reg .bx_num { position: relative;}
+.list_reg .bx_num .time { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: #f00; font-size: 0.7rem}
+
+
+/* 회원가입 - common */
+.sec_reg { width: 35rem; margin: 0 auto; }
+.sec_reg button { font-family: 'Noto Sans KR',sans-serif;}
+.sec_reg .wrap_title { margin-bottom: 1.5rem; border-bottom: 2px solid #000; padding: 4.2rem 0 1.5rem; letter-spacing: -0.075em; text-align: center;}
+.sec_reg .wrap_title > p { padding-top:1rem; font-size: 1.1rem; color: #757575; font-family: 'Noto Sans KR',sans-serif; }
+.sec_reg form legend { font-size: 1.1rem; text-align: center;}
+.list_reg .view { padding-left: 0.8rem; color: #666; text-decoration: underline; font-weight: 500}
+.list_reg .txt_type1 { display:block; padding: 0.5rem 0 0 ;font-size: 0.65rem; color: #999; line-height: 1.3}
+.btn_gray { background: #444; color: #fff; border-radius: 0.2rem; box-sizing: border-box;}
+.list_reg .btn_gray { margin-left: 0.3rem; width: 6rem; height:2.4rem;  font-family: 'Noto Sans KR',sans-serif}
+
+
+.btn_navy { color: #fff; background: #373b46}
+.wrap_btn.type2 { margin: 2rem auto 0; width:54.6%;}
+.wrap_btn.type2 > * { width: 13rem;}
+.wrap_btn > * { display: block; line-height: 3rem; height: 3rem; min-width: 13rem; border-radius: 0.2rem; font-size: 0.85rem; font-family: 'Noto Sans KR',sans-serif; letter-spacing: -0.05em; box-sizing: border-box; text-align: center;}
+.wrap_btn .btn_prev,
+.btn_w { border: 1px solid #ddd; color: #666 ; background:#fff; border-radius: 0.2rem}
+
+
+/* 약관동의 - signup1-agree.html */
+.sec_reg.agree form { padding: 3.5rem 0 0; font-size: 0.75rem;}
+.sec_reg.agree form legend { padding: 0 0 3.35rem}
+.sec_reg.agree form ul li { color: #666}
+.sec_reg.agree form ul li ~ li { padding: 0.85rem 0 0; }
+.sec_reg.agree form .btm { margin-top: 1rem; padding: 1.6rem 4.5%; border: 1px solid #cfcfcf}
+.sec_reg.agree form .btm > li { display: flex; justify-content: space-between; align-items: center;}
+.sec_reg.agree form .wrap_btn { padding:1.5rem 0 0}
+
+
+/* 회원가입입력 - signup.html */
+.sec_reg.write { text-align: center;}
+.sec_reg.write form { padding: 3.5rem 0 0; font-size: 0.75rem;}
+.sec_reg .list_step li { width: 6.7rem}
+.sec_reg .list_step li:before { content: ""; display: inline-block; width: 3.2rem; height: 3.2rem; background-image: url(/common/images/ico_agree.png); background-repeat: no-repeat; background-position: center; background-size: auto 50%; background-color: #c7c7c7; border-radius: 100%; }
+.sec_reg .list_step li.active:before { background-color: #535353}
+.sec_reg .list_step li p { padding:0.9rem 0 0; font-size: 0.8rem; }
+.sec_reg .list_step li:nth-child(2):before { background-image: url(/common/images/ico_reg.png);}
+.sec_reg .list_step li:nth-child(3):before { background-image: url(/common/images/ico_fin.png); }
+.sec_reg.write .list_reg { padding-top: 2.5rem}
+.sec_reg.write .list_reg > li > label > span:after,
+.popup.mileage .list_reg > li > label > span:after,
+.list_reg > li.required > label > span:after
+ { content: "*"; display: inline-block; color: #f00;}
+.sec_reg.write .list_reg .bx_num { position: relative; margin-top: 0.5rem; width: 12rem}
+.sec_reg.write .list_reg .bx_tel select { height: 100%; width: 30%; }
+.sec_reg.write .list_reg .bx_tel input { width: 60%}
+.sec_reg.write .wrap_btn { padding: 3.75rem 0 14.5rem}
+.bx_agree .bx_input { height: auto; padding-bottom: 1.5rem; font-size: 0.75rem; color: #666}
+
+/* 아이디 찾기 */
+.sec_reg.find_id .wrap_btn,
+.sec_find.pw .wrap_btn
+ { margin:3.85rem 0 0; padding:2.5rem 0 0 ; border-top: 1px solid #e8e8e8; }
+.sec_find { padding: 4.3rem}
+.sec_find { width: 35rem; margin: 0 auto; text-align: center;}
+.sec_find .bx_result { background:#f4f4f4; padding:2rem }
+.sec_find .bx_result > p { font-size: 1rem}
+.sec_find .bx_result > span { display: block; padding: 1.1rem 0 1.5rem; font-size: 0.8rem; color: #666}
+.sec_find .wrap_title .h_type3 { padding-bottom: 3.5rem}
+.sec_find .wrap_title > p { padding: 0 0 1.5rem; font-size: 1.1rem}
+
+/* 개인정보 수집 팝업 */
+.popup.policy .txt { padding: 1.6rem 0 ; font-size: 0.8rem; color: #666; line-height: 1.7}
+
+/* 회원가입 완료 - signup3 */
+.sec_fin h2 { padding: 5.3rem 0 0;font-size: 2.4rem }
+.sec_fin h2 span { padding:0.3rem 0 0;  font-size: 1.8rem}
+.sec_fin.wrap_com { width: 35rem;}
+.sec_fin form, .sec_fin .wrap_btn.btm { padding: 0 5.5rem }
+.sec_fin .wrap_btn.btm { position: relative; padding-top: 2.5rem ; border-top: 1px solid #e8e8e8}
+.sec_fin .or { position: absolute; left: 50%; padding: 0 1rem; transform: translateX(-50%); color: #9fa19f; font-size: 0.75rem; letter-spacing: -0.05em; background: #fff; z-index: 1;
+}
+
+.sec_app { max-width:29.25rem; padding: 2.3rem 2rem; width: 29.25rem; box-sizing: border-box; font-family: 'Noto Sans KR',sans-serif;}
+.sec_app h2 { font-size: 1.25rem}
+.sec_app .txt_type1 { font-size: 0.75rem; color: #999}
+.sec_app .list_qr { padding: 2.5rem 0 3rem}
+.sec_app .list_qr > li { display: flex; flex-direction: column; justify-content: center; width: 11.5rem; height: 11.5rem; border: 1px solid #ccc; border-radius: 0.7rem; box-sizing: border-box; text-align: center;}
+.sec_app .list_qr > li > p { padding: 1.8rem 0 0; font-weight: 600; letter-spacing: -0.025em}
+.sec_app .bx_sendurl { margin: 1.5rem 0 0}
+.sec_app .bx_sendurl { padding: 0 1.5rem; height:3.5rem; background: #f5f5f5; border-radius: 0.2rem; overflow: hidden; box-sizing: border-box;}
+.sec_app .bx_sendurl input { height: 100%; background: none; font-size: 0.8rem}
+.sec_app .bx_sendurl button { padding: 0 1.2rem; height: 2rem; line-height: 2.2rem; background: #4e2bf4; color: #fff; border-radius: 0.3rem; font-size: 0.9rem; }
+.sec_app .list_bul { padding: 1.25rem 0 0; letter-spacing: -0.025em}
+
+
+/* mypage - common */
+.wrap_mypage { padding:2rem 0 0; font-family: 'Noto Sans KR',sans-serif;}
+.wrap_mypage .wrap_title { padding: 0 0 1.2rem}
+.wrap_mypage .wrap_title .heading { font-size: 1.25rem; font-weight: 500; letter-spacing: -0.075em}
+.wrap_mypage .wrap_title .txt_gray { padding-left: 1rem; font-size: 0.75rem; color: #888}
+.wrap_mypage > .left { width: 16.5%;  }
+.wrap_mypage > .right { width: 80.83%;  }
+.wrap_mypage > .right section { padding-top: 0.75rem}
+.wrap_mypage > .right section ~ section { margin-top: 1.5rem}
+
+.bg_navy.type_radius { border-radius: 0.25rem 0.25rem 0 0}
+.wrap_mypage h2 { font-size: 0.9rem; text-align: center; line-height: 3rem}
+.wrap_mypage h2:after { margin-left: 0.5rem; width: 1.15rem; height: 1.15rem; background: url(/common/images/ico_alarm.png) no-repeat center / 100% auto;}
+.nav_mypage { padding:1.8rem 18% 3rem 8.7%; border: 1px solid #e8e8e8; border-top: none; letter-spacing: -0.05em; box-sizing: border-box; line-height: 1.87; font-size: 0.8rem}
+.nav_mypage nav > ul > li > ul { padding: 0.4rem 0 0 }
+.nav_mypage nav > ul > li > a { font-weight: 500}
+.nav_mypage .line:after { content: ""; display: block; margin:0.6rem 0 0.75rem;  height: 1px; background: #e8e8e8}
+.nav_mypage ul ul { line-height: 1.66; font-size: 0.75rem}
+.nav_mypage ul ul a { color:#888888 }
+.nav_mypage .nolink { cursor:default;}
+.nav_mypage a:not(.nolink):hover { display: block; color: var(--color_blue); transition: all .3s;}
+
+.sec_mypage { letter-spacing: -0.05em}
+.bx_type2 { padding: 0 3.3%;  height: 3rem; box-sizing: border-box;}
+.bx_type2 > .left:before  { margin-right: 1.2rem; width: 1.1rem; height: 1.2rem; background: url(/common/images/ico_person.png) no-repeat center / 100% auto}
+.sec_mypage .top .right { font-size: 0.7rem; }
+.sec_mypage .top .right * { vertical-align: middle;}
+.sec_mypage .top .right span { opacity: 0.8}
+.sec_mypage .top .right a { display: inline-block; margin-left: 0.8rem; padding:0.4rem 0.8rem;  border: 1px solid #73767e; border-radius: 3px}
+/* .sec_mypage .btm { padding: 2rem 5.36% 0} */
+.sec_mypage .btm > div { padding-left: 5.15%; padding-top: 2rem ;  width: 50%; box-sizing: border-box; min-height: 12.75rem}
+.sec_mypage .btm > .right { border-left: 1px solid #e8e8e8}
+.sec_mypage .btm h4 { padding: 0 0 1rem}
+.sec_mypage .btm .list_bul2 > li { display: flex; font-size: 0.75rem; color: #252525}
+.sec_mypage .btm .list_bul2 > li ~ li { padding: 0.75rem 0 0}
+.sec_mypage .btm .list_bul2 > li > p { width: 34%}
+.sec_mypage .btm .list_bul2 > li .btn { padding: 0.15rem 0.7rem 0.25rem; font-size: 0.6rem; border-radius: 0.2rem}
+/* .sec_mypage .btm .right .list_bul2 > li > div > span { width: 6.7rem} */
+.sec_mypage .red { color: #f00}
+.sec_mypage .btm .right .list_bul2 > li > div { flex: 1;}
+.sec_mypage .btm .right .list_bul2 > li > div > span { display: inline-block; width: 6.75rem;  font-weight: 500}
+
+
+
+
+/* 당첨내역 , 구매내역*/
+.list_search { border-top:1px solid #373b46; border-bottom:1px solid #373b46;}
+.list_search > li { display: flex; align-items: center; letter-spacing: -0.05em}
+.list_search > li > p { width: 7.4rem; font-size: 0.8rem; font-weight: 500; }
+.list_search .list_sel > li { padding: 0.8rem 0;}
+.list_search .list_sel > li * { height: 2.6rem; width: 7rem; font-size: 0.7rem; position: relative; color: #666; transition: all .3s; font-family: 'Noto Sans KR',sans-serif; font-weight: 500}
+.list_search .list_sel > li:hover * { border-color:#008ecb ; color: #008ecb}
+
+
+
+
+
+.nohistory, .notice_type1 { text-align: center;}
+.nohistory .wrap_img img { width: 3.5rem}
+.nohistory .wrap_img, .notice_type1 .wrap_img { margin:2.75rem 0 1.5rem;}
+.nohistory > p, .notice_type1 > p { font-size: 1.35rem; line-height: 1.35; color: #000}
+.notice_type1 { color: #585858}
+.notice_type1  .wrap_img { display: inline-block; width: 3.5rem}
+
+
+.popup.scan > .inner { min-width: 29.25rem; min-height: 29.8rem; text-align: center;}
+.popup.scan .wrap_img { margin: 0 auto; max-width:13.5rem; }
+.popup.scan > .inner strong { display: block; padding: 3rem 0 1.15rem}
+
+
+.sec_coupon .bx_gray { padding:2.25rem 0 2rem ; border-bottom: 1px solid #000; border-top: 1px solid #000}
+.sec_coupon .bx_gray > p { font-size:1.2rem;  color: #373b46; text-align: center;}
+.sec_coupon .bx_gray > div { width: 30rem; margin: 0 auto;}
+.sec_coupon .bx_gray .wrap_input { margin: 1.8rem 0 1.2rem}
+.sec_coupon .bx_gray .list_bul { font-size: 0.75rem; color: #676767}
+
+.wrap_input { height: 2.5rem; font-size: 0}
+.wrap_input > * { height: 100%; box-sizing: border-box; border-radius: 0.2rem; font-size: 0.75rem; font-family: 'Noto Sans KR',sans-serif;}
+.wrap_input > input { padding-left: 1rem; width:20.5rem;  border: 1px solid #e8e8e8; background: #fff}
+.wrap_input > button, .wrap_input > a { display:inline-block; margin-left: 0.4rem; width: 6rem; vertical-align: middle; text-align: center; line-height: 2.5rem}
+
+
+.sec_point .bx_gray { margin: 0 0 1rem}
+
+/* 충전내역 */
+.bx_type2 { font-size: 0.9rem}
+.bx_type2 .color_ylw { padding-left: 0.8rem; color: #fffc00; vertical-align: middle;}
+.bx_notice { padding: 1rem 3.3%; border: 1px solid #e8e8e8; box-sizing: border-box;}
+.bx_notice .list_bul > li { position: relative; padding-left: 0.5rem; letter-spacing: -0.05em; line-height: 1.6}
+.bx_notice .list_bul > li:before { position: absolute; left: 0; top: 0.5rem;}
+.bx_notice .list_bul > li ~ li { margin-top: 0.3rem}
+.bx_notice .list_bul > li ul { margin-left: 0.6rem}
+.bx_notice .list_bul > li ul li { line-height: 1.4}
+
+.border_type1 { border-top:1px solid #000; border-bottom: 1px solid #000}
+.radius5 { border-radius: 0.25rem}
+.sec_charge .bx_notice { margin: 0 0 2.5rem}
+.list_charge > li { display: flex; margin-bottom: 0.3rem; border: 1px solid #d2d2d2; border-radius: 0.5rem; overflow: hidden; height: 4rem; }
+.list_charge > li > p { background: #eee; width: 23%; height:100%; line-height: 4.4rem; text-align: center; color: #373b46; font-family: 'GmarketSans'; font-size: 1.25rem}
+.list_charge > li > p:after { content: "원"; display: inline-block; vertical-align: middle; font-weight: bold;}
+.list_charge > li > p * { vertical-align: middle;}
+.list_charge > li > div { padding: 0 0.75rem 0 1.6rem; display: flex; justify-content: space-between; align-items: center; width: 77%}
+.list_charge > li ul { font-size: 0.9rem; color:#676767 }
+.list_charge > li ul li { display: inline-block; padding-right: 1.25rem}
+.list_charge > li ul li > * { padding-left: 0.25rem; vertical-align: middle;}
+.list_charge > li ul li:before,.list_charge > li ul li:after { content: ""; display: inline-block; vertical-align: middle;}
+.list_charge > li ul li.benefit:before { content: "적립혜택 :"; }
+.list_charge > li ul li.cash:before { content: "충전캐쉬 :"; }
+.list_charge > li ul li.cash:after { content: "원"; }
+.list_charge > li a,
+.btn_pay { display:block; width:9.2rem; background-color: #e60012; height: 2.5rem; line-height: 2.5rem; color: #fff; font-size:0.9rem; border-radius: 0.25rem; text-align: center;}
+.sec_charge .bx_gray { padding: 1.1rem 1.6rem; box-sizing: border-box;}
+
+.sec_charge .wrap_notice { padding: 2.6rem 0 4rem}
+.sec_charge .wrap_notice .add_before:before { margin-right: 0.5rem; background: url(../images/ico_i.png) no-repeat center / 100% 100%; width: 1.25rem; height: 1.25rem;}
+
+.popup.charge > .inner { width:29.25rem; box-sizing: border-box; font-family: 'Noto Sans KR',sans-serif; }
+.popup.charge > .inner > div { padding-left: 2.3rem; padding-right: 2.3rem}
+.popup.charge > .inner .bx_white {  padding-bottom: 2rem;}
+.popup.charge .title { display: block; padding:2rem 0 1.25rem; font-family: 'GmarketSans'; font-size: 1.25rem; }
+.popup.charge.pay .bx_gray.top { padding:1.15rem 0 1.15rem 1.25rem; font-size: 1rem; color:#545454 ; line-height: 1.4; font-weight: bold;}
+.popup.charge.pay .list_sel > li { width: 25%; margin-left: -1px; margin-top: -1px;}
+.popup.charge.pay .list_sel > li a { display: block; height: 3.35rem; line-height: 3.35rem; box-sizing: border-box; border-color: #d5d5d5;  text-align: center; color: #000}
+.popup.charge.pay .list_sel > li a:hover { border-color: #000;}
+.popup.charge .btn_pay { margin: 1.35rem auto 0}
+.popup.charge .list_bul.notice { border-top: 1px solid #dcdcdc; padding-top: 0.8rem; padding-bottom: 1rem; font-size: 0.65rem; color: #252525; }
+.popup.charge .list_bul > li { padding: 0}
+.popup.charge .list_bul > li * { vertical-align: middle;}
+.popup.charge .list_bul > li:before { background: none; content: "*"; width: inherit; height: inherit;}
+.popup.charge .list_bul > li span { vertical-align: sub;}
+.mileage .list_reg { padding: 2rem 0.85rem 1.2rem ;  }
+.mileage .list_reg:nth-of-type(1) { border-bottom: 1px solid #e5e5e5; border-top:1px solid #000;}
+.mileage .list_reg:nth-of-type(1) > li label { padding: 0.8rem 0 0}
+.mileage .list_reg > li > label { width: 8rem; line-height: inherit;}
+.mileage .list_reg > li > .bx_input { width: 11.5rem; flex: none;}
+
+
+/* cash-refund.html  */
+.list_reg.type2 { padding:0.85rem 1.1rem ; border-top: 1px solid #000; border-bottom: 1px solid #000; box-sizing: border-box ; font-size: 0.75rem}
+.list_reg.type2 > li > label { width: 6.8rem; letter-spacing: -0.05em; font-weight: 500; line-height: 1.9rem}
+.list_reg.type2 .btn_gray { line-height: 1.9rem}
+.list_reg.type2 .bx_input { width: 19.6rem; height:1.9rem; font-size: 0}
+.list_reg.type2 .bx_input * { font-size: 0.7rem;  background: none}
+.list_reg.type2 > li > div { flex:none; margin-right:0.5rem; }
+.sec_apply .item_fee > div { font-size: 0.75rem}
+.sec_apply .item_refund > div { font-size: 1.3rem}
+.sec_apply .item_addr > div > div ~ div { margin-top: 0.65rem}
+.chk_apply .bx_gray { margin:0.5rem 0 1.5rem; }
+
+.status { margin: 0 0 0.7rem; text-align: right; color: #676767; font-size: 0}
+.status > li { display: inline-block; font-size: 0.75rem}
+.status > li ~ li:before { content: "/"; display: inline-block; margin: 0 0.35rem; vertical-align: middle;}
+.status > li > * { vertical-align: middle;}
+.space_btm { margin-bottom: 30vh}
+
+/* mynumber.html */
+.sec_mynumber .bx_gray { padding: 1rem; }
+.sec_mynumber .bx_gray .list_bul > li { line-height: 1.8rem}
+.sec_mynumber .bx_gray .btns_buy a { display: block; margin-left: 0.5rem; font-size: 0.75rem; width: 7.5rem; text-align: center; border-radius: 0.25rem; line-height: 1.8rem}
+
+.sec_mynumber h4 { margin-top: 2.55rem}
+.sec_mynumber .list_ball  { display: table; margin: 0 auto}
+.sec_mynumber .tb_type2 td.delete { padding: 0}
+.sec_mynumber .tb_type2 td.delete a { display: inline-block; width: 2rem; height: 2rem; background:url(/common/images/ico_bin.png) no-repeat center #eee; border-radius: 100%}
+
+/*direct.html */
+.sec_direct .wrap_list .btn_red2 { margin: 2.5rem 0 0.5rem; width: 5.5rem; height: 2rem; display: block; line-height: 2rem; font-size: 0.7rem; text-align: center;}
+.sec_direct .wrap_list .table { display: table; width:100%; }
+.sec_direct .wrap_list .thead .tr > div { padding: 0.75rem 0.5rem; box-sizing: border-box; font-weight: 500; }
+.sec_direct .wrap_list .tbody .tr > div {  color: #676767; padding: 1rem 0.5rem; min-height: 2.75rem; box-sizing: border-box;}
+.sec_direct .wrap_list .tr { display: table-row;}
+.sec_direct .wrap_list .tr > div  { display: table-cell; text-align: center; font-size:0.75rem }
+.sec_direct .wrap_list .tr > .td_click { padding: 0 !important}
+.sec_direct .wrap_list .tr > .td_click a { display: block; padding: 0.5rem 1rem; text-align: left;  color: #676767}
+.sec_direct .wrap_list .tr > div ~ div { border-left: 1px solid #e8e8e8}
+.sec_direct .wrap_list .tr > div:nth-child(1) { width:9%; }
+.sec_direct .wrap_list .tr > div:nth-child(2) { width:13%; }
+.sec_direct .wrap_list .tr > div:nth-child(4) { width:18%; }
+.sec_direct .wrap_list .tr > div:nth-child(5) { width:11%; }
+.sec_direct .bx_answer { font-size: 0.75rem; color:#676767; line-height: 2}
+.sec_direct .bx_answer > div { position: relative;}
+.sec_direct .bx_answer .btn_navy { position: absolute; right: 0; bottom: 0; width: 2.8rem; height: 1.5rem; text-align: center; cursor: pointer;}
+.sec_direct .bx_answer .text { max-width: 60%}
+.sec_write .btn_red2 { margin:1.5rem 0 11rem; width: 13.5rem}
+.sec_write .list_reg.type2 .bx_input { width: 240px}
+.sec_write .list_file > li { margin: 0 0 10px}
+.sec_write .list_file > li .btn_file { display: inline-block; padding:  0.38rem 0.5rem; background: #000; color: #fff; border-radius: 0.25rem; font-size: 0.7rem}
+.sec_write .list_file > li .fileName { color: #666}
+
+/*my-info.html  */
+.sec_myinfo .wrap_input { display: table; margin: 1.3rem auto}
+.sec_myinfo .list_reg{ padding: 0}
+.sec_myinfo .wrap_input > * {height: 2.5rem}
+.sec_myinfo .fm_info { padding: 2rem 27% 3.5rem 2% }
+.sec_myinfo .wrap_btn.type2 { margin: 2.25rem auto 0; width:auto;}
+.sec_myinfo .secession { font-size: 0.75rem}
+.sec_myinfo .secession .left strong { font-size: 0.85rem}
+.sec_myinfo .secession .left p { padding-top: 0.85rem; color: #666}
+.sec_myinfo .secession a { display: block; width: 5rem; line-height: 2rem; text-align: center;}
+
+/* delete.html */
+.sec_delete { font-size:  .7rem; }
+.sec_delete .bx_gray { padding: 2.25rem 3rem ; margin: 2.25rem 0 1.65rem; font-size: 0.85rem; color: #666; }
+.sec_delete .bx_gray > div { padding: 1rem 0 0.75rem; font-size: 1.2rem; color: #222;}
+.sec_delete .bx_gray .list_bul { border-top:1px solid #ddd; margin-top: 2.5rem; padding-top: 0.75rem;  color:#999; font-size: 0.7rem; }
+.sec_delete .bx_gray .list_bul li { margin: 0; line-height: 1.7}
+.sec_delete .agree { padding-top: 1.8rem; margin-top: 1.5rem; border-top: 1px solid #e0e0e0; text-align: center;}
+
+.sec_delete .fm_delete { padding: 1.75rem 0 2.5rem}
+.sec_delete .fm_delete .list_reg { padding-left: 15%; padding-right: 15%;}
+.sec_delete .fm_delete .list_reg .item_textarea > * { width: 100%}
+.sec_delete .fm_delete .list_reg .item_textarea .bx_input { min-height: 6.2rem;}
+.sec_delete .fm_delete .list_reg .item_textarea textarea { padding: 1rem 0; width: 100% ;height:  100%; }
+.sec_delete .fm_delete .wrap_btn { border-top:1px solid #ddd; padding:2.5rem 0 0 }
+
+
+/* 메가밀리언 구매 */
+.sec_info > .bx_gray { margin-bottom: 2.75rem; border:1px solid #ddd; border-radius: 0.5rem; overflow: hidden; letter-spacing: -0.075em}
+.sec_info > .bx_gray .txt_type1 { font-size: 1.25rem}
+.sec_info > .bx_gray > ul { padding:1.5rem 0; border-top: 0.2rem solid #535353; color: #313131}
+.sec_info > .bx_gray > ul > li { width: 33.333%; box-sizing: border-box; line-height: 1.38}
+.sec_info > .bx_gray > ul > li > div { display: table; margin: 0 auto}
+.sec_info > .bx_gray > ul > li ~ li { border-left: 1px solid #ddd}
+.sec_info > .bx_gray > ul > li .title { padding: 0 0 1.1rem; color: #000}
+.sec_info > .bx_gray .ico_date:after { margin-left: 0.6rem; width:1.4rem; height:1.45rem; background: url(/common/images/ico_date.png) no-repeat center / 100% 100%}
+.sec_info > .bx_gray .ico_time_ko:after { margin-left: 0.6rem; width:3.6rem; height:1.8rem; background: url(/common/images/ico_time_ko.png) no-repeat center / auto 100%}
+.nation .add_before:before { margin-right: 0.6rem; width:1.5rem; height:1rem; border: 1px solid #ddd; }
+.ico_us:before { background: url(/common/images/ico_us.png) no-repeat center / 100% 100%}
+.ico_ko:before { background: url(/common/images/ico_ko.png) no-repeat center / 100% 100%}
+
+.sec_game { padding: 3.5rem 0 3.4rem; background: #1b1b1b; color: #fff ; font-family: 'GmarketSans';}
+.sec_game * { color: #fff}
+.sec_game .choice.left { width: 62.9%; }
+.sec_game .pay.right { padding: 1.1rem 1rem 0; width: 35.5%; height: 35.5rem; background: #333; border-radius: 1rem; box-sizing: border-box; letter-spacing: -0.075em}
+.sec_game .choice .title { font-size: 0.85rem}
+.sec_game .choice .title span { color: #c5c5c5; font-weight: 300}
+.sec_game .choice ol li .title { padding: 2.6rem 0 1rem}
+.sec_game .choice ol li:first-child .title { padding-top: 0}
+.sec_game .choice .list_btn > li { border: 1px solid #535353; border-radius: 0.25rem; overflow: hidden;}
+.sec_game .choice .list_btn > li > * { display: block; width: 100%; height: 3rem; line-height: 3.2rem; background: #333; font-size: 0.9rem; font-weight: bold; letter-spacing: -0.075em; transition: all .3s; font-family: 'GmarketSans'}
+.sec_game .choice .list_btn > li > *:hover { background: #f00;}
+.sec_game .choice .step1 .list_btn > li { width: 18.5%}
+.sec_game .choice .step2 .list_btn { width: 80%}
+.sec_game .choice .step2 .list_btn > li { width: 32%}
+.sec_game .choice .step3 { float: left; width: 61.2%}
+.sec_game .choice .step4 { float: right; width: 37%}
+.bx_balls { box-sizing: border-box; border: 1px solid; border: 1px solid #535353; border-radius: 0.5rem; overflow: hidden; height: 20.4rem;box-sizing: border-box}
+.bx_balls > div { padding: 1.4rem}
+.sec_game .choice ol:after { content: ""; display: block; clear: both}
+.list_num > li { float: left; border-radius: 100%; box-sizing: border-box; border: 1px solid #5c5c5c; text-align: center; overflow: hidden;}
+.list_num > li > a { display: block; width: 100%; height: 100%; font-size: 0.75rem}
+.sec_game .list_num > li { margin-right: 5px;  margin-bottom: 6px; width: 2rem; height: 2rem;  line-height: 2rem;}
+.sec_game .step3 .list_num > li:nth-child(9n){ margin-right: 0;}
+.sec_game .step4 .list_num > li:nth-child(5n){ margin-right: 0;}
+
+.sec_game .choice .step3 .list_num > li > *:hover,
+.sec_game .choice .step3 .list_num > li.on > *{ background: #fff; color: #000}
+.sec_game .choice .step4 .list_num > li > *:hover { background: #f00;}
+
+.sec_game .pay .top { padding: 0 0 0.7rem; border-bottom: 1px solid #434343}
+.sec_game .pay .top > strong { font-size: 1.25rem; line-height: 1.7rem}
+.sec_game .pay .top > strong:before { margin-right: 0.5rem; margin-left: 1.5rem; width: 1.65rem; height: 1.15rem; background: url(../images/ico_list.png) no-repeat center / 100% 100%}
+.sec_game .pay .top > button { width: 4rem; height: 1.6rem; font-size: 0.75rem; color: #666; font-weight: 500}
+.sec_game .pay .bx_border { border: 1px solid #5c5c5c; border-radius: 0.25rem}
+.sec_game .pay .btn_save {margin:0.5rem 0 0;  width: 100%; height:2.3rem;  background: #1b1b1b;}
+.sec_game .pay .btn_save:after { margin-left: 1rem; width: 0.75rem; height: 0.85rem; background: url(../images/ico_save.png) no-repeat center / 100% 100% }
+.sec_game .pay .btn_save + p { margin: 0 0 0.5rem; padding: 1.2rem 0; font-size: 0.9rem; text-align: center; border-bottom: 1px solid #5c5c5c;}
+.sec_game .wrap_game { padding: 1rem 0.8rem 0.5rem; border: 1px solid #5c5c5c; }
+.sec_game .list_game { font-size: 0.75rem; }
+.sec_game .list_game .list_num > li { margin-bottom: 0.25rem; width: 1.7rem; height: 1.7rem; line-height: 1.8rem}
+.sec_game .list_game .list_num > li ~ li { margin-left: 0.2rem}
+.sec_game .list_game .active .list_num > li:not(:last-child) a { background: #fff; }
+.sec_game .list_game .active .list_num > li:last-child a { background:#e60012; color: #fff}
+.sec_game .pay .list_game .list_num a { color:#000}
+.sec_game .pay .list_game .btns > * { width: 1.9rem; height: 1.65rem; border-radius: 0.25rem; font-family: 'GmarketSans'; line-height: 1.8rem; font-size: 0.65rem}
+.sec_game .pay .list_game .btn_re, .sec_game .bx_result { background: #1b1b1b; }
+.sec_game .pay .list_game .btn_del { margin-left: 0.2rem; background: #e60012; }
+.sec_game .bx_result { margin: 0.85rem 0 0.4rem; padding: 1.1rem 0.8rem; font-size: 0.9rem}
+.sec_game .bx_result .top button { margin-left: 0.8rem; font-size:0.75rem ; height: 1.65rem; width: 3.9rem;}
+.sec_game .bx_result .top .left { line-height: 1.65rem}
+.sec_game .bx_result .top .right > p { padding: 0.6rem 0 0; font-size: 0.7rem; color: #bababa;text-align: right;}
+.sec_game .bx_result .btm { padding: 1rem 0 0}
+.sec_game .bx_result .btm .left { font-size: 1rem}
+.sec_game .bx_result .btm > p strong { font-size: 1.5rem}
+.sec_game .btn_pay { width: 100%; height: 3.2rem; line-height: 3.5rem; font-size: 1.25rem; }
+.sec_game .step4 .bx_red { display: block; width:100%; height:130px; background: #ff0000; color: #fff; font-size: 1rem; line-height: 1.25}
+.sec_game .step4 .bx_red .add_before:before { margin-right: 1.5rem; content: ""; display: inline-block; width: 3.3rem; height: 2.3rem; background: url(/common/images/ico_list.png) no-repeat center /100% 100%; }
+.sec_quick.sub { padding: 0}
+.sec_quick.sub > ul > li { width:32% }
+.sec_quick.sub > ul { margin:2.3rem 0 2.1rem; }
+
+.sec_draw .list_result > li { width:49.5% }
+.sec_draw .list_result > li > div { padding:2.75rem 1.6rem 1.6rem; border-bottom: 0.2rem solid #373b46; font-size: 0.9rem; color: #222; background: url(../images/logo_mega.png) no-repeat right 1.6rem center}
+.sec_draw .list_result > li.power > div { background-image: url(../images/logo_power.png)}
+
+.sec_draw .list_result > li .h_type2 { font-size: 1.25rem; }
+.sec_draw .list_result > li > div > div { padding: .8rem 0 0; line-height: 1.2}
+.sec_draw .list_result > li > div small { font-size: 0.7rem; color: #666}
+
+.sec_draw .sec_info > .bx_gray > ul { border: none}
+.sec_draw .sec_info .label { display: inline-block;}
+.wrap_board > .top { padding:  0 0 1.25rem}
+.wrap_board > .top h3 { font-size: 1.1rem}
+.sec_draw .wrap_board > .top .btn_gray { padding: 0.6rem 1.7rem 0.6rem 0.9rem ; font-size: 0.75rem; color: #fff; background: url(/common/images/ico_arr_right_w.png) no-repeat right 0.9rem center #535353 }
+.sec_draw .wrap_board td:nth-child(6) > *:after,
+.sec_draw .wrap_board td:nth-child(7) > *:after { content: ""; display: inline-block; margin-left: 0.4rem; width: 1.2rem; height: 0.75rem; background: url(../images/ico_video.png ) no-repeat center / auto 100% ; vertical-align: middle;}
+.sec_draw .wrap_board td:nth-child(7) > *:after { background-image: url(../images/ico_detail.png ); height: 0.8rem;}
+.wrap_search { position: relative;}
+.wrap_search > *{margin-left: 5px; padding: 0 0.9rem; border: 1px solid #d2d2d2; border-radius: 0.2rem; height: 1.7rem; }
+.wrap_search .inp_search > * { height: 100%}
+.wrap_search .inp_search > button { position: absolute; right: 0; top: 0; bottom: 0; background: red; width: 2.1rem; background: url(../images/ico_search.png) no-repeat center}
+.popup.draw { font-size: 0.8rem; letter-spacing: -0.025}
+.popup.draw > .inner { min-width: 585px; box-sizing: border-box;}
+.popup.draw .time { padding: 1rem 0}
+.popup.draw .wrap_tb { margin: 1.25rem 0 0.9rem}
+.popup.draw .label { margin-left: 1rem}
+.popup.video h2 { padding:  0 0 1.6rem}
+
+.wrap_paging { position: relative; display: table; margin: 3.6rem auto 0; padding:0 2rem; }
+.wrap_paging > a { position: absolute; top: 50%; transform: translateY(-50%); background: url(../images/ico_arr_right_paging.png) no-repeat center}
+.wrap_paging > a.next { right:0}
+.wrap_paging > a.prev { left:0; background-image:url(../images/ico_arr_left_paging.png) }
+.wrap_paging ol { font-size: 0}
+.wrap_paging ol li { display: inline-block; font-size: 0.8rem}
+.wrap_paging ol li a:hover, .wrap_paging ol li.on a{ background: #000 ; color: #fff; border-color: #000}
+.wrap_paging ol li ~ li { margin-left: 0.25rem}
+.wrap_paging a { display: block ;width: 1.7rem; height: 1.7rem; border: 1px solid #d2d2d2; box-sizing: border-box; color: #000; line-height: 1.5rem; text-align: center;}
+.tb_type2 tbody td.td_click { padding: 0 !important}
+.tb_type2 tbody td.td_click > * { display: block; padding: 1rem 0}
+
+/* 게시판 상세보기 공통 */
+.board_type1 > .title { padding: 1.5rem; font-size: 0.75rem; color: #676767}
+.board_type1 > .title > .left p { padding: 0 0 0.5rem; font-size: 0.85rem; color: #000}
+.board_type1 > .title > .right { font-size: 0.7rem}
+.board_type1 > .contents { padding: 2rem 1.5rem; border-top: 1px solid #d2d2d2; font-size: 0.75rem; color: #676767; line-height: 1.5}
+.board_type1 .list_type4 > li.prev a:after { background-image: url(../images/ico_arr_top_prev.png); }
+.board_type1 .list_type4 > li.next a { color: #666666}
+
+
+
+
+/* cs/index.html - 고객센터 */
+.sec_cs .wrap_board .wrap_btn .btn_navy { margin: 2rem auto; width: 176px}
+.sec_cs .tb_type2 td a { padding-left: 1rem;padding-right: 1rem; color: #676767; text-align: left;}
+.sec_faq .list_type4 > li{ padding: 0}
+.sec_faq .list_type4 > li * { color: #676767}
+.sec_faq .list_type4 > li > a > p { margin: 0}
+.sec_faq .list_type4 > li > div { border-top: 1px solid #d2d2d2; padding-top: 1rem; padding-bottom: 1rem; line-height: 1.6}
+.sec_faq .list_type4 > li > * { padding-left: 3.75rem; padding-right: 3.75rem; box-sizing: border-box;
+background-position: left 1rem center; background-size: auto 1rem; background-repeat: no-repeat; }
+.sec_faq .list_type4 > li > a { background-image: url(../images/ico_Q.png)}
+.sec_faq .list_type4 > li > div { background-image: url(../images/ico_A.png)}
+.sec_faq .list_type4 > li a:after { right: 1rem; background-image: url(../images/ico_arr_btm_black.png)}
+.sec_faq .list_type4 > li a.open:after { background-image: url(../images/ico_arr_top_red.png)}
+
+
+.sec_service .top.bb { margin-bottom: 2.1rem; padding: 0 0 1.25rem}
+.sec_service h3 { font-size: 1.1rem}
+.guide_use .bx_gray { margin-top: 1rem}
+.guide_use .mainlogo { margin:1.1rem 0 1.4rem; font-size: 2rem}
+.guide_use .mainlogo > *:before { font-size: 1rem; line-height: 1.5}
+.intro .bx_descript { margin-bottom: 2.2rem}
+.intro .bx_descript > .left { width: 58%; background:#1b1b1b }
+.intro .bx_descript > .left img { width: 95%}
+.intro .bx_descript > .right { padding: 1.7rem 1.5rem 1.15rem; width: 42%; box-sizing: border-box; color: #222 ; line-height: 1}
+.intro .bx_descript .title { font-size: 0.9rem; font-size: 500}
+.intro .bx_descript .point { padding: 0 0 0.85rem}
+.intro .bx_descript .point > p { padding: 1.4rem 0 0.5rem}
+.intro .bx_descript ol { padding: 0.9rem 0 1.4rem; line-height: 1.5}
+.intro .bx_descript .nation { padding: 0.85rem 0 1.5rem }
+.intro .bx_descript .nation > li ~ li { margin-top: 5px}
+.intro .bx_descript .nation .add_before:before { border: 1px solid #000; border-radius: 3px}
+.intro .bx_descript .btn_red { display: block; margin: 0 auto; width:62.5%;  line-height: 2.5rem; font-size: 0.8rem; text-align: center; border-radius: 2.5rem}
+.wrap_img > img { width: 100%}
+.sec_service .list_bul > li ~ li { margin-top: 3px}
+
+.sec_service.intro .wrap_logo { margin: 0 0 2.5rem; }
+.sec_service.intro h4 { padding:0 0 0.65rem; color: #252525; font-size: 0.9rem; font-weight: 500}
+
+
+.tb_level { margin: 0.85rem 0 1.9rem; border: 1px solid #dcdcdc; }
+/* .tb_level .txt_type2 { } */
+.tb_level tr ~ tr { border-top: 1px solid #dcdcdc}
+.tb_level th { background: #eee; font-weight: normal;}
+.tb_level tbody { text-align: center; }
+.tb_level tbody td { line-height: 1.3}
+.tb_level tbody tr td { padding: 1.3rem 0;}
+.bx_level { text-align: center;}
+.bx_level > p { padding:0.7rem 0 0.4rem;  font-family: 'Montserrat',sans-serif; font-weight: 600; font-size: 1rem}
+.bx_level > p strong { color: #000;}
+
+.list_level > li { padding: 2rem 0  }
+.list_level > li > .bx_level { width: 19.66%}
+.list_level > li > .bx_level + div { flex: 1}
+.list_level > li ~ li { border-top: 1px solid #dcdcdc}
+
+
+.list_process > li {margin-right: 5px; padding:0 2.1rem; min-width: 234px; border-radius: 0.25rem; background: #626262; box-sizing: border-box; color: #fff; line-height: 3rem; text-align: center; font-size: 0.8rem; font-weight: bold;}
+.list_process > li > span { font-family: 'Montserrat',sans-serif;}
+.list_process > li.add_after:after { width: 0.45rem; height: 0.85rem; background: url(../images/ico_arr_right_process.png) no-repeat center / 100% 100%; vertical-align: middle; margin-left: 10px}
+.sec_service.purchase .wrap_board > div ~ div { padding-top:3.75rem}
+.sec_service.purchase .tb_level { margin: 0}
+.sec_service.purchase .wrap_board > div .list > li > p { padding: 2.1rem 0 0.95rem}
+
+.sec_service.purchase .wrap_policy .list_process { padding: 2rem 0 0}
+.sec_service.receive .list > li h4 { padding-bottom: 0.6rem; line-height: 1; font-size: 0.9rem}
+.sec_service.receive .list > li h4 + p { padding: 0 0 1.6rem}
+.sec_service.receive .list > li ~ li h4 { padding-top: 2.8rem}
+.sec_service.receive .list > li .list_bul { padding: 0.8rem 0}
+.sec_service.receive .bx_gray { line-height: 1}
+
+
+
+.sec_policy > div { padding: 40px 35px}
+.sec_policy h2 { padding: 57px 0; font-size: 56px; text-align: center; border-bottom: 3px solid #222; color: #222}
+.sec_policy.txt_type2 { font-size: 15px}
+.sec_policy .list > li > p { padding: 30px 0 15px 0;     color: #222; font-size: 24px; font-weight: 500;}
+/* .sec_policy .list .color_navy { color: } */

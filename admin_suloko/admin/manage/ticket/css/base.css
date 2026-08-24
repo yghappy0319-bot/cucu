@@ -1,0 +1,314 @@
+@font-face {
+    font-family: 'Pretendard';
+    src: url('../font/Pretendard-Thin.woff') format('woff');
+    font-weight: 100;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('../font/Pretendard-ExtraLight.woff') format('woff');
+    font-weight: 200;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('../font/Pretendard-Light.woff') format('woff');
+    font-weight: 300;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('../font/Pretendard-Regular.woff') format('woff');
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('../font/Pretendard-Medium.woff') format('woff');
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('../font/Pretendard-SemiBold.woff') format('woff');
+    font-weight: 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('../font/Pretendard-Bold.woff') format('woff');
+    font-weight: 700;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('../font/Pretendard-ExtraBold.woff') format('woff');
+    font-weight: 800;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('../font/Pretendard-Black.woff') format('woff');
+    font-weight: 900;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'DotGothic16';
+    src: url('../font/DotGothic16-Regular.ttf') format('ttf');
+    font-weight: 900;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'STV5730A';
+    src: url('../font/STV5730A.ttf') format('ttf');
+    font-weight: 900;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Nexa-ExtraLight';
+    src: url('../font/Nexa-ExtraLight.ttf') format('ttf');
+    font-weight: 900;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'AHVHAK1FONT';
+    src: url('../font/AHVHAK1FONT.woff') format('woff');
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'AHVHAK2FONT';
+    src: url('../font/AHVHAK2FONT.woff') format('woff');
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Eurocine-WideLight';
+    src: url('../font/Eurocine-WideLight.woff') format('woff');
+    font-display: swap;
+}
+
+/* 기본 */
+* {
+    letter-spacing: -0.5px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    box-sizing: border-box;
+    vertical-align: top;
+    outline: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1;
+    font-family: 'Pretendard';
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+/* 고정 */
+body {
+    overflow-x: hidden;
+}
+
+html.fixed,
+body.fixed {
+    overflow: hidden;
+    touch-action: none;
+    -webkit-touch-action: none;
+}
+
+/* 모바일 가로모드 폰트확대 방지 */
+body {
+    -webkit-text-size-adjust: none;
+}
+
+/* 헤더 폰트 사이즈 초기화 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-size: 100%;
+    font-weight: normal;
+    color: #000;
+}
+
+/* 텍스트 */
+a:link {
+    color: inherit;
+    text-decoration: none;
+}
+
+a:active {
+    color: inherit;
+    text-decoration: none;
+}
+
+a:visited {
+    color: inherit;
+    text-decoration: none;
+}
+
+a:hover {
+    color: inherit;
+    text-decoration: none;
+}
+
+a,
+button {
+    outline: 0;
+    display: inline-block;
+    vertical-align: top;
+    box-sizing: border-box;
+    cursor: pointer;
+    background: none;
+}
+
+/* 이미지 */
+img,
+fieldset {
+    border: none;
+}
+
+img,
+object {
+    vertical-align: top;
+}
+
+/* 리스트 */
+ul,
+ol,
+li {
+    list-style: none;
+}
+
+em,
+address {
+    font-style: normal;
+}
+
+/* 테이블 */
+table {
+    width: 100%;
+    border-spacing: 0;
+}
+
+th,
+td {
+    vertical-align: middle;
+    text-align: center;
+}
+
+legend,
+caption {
+    display: none;
+}
+
+/* 폼 */
+select {
+    border-radius: 0;
+    background: #fff;
+}
+
+textarea {
+    resize: none;
+}
+
+input,
+textarea {
+    -webkit-border-radius: 0;
+}
+
+/*입력폼 사파리에서의 초기화*/
+input:-internal-autofill-selected {
+    background: transparent !important;
+}
+
+/*입력폼 사파리에서의 초기화*/
+
+/* 형태 */
+.position-fixed {
+    position: fixed;
+}
+
+.position-relative {
+    position: relative;
+}
+
+.position-absolute {
+    position: absolute;
+}
+
+/* 박스형태 */
+.block {
+    display: block;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+.inline {
+    display: inline;
+}
+
+/* 텍스트 효과 */
+.linethrough {
+    text-decoration: line-through;
+}
+
+.underline {
+    text-decoration: underline;
+}
+
+.hover-underline:hover {
+    text-decoration: underline;
+}
+
+.ellipsis {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.after:after {
+    display: inline-block;
+    content: "";
+    width: 1px;
+    height: 10px;
+    background: var(--color-gray-200);
+    margin: 0 10px;
+}
+
+.before:before {
+    display: inline-block;
+    content: "";
+    width: 1px;
+    height: 10px;
+    background: var(--color-gray-200);
+    margin: 0 10px;
+}
+
+@media (max-width:991px) {
+    .after:after {
+        margin: 0 5px;
+    }
+
+    .before:before {
+        margin: 0 5px;
+    }
+}

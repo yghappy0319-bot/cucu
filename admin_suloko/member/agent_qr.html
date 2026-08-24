@@ -1,0 +1,224 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_PAYMENTQRCODE.php";
+
+  F_admin_chk($S_login);
+
+  if (!isset($page)) $page = 1;
+  if (!isset($limit)) $limit = 100;
+  if (!isset($find_text)) $find_text = "";
+  if (!isset($find_object)) $find_object = "";
+  if (!isset($order)) $order = "";
+  if (!isset($isstatus)) $isstatus = "";
+  if (!isset($patner_no)) $patner_no = "";
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit&isstatus=$isstatus&patner_no=$patner_no";
+
+  $add_query = "";
+
+  if ($isstatus != "") {
+    $add_query .= " AND STATUS='{$isstatus}'";
+  }
+
+  if ($patner_no != "") {
+    $add_query .= " AND PATNER_NO='{$patner_no}'";
+  }
+
+  $list = F_PAYMENTQRCODE_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => " PAYMENT_NO ASC",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['PAYMENT_NO'] = array();
+  }
+
+  $find_op = array(
+    "USER_ID" => "아이디",
+    "COMPANY" => "회사명"
+  );
+
+  $cnt_op = array(
+    "50"  => 50,
+    "100" => 100,
+    "200" => 200,
+  );
+
+  $patner_op = F_get_option("SELECT PATNER_NO, CEO FROM PATNER WHERE STOPYN != 'Y'", $patner_no);
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">결제 QR관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">회원정보</a></li>
+          <li class="breadcrumb-item active" aria-current="page">결제 QR관리</li>
+        </ol>
+      </div>
+      <div class="ms-auto pageheader-btn">
+        <select id="patnerNo" class="form-control form-select select2">
+          <option value="">--파트너선택--</option>
+          <?=$patner_op?>
+        </select>
+        <a class="btn btn-primary btn-icon text-white me-2 okBtn">
+          <span>
+            <i class="fe fe-plus"></i>
+          </span> Add Account
+        </a>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+              <input type="hidden" name="find_object" value="QRCODE">
+              <!--<div class="form-group mr-3 fl-left">
+                <select name="agent" id="select-beast" class="form-control form-select select2">
+                  <option value="">--Agent--</option>
+                  <?=$agent_op?>
+                </select>
+              </div>-->
+              <div class="form-group fl-left">
+                <select name="isstatus" id="select-beast" class="form-control form-select select2">
+                  <option value="">--사용여부--</option>
+                  <?=option_make($payment_qr_status_op, $isstatus)?>
+                </select>
+              </div>
+              <div class="form-group col-md-2 fl-left">
+                <select name="patner_no" id="patner_no" class="form-control form-select select2">
+                  <option value="">--파트너선택--</option>
+                  <?=$patner_op?>
+                </select>
+              </div>
+              <div class="input-group col-md-2 fl-left">
+                <input type="text" class="form-control" name="find_text" value="<?=$find_text?>" placeholder="코드번호" />
+                <div class="input-group-text btn btn-primary" id="btn-search">
+                  <i class="fa fa-search" aria-hidden="true"></i>
+                </div>
+              </div>
+              </form>
+            </div>
+            <div class="table-responsive">
+              <table class="table border text-nowrap table-striped" id="table-list">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="chkAll" /></th>
+                    <th>QRCODE</th>
+                    <th>사용여부</th>
+                    <th>등록일</th>
+                    <th>QR_CODE</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php for ($i = 0; $i < count($list['PAYMENT_NO']); $i++) { ?>
+                  <tr>
+                    <td><input type="checkbox" name="noChk[]" value="<?=$list['PAYMENT_NO'][$i]?>"></td>
+                    <td><?=$list['QRCODE'][$i]?></td>
+                    <td><?=$payment_qr_status_op[$list['STATUS'][$i]]?></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                    <td>
+                      <a data-bs-target="#modaldemo1" data-bs-toggle="modal" class="btn btn-radius btn-primary btn-read" data-url="<?=$list['CODEIMG'][$i]?>">View</a>
+                    </td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string'];?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<!-- BASIC MODAL -->
+<div class="modal fade" id="modaldemo1">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-content-demo">
+      <div class="modal-header">
+        <h6 class="modal-title">QR Code Preview</h6><button aria-label="Close" class="btn-close" data-bs-dismiss="modal" ><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="card-body" id="order-view" style="text-align: center;">
+          <img src="" id="qrcode_image">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+    // 선택삭제
+    $(document).on('click', '.allDelChk', function() {
+      let chk_no = new Array();
+      let i = 0;
+      $('[name="noChk[]"]:checked').each(function() {
+        chk_no[i] = $(this).val();
+        i++;
+      });
+
+      if (i > 0) {
+        if (confirm('선택한 항목을 삭제하시겠습니까?')) {
+          $.post('./default.php', {
+            mode: 'all_del',
+            gubun: 'PAYMENTQRCODE',
+            chk_no: chk_no
+          }, function(e) {
+            if (e.error) {
+              alert(e.msg);
+            } else {
+              alert(e.msg);
+            }
+            window.location.reload();
+          }, 'json');
+        }
+      } else {
+        alert('삭제할 항목을 선택하세요');
+      }
+    });
+
+    $(document).on('click', '.btn-read', function() {
+      let url = $(this).data('url');
+      url = '/upload/paymentqrcode/' + url;
+
+      $('#qrcode_image').attr('src', url);
+    });
+
+    $(document).on('click', '.okBtn', function() {
+      let patner_no = $('#patnerNo').val();
+
+      if (patner_no == '') {
+        alert('파트너를 선택해 주세요.');
+        return false;
+      }
+
+      location.href = './agent_qr_action.php?patner_no=' + patner_no;
+    });
+  });
+</script>

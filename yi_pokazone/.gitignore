@@ -1,0 +1,4 @@
+/vendor/
+/config/aws_s3.php
+/config/directsend.php
+/config/telegram.php

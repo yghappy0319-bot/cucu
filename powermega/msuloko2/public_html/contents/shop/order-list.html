@@ -1,0 +1,147 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+?>
+
+<body class="body_idx">
+<div class="wrap_bg">
+    <div id="wrap">
+        <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+        <main id="main" class="mypage">
+            <div class="contents f_NotoSansKR">
+                <div class="title_sub bb border_dcdcdc" style="margin-bottom: 0;">
+                    <h2 class="title">상품 주문내역</h2>
+                    <a href="" class="btn_back"><span class="hide">뒤로가기</span></a>
+                </div>
+                <section class="sec_cash wrap_com section bg_white pb40">
+
+                    <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                        <div class="bx_search">
+                            <div class="wrap_sel">
+                                <ul class="list_sel flex align_center">
+                                    <li><button type="button" data-tp="7D" class='gubun'>1주일</button></li>
+                                    <li><button type="button" data-tp="1M" class='gubun'>1개월</button></li>
+                                    <li><button type="button" data-tp="3M" class='gubun'>3개월</button></li>
+                                    <li><button type="button" data-tp="6M" class='gubun'>6개월</button></li>
+                                </ul>
+                            </div>
+                            <div class="wrap_date flex align_center space">
+                                <div class="flex space">
+                                    <input type="text" autocomplete="off" name="sdate" id="sdate" value="<?=$sdate?>" />
+                                    <span class="mr5">~</span>
+                                    <input type="text" autocomplete="off" name="edate" id="edate" value="<?=$edate?>" />
+                                </div>
+                                <button class="btn_navy btn">검색</button>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="section mt30">
+                        <h3 class="h_type4">주문내역</h3>
+                        <div class="wrap_tb ls50 lh10">
+                            <table class="tb_type2 bt" id="list_box">
+                                <caption>
+                                    <div class="hide">
+                                        캐시 사용내역에 대한 정보를 제공하는 표
+                                    </div>
+                                </caption>
+                                <colgroup>
+                                    <col width="">
+                                    <col width="">
+                                </colgroup>
+                            </table>
+                        </div>
+                        <button class="btn_more btn_center bg_navy add_after br5 type_btn_more"><span class="va_mid">더보기</span></button>
+                    </div>
+                </section>
+            </div>
+        </main>
+        <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+</div>
+</body>
+
+<script>
+    $(document).ready(function() {
+        $(document).on('click', '.gubun', function() {
+            $.post('/other.php', {
+                mode : 'search_date',
+                schdate : $(this).data('tp')
+            }, function(e) {
+                if (e.errNo > 0) {
+                } else {
+                    $('#sdate').val(e.sdate);
+                    $('#edate').val(e.edate);
+                }
+            }, 'json');
+        });
+
+        let page = 1;
+        list_read(page);
+
+        $(document).on('click', '.type_btn_more', function() {
+            page++;
+            list_read(page);
+        });
+
+        // 스캔본 확인
+        $(document).on('click', '.btn_popup.scanImgSwiper', function() {
+            let no = $(this).data('no');
+            let btnName = $(this).attr('id');
+
+            let loadingImg = `
+        <li class='swiper-slide' style='width: 400px; line-height: 400px;'>
+          <img src='/common/images/loading.gif' style='width: 50px; vertical-align: middle;'>
+        </li>`;
+            $('.scanImgSwiper').find('.swiper-wrapper').append(loadingImg);
+
+            // show popup
+            btnName = btnName.substr(4, btnName.length);
+            showPopup(btnName);
+
+            $.post('/other.php', {
+                mode: 'get_ticket_images',
+                no: no
+            }, function(e) {
+                $('.scanImgSwiper').find('.swiper-slide').remove();
+                $('.scanImgSwiper').find('.swiper-wrapper').append(e.html);
+            }, 'json');
+        });
+
+        // 스캔본 확인 닫기
+        $(document).on('click', '.sec_event .btn_close', function() {
+            $('.scanImgSwiper').find('.swiper-slide').remove();
+        });
+
+        function list_read(page) {
+            let sdate = $('#sdate').val();
+            let edate = $('#edate').val();
+
+            $.post('/other.php', {
+                mode: 'my_shop_order_list',
+                sdate: sdate,
+                edate: edate,
+                page: page
+            }, function(e) {
+                $('#list_box').append(e.html);
+                if (e.html == '') {
+                    $('.type_btn_more').hide();
+                }
+
+                if ($('#list_box').find('tbody').length <= 0 && page == 1) {
+                    let html = `
+            <tbody id="box">
+              <tr>
+                <td style="text-align: center;">사용내역이 없습니다.</td>
+              </tr>
+            </tbody>`;
+                    $('#list_box').html(html);
+                }
+            }, 'json');
+        }
+    });
+</script>
+</html>

@@ -1,0 +1,74 @@
+<?php
+$title = "미국복권 구매대행 자주묻는질문";
+include "../header.html";
+?>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">자주묻는질문</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>고객센터</p></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>자주묻는질문</p></li>
+            </ul>
+        </div>
+
+        <div class="modle_menu_02">
+            <a href="<?=$_SESSION['midx'] !='' ? '/member/notice.html':'javascript:_go_login();' ?>">공지사항</a>
+            <a href="/member/news.html">최신뉴스</a>
+            <a class="on" href="<?=$_SESSION['midx'] !='' ? '/member/faq.html':'javascript:_go_login();' ?>">자주묻는질문</a>
+            <a href="/member/inquiry.html">1:1문의</a>
+        </div>
+
+        <div>
+            <div class="top_category">
+                <a href="/member/faq.html" class="<?=$category=="" ? "ftw900":"" ?>">전체</a>
+                <?
+                $_category = db_query("select * from lr_post where gubun = 'faq' group by category order by sort asc ");
+                foreach($_category as $cat){
+                ?>
+                <a href="/member/faq.html?category=<?=$cat['category']?>" class="cate_list"><span class="<?= $cat['category']==$category ? "ftw900":"" ?>" ><?=$cat['category']?></span></a>
+                <? } ?>
+            </div>
+
+            <table class="board faq">
+                <tbody>
+                    <?
+                    if($category){
+                    $category_where = " and category = '{$category}' ";
+                    }
+                    $result = db_query("select * from lr_post where gubun = 'faq' {$category_where} order by regdate desc ");
+                    foreach($result as $quiry){
+                    ?>
+                    <tr>
+                        <td>
+                            <a class="faq" href="javascript:go_show('<?=$quiry['idx']?>')">
+                                <span class="question">Q.</span> <?=$quiry['title']?>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr class="faq_a a_content_<?=$quiry['idx']?>" style="display: none;">
+                        <td>
+                            <span class="comment">A.</span>
+                            <?= nl2br($quiry['content']) ?>
+                        </td>
+                    </tr>
+                    <? } ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function go_show(obj){
+        $(".a_content_"+obj).toggle();
+    }
+</script>
+
+<?php
+include "../footer_new.html";
+?>

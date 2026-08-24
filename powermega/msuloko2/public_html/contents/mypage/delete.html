@@ -1,0 +1,155 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}'");
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub bb border_dcdcdc" style="margin-bottom: 0rem;">
+            <h2 class="title">MY정보</h2>
+          </div>
+          <section class="sec_myinfo">
+            <div class="bx_gray txt_type1 wrap_com bx_padding lh16">
+              <ul class="list_bul">
+                <li><p>회원님의 정보를 안전하게 보호하기 위해 비밀번호를 다시 확인해주세요.</p></li>
+                <li><p>파메코은 회원님의 개인정보를 신중하게 취급하며, 회원님의 동의 없이는 기재하신 회원 정보 공개 및 변경하지 않습니다.</p></li>
+              </ul>
+            </div>
+            <div class="section wrap_com mt30" style="padding-bottom: 0rem;">
+              <h3 class="h_type4">회원 탈퇴</h3>
+              <div class="wrap_tab">
+                <ul class="tab_type1 flex">
+                  <li><a href="my-info.html">회원정보수정</a></li>
+                  <li class="on"><a href="delete.html">회원탈퇴</a></li>
+                </ul>
+              </div>
+              <div class="notice_type1 mb40" style="margin-top: -2.5rem;">
+                <div class="wrap_img dp_inb mb30"><img src="/common/images/img_smile.png" /></div>
+                <p>그동안 파메코를<br/>이용해 주셔서 감사합니다.</p>
+              </div>
+            </div>
+            <div class="bx_gray wrap_com section bx_padding">
+              <p class="h_type4">회원 탈퇴 전 다음 내용을 확인해 주십시오.</p>
+              <div class="sec_mycash bg_navy wrap_com bx_padding ls50 fw300 fs30">
+                <p class="mb10">현재 <?=$mb["NAME"]?> 회원님께서는</p>
+                <span class="color_red"><?=number_format($mb["CASH"])?></span> 캐시, <br />
+                <span class="color_red"><?=number_format($mb["POINT"])?></span> 보너스 포인트, <br />
+                <span class="color_red"><?=number_format($mb["IPOINT"])?></span> 마일리지를 보유하고 있습니다.
+                <p class="mt10 mb100"></p>
+
+                <p class="fs25 ls75">
+                  <span class="color_red">보유중인 캐시는 회원 탈퇴 이전 출금</span> 또는 <span class="color_red">카드승인 취소</span>가 가능하며,
+                  보너스 포인트 및 마일리지는 파메코 약관에 의거해 캐시 또는 현금으로의 출금이 불가합니다.
+                </p>
+                <p class="fs25 ls75 mt30">
+                  또한 <span class="color_red">회원 탈퇴 이후</span>에는
+                  <span class="color_red">출금 또는 카드승인 취소</span>가 <span class="color_red">불가</span>하며,
+                  보유중인 <span class="color_red">보너스 포인트</span> 및
+                  <span class="color_red">마일리지</span>는 <span class="color_red">자동 소멸</span>됩니다.
+                </p>
+                <p class="fs25 ls75 mt30">상기 내용을 확인하시고 회원 탈퇴를 진행해 주십시오.</p>
+              </div>
+              <div class="fs23 lh16 mt30 ls75">
+                <ul class="list_bul txt_type1">
+                  <li><p>회원 탈퇴를 하실 경우 고객님의 개인정보와 구매이력이 삭제되니 신중하게 결정하셔서 신청해 주세요.</p></li>
+                  <li>
+                    <p>
+                      [전자상거래등에서의 소비자보호에 관한 법률], [통신비밀보호법], [정보통신망 이용촉진 및 정보보호에관한법률] 등 법률에 근거하여 거래
+                      관련 권리의무관계의 확인 등을 이유로 일정기간 그 정보를 보유하여야 할 필요가 있을 경우에는 일정기간 동안 그 정보를 보유합니다.
+                    </p>
+                  </li>
+                  <li>
+                    <p class="fw600">
+                      회원 탈퇴 신청 완료 후 해당 아이디는 즉시 탈퇴 처리되며,
+                      <span class="color_red">탈퇴일로부터 6개월(180일)간 동일한 개인정보</span>로는
+                      <span class="color_red">재가입</span>이 <span class="color_red">제한</span>됩니다.
+                    </p>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="wrap_com section mt30">
+              <h3 class="h_type4 bb">회원 탈퇴를 위한 회원정보 인증</h3>
+              <form class="f_NotoSansKR" name="w_frm" id="w_frm" method="post" action="delete_action.php">
+                <fieldset class="pb40">
+                  <legend class="hide">회원정보 인증 입력 양식</legend>
+                  <ul class="list_form ls50">
+                    <li>
+                      <label for="user_name"><span>이름</span></label>
+                      <div class="bx_input gray">
+                        <input type="text" id="user_name" name="user_name" value="<?=$mb["NAME"]?>" readonly />
+                      </div>
+                    </li>
+                    <li>
+                      <label for="user_id"><span>아이디</span></label>
+                      <div class="bx_input gray">
+                        <input type="text" id="user_id" name="user_name" value="<?=$mb["USER_ID"]?>" readonly />
+                      </div>
+                    </li>
+                    <li>
+                      <label for="user_passwd"><span>비밀번호</span></label>
+                      <div class="bx_input">
+                        <input type="password" name="user_passwd" id="user_passwd" placeholder="비밀번호를 입력해주세요." />
+                      </div>
+                    </li>
+                    <li>
+                      <label for="user_content"><span>기타 개선사항이나 의견이 있으시면 남겨주세요.</span></label>
+                      <div class="mb50">
+                        <div class="bx_input" style="height: 5rem;">
+                          <textarea rows="5" style="resize: none;" name="user_content" id="user_content" placeholder="내용을 입력해주세요.(10자 이상)"></textarea>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                  <div class="wrap_btn flex align_center space">
+                    <button type="button" class="btn_prev" onclick="javascript:location.href='/contents/mypage/';">취소</button>
+                    <a class="btn_navy" id="ok_btn">회원 탈퇴</a>
+                  </div>
+                </fieldset>
+              </form>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script>
+  $(function() {
+  });
+
+  $('#ok_btn').click(function() {
+    let pwd = $('#user_passwd').val();
+
+    if (pwd == '') {
+      alert('비밀번호를 입력해주세요.');
+      return false;
+    }
+
+    $.post('/other.php', {
+      mode: 'chk_pwd',
+      pwd: pwd
+    }, function(e) {
+      if (e.error) {
+        if (confirm('탈퇴 하시겠습니까?')) {
+          $('#w_frm').submit();
+        }
+      } else {
+        alert(e.msg);
+      }
+    }, 'json');
+  });
+</script>
+</html>

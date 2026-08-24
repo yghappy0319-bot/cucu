@@ -1,0 +1,171 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+  if ($sdate == "") {
+    $sdate = date("Y")."-".date("m");
+  }
+
+  $day_cnt = date('t', strtotime("{$sdate}-01"));
+
+  // 날짜 목록
+  $date_op = array();
+  $start_month = "2022-03";
+  for ($i = 0; $i < 100; $i++) {
+    $ndate = date("Y-m", strtotime("{$start_month}-01 first day of +{$i} month"));
+    $date_op[$ndate] = $ndate;
+    if ($ndate == date("Y-m")) break;
+  }
+  $date_op = array_reverse($date_op);
+
+  // 해당일 결제 데이터
+  $query = "
+    SELECT
+      LEFT(IFNULL(CON_REG_DATE, REG_DATE), 10) AS DATE,
+      SUM(PRICE) AS PRICE,
+      COUNT(PRICE) AS CNT
+    FROM CASH
+    WHERE
+      IS_USE = 'Y'
+      AND LEFT(IFNULL(CON_REG_DATE, REG_DATE), 7) = '{$sdate}'
+    GROUP BY LEFT(IFNULL(CON_REG_DATE, REG_DATE), 10)
+    ORDER BY LEFT(IFNULL(CON_REG_DATE, REG_DATE), 10) ASC
+  ";
+  $list = $db->get_list($query);
+
+  // 해당일 당첨금사용 데이터
+  $query = "
+    SELECT
+      LEFT(REG_DATE, 10) AS DATE,
+      SUM(WINCASH) AS WINMONEY,
+      COUNT(*) AS WINMONEY_CNT
+    FROM ORDERS
+    WHERE
+      WINCASH > 0 AND
+      LEFT(REG_DATE, 7) = '{$sdate}'
+    GROUP BY LEFT(REG_DATE, 10)
+    ORDER BY LEFT(REG_DATE, 10) ASC
+  ";
+  $winmoney_list = $db->get_list($query);
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">일별 매출 (당첨금 사용)</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">매출현황</a></li>
+          <li class="breadcrumb-item active" aria-current="page">일별 매출 (당첨금 사용)</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+              <div class="form-group mr-3 fl-left">
+                <select name="sdate" id="sdate" class="form-control form-select select2 auto-submit">
+                  <?=option_make($date_op, $sdate)?>
+                </select>
+              </div>
+            </form>
+            <div class="table-responsive">
+              <table class="table table-center border text-nowrap table-bordered">
+                <thead>
+                  <tr style="background: #F2F3F9;">
+                    <th style="background-color: #bed5ec;">날짜</th>
+                    <th style="background-color: #bed5ec;"><strong>합계금액</strong></th>
+                    <th style="background-color: #bed5ec;"><strong>합계건수</strong></th>
+                    <th style="background-color: #bed5ec;"><strong>건당 평균 결제금액</strong></th>
+                    <th>매출금액</th>
+                    <th>결제건수</th>
+                    <th>당첨금사용금액</th>
+                    <th>당첨금사용건수</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                  $total_price      = 0;
+                  $total_cnt        = 0;
+                  $sum_price        = 0;
+                  $sum_cnt          = 0;
+                  $sum_winmoney     = 0;
+                  $sum_winmoney_cnt = 0;
+
+                  for ($i = 1; $i < $day_cnt + 1; $i++) {
+                    $chk_date     = "{$sdate}-{$i}";
+                    $price        = 0;
+                    $cnt          = 0;
+                    $winmoney     = 0;
+                    $winmoney_cnt = 0;
+
+                    $style = "";
+                    if (strtotime($chk_date) == strtotime(date("Y-m-d"))) {
+                      $style = 'background: #F8E5D0;';
+                    }
+
+                    for ($j = 0; $j < count($list['DATE']); $j++) {
+                      if (strtotime($chk_date) == strtotime($list['DATE'][$j])) {
+                        $price = $list['PRICE'][$j];
+                        $cnt = $list['CNT'][$j];
+                        break;
+                      }
+                    }
+
+                    for ($j = 0; $j < count($winmoney_list['DATE']); $j++) {
+                      if (strtotime($chk_date) == strtotime($winmoney_list['DATE'][$j])) {
+                        $winmoney = $winmoney_list['WINMONEY'][$j];
+                        $winmoney_cnt = $winmoney_list['WINMONEY_CNT'][$j];
+                        break;
+                      }
+                    }
+
+                    $total_price      += $price + $winmoney;
+                    $total_cnt        += $cnt + $winmoney_cnt;
+                    $sum_price        += $price;
+                    $sum_cnt          += $cnt;
+                    $sum_winmoney     += $winmoney;
+                    $sum_winmoney_cnt += $winmoney_cnt;
+                  ?>
+                  <tr style="<?=$style?>">
+                    <td><?=date("Y년 m월 d일", strtotime($chk_date))?></td>
+                    <td class="text-end"><strong><?=number_format($price+$winmoney)?></strong></td>
+                    <td class="text-end"><strong><?=number_format($cnt+$winmoney_cnt)?></strong></td>
+                    <td class="text-end"><strong><?=((($cnt+$winmoney_cnt) == 0) ? "0" : number_format(($price+$winmoney) / ($cnt+$winmoney_cnt)))?></strong></td>
+                    <td class="text-end"><?=number_format($price)?></td>
+                    <td class="text-end"><?=number_format($cnt)?></td>
+                    <td class="text-end"><?=number_format($winmoney)?></td>
+                    <td class="text-end"><?=number_format($winmoney_cnt)?></td>
+                  </tr>
+                  <?php } ?>
+                  <tr>
+                    <td>합계</td>
+                    <td class="text-end"><strong><?=number_format($total_price)?></strong></td>
+                    <td class="text-end"><strong><?=number_format($total_cnt)?></strong></td>
+                    <td class="text-end"><strong><?=(($total_cnt == 0) ? "0" : number_format($total_price / $total_cnt))?></strong></td>
+                    <td class="text-end"><?=number_format($sum_price)?></td>
+                    <td class="text-end"><?=number_format($sum_cnt)?></td>
+                    <td class="text-end"><?=number_format($sum_winmoney)?></td>
+                    <td class="text-end"><?=number_format($sum_winmoney_cnt)?></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>

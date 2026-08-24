@@ -1,0 +1,88 @@
+<?php
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/config.php";
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/export.php";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_INVOCE.php";
+
+  F_admin_chk($S_login);
+
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/_check-auth-readonly.php"; // 권한체크
+
+  error_reporting(E_ERROR);
+  ini_set("display_errors", 1);
+  ini_set("memory_limit", $csv_memory);
+
+  // file name
+  $file_name = "refund_".date("Ymd").".csv";
+  $page_name = "환급관리";
+
+  // 데이터 조회
+  $find_text = $_GET["find_text"];
+  $find_object = $_GET["find_object"];
+  $sdate = $_GET["sdate"];
+  $edate = $_GET["edate"];
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND I.REG_DATE BETWEEN '{$sDate}' AND '{$eDate}'";
+  }
+
+  if ($find_object == "all") {
+    $find_object = "";
+    $add_query  .= " AND (I.USER_ID LIKE '%{$find_text}%' OR M.NAME LIKE '%{$find_text}%')";
+  }
+
+  if (!isset($isuse)) {
+    $add_query .= " AND I.STATUS='N'";
+    $isuse = "N";
+  }
+
+  if ($isuse != "") {
+    $add_query .= " AND I.STATUS='{$isuse}'";
+  }
+
+  $list = F_INVOCE_list(array(
+    "row"         => $csv_max_row,
+    "page"        => 1,
+    "order"       => "",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  // default
+  $csv_dump = "";
+
+  // 컬럼명
+  $titles = array("", "ID", "성명", "환급액", "예금주", "은행명", "계좌번호", "상태", "신청일시");
+  $csv_dump .= implode(",", $titles);
+  $csv_dump .= "\r\n";
+
+  // 데이터 삽입
+  for ($i = 0; $i < count($list["INVOCE_NO"]); $i++) {
+    if ($list['MONEY'][$i] == "") {
+      $list['MONEY'][$i] = 0;
+    }
+
+    if ($list['MONEY2'][$i] == "") {
+      $list['MONEY2'][$i] = 0;
+    }
+
+    $invoice = $list['MONEY'][$i] - $list['MONEY2'][$i];
+
+    $cnt = $i + 1;
+
+    $csv_dump .= $cnt.",";
+    $csv_dump .= $list["USER_ID"][$i].",";
+    $csv_dump .= $list["MNAME"][$i].",";
+    $csv_dump .= "\"".number_format($list["MONEY2"][$i])."\"".",";
+    $csv_dump .= $list["BANK3"][$i].",";
+    $csv_dump .= $list["BANK1"][$i].",";
+    $csv_dump .= "\"ㅤ".($list["BANK2"][$i])."\"".",";
+    $csv_dump .= $withdraw_op[$list['STATUS'][$i]].",";
+    $csv_dump .= $list["REG_DATE"][$i];
+    $csv_dump .= "\r\n";
+  }
+
+  export_csv($file_name, $csv_dump, $cnt, $page_name);
+?>

@@ -1,0 +1,623 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  $menu_on['cash'] = true;
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}' LIMIT 1");
+
+  // 결제 이벤트 대상 확인
+  $cash_op = select_event_cash_op($M_login['user_id']);
+
+  $cash = $cash_op[$_POST["cash_no"]];
+
+  $RES["price"]       = $cash["price"];
+  $RES["price_text"]  = number_format($cash["price"]);
+  $RES["ipoint"]      = $cash["ipoint"];
+  $RES["ipoint_text"] = $cash["ipoint_text"];
+  $RES["cash"]        = $cash["cash"];
+  $RES["cash_text"]   = number_format($cash["cash"]);
+?>
+
+<style>
+  .bx_gray.top {
+    padding: 1.15rem 0 1.15rem 1.25rem;
+    font-size: 1rem;
+    color: #545454;
+    line-height: 1.4;
+    font-weight: bold;
+  }
+  .bx_gray {
+    background: #eee;
+  }
+  .bx_gray ul {
+    list-style: none;
+  }
+  .bx_gray .list_bul > li {
+    padding: 0;
+  }
+  .bx_gray .list_bul > li {
+    /*padding-left: 0.6rem;*/
+    position: relative;
+    line-height: 1.2rem;
+    font-size: 0.8rem;
+    letter-spacing: -0.5px;
+  }
+  .bx_gray .list_bul > li:before {
+    background: none;
+    content: "*";
+    width: inherit;
+    height: inherit;
+  }
+  .bx_gray .list_bul > li:before {
+    position: absolute;
+    left: -12px;
+    top: 0.2em;
+    display: inline-block;
+    vertical-align: middle;
+    border-radius: 100%;
+  }
+  .sec_charge .pay {
+    margin-top: 20px;
+    text-align: center;
+  }
+  .sec_charge .pay .bx_border {
+    border: 1px solid #5c5c5c;
+    border-radius: 0.25rem;
+  }
+  .sec_charge .btn_pay {
+    width: 100%;
+    height: 2.5rem;
+    line-height: 2.5rem;
+    font-size: 1rem;
+  }
+  .f_GmarketSans {
+    font-family: 'GmarketSans', sans-serif !important;
+  }
+  .btn_red {
+    background: #f00 !important;
+    color: #fff;
+  }
+  .border_blue {
+    border: 2px solid blue !important;
+  }
+</style>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage bg">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub bb border_dcdcdc" style="margin-bottom: 0;">
+            <h2 class="title">캐시충전</h2>
+            <a href="/contents/mypage/cash-charge.html" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <section class="sec_charge">
+            <div class="section wrap_com bg_white">
+              <h3 class="h_type4 pt30">충전캐시 및 결제금액 확인</h3>
+              <div class="bx_gray top">
+                <ul class="list_bul">
+                  <li>
+                    <span>충전캐시 :</span>
+                    <strong id="cash_point"><?=number_format($cash["cash"])?></strong>
+                    <span>캐시</span><?php if ($cash['point'] > 0) {?> + <?=number_format($cash['point'])?>보너스포인트<?php } ?>
+                  </li>
+                  <li>
+                    <span>결제금액 :</span>
+                    <strong id="cash_cash"><?=number_format($cash["price"])?></strong>
+                    <span>원 (VAT 10%포함)</span>
+                  </li>
+                </ul>
+              </div>
+
+<? if($cash["price"] >= 66000){ ?>
+  <div class="new_card_form"  >
+    <ul class="pt20" style="display: none;" >
+      <p class="fsize fw500 pb10">카드주성함</p>
+      <li>
+        <input class="spay" type="text" id="c_cardholder" name="c_cardholder" value="<?=$M_login['name']?>" placeholder="카드 소유자명"></input>
+      </li>
+    </ul>
+    <ul class="pt20"  style="display: none;" >
+      <p class="fsize fw500 pb10">연락처</p>
+      <li>
+        <input class="spay" type="tel" id="c_contact" name="c_contact" value="<?=$M_login['hp']?>" placeholder="연락처를 입력하세요"></input>
+      </li>
+    </ul>
+
+    <ul class="pt20 spay_birth">
+      <p class="fsize fw500 pb10">할부</p>
+      <li>
+        <select id="c_installment" name="c_installment">
+          <option value="00">일시불</option>
+          <option value="02">2개월</option>
+          <option value="03">3개월</option>
+          <option value="04">4개월</option>
+          <option value="05">5개월</option>
+          <option value="06">6개월</option>
+        </select>
+      </li>
+    </ul>        
+  </div>
+<? } ?>
+
+              <?php
+                $s_year = date("Y", strtotime(" -18 year"));
+                $e_year = date("Y", strtotime(" -118 year"));
+              ?>
+              <ul class="mt50 spay_birth">
+                <p class="fsize fw500 pb10">생년월일</p>
+                <li>
+                  <select id="c_birth1" name="" fw-filter="isNumber" fw-label="" fw-alone="N" fw-msg="">
+                    <option value="">년</option>
+                    <?php
+                      for ($i = $s_year; $i > $e_year; $i--) {
+                        $v = $i;
+                        $v = substr($v, 2, 2);
+                    ?>
+                    <option value="<?=$v?>"><?=$i?></option>
+                    <?php } ?>
+                  </select>
+                  <select id="c_birth2" name="" fw-filter="isNumber" fw-label="" fw-alone="N" fw-msg="">
+                    <option value="">월</option>
+                    <option value="01">01</option>
+                    <option value="02">02</option>
+                    <option value="03">03</option>
+                    <option value="04">04</option>
+                    <option value="05">05</option>
+                    <option value="06">06</option>
+                    <option value="07">07</option>
+                    <option value="08">08</option>
+                    <option value="09">09</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                  </select>
+                  <select id="c_birth3" name="" fw-filter="isNumber" fw-label="" fw-alone="N" fw-msg="">
+                    <option value="">일</option>
+                  </select>
+                </li>
+                <!-- <li><input class="spay" type="text" id="c_birth" name="c_birth" value="" placeholder="( - )제외한 숫자만 입력"></input></li> -->
+              </ul>
+              <ul class="mt30 spay_card">
+                <p class="fsize fw500 pb10">카드번호</p>
+                <li><input type="number" id="c_card1" size="4" maxlength="4" name="c_card1" readonly /></li>
+                <li><input type="number" id="c_card2" size="4" maxlength="4" name="c_card2" readonly /></li>
+                <li><input type="number" id="c_card3" size="4" maxlength="4" name="c_card3" readonly /></li>
+                <li><input type="number" id="c_card4" size="4" maxlength="4" name="c_card4" readonly /></li>
+              </ul>
+              <ul class="mt30">
+                <p class="fsize fw500 pb10">유효기간</p>
+                <li>
+                  <input class="spay_cvc" type="number" id="c_month" size="2" maxlength="2" name="c_month" value="" placeholder="MM(월)" readonly></input>
+                  <input class="spay_cvc ml10" type="number" id="c_year_val" size="2" maxlength="2" name="c_year_val" value="" placeholder="YY(년도)" readonly></input>
+                </li>
+              </ul>
+              <?php
+                if ($cash["cash"] >= 60000) {
+              ?>
+              <ul class="pt20 spay_birth">
+                <p class="fsize fw500 pb10">할부기간</p>
+                <li>
+                  <select id="c_quota">
+                    <option value="00">일시불</option>
+                    <option value="02">2개월</option>
+                    <option value="03">3개월</option>
+                    <option value="04">4개월</option>
+                    <option value="05">5개월</option>
+                    <option value="06">6개월</option>
+                  </select>
+                </li>
+              </ul>
+              <?php } ?>
+              <ul class="pt20">
+                <li class="fsize fw500 pb10">비밀번호 (앞2자리 / 숫자만 입력)</li>
+                <li>
+                  <input class="spay_pass" type="password" id="c_pwd_val" size="2" maxlength="2" autocomplete="new-password" name="c_pwd_val" value="" autocomplete="new-password" readonly></input>
+                  <span class="spay_pass_1">●●</span>
+                </li>
+              </ul>
+              <div class="pay pb20">
+                <button type="button" class="btn_pay bx_border btn_red f_GmarketSans btm_card_buy_cash">
+                  <strong>결제하기</strong>
+                </button>
+                <div style="margin-top: 2rem; display: none;" class="btn_pay_loading txt_center">결제진행중입니다.</div>
+              </div>
+            </div>
+            <div class="section wrap_com" style="display: none;">
+              <h3 class="h_type4">결제시 참고해주세요!</h3>
+              <ul class="list_bul txt_type1 fs23 lh16">
+                <li>
+                  <p>모든 결제상품은 부가세(VAT) 10% 별도입니다.</p>
+                </li>
+                <!--<li>
+                  <p>청약철회 기간 : 단순변심의 경우 결제일로부터 7일 이내 청약철회가
+                    가능합니다</p>
+                </li>
+                <li>
+                  <p>청약철회 효과: 매월 5일 무통장으로 일괄 환불 처리</p>
+                </li>-->
+              </ul>
+            </div>
+          </section>
+        </div>
+        <div class="key_popup color bx_keypad_div bx_keypad wrap pt10 pl20 pr10" id="key_pad">
+          <table class="keypad">
+          <caption class="hide">숫자 키패드</caption>
+          <tbody>
+            <tr>
+            <td><button type="button" name="key_pad" class="key_num">1</button></td>
+            <td><button type="button" name="key_pad" class="key_num">2</button></td>
+            <td><button type="button" name="key_pad" class="key_num">3</button></td>
+            </tr>
+            <tr>
+            <td><button type="button" name="key_pad" class="key_num">4</button></td>
+            <td><button type="button" name="key_pad" class="key_num">5</button></td>
+            <td><button type="button" name="key_pad" class="key_num">6</button></td>
+            </tr>
+            <tr>
+            <td><button type="button" name="key_pad" class="key_num">7</button></td>
+            <td><button type="button" name="key_pad" class="key_num">8</button></td>
+            <td><button type="button" name="key_pad" class="key_num">9</button></td>
+            </tr>
+            <tr>
+            <td><button type="button" name="key_pad" class="btn_reset btn_side">Clear</button></td>
+            <td><button type="button" name="key_pad" class="key_num">0</button></td>
+            <td><button type="button" name="key_pad" class="btn_backspace btn_side"><span class="hide">지우기</span></button></td>
+            </tr>
+          </tbody>
+          </table>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+
+  <form name="form" id="w_frm" method="POST" action="./cash_action.php">
+    <input type="hidden" class="it1" value="" name="ORDERID" id="ORDERID" /><!--주문번호-->
+    <input type="hidden" class="it1" value="<?=$cash["itemname"]?>" name="ITEMNAME" id="ITEMNAME" /><!--상품명-->
+    <input type="hidden" class="it" value="<?=$M_login['name']?>" name="USERNAME" /><!--주문자명-->
+    <input type="hidden" class="it3" value="<?=$cash["price"]?>" name="AMOUNT" id="AMOUNT" /><!--결제금액-->
+    <input type="hidden" class="it1" value="<?=$_POST["cash_no"]?>" name="cno" id="cno" /><!--구매상품번호-->
+    <input type="hidden" class="it1" value="" name="CARDNAME" id="CARDNAME" /><!--카드사-->
+    <input type="hidden" class="it1" value="" name="BILLINFO" id="BILLINFO" /><!--카드번호-->
+    <input type="hidden" class="it1" value="" name="EXPIREPERIOD" id="EXPIREPERIOD" /><!--유효기간-->
+    <input type="hidden" class="it1" value="" name="QUOTA" id="QUOTA" /><!--할부개월수-->
+    <input type="hidden" class="it1" value="" name="CARDPWD" id="CARDPWD" /><!--비밀번호 앞 2자리-->
+    <input type="hidden" class="it1" value="" name="CARDAUTH" id="CARDAUTH" /><!--//생년월일 YYMMDD-->
+
+    <input type="hidden" class="it1" value="" name="C_CARDHOLDER" id="C_CARDHOLDER" /><!--카드주성함-->
+    <input type="hidden" class="it1" value="" name="C_CONTACT" id="C_CONTACT" /><!--연락처-->
+    <input type="hidden" class="it1" value="" name="C_INSTALLMENT" id="C_INSTALLMENT" /><!--할부개월수-->
+
+  </form>
+</body>
+
+<script>
+  function confirmEvent() {
+    window.name = "myOpener";
+    var win;
+    var iLeft = (window.screen.width / 2) - (Number(815) / 2);
+    var iTop = (window.screen.height / 2) - (Number(600) / 2);
+    var features = "menubar=no,toolbar=no,status=no,resizable=yes,scrollbars=no,location=no";
+    features += ",left=" + iLeft + ",top=" + iTop + ",width=" + 815 + ",height=" + 600;
+    win = window.open("", "pcPop", features);
+    win.focus();
+
+    $(".btn_pay").hide();
+    $(".btn_pay_loading").show();
+    $("#w_frm").submit();
+
+    var winLoop = setInterval(function() {
+      if (win.closed) {
+        clearInterval(winLoop);
+        location.href = "./cash-charge.html";
+      }
+    }, 1000);
+  }
+
+  $(document).ready(function() {
+    function init_orderid() {
+      var today = new Date();
+      var year = today.getFullYear();
+      var month = today.getMonth() + 1;
+      var date = today.getDate();
+      var time = today.getTime();
+
+      if (parseInt(month) < 10) {
+        month = "0" + month;
+      }
+
+      if (parseInt(date) < 10) {
+        date = "0" + date;
+      }
+
+      var order_idxx = "R_" + year + "" + month + "" + date + "" + time;
+      $("#ORDERID").val(order_idxx);
+    }
+
+    init_orderid();
+
+    $(document).on("click", ".btm_card_buy_cash", function() {
+      var c_birth1 = $("#c_birth1").val();
+      var c_birth2 = $("#c_birth2").val();
+      var c_birth3 = $("#c_birth3").val();
+      var c_birth = c_birth1 + c_birth2 + c_birth3 + "";
+      var c_card1 = $("#c_card1").val();
+      var c_card2 = $("#c_card2").val();
+      var c_card3 = $("#c_card3").val();
+      var c_card4 = $("#c_card4").val();
+      var c_card = c_card1 + c_card2 + c_card3 + c_card4 + "";
+      var c_month = $("#c_month").val();
+      var c_year = $("#c_year_val").val();
+      var c_pwd = $("#c_pwd_val").val();
+      var c_quota = $("#c_quota").val();
+      var c_name = $("#c_name").val();
+
+      var c_cardholder = $("#c_cardholder").val();
+      var c_contact = $("#c_contact").val();
+      var c_installment = $("#c_installment").val();
+
+      if (c_birth == '') {
+        alert("생년월일을 입력해 주세요.");
+        return false;
+      }
+
+      if (c_card == '') {
+        alert("카드번호를 입력해 주세요.");
+        return false;
+      }
+
+      if (c_card.length != 14 && c_card.length != 15 && c_card.length != 16 ) {
+        alert("카드번호를 정확히 입력해 주세요.");
+        return false;
+      }
+
+      if (c_month == '' || c_year == '') {
+        alert("유효기간을 입력해 주세요.");
+        return false;
+      }
+
+      if (c_month.length == 1) c_month = "0"+c_month;
+      if (c_year.length == 1) {
+        alert("유효기간 '년도'를 정확히 입력해 주세요.");
+        return false;
+      }
+
+      if (c_pwd == '') {
+        alert("비밀번호 앞2자리를 입력해 주세요.");
+        return false;
+      }
+
+      if (c_pwd.length != 2) {
+        alert("비밀번호 앞2자리를 입력해 주세요.");
+        return false;
+      }
+
+      if (c_quota == '' || c_quota == null) {
+        c_quota = '00';
+      }
+
+      $(this).hide();
+      $(".btn_pay_loading").show();
+
+      $("#CARDNAME").val(c_name);
+      $("#BILLINFO").val(c_card);
+      $("#EXPIREPERIOD").val(c_year+c_month);
+      $("#CARDPWD").val(c_pwd);
+      $("#CARDAUTH").val(c_birth);
+      $("#QUOTA").val(c_quota);
+
+      $("#w_frm").find("#C_CARDHOLDER").val(c_cardholder);
+      $("#w_frm").find("#C_CONTACT").val(c_contact);
+      $("#w_frm").find("#C_INSTALLMENT").val(c_installment);
+
+      $("#w_frm").submit();
+    });
+
+    $(document).on('input propertychange',"#c_birth1, #c_birth2, #c_birth3, #c_card1, #c_card2, #c_card3, #c_card4, #c_month, #c_year_val, #c_pwd_val", function() {
+      var val = $(this).val();
+      val = val.replace(/[^0-9]/ig, "");
+
+      $(this).val(val);
+    });
+
+    $(document).on("change", "#c_birth2, #c_birth1", function() {
+      var year = $("#c_birth1").val();
+      var mon = $("#c_birth2").val();
+      var html = '<option value="">일</option>';
+
+      if (year == '' || mon == '') {
+        $("#c_birth3").html(html);
+        return false;
+      }
+
+      var mo = Math.floor(year%4);
+      var february = (mo == 0 ? 29 : 28);
+      var months = {"01": 31, "02": february, "03": 31, "04": 30, "05": 31, "06": 30, "07": 31, "08": 31, "09": 30, "10": 31, "11": 30, "12": 31}
+      var count = months[mon];
+
+      for (var i = 1; i <= count; i++) {
+        var day = (i<10 ? "0"+i : i);
+        html += '<option value="'+day+'">'+day+'</option>';
+      }
+
+      $("#c_birth3").html(html);
+    });
+
+    $(document).on("input propertychange", "#c_card1", function() {
+      $(this).val($(this).val().toUpperCase());
+      if ($(this).val().length == 4) {
+        $("#c_card2").focus();
+      }
+    });
+
+    $(document).on("input propertychange", "#c_card2", function() {
+      $(this).val($(this).val().toUpperCase());
+      if ($(this).val().length == 4) {
+        $("#c_card3").focus();
+      }
+    });
+
+    $(document).on("input propertychange", "#c_card3", function() {
+      $(this).val($(this).val().toUpperCase());
+      if ($(this).val().length == 4) {
+        $("#c_card4").focus();
+      }
+    });
+
+    $(document).on("input propertychange", "#c_card4", function() {
+      $(this).val($(this).val().toUpperCase());
+    });
+
+    $(document).on("input propertychange", "#c_month", function() {
+      $(this).val($(this).val().toUpperCase());
+      if ($(this).val().length == 2) {
+        $("#c_year_val").focus();
+      }
+    });
+
+    //key pad
+    var focus_id = "";
+
+    $(document).on("click", "#c_card1, #c_card2, #c_card3, #c_card4, #c_month, #c_year_val, #c_pwd_val", function() {
+      $(".border_blue").removeClass("border_blue");
+      $(this).addClass("border_blue");
+      $("#key_pad").show();
+
+      var id = $(this).attr("name");
+      focus_id = id;
+
+      if (id == "c_month" || id == "c_year_val") {
+        $("html,body").animate({scrollTop: 200}, 500);
+      } else if (id == "c_pwd_val") {
+        $("html,body").animate({scrollTop: 400}, 500);
+      }
+    });
+
+    $(document).on("click", "#key_pad .key_num, #key_pad .btn_reset, #key_pad .btn_backspace", function() {
+      var txt = $(this).text();
+      var str = $("#"+focus_id).val();
+
+      if (txt == "Clear") {
+        $("#"+focus_id).val("");
+        return false;
+      } else if (txt == "지우기") {
+        if (str.length > 1) {
+          str = str.substr(0, str.length - 1);
+          $("#"+focus_id).val(str);
+        } else {
+          $("#"+focus_id).val("");
+        }
+        return false;
+      }
+
+      if (focus_id == "c_card1" || focus_id == "c_card2" || focus_id == "c_card3" || focus_id == "c_card4") {
+        if (str.length < 3) {
+          $("#"+focus_id).val(str + txt);
+        } else if (str.length == 3) {
+          $("#"+focus_id).val(str + txt);
+          $(".border_blue").removeClass("border_blue");
+          if (focus_id == "c_card1") {
+            focus_id = "c_card2";
+            $("#"+focus_id).addClass("border_blue");
+          } else if (focus_id == "c_card2") {
+            focus_id = "c_card3";
+            $("#"+focus_id).addClass("border_blue");
+          } else if (focus_id == "c_card3") {
+            focus_id = "c_card4";
+            $("#"+focus_id).addClass("border_blue");
+          } else {
+            $("#key_pad").hide();
+          }
+        } else {
+          $(".border_blue").removeClass("border_blue");
+          if (focus_id == "c_card1") {
+            focus_id = "c_card2";
+            $("#"+focus_id).addClass("border_blue");
+          } else if (focus_id == "c_card2") {
+            focus_id = "c_card3";
+            $("#"+focus_id).addClass("border_blue");
+          } else if (focus_id == "c_card3") {
+            focus_id = "c_card4";
+            $("#"+focus_id).addClass("border_blue");
+          } else {
+            $("#key_pad").hide();
+          }
+        }
+      } else if (focus_id == "c_month" || focus_id == "c_year_val") {
+        if (str.length <= 0) {
+          $("#"+focus_id).val(str + txt);
+        } else if (str.length == 1) {
+          $("#"+focus_id).val(str + txt);
+          $(".border_blue").removeClass("border_blue");
+          if (focus_id == "c_month") {
+            focus_id = "c_year_val";
+            $("#"+focus_id).addClass("border_blue");
+          } else {
+            $("#key_pad").hide();
+          }
+        } else {
+          $(".border_blue").removeClass("border_blue");
+          if (focus_id == "c_month") {
+            focus_id = "c_year_val";
+            $("#"+focus_id).addClass("border_blue");
+          } else {
+            $("#key_pad").hide();
+          }
+        }
+      } else if (focus_id == "c_pwd_val") {
+        if (str.length <= 0) {
+          $("#"+focus_id).val(str + txt);
+        } else if (str.length == 1 ){
+          $("#"+focus_id).val(str + txt);
+          $(".border_blue").removeClass("border_blue");
+          $("#key_pad").hide();
+        } else {
+          $(".border_blue").removeClass("border_blue");
+          $("#key_pad").hide();
+        }
+      }
+    });
+
+    $(document).click(function(e) {
+      try {
+        var id = $(e.target).attr("name");
+
+        if (id != "c_card1" && id != "c_card2" && id != "c_card3" && id != "c_card4" && id != "c_month" && id != "c_year_val" && id != "c_pwd_val" && id != "key_pad") {
+          $(".border_blue").removeClass("border_blue");
+          $("#key_pad").hide();
+        }
+      } catch(e) {
+        $(".border_blue").removeClass("border_blue");
+        $("#key_pad").hide();
+      }
+    });
+  });
+
+  window.onload=function() {
+    document.addEventListener('touchstart', function(event) {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    })
+    var lastTouchEnd=0;
+    document.addEventListener('touchend', function(event) {
+      var now=(new Date()).getTime();
+      if (now-lastTouchEnd <= 100) {
+        event.preventDefault();
+      }
+      lastTouchEnd=now;
+    }, false)
+  }
+</script>
+<script>
+// Meta Pixel Event Code
+fbq('track', 'InitiateCheckout');
+</script>
+</html>

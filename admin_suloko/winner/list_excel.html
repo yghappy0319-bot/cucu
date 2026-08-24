@@ -1,0 +1,115 @@
+<?php
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/config.php";
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/export.php";
+  include $_SERVER["DOCUMENT_ROOT"]."/_library/function_ORDERS.php";
+
+  F_admin_chk($S_login);
+
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/_check-auth-readonly.php"; // 권한체크
+
+  error_reporting(E_ERROR);
+  ini_set("display_errors", 1);
+  ini_set("memory_limit", $csv_memory);
+
+  // file name
+  $file_name = "winner_".date("Ymd").".csv";
+  $page_name = "당첨자조회";
+
+  $find_text = $_GET["find_text"];
+  $find_object = $_GET["find_object"];
+  $sdate = $_GET["sdate"];
+  $edate = $_GET["edate"];
+  $gubun = $_GET["gubun"];
+  $winyn = $_GET["winyn"];
+  $ranking = $_GET["ranking"];
+
+  // superadmin만 모두 볼수 있음 (SLK-359)
+  if ($S_login['level'] == 4) {
+    $add_query = "";
+  } else {
+    $filter = "NOT IN (1,2,3)";
+
+    for ($i = 1; $i <= 5; $i++) {
+      $default = " AND WIN{$i} {$filter}";
+      $add_query .= $default;
+    }
+  }
+
+  $add_query .= " AND SIGN_YN != 'C'";
+
+  // 당첨금이 지급된 이후 데이터만 조회
+  $add_query .= " AND WIN_MONEY_YN = 'Y'";
+
+  // 복권 종류 (파워볼, 메가밀리언)
+  if ($gubun != "") {
+    $add_query .= " AND GUBUN='{$gubun}'";
+  }
+
+  // 당첨 여부
+  if ($winyn != "") {
+    $add_query .= " AND WIN_YN='{$winyn}'";
+  }
+
+  // 당첨 등수
+  if ($ranking != '') {
+    $add_query .= " AND (WIN1='{$ranking}' OR WIN2='{$ranking}' OR WIN3='{$ranking}' OR WIN4='{$ranking}' OR WIN5='{$ranking}')";
+  }
+
+  // 추첨일 (미국)
+  if ($pdate != "") {
+    $add_query .= " AND PLAYDATE='{$pdate}'";
+  }
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND REG_DATE BETWEEN '{$sDate}' AND '{$eDate}'";
+  }
+
+  $list  = F_ORDERS_list(array(
+    "row"         => $csv_max_row,
+    "page"        => 1,
+    "order"       => "",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query
+  ));
+
+  // default
+  $csv_dump = "";
+
+  // 컬럼명
+  $titles = array("", "ID", "구매일시", "수령여부", "복권명", "회차", "주문번호", "게임수", "추첨일자(한)", "당첨등수", "당첨금($)", "당첨금(₩)", "환율");
+  $csv_dump .= implode(",", $titles);
+  $csv_dump .= "\r\n";
+
+  // 데이터 삽입
+  for ($i = 0; $i < count($list["ORDERS_NO"]); $i++) {
+    $cnt = $i + 1;
+
+    $rank = "";
+    for ($k = 1; $k <= 5; $k++) {
+      $tmp = "WIN".$k;
+      if ($list[$tmp][$i]) {
+        $rank .= $list[$tmp][$i]."등 ";
+      }
+    }
+
+    $csv_dump .= $cnt.",";
+    $csv_dump .= $list["USER_ID"][$i].",";
+    $csv_dump .= $list["REG_DATE"][$i].",";
+    $csv_dump .= $list["IS_USE"][$i].",";
+    $csv_dump .= $ball_op[$list["GUBUN"][$i]].",";
+    $csv_dump .= $list["DRAWNUM"][$i].",";
+    $csv_dump .= $list["ORDERS_NO"][$i].",";
+    $csv_dump .= $list["GAMECNT"][$i].",";
+    $csv_dump .= date("Y-m-d", strtotime($list['PLAYDATE'][$i]." +1 day")).",";
+    $csv_dump .= $rank.",";
+    $csv_dump .= "\"".number_format($list["WIN_MONEY_USD"][$i])."\"".",";
+    $csv_dump .= "\"".number_format($list["WIN_MONEY"][$i])."\"".",";
+    $csv_dump .= "\"".number_format($list["WON"][$i])."\"";
+    $csv_dump .= "\r\n";
+  }
+
+  export_csv($file_name, $csv_dump, $cnt, $page_name);
+?>

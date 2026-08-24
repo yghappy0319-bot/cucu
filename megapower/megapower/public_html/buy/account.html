@@ -1,0 +1,24 @@
+<?php
+  include "../header.html";
+?>
+
+
+<main>
+    <section>
+      <?=$member['id']?>님 <?=number_format($amount)?>원 신청내역이 접수되었습니다.<br />
+      아래의 입금계좌로 <?=number_format($amount)?>원 입금해주시면 즉시 충전이 완료됩니다.
+
+      <div>
+        현재 캐시 충전이 일시 중단되어 입금 계좌는 안내되지 않습니다.
+      </div>
+
+      <div>
+        <a href="/member/inquiry.html">입금했는데 충전이 되지 않았어요![1:1문의]</a>
+      </div>
+    </section>
+    <!-- 필요한 만큼의 섹션 추가 -->
+</main>
+
+<?php
+  include "../footer.html";
+?>

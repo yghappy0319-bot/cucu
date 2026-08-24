@@ -1,0 +1,100 @@
+<?php include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html";?>
+  <main id="main" class="f_NotoSansKR">
+    <section class="sec_reg find_pw">
+      <div class="wrap_title">
+        <h2 class="h_type3">비밀번호 찾기</h2>
+      </div>
+      <form class="f_NotoSansKR" name="w_frm" id="w_frm" method="post">
+        <fieldset>
+          <legend class="hide">비밀번호 찾기 입력 폼</legend>
+          <ul class="list_reg">
+            <li>
+              <label for="reg_id"><span>아이디</span></label>
+              <div class="bx_input">
+                <input type="text" id="reg_id" name="REG_ID" maxlength="15" placeholder="아이디를 입력해주세요." />
+              </div>
+            </li>
+            <li>
+              <label for="reg_name"><span>이름</span></label>
+              <div class="bx_input">
+                <input type="text" id="reg_name" name="NAME" maxlength="30" placeholder="이름을 입력해주세요." />
+              </div>
+            </li>
+            <li class="item_tel">
+              <label for="reg_tel"><span>휴대폰 번호</span></label>
+              <div>
+                <div class="wrap_type1 flex align_center">
+                  <div class="bx_tel bx_input">
+                    <input type="text" id="user_phone" name="USER_PHONE" maxlength="13" />
+                  </div>
+                  <button type="button" class="btn_gray auth_btn">인증번호요청</button>
+                </div>
+                <div class="wrap_type1 flex align_center auth_chk" style="display: none;">
+                  <div class="bx_num bx_input">
+                    <input type="text" id="auth_num" name="AUTH_NUM">
+                  <p><span class="hide">남은시간</span><span class="time count_down">03:00</span></p>
+                  </div>
+                  <button type="button" class="btn_gray auth_chk_btn">인증번호확인</button>
+                </div>
+                <p class="txt_type1 color_red" style="display: none;">입력하신 휴대폰 번호로 인증번호가 발송되었습니다.</p>
+              </div>
+            </li>
+          </ul>
+        </fieldset>
+        <div class="wrap_btn flex align_center space">
+          <button type="button" class="btn_prev">이전</button>
+          <button type="button" class="btn_gray ok_btn">비밀번호 찾기</button>
+        </div>
+      </form>
+    </section>
+    <section class="sec_find pw" style="display: none;">
+      <div class="wrap_title">
+        <h2 class="h_type3">비밀번호 변경</h2>
+      </div>
+      <form class="f_NotoSansKR" name="s_frm" id="s_frm" method="post">
+        <fieldset>
+          <legend class="hide">비밀번호 찾기 입력 폼</legend>
+          <ul class="list_reg">
+            <li>
+              <label for="find_id"><span>아이디</span></label>
+              <div class="bx_input gray">
+                <input type="text" id="find_id" name="FIND_ID" readonly />
+              </div>
+            </li>
+            <li>
+              <label for="new_pwd"><span>변경할 비밀번호</span></label>
+              <div>
+                <div class="bx_input">
+                  <input type="password" id="new_pwd" name="NEW_PWD" maxlength="20" autocomplete="new-password" placeholder="비밀번호를 입력해주세요." />
+                </div>
+                <p class="txt_type1">비밀번호는 8~20자의 영문과 숫자를 섞어주세요. (단, &,',<,> 특수문자 사용불가)</p>
+              </div>
+            </li>
+            <li>
+              <label for="new_pwd_chk"><span>비밀번호 확인</span></label>
+              <div class="bx_input">
+                <input type="password" id="new_pwd_chk" name="NEW_PWD_CHK" maxlength="20" autocomplete="new-password" placeholder="동일한 비밀번호를 입력해주세요." />
+                <p>비밀번호가 일치하지 않습니다. 다시 입력해주세요.</p>
+              </div>
+            </li>
+          </ul>
+        </fieldset>
+        <div class="wrap_btn flex align_center space">
+          <button type="button" class="btn_prev">이전</button>
+          <button type="button" class="btn_gray ok_btn_new">비밀번호 변경하기</button>
+        </div>
+      </form>
+    </section>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html";?>
+</body>
+
+<script src="/common/js/time.js?version=<?=$version?>" charset="utf-8"></script>
+<script src="/common/js/find_pw.js?version=<?=$version?>" charset="utf-8"></script>
+<script src="/common/js/member_common.js?version=<?=$version?>" charset="utf-8"></script>
+
+</html>

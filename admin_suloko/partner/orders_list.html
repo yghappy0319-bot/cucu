@@ -1,0 +1,287 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 20;
+  $add_query = '';
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&sdate=$sdate&edate=$edate&gubun=$gubun&limit=$limit";
+
+  if ($sdate != '' && $edate != '') {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND o.REG_DATE BETWEEN '".$sDate."' AND '".$eDate."'";
+  }
+
+  if ($find_object == 'all' && $find_text != '') {
+    $add_query .= " AND (o.ORDERS_NO = '".$find_text."' OR m.NAME LIKE '%".$find_text."%' OR o.HP LIKE '%".$find_text."%')";
+    $find_object = "";
+  }
+
+  if ($gubun != '') {
+    $add_query .= " AND o.GUBUN='".$gubun."'";
+  }
+
+  $list = F_ORDERS_MEMBER_list(array(
+    "row" => $limit,
+    "page" => $page,
+    "order" => $order,
+    "find_text" => $find_text,
+    "find_object" => $find_object,
+    "add_query" => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['ORDERS_NO'] = array();
+  }
+
+  $find_op  =  array(
+    "all" => "전체",
+    "ORDERS_NO" => "주문번호",
+    "m.NAME" => "성명",
+    "o.HP" => "휴대폰번호",
+  );
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">구매내역</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">구매내역</a></li>
+          <li class="breadcrumb-item active" aria-current="page">구매내역</li>
+        </ol>
+      </div>
+      <div class="ms-auto pageheader-btn">
+        <a href="./orders_list_excel.html?find_text=<?=$find_text?>&find_object=<?=$find_object?>&sdate=<?=$sdate?>&edate=<?=$edate?>&gubun=<?=$gubun?>" target="_blank" class="btn btn-primary btn-icon text-white me-2">
+          <span>
+            <i class="fa fa-file-excel-o"></i>
+          </span> Excel Download
+        </a>
+        <a href="#" class="btn btn-danger allDelChk">선택삭제</a>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+              <div class="form-group mr-3 fl-left">
+                <select name="gubun" id="select-beast" class="form-control form-select select2">
+                  <option value="">--복권종류--</option>
+                  <option value="">전체</option>
+                  <?=option_make($ball_op, $gubun)?>
+                </select>
+              </div>
+              <div class="form-group mr-3 fl-left">
+                <select name="schdate" id="schdate" class="form-control form-select select2">
+                  <option value="">--기간선택--</option>
+                  <?=option_make($search_date_op, $schdate)?>
+                </select>
+              </div>
+              <input type="hidden" name="find_object" value="PLAYDATE" />
+              <div class="form-group mr-3 fl-left">
+                <div class="input-group">
+                  <div class="input-group-text">
+                    <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                  </div>
+                  <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                  <span style="margin: 8px 5px 0 5px;">~</span>
+                  <div class="input-group-text">
+                    <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                  </div>
+                  <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                </div>
+              </div>
+              <div class="form-group fl-left">
+                <select name="find_object" id="select-beast" class="form-control form-select select2">
+                  <?=option_make($find_op, $find_object)?>
+                </select>
+              </div>
+              <div class="input-group col-md-2 fl-left">
+                <input type="text" class="form-control" name="find_text" value="<?=$find_text?>" />
+                <div class="input-group-text btn btn-primary" id="btn-search">
+                  <i class="fa fa-search" aria-hidden="true"></i>
+                </div>
+              </div>
+              <div class="form-group fl-left" style="float: right;">
+                <select name="limit" id="select-beast" class="form-control form-select select2">
+                  <?=option_make($limit_op, $limit)?>
+                </select>
+              </div>
+              </form>
+            </div>
+            <div class="table-responsive">
+              <table class="table border text-nowrap table-striped" id="table-list">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="chkAll" /></th>
+                    <th>Seq</th>
+                    <th>복권명</th>
+                    <th>ID</th>
+                    <th>구매자</th>
+                    <th>휴대폰번호</th>
+                    <th>게임수량</th>
+                    <th>추첨일자</th>
+                    <th>사용캐시</th> <!-- (구) 결제금액 -->
+                    <th>구매일자(한)</th>
+                    <th>구매경로</th>
+                    <th>스캔본등록</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['ORDERS_NO']); $i++) {
+                      $no = $list['total'] - (($page-1)*$list['row']) - $i;
+                      $scan = "<font color='#ff0000'><strong>N</strong></font>";
+                      $ticketImg = $list['IMG_PATH'][$i];
+                      $ticketImgDate = $list['IMG_DATE'][$i];
+                      $ticketTime = strtotime($ticketImgDate);
+
+                      if (strpos($ticketImg, "/") === false) {
+                        $ticketTime = strtotime($ticketImgDate);
+                        $ticketDir = date('ymd', $ticketTime);
+                        $ticketUrl = $s3_ticket_url . $ticketDir . '/'. $ticketImg . '';
+                      } else {
+                        $ticketDir = '';
+                        $ticketUrl = $s3_ticket_url . '/'. $ticketImg . '';
+                      }
+
+                      if ($list["IMG_PATH"][$i] != '') {
+                        $scan = '<a data-bs-target="#modaldemo1" data-bs-toggle="modal" data-src="'.$ticketUrl.'" class="img_read" style="cursor:pointer;"><strong>Y</strong></a>';
+                      }
+                      $play_date = "한) ".date("Y-m-d",strtotime($list['PLAYDATE'][$i]." +1 day"))."<br>미) ".$list['PLAYDATE'][$i];
+                  ?>
+                  <tr>
+                    <td><input type="checkbox" name="noChk[]" value="<?=$list['ORDERS_NO'][$i]?>"></td>
+                    <td><?=$list['ORDERS_NO'][$i]?></td>
+                    <td><?=$ball_op[$list['GUBUN'][$i]]?></td>
+                    <td><?=$list['USER_ID'][$i]?></td>
+                    <td><?=$list['NAME'][$i]?></td>
+                    <td><?=$list['HP'][$i]?></td>
+                    <td><?=$list['GAMECNT'][$i]?></td>
+                    <td><?=$play_date?></td>
+                    <td><?=number_format($list['PAYMENT'][$i])?></td>
+                    <td><?=date("Y-m-d H:i", strtotime($list['REG_DATE'][$i]))?></td>
+                    <td><?=$list['SELLER_GUBUN'][$i]?></td>
+                    <td><?=$scan?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<!-- BASIC MODAL -->
+<div class="modal fade" id="modaldemo1">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-content-demo">
+      <div class="modal-header">
+        <h6 class="modal-title">Detail Preview</h6>
+        <button aria-label="Close" class="btn-close" data-bs-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="card-body" id="order-view">
+            <div class="form-row">
+              <img id="img_read_pop" src="" style="width: 100%;" />
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(document).ready(function() {
+    $(document).on("change", '[name="limit"]', function() {
+      $("#btn-search").click();
+    });
+
+    $(document).on("click", ".btn-read", function() {
+      var no = $(this).data("no");
+      var obj = $("#order-view");
+
+      $.post("./default.php", {
+        mode: "read_order",
+        no: no
+      }, function(e) {
+        obj.find("#user_id").val(e.USER_ID);
+        obj.find("#agent").val(e.agent);
+        obj.find("#gubun").val(e.ball_name);
+        obj.find("#hp").val(e.HP);
+        obj.find("#cnt").val(e.GAMECNT);
+        obj.find("#playdate").val(e.PLAYDATE);
+        obj.find("#authnum").val(e.AUTHNUM);
+        obj.find("#cardcd").val(e.CARDCD);
+        obj.find("#payment").val(e.PAYMENT);
+        obj.find("#vat").val(e.VAT);
+        obj.find("#ball1").val(e.BALL1);
+        obj.find("#ball2").val(e.BALL2);
+        obj.find("#ball3").val(e.BALL3);
+        obj.find("#ball4").val(e.BALL4);
+        obj.find("#ball5").val(e.BALL5);
+      }, "json");
+    });
+
+    $(document).on("click", ".img_read", function() {
+      var src = $(this).data("src");
+      $("#img_read_pop").attr("src", src);
+    });
+
+    //선택삭제
+    $(document).on("click", ".allDelChk", function() {
+      var chk_no = new Array();
+      var i = 0;
+      $('[name="noChk[]"]:checked').each(function() {
+        chk_no[i] = $(this).val();
+        i++;
+      });
+
+      if (i > 0) {
+        if (confirm("삭제후 복구는 불가능합니다.(1/2)")) {
+          if (confirm("삭제후 복구는 불가능합니다.(2/2)")) {
+            $.post("./default.php", {
+              mode: "all_ticked_del",
+              chk_no: chk_no
+            }, function(e) {
+              if (e.error) {
+                alert(e.msg);
+              } else {
+                alert(e.msg);
+              }
+              window.location.reload();
+            }, "json");
+          }
+        }
+      } else {
+        alert("삭제할 항목을 선택하세요");
+      }
+    });
+  });
+</script>

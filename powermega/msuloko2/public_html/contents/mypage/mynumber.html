@@ -1,0 +1,86 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  if ($M_login['user_id'] == "") {
+    meta_go("/login.html");
+    exit;
+  }
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub bb border_dcdcdc" style="margin-bottom: 0;">
+            <h2 class="title">자주쓰는 번호 관리</h2>
+            <a href="./" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <section class="sec_mynumber">
+            <div class="bx_gray txt_type1 wrap_com bx_padding lh16">
+              <ul class="list_bul">
+                <li><p>자주쓰는 복권 번호 생성 및 등록은 메가밀리언, 파워볼 각 구매 페이지에서 설정할 수 있습니다.</p></li>
+              </ul>
+              <div class="wrap_btn flex space mt50">
+                <a href="/contents/lottery/mega-step1.html" class="btn_navy fs28">메가밀리언 구매</a>
+                <a href="/contents/lottery/power-step1.html" class="btn_navy fs28">파워볼 구매</a>
+              </div>
+            </div>
+          </section>
+          <section class="sec_history wrap_com section mt30 bg_white">
+            <h3 class="h_type4">복권별 번호 관리</h3>
+            <div class="wrap_tb bt ls50 lh10" id="list_box">
+              <button type="button" class="btn_more btn_center bg_navy add_after br5 type_btn_more"><span class="va_mid">더보기</span></button>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script>
+  $(function() {
+    let page = 1;
+    list_read(page);
+
+    $(document).on('click', '.type_btn_more', function() {
+      page++;
+      list_read(page);
+    });
+  });
+
+  function list_read(page) {
+    $.post('/other.php', {
+      mode: 'my_lotto_number_list',
+      page: page
+    }, function(e) {
+      $('.type_btn_more').before(e.html);
+
+      if (e.html == '') {
+        $('.type_btn_more').hide();
+      }
+
+      if ($('#list_box').find('tbody').length <= 0 && page == 1) {
+        let html = `<p class='txt_center mt20 fs25'>등록된 내역이 없습니다.</p>`;
+        $('#list_box').html(html);
+      }
+    }, 'json');
+  }
+
+  function del_my_number(ball_no, balls) {
+    let	con = confirm('번호를 삭제하시겠습니까?');
+    if (con == true) {
+      $.post('/other.php', {
+        mode: 'my_lotto_number_each_del',
+        ball_no: ball_no,
+        balls: balls
+      }, function(e) {
+        open('/contents/mypage/mynumber.html', '_self');
+      }, 'json');
+    }
+  }
+</script>
+</html>

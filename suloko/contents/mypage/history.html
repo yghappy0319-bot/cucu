@@ -1,0 +1,496 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_common/config.php";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}'");
+
+  if ($mb['USER_ID'] == '') {
+    alert_print("존재하지 않는 회원입니다.");
+    meta_go("/logout.php");
+    exit;
+  }
+
+  if (!$page) $page = 1;
+  $limit = 20;
+  $find_text = "";
+  $find_object = "";
+
+  if ($_GET['hide'] != '') {
+    $add_query .= " AND USER_ID = '{$M_login['user_id']}' AND SIGN_YN = '' AND HIDE_YN='Y'";
+  } else {
+    $add_query = " AND USER_ID = '{$M_login['user_id']}' AND SIGN_YN = '' AND HIDE_YN IS NULL";
+  }
+
+  $PARAM = "&date_gubun=$date_gubun&order=$order&gubun=$gubun&win_yn=$win_yn&sdate=$sdate&edate=$edate&limit=$limit&hide=$hide";
+
+  if ($sdate != '' && $edate != '') {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+  } else {
+    $sDate = date("Y-m-d", strtotime("-3 months"))." 00:00:01";
+    $eDate = date("Y-m-d")." 23:59:59";
+    $date_gubun = "3M";
+  }
+
+  $add_query .= " AND REG_DATE BETWEEN '{$sDate}' AND '{$eDate}'";
+
+  if ($_GET['gubun'] != '') {
+    $find_object = "GUBUN";
+    $find_text = $_GET['gubun'];
+  }
+
+  if ($_GET['win_yn'] != '') {
+    $add_query .= " AND WIN_YN='".$_GET['win_yn']."'";
+  }
+
+  if ($_GET['order'] == '') {
+    $_GET['order'] = " REG_DATE DESC";
+  }
+
+  // 취소 건 제외
+  $add_query .= " AND SIGN_YN != 'C'";
+
+  $condition = array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $_GET['order'],
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  );
+  $list = F_ORDERS_list($condition);
+
+  if ($list['total'] <= 0) {
+    $list['ORDERS_NO'] = array();
+  }
+
+  $cnt = $db->get_data("SELECT SUM(GAMECNT) AS cnt FROM ORDERS WHERE USER_ID='{$M_login['user_id']}' AND SIGN_YN='' AND HIDE_YN IS NULL");
+
+  if (!isset($cnt['cnt'])) {
+    $cnt['cnt'] = 0;
+  }
+
+  // 최근 접속시간 업데이트
+  $db->query("UPDATE MEMBER SET LASTDATE=NOW(), REG_IP='{$ip_address}' WHERE USER_ID='{$M_login['user_id']}'");
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+  <main id="main">
+    <div class="wrap_mypage clear wrap_com">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/nav-mypage.html"; ?>
+      <div class="right">
+        <section>
+          <div class="wrap_title">
+            <h3 class="heading">구매/당첨내역</h3>
+              <p class="left add_before fw300 pt15 ls75">
+                <?php if ($_GET['hide'] == '') { ?>
+                <img src="<?=$mlevel_image_op[$mb['LEVEL']]?>" style="width: 1.3rem;">&nbsp;&nbsp;
+                <span class="va_mid">
+                  <strong><?=$mb['NAME']?>
+                    <span class="color_red"> [<?=$mlevel_op[$mb['LEVEL']]?>] </span>
+                  </strong>
+                  회원님이 총 구매하신 게임수는 <strong class="color_red"><?=number_format($cnt['cnt'])?>회</strong> 입니다.
+                </span>
+                <?php } ?>
+              </p>
+          </div>
+          <div>
+            <ul class="list_search list_bul2">
+              <li>
+                <p>복권유형</p>
+                <div>
+                  <ul class="list_sel">
+                    <li style="margin-right: 1px;"><button type="button" data-tp="all" class='gubun <?php if ($_GET['gubun'] == '') { echo "on"; } ?>'>전체</button></li>
+                    <li style="margin-right: 1px;"><button type="button" data-tp="MM" class='gubun <?php if ($_GET['gubun'] == 'MM') { echo "on"; } ?>'>메가밀리언</button></li>
+                    <li><button type="button" data-tp="PB" class='gubun <?php if ($_GET['gubun'] == 'PB') { echo "on"; } ?>'>파워볼</button></li>
+                  </ul>
+                </div>
+              </li>
+              <li>
+                <p>당첨/낙첨여부</p>
+                <div>
+                  <ul class="list_sel">
+                    <li style="margin-right: 1px;"><button type="button" data-tp="all" class='win_yn <?php if ($_GET['win_yn'] == '') { echo "on"; } ?>'>전체</button></li>
+                    <li style="margin-right: 1px;"><button type="button" data-tp="Y" class='win_yn <?php if ($_GET['win_yn'] == 'Y') { echo "on"; } ?>'>당첨</button></li>
+                    <li><button type="button" data-tp="N" class='win_yn <?php if ($_GET['win_yn'] == 'N') { echo "on"; } ?>'>낙첨</button></li>
+                  </ul>
+                </div>
+              </li>
+              <li>
+                <p>구입일시</p>
+                <form role="form" name="topSearch" id="srForm" method="get" action="<?=$_SERVER['PHP_SELF']?>">
+                  <input type="hidden" name="gubun" value="<?=$_GET['gubun']?>" class="s_gubun" />
+                  <input type="hidden" name="win_yn" value="<?=$_GET['win_yn']?>" class="s_win_yn" />
+                  <input type="hidden" name="order" value="<?=$_GET['order']?>" class="s_order" />
+                  <input type="hidden" name="date_gubun" value="<?=$date_gubun?>" class="s_date_gubun" />
+                  <input type="hidden" name="hide" value="<?=$_GET['hide']?>" class="s_hide" />
+                  <div class="search_date pt5">
+                  <ul class="list_sel">
+                    <li style="margin-right: 1px;"><button type="button" data-tp="7D" class='date_gubun <?php if ($date_gubun == '7D') { echo "on"; } ?>'>1주일</button></li>
+                    <li style="margin-right: 1px;"><button type="button" data-tp="1M" class='date_gubun <?php if ($date_gubun == '1M') { echo "on"; } ?>'>1개월</button></li>
+                    <li><button type="button" data-tp="3M" class='date_gubun <?php if ($date_gubun == '3M') { echo "on"; } ?>'>3개월</button></li>
+                  </ul>
+                    <span class="right">
+                      <input type="text" autocomplete="off" name="sdate" id="sdate" value="<?php if (isset($sdate)) { echo $sdate; } ?>"> ~
+                      <input type="text" autocomplete="off" name="edate" id="edate" value="<?php if (isset($edate)) { echo $edate; } ?>">
+                    </span>
+                    <button class="btn_gray">조회</button>
+                  </div>
+                </form>
+              </li>
+            </ul>
+          </div>
+        </section>
+        <section class="sec_history">
+          <div class="flex" style="justify-content: space-between;">
+            <div class="wrap_title">
+              <?php if ($_GET['hide'] == '') { ?>
+              <h3 class="heading">구매내역</h3>
+              <?php } else { ?>
+              <h3 class="heading">숨김내역</h3>
+              <?php } ?>
+            </div>
+            <div>
+              <button class="btn_w fs14" style="width: 90px; height: 30px;" onclick="location.href='/contents/service/mega.html'">게임규칙안내</button>
+              <?php if ($_GET['hide'] == '') { ?>
+              <button class="btn_tomato btn_delete_list fs14" style="width: 90px; height: 30px;">선택내역숨김</button>
+              <button class="btn_gray btn_hide_list fs14" style="width: 90px; height: 30px;">숨김내역보기</button>
+              <?php } else { ?>
+              <button class="btn_super btn_restore_list fs14" style="width: 90px; height: 30px;">숨김내역복구</button>
+              <button class="btn_gray btn_order_list fs14" style="width: 90px; height: 30px;">구매내역보기</button>
+              <?php } ?>
+            </div>
+          </div>
+          <div class="wrap_tb">
+          <table class="tb_type2">
+            <caption>
+              <div class="hide">
+                최근 구매내역에 대한 정보를 제공하는 표
+              </div>
+            </caption>
+            <colgroup>
+              <col width="">
+              <col width="">
+              <col width="">
+              <col width="">
+              <col width="">
+              <col width="">
+              <col width="">
+              <col width="">
+              <col width="">
+              <col width="">
+            </colgroup>
+            <thead class="bg_navy">
+              <tr>
+                <th>
+                  <input type="checkbox" id="chkAll" class="chk_type1">
+                  <label for="chkAll"></label>
+                </th>
+                <th>복권명</th>
+                <th>회차</th>
+                <th>게임수</th>
+                <th>구매대행 신청일시</th>
+                <th>복권 스캔본</th>
+                <th>추첨일시</th>
+                <th>당첨유무</th>
+                <th>당첨게임수</th>
+                <th>당첨금</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php
+                for ($i = 0; $i < count($list['ORDERS_NO']); $i++) {
+                  $win_price = 0;
+                  $win_cnt = 0;
+                  $tp = '';
+                  $n_time = date("G");
+                  $playDate = date("Y-m-d", strtotime($list['PLAYDATE'][$i]."+1 day"));
+
+                  if ($list['WIN_YN'][$i] == 'R') {
+                    $tp = "추첨전";
+                    if ($list['PRINT_YN'][$i] == 'Y') {
+                      $tp = "추첨전";
+                    }
+                    if ($list['IMG_YN'][$i] == 'Y') {
+                      $tp = "추첨전";
+                    }
+                  } else if($list['WIN_YN'][$i] == 'Y') {
+                    $tp = "당첨";
+                  } else {
+                    $tp = "낙첨";
+                  }
+
+                  if ($list['WIN_MONEY_USD'][$i] > 0) {
+                    $win_price = $list['WIN_MONEY_USD'][$i];
+                  }
+
+              $메가배수 = 1;
+
+              if ($list['GUBUN'][$i] == "MM") {
+                  $sql = "select * from ORDER_MULTIPLIER where ORDERS_NO = {$list['ORDERS_NO'][$i]} ";
+                  //echo $sql."<br>";
+                  $multiplier = $db->get_data($sql);
+                  if($list['WIN1'][$i] > 0){
+                      if ($list['BALL1'][$i]) $메가배수 *= $multiplier['MULTI_A'];
+                  }else if($list['WIN2'][$i] > 0){
+                      if ($list['BALL2'][$i]) $메가배수 *= $multiplier['MULTI_B'];
+                  }else if($list['WIN3'][$i] > 0){
+                      if ($list['BALL3'][$i]) $메가배수 *= $multiplier['MULTI_C'];
+                  }else if($list['WIN4'][$i] > 0){
+                      if ($list['BALL4'][$i]) $메가배수 *= $multiplier['MULTI_D'];
+                  }else if($list['WIN5'][$i] > 0){
+                      if ($list['BALL5'][$i]) $메가배수 *= $multiplier['MULTI_E'];
+                  }
+                  
+              }
+              //echo $메가배수."<br>";
+              
+              $win_price = $win_price * $메가배수;
+
+                  if ($playDate == date("Y-m-d") && $list['WIN_MONEY_YN'][$i] != 'Y' && $list['WIN_YN'][$i] != 'R'  && $n_time >= $draw_time_num) {
+                    $win_price = "집계중";
+                  }
+
+                  if ($playDate == date("Y-m-d") && $list['WIN_YN'][$i] == 'R' && $n_time >= $draw_time_num) {
+                    $tp = "집계중";
+                  }
+
+                  for ($s = 1; $s <= 5; $s++) {
+                    if ($list['WIN'.$s][$i] > 0) {
+                      $win_cnt++;
+                    }
+                  }
+
+                  if ($list['PRINT'][$i] == '1') {
+                    $ticketImg = $list['IMG_PATH'][$i];
+                    $ticketImgDate = $list['IMG_DATE'][$i];
+                    $ticketTime = strtotime($ticketImgDate);
+
+                    if (strpos($ticketImg, "/") === false) {
+                      $ticketTime = strtotime($ticketImgDate);
+                      $ticketDir = date('ymd', $ticketTime);
+                      $ticketUrl = $ticketImageURI . $ticketDir . '/'. $ticketImg . '';
+                    } else {
+                      $ticketDir = '';
+                      $ticketUrl = $ticketImageURI . $ticketImg . '';
+                    }
+                  }
+
+              ?>
+              <tr>
+                <td>
+                  <?php if($list['WIN_YN'][$i] != 'R') { ?>
+                  <input type="checkbox" id="Chk<?=$i?>" name="noChk[]" value="<?=$list['ORDERS_NO'][$i]?>" class="chk_type1">
+                  <label for="Chk<?=$i?>"></label>
+                  <?php } ?>
+                </td>
+                <td><?=$ball_op[$list['GUBUN'][$i]]?></td>
+                <td><?=$list['DRAWNUM'][$i]?></td>
+                <td><?=$list['GAMECNT'][$i]?>게임</td>
+                <td><?=date("Y-m-d H:i", strtotime($list['REG_DATE'][$i]))?></td>
+
+                <?php if ($list['PRINT'][$i] != 0) { ?>
+                <td class="view_scan">
+                  <a style="width: 50%; height: 70%; min-height: 1.75rem; margin:0 auto;" class="btn btn_scan btn_popup" id="btn_scanImg" data-img="<?=$ticketUrl?>" data-no="<?=$list['ORDERS_NO'][$i]?>"></a>
+                </td>
+                <?php } else { ?>
+                <td class="view_scan" style="opacity: 0.4">
+                  <a style="width: 50%; height: 70%; min-height: 1.75rem; margin:0 auto;" class="btn btn_scan btn_popup" id="btn_scanImg" data-no="<?=$list['ORDERS_NO'][$i]?>"></a>
+                </td>
+                <?php } ?>
+
+                <td><?=date("Y년 m월 d일", strtotime($list['PLAYDATE'][$i]." +1 day")) . " " . get_dst_drawtime(date("Y-m-d", strtotime($list['PLAYDATE'][$i]." +1 day")))?></td>
+                <td><?=$tp?></td>
+                <td><?=$win_cnt?></td>
+                <td><?= "$ " . number_format($win_cnt * $win_price)?></td>
+              </tr>
+              <?php } ?>
+            </tbody>
+          </table>
+        </div>
+        <?php if ($list['total'] <= 0) { ?>
+        <div class="nohistory">
+          <div class="wrap_img"><img src="/common/images/img_nohistory.jpg" alt=""></div>
+            <?php if ($_GET['hide'] == '') { ?>
+            <p>당첨, 낙첨된 내역이 없습니다.</p>
+            <?php } else { ?>
+            <p>내역이 없습니다.</p>
+            <?php } ?>
+          </div>
+          <?php } else { ?>
+          <!-- 페이징 숫자 표시는 5개까지 -->
+          <div class="wrap_paging mb60">
+            <?php
+              $page_info['cur'] = $condition['page'];
+              $page_info['row'] = $condition['row'];
+              $page_info['total'] = $list['total'];
+              $list['page_string'] = print_page_num1($page_info);
+              echo $list['page_string'];
+            ?>
+          </div>
+          <?php } ?>
+        </section>
+      </div>
+    </div>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+</body>
+
+<script>
+  $(document).ready(function() {
+    $('.btn_hide_list').click(function() {
+      $('.s_hide').val('Y');
+      $('#srForm').submit();
+    });
+
+    $('.btn_order_list').click(function() {
+      $('.s_hide').val('');
+      $('#srForm').submit();
+    });
+
+    $(document).on("click", ".gubun", function() {
+      let tp = $(this).data("tp");
+      if (tp != 'all') {
+        $(".s_gubun").val(tp);
+      } else {
+        $(".s_gubun").val("");
+      }
+      $("#srForm").submit();
+    });
+
+    $(document).on("click", ".win_yn", function() {
+      let tp = $(this).data("tp");
+      if (tp != 'all') {
+        $(".s_win_yn").val(tp);
+      } else {
+        $(".s_win_yn").val("");
+      }
+      $("#srForm").submit();
+    });
+
+    $(document).on("click", ".order", function() {
+      let tp = $(this).data("tp");
+      if (tp != 'all') {
+        $(".s_order").val(tp);
+      } else {
+        $(".s_order").val("");
+      }
+      $("#srForm").submit();
+    });
+
+    $('.btn_scan').click(function(e) {
+      let no = e.delegateTarget.dataset.no;
+      $('.scanImg .tb_type2').remove();
+
+      $.post('./mode.php', {
+        mode: 'read_orders',
+        no: no
+      }, function(el) {
+        $('.scanImg .wrap_tb img').attr('style', 'display: none;');
+        $('.scanImg .wrap_tb').css({
+          'width': '100%',
+          'text-align': 'center',
+          'max-height': '',
+          'overflow': 'visible',
+          'overflow-y': 'visible'
+        });
+        $('.scanImg .wrap_tb').append(el.html);
+      }, 'json');
+    })
+
+    $(document).on('click', '#chkAll', function() {
+      let type = $(this).prop('checked');
+      $('.tb_type2').find('[name="noChk[]"]').prop('checked', type);
+    });
+
+    $(document).on('click', '.btn_delete_list', function() {
+      let chk_no = "";
+      let i = 0;
+      $('[name="noChk[]"]:checked').each(function(){
+        chk_no += $(this).val() + ",";
+        i++;
+      });
+
+      if (i == 0) {
+        alert("선택한 구매내역이 없습니다.");
+        return false;
+      }
+
+      if (i > 0) {
+        if (confirm("주문건 취소 및 환불이 아닙니다.\n선택한 구매내역을 숨김 처리하시겠습니까?")) {
+          $.post("./mode.php", {
+            mode: "delete_orders",
+            chk_no: chk_no
+          }, function(e) {
+            if (e.error) {
+              alert(e.msg);
+            } else {
+              alert(e.msg);
+              window.location.reload();
+            }
+          }, "json");
+        }
+      } else {
+        alert("숨김 처리할 항목을 선택하세요");
+      }
+    });
+
+    $(document).on('click', '.btn_restore_list', function() {
+      let chk_no = "";
+      let i = 0;
+      $('[name="noChk[]"]:checked').each(function() {
+        chk_no += $(this).val() + ",";
+        i++;
+      });
+
+      if (i == 0) {
+        alert("선택한 거래내역이 없습니다.");
+        return false;
+      }
+
+      if (i > 0) {
+        if (confirm("선택한 거래내역을 복구 처리하시겠습니까?")) {
+          $.post("./mode.php", {
+            mode: "restore_orders",
+            chk_no: chk_no
+          }, function(e) {
+            if (e.error) {
+              alert(e.msg);
+            } else {
+              alert(e.msg);
+              window.location.reload();
+            }
+          }, "json");
+        }
+      } else {
+        alert("복구 처리할 항목을 선택하세요");
+      }
+    });
+
+    $(document).on("click",'.date_gubun',function(){
+      let tp = $(this).data("tp");
+      $.post("/other.php",{
+        mode: "search_date",
+        schdate: tp
+      }, function(e) {
+        if (e.errNo > 0) {
+        } else {
+          $('#sdate').val(e.sdate);
+          $('#edate').val(e.edate);
+          $('[name="date_gubun"').val(tp);
+          $('#srForm').submit();
+        }
+      }, "json");
+    });
+  });
+</script>
+
+</html>

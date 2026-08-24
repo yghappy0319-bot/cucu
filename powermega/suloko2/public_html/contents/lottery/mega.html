@@ -1,0 +1,253 @@
+<?php
+  $page_title = "메가밀리언 구매 - 파워볼, 메가밀리언, 미국 로또, 파메코";
+  $page_description = "미국 로또 메가밀리언 구매, 1등 당첨금 및 회차별 당첨번호와 추첨결과 무료 정보 제공, 1게임 무료";
+  $page_mobile = "/contents/lottery/mega-step1.html";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  $menu_on['mega'] = true;
+
+  $laTimes  = getLaTime();
+  $laTime   = $laTimes['laTime'];
+  $playDate = date('Y-m-d', $laTime);
+  $endTime  = date("Y-m-d H:i:s");
+
+  $infosql = "SELECT * FROM WININFO WHERE GUBUN='MM' AND PLAYDATE >= '{$playDate}' AND TIME_E > '{$endTime}' LIMIT 1";
+  $info = $db->get_data($infosql);
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID = '{$M_login['user_id']}' LIMIT 1");
+
+  $sql = "
+    SELECT CONCAT(BALL1, ',', BALL2, ',', BALL3, ',', BALL4, ',', BALL5, ',', BALLP) AS balls
+    FROM WININFO
+    WHERE GUBUN = 'MM' AND BALL1 IS NOT NULL
+    ORDER BY WININFO_NO DESC LIMIT 1;
+  ";
+  $prevNumber = $db->get_data($sql);
+
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+  <main id="main">
+    <div class="location ls50 mb20">
+      <div class="wrap_com">
+        <ol class="clear">
+          <li><a href="" class="add_before"><span class="hide">홈</span></a></li>
+          <li><a href="">메가밀리언 구매</a></li>
+        </ol>
+      </div>
+    </div>
+    <div class="text-center mt20 mb20">
+      <img src="/common/images/megamillons.png" style="width: 500px;" />
+    </div>
+    <section class="sec_info wrap_com f_GmarketSans">
+      <h2 class="hide">메가밀리언 정보</h2>
+      <div class="bx_info bx_gray purchase_info"></div>
+      <div style="margin-top:-35px;margin-bottom:25px"><a href="/contents/cs/notice_details.html?no=11096"><img src="/common/images/new_mega_banner_pc_01.png" width="1200"></a></div>
+    </section>
+    <section class="sec_game">
+      <h2 class="hide">메가밀리언 구매</h2>
+      <div class="game-userinfo-bar">
+        <div class="container">
+          <div class="item">
+            <p class="tit">보유캐시</p>
+            <p class="num"><?=((isset($mb['CASH'])) ? number_format($mb['CASH']) : 0)?> 캐시</p>
+            <a href="/contents/mypage/cash-charge.html?page=mm" class="btn charge">캐시충전</a>
+          </div>
+          <div class="item">
+            <p class="tit">당첨금</p>
+            <p class="num"><?=((isset($mb['WINCASH'])) ? number_format($mb['WINCASH']) : 0)?> 원</p>
+          </div>
+          <div class="item">
+            <p class="tit">마일리지</p>
+            <p class="num"><?=((isset($mb['IPOINT'])) ? number_format($mb['IPOINT']) : 0)?> M</p>
+          </div>
+          <div class="item">
+            <p class="tit">보너스포인트</p>
+            <p class="num"><?=((isset($mb['POINT'])) ? number_format($mb['POINT']) : 0)?> P</p>
+          </div>
+          <div class="btn-wrap">
+            <a type="button" class="btn btn_popup" data-no="S" <?=(isset($M_login['user_id']) ? 'id="btn_myball"' : 'id="btn_login"')?>>내 번호 불러오기</a>
+          </div>
+        </div>
+      </div>
+      <div class="wrap_com">
+        <input type="hidden" id="gubun" value="MM">
+        <h2 class="hide">번호 선택</h2>
+        <iframe id="voyage" src="<?=$usDomain?>/pc/mega.html" width="100%" height="1300px" frameborder="0"></iframe>
+        <!-- <div class="mt30 clear flex space" style="padding-right: 10px;">
+          <div style="width: 100%; margin-right: 0.4rem;">메가밀리언 구매 안내</div>
+          <div style="width: 100%; margin-left: 0.4rem;">캐시 충전 안내</div>
+        </div> -->
+
+        <!-- <div class="clear flex space" style="margin-top: 5px; padding-right: 10px;">
+          <div class="div_youtube" style="margin-right: 0.4rem;">
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/KKumj6L5VPc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="border-radius:10px;"></iframe>
+          </div>
+
+          <div class="div_youtube" style="margin-left: 0.4rem;"  >
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/_0tLD_MscJU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="border-radius:10px;"></iframe>
+          </div>
+        </div> -->
+
+
+        <p class="mt30"><img src="/common/images/st_pc<?php if ($deadline_time_num == 9) echo "_summer"; ?>.v3.png?date=<?=date('his')?>"></p>
+      </div>
+    </section>
+    <section class="sec_quick sub wrap_com f_GmarketSans">
+      <h2 class="hide">빠른 안내</h2>
+      <ul class="flex space wrap">
+        <li>
+          <a <?=(isset($M_login['user_id']))?'href="/contents/mypage/history.html"':'class="btn_popup" id="btn_login"'?>>
+            <span>메가밀리언 | 파워볼</span>
+            <strong>구매티켓 보기</strong>
+            <p>내가 구매한 구매티켓을 확인 하세요</p>
+          </a>
+        </li>
+        <li>
+          <a href="/contents/draw/draw-mega.html" style="background-image: url(/common/images/ico_promotion.png);">
+            <span>메가밀리언 / 파워볼</span>
+            <strong>당첨번호 및 추첨결과</strong>
+            <p>당첨번호 및 추첨결과를 확인 하세요</p>
+          </a>
+        </li>
+        <li>
+          <a href="/contents/cs/faq.html" style="background-image: url(/common/images/ico_AtoZ.png);">
+            <span>FAQ</span>
+            <strong>자주하는 질문</strong>
+            <p>자주 묻는 질문을 모아 두었습니다.</p>
+          </a>
+        </li>
+      </ul>
+    </section>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html";?>
+
+  <script src="/common/js/purchase_info.js?version=<?=$version?>"></script>
+
+  <script>
+    // let isFirstLoad = true;
+    let usDomain = "<?=$usDomain?>";
+
+    if (!window.hasMessageEventListener) {
+      window.addEventListener("message", handleMessage);
+      window.hasMessageEventListener = true;
+    }
+
+    function handleMessage(event) {
+      if (event.origin === usDomain) {
+        try {
+          const parsedData = JSON.parse(event.data);
+
+          const iframe = document.getElementById("voyage");
+          if (parsedData.height && iframe) {
+
+            if (parsedData.height < 1300) {
+              iframe.style.height = '1300px';
+            } else {
+              iframe.style.height = parsedData.height + 'px';
+            }
+
+            // if (parsedData.text !== '수동선택' && !isFirstLoad) {
+            if (parsedData.text !== '수동선택') {
+              let targetPosition = parsedData.height - 200;
+              let duration = 500;
+              scrollToSmoothly(targetPosition, duration);
+            }
+
+            // isFirstLoad = false;
+          }
+        } catch (error) {
+        }
+      }
+    }
+
+    $(document).on("click", "#btn_myball", function() {
+      $.post("./mode.php", {
+        mode: "getMyNumber",
+        type: "MM",
+      }, function(e) {
+        if (e.error) {
+          $("#myball_box").html(e.html);
+        } else {
+          alert(e.msg);
+          window.location.reload();
+        }
+      }, "json");
+    });
+
+    $(document).on("click", ".btn_myball_chk", function() {
+      let len = $("#myball_box").find(".chk_my_ball:checked").length;
+
+      if (len <= 0){
+        alert("나의 행운번호를 선택해주세요.");
+        return false;
+      }
+
+      let selectedValues = [];
+
+      $("#myball_box").find(".chk_my_ball:checked").each(function() {
+        let label = $(this).closest('tr').find('.list_ball li span').map(function() {
+          return $(this).text();
+        }).get().join(", ");
+
+        selectedValues.push(label);
+      });
+
+      const voyage = document.getElementById("voyage");
+      const jsonData = JSON.stringify({ selectedNums: selectedValues });
+
+      if (voyage) {
+        voyage.contentWindow.postMessage(jsonData, usDomain);
+      }
+
+      $(".my_ball_popup").find(".btn_close").click();
+    });
+
+    $(document).on("click", ".login_btn", function() {
+      const voyage = document.getElementById("voyage");
+      const jsonData = JSON.stringify({ isLogin: true });
+      if (voyage) {
+        voyage.addEventListener("load", function() {
+          voyage.contentWindow.postMessage(jsonData, usDomain);
+        });
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+      const origin = window.location.origin;
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
+      const tp = urlParams.get('tp');
+
+      const member   = <?=((isset($M_login['user_id'])) ? $mb['MEMBER_NO'] : 0)?>;
+      const cash     = <?=((isset($mb['CASH'])) ? $mb['CASH'] : 0)?>;
+      const winnings = <?=((isset($mb['WINCASH'])) ? $mb['WINCASH'] : 0)?>;
+      const mileage  = <?=((isset($mb['IPOINT'])) ? $mb['IPOINT'] : 0)?>;
+      const point    = <?=((isset($mb['POINT'])) ? $mb['POINT'] : 0)?>;
+      const prevNum  = "<?= $prevNumber['balls']; ?>";
+      const playdate = "<?= $info["PLAYDATE"]; ?>";
+      const drawnum  = <?= $info["DRAWNUM"]; ?>;
+
+      const voyage = document.getElementById("voyage");
+      const jsonData = JSON.stringify({
+        origin: origin, no: member, cash: cash, winnings: winnings, mileage: mileage, point: point,
+        prevNum: prevNum, playdate: playdate, drawnum: drawnum, tp: tp
+      });
+
+      if (voyage) {
+        voyage.addEventListener("load", function() {
+          voyage.contentWindow.postMessage(jsonData, usDomain);
+        });
+      }
+    });
+  </script>
+
+  <script>
+    // Meta Pixel Event Code
+    fbq('track', 'ViewContent');
+  </script>
+</body>
+</html>

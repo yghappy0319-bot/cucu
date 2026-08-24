@@ -1,0 +1,83 @@
+<?php include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";?>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-rwdImageMaps/1.6/jquery.rwdImageMaps.min.js"></script>
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main">
+        <div class="contents pb20">
+          <div class="bx_white wrap_com">
+            <?php if ($_SERVER['HTTP_HOST'] == "www.sulotko.com") { ?>
+            <section class="sec_game" style="padding: 0.5rem;">
+              <a class="btn_popup btn_next btn_red fs35" id="btn_sendInfo" style="width: 100%; height: 2rem; line-height: 2rem;">
+                <span class="va_mid">파메코 앱 2.0 설치파일 링크 받기</span>
+              </a>
+            </section>
+            <?php } ?>
+            <img src="<?=$site_app_img2?>" style="width: 100%;" alt="웹앱 가이드" usemap="#image-map">
+            <map name="image-map">
+              <area target="_blank" alt="일반 설치 방법" title="일반 설치 방법" href="https://www.youtube.com/shorts/GISjVvYlyCg" coords="69,8389,563,8469" shape="rect">
+              <area target="_blank" alt="수동 설치 방법" title="수동 설치 방법" href="https://www.youtube.com/shorts/THvvt46gJWk" coords="66,8503,557,8574" shape="rect">
+              <area target="_blank" alt="알람이 안 올경우 해결 방법" title="알람이 안 올경우 해결 방법" href="https://www.youtube.com/shorts/4v9YPcYLzfI" coords="67,8611,556,8689" shape="rect">
+            </map>
+          </div>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<div class="popup sendInfo type1">
+  <section class="inner sec_app wrap_com">
+    <h3 class="f_GmarketSans fw600 ls50" style="padding: 0.6rem;">파메코 앱 2.0</h3>
+    <button class="btn_close"><span class="hide">닫기</span></button>
+    <strong class="ls25">설치 URL 보내기</strong>
+    <div class="wrap_type1 flex align_center" style="padding: 1rem 0 1rem 0 !important;">
+      <div class="bx_tel type1 bx_input">
+        <input type="text" inputmode="tel" id="app_phone" name="app_phone" maxlength="13" placeholder="휴대폰 번호 입력" />
+      </div>
+      <button type="button" class="btn_gray app_hp_btn" style="width: 4rem; height: 2rem;">동의 후 전송</button>
+    </div>
+    <div class="bx_gray bx_padding" style="padding-left: 0.5rem; padding-right: 0.5rem; text-align: left;">
+      <ul class="list_bul fs22">
+        <li><span>설치 링크 전송을 위해 고객님 휴대폰 번호를 수집합니다.</span></li>
+        <li><span>수집된 정보는 문자 발송 완료 후 즉시 삭제됩니다.</span></li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+  $(document).on('click', '.app_hp_btn', function() {
+    let hp = $('#app_phone').val();
+
+    if (hp == '') {
+      alert('휴대폰 번호를 입력해 주세요.');
+      $('.nbaMask').css('z-index', '20000');
+      $('.nbaDialog').css('z-index', '25000');
+      return false;
+    }
+
+    $.post('/other.php', {
+      mode: 'app_sms',
+      hp: hp
+    }, function(e) {
+      alert(e.msg);
+      $('.nbaMask').css('z-index', '20000');
+      $('.nbaDialog').css('z-index', '25000');
+      if (!e.error) {
+        setTimeout(() => {
+          $('#app_phone').val('');
+          $('.btn_close').trigger('click');
+        }, 100);
+      }
+    }, 'json');
+  });
+</script>
+<!-- image map -->
+<script type='text/javascript'>
+  $('img[usemap]').rwdImageMaps();
+</script>
+</html>

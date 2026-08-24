@@ -1,0 +1,8 @@
+{
+    "require": {
+        "aws/aws-sdk-php": "^3.173",
+        "psr/http-message": "1.1",
+        "google/auth": "^1.26.0",
+        "google/apiclient": "^2.0"
+    }
+}

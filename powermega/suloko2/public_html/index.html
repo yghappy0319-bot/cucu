@@ -1,0 +1,553 @@
+<?php
+  //error_reporting(E_ALL);
+  //ini_set("display_errors", 1);
+  //session_start();
+  //session_unset();
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  include $_SERVER['DOCUMENT_ROOT']."/index.php";
+
+?>
+
+<link href="/countdown/jcountdown/jcountdown.css" rel="stylesheet" type="text/css">
+
+<body class="body_idx">
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+  <main id="main">
+    <div class="wrap_com">
+
+      <div class="wrap_main clear">
+        <div class="main left">
+          <section class="sec_visual">
+            <h2 class="hide">메인비주얼</h2>
+            <div class="slide" style="border: 1px solid #ddd">
+              <!-- <video id="vplayer" width="100%" autoplay muted autobuffer loop playsinline data-keepplaying>
+                <source type="video/mp4" src="/upload/BANNER/main_banner_pc.mp4" />
+              </video> -->
+              <img src="/images/web/main_banner1.jpg?v=<?=date('his')?>" width="100%"/>
+            </div>
+          </section>
+
+          <div class="section-notice-banner">
+            <span class="fs16 p-txt blink">긴급공지</span>
+            <div class="notice">
+              <ul class="rolling">
+                <li>
+                  <a href="/contents/cs/notice_details.html?no=9573" class="link">
+                    <span>
+                      <?=$사이트명1?> 곽O현 회원님!!
+                      <span class="p-txt">메가밀리언 1991회차 3등 1만 달러 당첨</span>을 축하드립니다.
+                    </span>
+                    <span class="more">자세히보기</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="/contents/cs/notice_details.html?no=1445" class="link">
+                    <span>
+                      <?=$사이트명1?> 이용 후 미화 100만불<span class="p-txt">(약 13억원, 실질적 2등) </span>당첨 시
+                      <span class="p-txt">당첨금</span>을
+                      <span class="p-txt">선지급</span>합니다.
+                    </span>
+                    <span class="more">자세히보기</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <section class="sec_lotto">
+            <h2 class="hide">로또 구매 정보 안내</h2>
+            <ul class="list_lotto clear">
+              <li class="mega left bx_type1">
+                <div>
+                  <div style="position: absolute; margin-left: 15.5rem; margin-top: 0.4rem;">
+                    <span class="btn_popup winner_last_detail_btn lastwinner" id="btn_lastwinner"
+                      data-no="<?=$info_MM_last['WININFO_NO']?>">당첨금 안내
+                    </span>
+                  </div>
+                  <div class="flex column align_center">
+                    <h3><img src="<?=$commonImageURI?>logo_mega.png" alt="메가밀리언" style="height: 52.8%;">
+                    </h3>
+                    <div class="mega-deadline-style us scroll_bar" style="display: none;">
+                      <div style="border-bottom: 1px solid #d2d2d2; padding-bottom: 0.2rem;">
+                        <span class="time_draw">
+                          <strong>지금은 <span class="real" style="color: #FF0000;"><span
+                                class="mega-drawnum">0000</span>회차</span> 주문 접수
+                            중입니다.</br>
+                            1등 당첨금은 아래 내용을 확인하여 주십시오.</strong>
+                        </span>
+                      </div>
+                      <div>
+                        <p class="fs15" style="padding-top: 0.5rem; padding-left: 1rem; line-height: 1rem; text-align: left;">
+                          <span><strong>Case 1. <span class="mega-drawnum-prev">1000</span>회차
+                              1등 당첨자 미 발생시 예상 금액</br><span style="color: #FF0000;">₩ <span
+                                  class="mega-price-est">00,000,000,000</span> (<span
+                                  class="mega-price-est-text">000</span>원)</br></br></strong></span></span>
+                          <span><strong>Case 2. <span class="mega-drawnum-prev">1000</span>회차
+                              1등 당첨자 발생시 시작 금액</br>₩ <span class="mega-price-fst">00,000,000,000</span> (<span
+                                class="mega-price-fst-text">000</span>원)</br></br></strong></span>
+                          <span style="font-size: 12px; color: #FF0000;">※ <span class="mega-drawnum-prev">1000</span>회차
+                            1등 당첨자 확정 공시 <span class="mega-draw-today-time">2023년</span>(변동가능)</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div class="mega-nomal-style us">
+                      <!-- 테이블 형태로 변경 -->
+                      <table>
+                        <tbody>
+                        <tr>
+                            <th></th>
+                            <th>미화(USD)</th>
+                            <th>원화(KRW)</th>
+                        </tr>
+                        <tr>
+                            <td>1등 당첨금</td>
+                            <td><b><span class="mega-priceDollar">$0,000,000</span></b></td>
+                            <td><b><span class="mega-price-text">00</span>원</b></td>
+                        </tr>
+                        <tr>
+                            <td>2등 당첨금</td>
+                            <td><b>$10,000,000</b><br/>
+                              ~<br/>
+                              $2,000,000</td>
+                            <td><b><span class="mega-2nd-max-prize">00</span>원</b><br/>
+                              ~<br/>
+                              <span class="mega-2nd-min-prize">00</span>원</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div class="infoWrap"><img class="ico_info" src="/common/images/icon_infoOrange.svg" alt="안내">2~9등 당첨금은 각 게임별 X2~X10(배수) 자동 적용</div>
+                    <div class="timeWrap"><p class="time_draw"><strong>추첨 (한국시간)</strong> <span class="mega-k-time"></span></p></div>
+
+                    </div>
+                    <div class="time_end">
+                      <p id="mega_defaultTime" style="margin-right: 8px;"><span class="mega-drawnum"></span> 회차 <br />주문
+                        마감 시간</p>
+                      <p id="mega_nearTime" style="margin-right: 8px;" class="hide"><span class="mega-drawnum"></span>
+                        회차 <br /><span class="blink" style="color: #FF0000;">주문 마감 임박</span></p>
+                      <div class="mmCountdown">
+                      </div>
+                    </div>
+                    <a href="/contents/lottery/mega.html" class="btn_buy btn_blue"><span class="mega-drawnum">0000</span> 회차
+                      메가밀리언 구매하기</a>
+                  </div>
+                </div>
+              </li>
+              <li class="power right bx_type1">
+                <div>
+                  <div style="position: absolute; margin-left: 15.5rem; margin-top: 0.4rem;">
+                    <span class="btn_popup winner_last_detail_btn lastwinner" id="btn_lastwinner"
+                      data-no="<?=$info_PB_last['WININFO_NO']?>">당첨금 안내
+                    </span>
+                  </div>
+                  <div class="flex column align_center">
+                    <h3><img src="<?=$commonImageURI?>logo_power.png" alt="파워볼" style="height: 34.61%;">
+                    </h3>
+                    <div class="power-deadline-style us scroll_bar" style="display: none;">
+                      <div style="border-bottom: 1px solid #d2d2d2; padding-bottom: 0.2rem;">
+                        <span class="time_draw">
+                          <strong>지금은 <span class="real" style="color: #FF0000"><span
+                                class="power-drawnum">0000</span>회차</span> 주문 접수
+                            중입니다.</br>1등 당첨금은 아래 내용을 확인하여 주십시오.</strong>
+                        </span>
+                      </div>
+                      <div>
+                        <p class="fs15" style="padding-top: 0.5rem; padding-left: 1rem; line-height: 1rem; text-align: left;">
+                          <span><strong>Case 1. <span class="power-drawnum-prev">1000</span>회차
+                              1등 당첨자 미 발생시 예상 금액</br><span style="color: #FF0000;">₩ <span
+                                  class="power-price-est">00,000,000,000</span> (<span
+                                  class="power-price-est-text">000</span>원)</br></br></strong></span></span>
+                          <span><strong>Case 2. <span class="power-drawnum-prev">1000</span>회차
+                              1등 당첨자 발생시 시작 금액</br>₩ <span class="power-price-fst">00,000,000,000</span> (<span
+                                class="power-price-fst-text">000</span>원)</br></br></strong></span>
+                          <span style="font-size:12px;color: #FF0000;">※ <span class="power-drawnum-prev">1000</span>회차
+                            1등 당첨자 확정 공시 <span class="power-draw-today-time">2023년</span>(변동가능)</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div class="power-nomal-style us">
+                      <!-- 파워볼 영역 수정 -->
+                      <table>
+                        <tbody>
+                        <tr>
+                            <th></th>
+                            <th>미화(USD)</th>
+                            <th>원화(KRW)</th>
+                        </tr>
+                        <tr>
+                            <td>1등 당첨금</td>
+                            <td><b><span class="power-priceDollar">$0,000,000</span></b></td>
+                            <td><b><span class="power-price-text">00</span>원</b></td>
+                        </tr>
+                        <tr>
+                            <td>2등 당첨금</td>
+                            <td>$1,000,000</td>
+                            <td><span class="power-2nd-prize">00</span>원</td>
+                        </tr>
+                        <tr>
+                          <td>3등 당첨금</td>
+                          <td>$50,000</td>
+                          <td><span class="power-3rd-prize">000</span>만원</td>
+                      </tr>
+                      </tbody>
+                    </table>
+                    <div class="infoWrap"><img class="ico_info" src="/common/images/icon_infoOrange.svg" alt="안내">1등 당첨금을 제외한 2~9등 당첨금은 변동되지 않음</div>
+                    <div class="timeWrap"><p class="time_draw"><strong>추첨 (한국시간)</strong> <span class="power-k-time"></span></p></div>
+
+                    </div>
+                    <div class="time_end">
+                      <p id="power_defaultTime" style="margin-right: 8px;"><span class="power-drawnum"></span> 회차
+                        <br />주문 마감 시간</p>
+                      <p id="power_nearTime" style="margin-right: 8px;" class="hide"><span class="power-drawnum"></span>
+                        회차 <br /><span class="blink" style="color: #FF0000;">주문 마감 임박</span></p>
+                      <div class="pbCountdown">
+                      </div>
+                    </div>
+                    <a href="/contents/lottery/power.html" class="btn_buy btn_red"><span class="power-drawnum">0000</span> 회차
+                      파워볼 구매하기</a>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <section class="sec_winner_banner">
+            <div class="wrap_heading flex space">
+              <h2 class="h_type1">당첨을 축하드립니다!</h2>
+              <?php if (!empty($main_accumulate_ok)) { ?>
+              <h5 class="right">누적 당첨자수 <span class="cntWinner">0</span> 명, 누적 당첨금액 <span class="sumMoney">0</span> 원</h5>
+              <?php } ?>
+            </div>
+            <div class="flow_banner">
+              <ul class="list winner_list"></ul>
+            </div>
+          </section>
+
+          <!-- <section class="sec_info">
+            <div class="wrap_heading flex space">
+              <h2 class="h_type1">메가밀리언 구매 안내</h2>
+              <h2 class="h_type1 pb">파워볼 구매 안내</h2>
+            </div>
+            <div class="clear flex space">
+              <div class="div_youtube left">
+                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/KKumj6L5VPc" title="video"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen>
+                </iframe>
+              </div>
+              <div class="div_youtube right">
+                <iframe width="100%" height="100%" src="https://www.youtube.com/embed/0PmYdr-gmD8" title="video"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen>
+                </iframe>
+              </div>
+            </div>
+          </section> -->
+
+          <section class="sec_board">
+            <h2 class="hide">게시판</h2>
+            <ul class="clear">
+              <li class="left">
+                <a href="/contents/cs/notice.html" class="clear">
+                  <h3 class="h_type1 left">공지사항</h3>
+                  <p class="right add_after"><span>더보기</span></p>
+                </a>
+                <ul>
+                  <?php
+                    for ($i = 0; $i < count($notice['BBS_NO']); $i++) {
+                      // pin
+                      $notice_head = ($notice['PIN'][$i] > 0) ? "<strong class='color_red3'>[공지]</strong> " : "";
+
+                      $strLeng = strlen($notice['SUBJECT'][$i]);
+                      $subject = $notice['SUBJECT'][$i];
+
+                      if ($strLeng > 51) {
+                        $chk_new = strpos($subject, "{new}") !== false;
+                        $chk_i   = strpos($subject, "{i}") !== false;
+                        $subject = str_han_cut($subject, 51);
+
+                        if ($chk_new) $subject .= " {new}";
+                        if ($chk_i) $subject .= " {i}";
+                      }
+
+                      // new, important image
+                      $subject = str_replace("{new}", "<img src='{$commonImageURI}icon_new_pc.png' style='width:1.4rem'>", $subject);
+                      $subject = str_replace("{i}", "<img src='{$commonImageURI}icon_i_pc.png' style='width:1.6rem'>", $subject);
+
+                      $subject = $notice_head . $subject;
+                  ?>
+                  <li>
+                    <a href="/contents/cs/notice_details.html?no=<?=$notice["BBS_NO"][$i]?>">
+                      <p><?=$subject?></p>
+                      <span><?=date("Y-m-d", strtotime($notice['REG_DATE'][$i]))?></span>
+                    </a>
+                  </li>
+                  <?php } ?>
+                  <?php if ($notice['total'] <= 0) { ?>
+                  <li>
+                    <a>
+                      <p>해당게시물이 없습니다.</p>
+                      <span></span>
+                    </a>
+                  </li>
+                  <?php } ?>
+                </ul>
+              </li>
+              <li class="right">
+                <a href="/contents/cs/news.html" class="clear">
+                  <h3 class="h_type1 left">최신뉴스</h3>
+                  <p class="right add_after"><span>더보기</span></p>
+                </a>
+                <ul>
+                  <?php
+                    for ($i = 0; $i < count($news['BBS_NO']); $i++) {
+                      $subject = $news['SUBJECT'][$i];
+                      $strLeng = strlen($news['SUBJECT'][$i]);
+
+                      if ($strLeng > 55) {
+                        $chk_new = strpos($subject, "{new}") !== false;
+                        $chk_i   = strpos($subject, "{i}") !== false;
+                        $subject = str_han_cut($subject, 55);
+
+                        if ($chk_new) $subject .= " {new}";
+                        if ($chk_i) $subject .= " {i}";
+                      }
+
+                      // new, important image
+                      $subject = str_replace("{new}", "<img src='{$commonImageURI}icon_new_pc.png' style='width:1.4rem'>", $subject);
+                      $subject = str_replace("{i}", "<img src='{$commonImageURI}icon_i_pc.png' style='width:1.6rem'>", $subject);
+                  ?>
+                  <li>
+                    <a href="/contents/cs/news_details.html?no=<?=$news["BBS_NO"][$i]?>">
+                      <p><?=$subject?></p>
+                      <span><?=date("Y-m-d", strtotime($news['REG_DATE'][$i]))?></span>
+                    </a>
+                  </li>
+                  <?php } ?>
+                  <?php if ($news['total'] <= 0) { ?>
+                  <li>
+                    <a>
+                      <p>해당게시물이 없습니다.</p>
+                      <span></span>
+                    </a>
+                  </li>
+                  <?php } ?>
+                </ul>
+              </li>
+            </ul>
+
+          </section>
+          <section class="sec_quick">
+            <h2 class="hide">빠른 안내</h2>
+            <ul class="flex space wrap">
+              <li>
+                <a
+                  <?=(isset($M_login['user_id'])) ? 'href="/contents/mypage/coupon.html"' : 'class="btn_popup" id="btn_login"'?>>
+                  <strong>쿠폰등록</strong>
+                  <p>보너스 포인트 받으세요</p>
+                </a>
+              </li>
+              <li>
+                <a <?=(isset($M_login['user_id'])) ? 'href="contents/mypage/direct.html"' : 'class="btn_popup" id="btn_login"'?>
+                  style="background-image:url(<?=$commonImageURI?>ico_AtoZ.png)">
+                  <strong>1:1문의</strong>
+                  <p>무엇이든 물어보세요</p>
+                </a>
+              </li>
+              <li>
+                <a href="/contents/cs/faq.html" style="background-image:url(<?=$commonImageURI?>faq-n-img.png)">
+                  <strong>자주하는 질문</strong>
+                  <p>서비스 이용에 유용해요</p>
+                </a>
+              </li>
+              <li>
+                <a href="/contents/cs/news.html" style="background-image:url(<?=$commonImageURI?>ico_heart.png)">
+                  <strong>고객센터</strong>
+                  <p>빠른 안내 도와드려요</p>
+                </a>
+              </li>
+            </ul>
+          </section>
+          <!-- <section class="sec_banner app">
+            <a href="https://play.google.com/store/apps/details?id=com.sulotko" target="_blank">
+              <img src="<?=$commonImageURI?>banner_googleplay.png" alt="<?=$사이트명1?> 앱 다운로드">
+            </a>
+          </section> -->
+        </div>
+
+        <aside class="right">
+          <?php if (!empty($main_accumulate_ok)) { ?>
+          <section class="sec_total">
+            <h4 class="h_type mb10"><?= htmlspecialchars($accumulate_as_of, ENT_QUOTES, 'UTF-8') ?> 현재</h4>
+            <div class="total winner">
+              <h3 class="tit"><i class="material-icons ico">group</i> 누적 당첨자수</h3>
+              <div class="num_wrap">
+                <p class="num winners">0 <span class="unit">명</span></p>
+              </div>
+            </div>
+            <div class="total prize">
+              <h3 class="tit"><img src="<?=$commonImageURI?>money-ico.svg" alt="" class="ico"> 누적 당첨금액</h3>
+              <div class="num_wrap">
+                <p class="num winmoney">0 <span class="unit">원</span></p>
+              </div>
+            </div>
+          </section>
+          <?php } ?>
+
+          <section class="sec_customer">
+            <a href="/webapp_guide.html"><img src="/images/web/app.png" /></a>
+          </section>
+          <section class="sec_customer">
+            <a href="/contents/cs/direct.html">
+            <img src="/images/web/customer.png" />
+          </a>
+          </section>
+
+          <section class="sec_event">
+            <h2 class="h_type"><strong class="color_red">HOT!!</strong> 추천영상</h2>
+            <div>
+              <ul>
+                <li>
+                  <div class="btn_popup suggest_video" data-youtube="https://www.youtube.com/embed/JaKabZqWXmk?si=JjH_rcZmSJ1F0n8y"
+                    data-title="당첨금 2조 6천억…역대 최고로 쌓인 미국 복권에 '들썩' / SBS / 월드리포트" id="btn_hotvideo"></div>
+                  <iframe width="330" height="188" src="https://www.youtube.com/embed/JaKabZqWXmk?si=JjH_rcZmSJ1F0n8y" title="suggest"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>
+                </li>
+                <li class="suggest_title">당첨금 2조 6천억…역대 최고로 쌓인 미국 복권에 '들썩' / SBS / 월드리포트</li>
+              </ul>
+
+              <ul>
+                <li>
+                  <div class="btn_popup suggest_video" data-youtube="https://www.youtube.com/embed/aapmTJJlLNk?si=aMKwkmoTQtsWV6vk"
+                    data-title="40대 이라크 남자, 인터넷 구매대행에서 잭팟! 미국 복권국에서 당첨금 받다!" id="btn_hotvideo"></div>
+                  <iframe width="330" height="188" src="https://www.youtube.com/embed/aapmTJJlLNk?si=aMKwkmoTQtsWV6vk" title="suggest"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>
+                </li>
+                <li class="suggest_title">40대 이라크 남자, 인터넷 구매대행에서 잭팟! 미국 복권국에서 당첨금 받다!</li>
+              </ul>
+              <ul>
+                <li>
+                  <div class="btn_popup suggest_video" data-youtube="https://www.youtube.com/embed/o3ooUfVvaXE"
+                    data-title="미 전역 들썩인 1조 7천억 복권 '잭팟'…당첨자 단 1명" id="btn_hotvideo"></div>
+                  <iframe width="330" height="188" src="https://www.youtube.com/embed/o3ooUfVvaXE" title="suggest"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>
+                </li>
+                <li class="suggest_title">미 전역 들썩인 1조 7천억 복권 '잭팟'…당첨자 단 1명</li>
+              </ul>
+            </div>
+          </section>
+
+
+          <!-- <section class="sec_banner_sm">
+            <a href="/contents/cs/report.html">
+              <img src="<?=$commonImageURI?>phishing_img01.svg" alt="보이스피싱">
+              <div class="txt-wrap">
+                <p class="subtit"><?=$사이트명1?> 사칭 보이스피싱 관련</p>
+                <p class="tit">피해 사례 접수</p>
+                <p class="txt">경찰 수사 의뢰 예정</p>
+              </div>
+            </a>
+          < !-- <img src="common/images/index/sec_banner_sm.png" alt="보이스피싱 제보 배너"> -- >
+          </section> -->
+
+          <section class="sec_notice_age">
+            <div class="notice_age bx_type1">
+              <img src="<?=$commonImageURI?>ico_age.png" alt="이용금지안내">
+              <div class="txt_wrap">
+              <strong>만 19세 미만 이용 금지</strong>
+              <p><?=$사이트명1?>은 미국복권 구매대행 서비스를 제공합니다. 만 19세 미만의 미성년자는 본 서비스를 이용할 수 없습니다.</p>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      <!-- popup -->
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/main-popup.html"; ?>
+
+    <div>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+</body>
+
+<iframe name="hiddenFrame" id="hiddenFrame" style="display: none;"></iframe>
+
+<script src="/countdown/jquery/jquery-1.8.2.min.js"></script>
+<script src="/countdown/jcountdown/jquery.jcountdown.min.js"></script>
+
+<script src="/common/js/main.js?version=<?=$version?>" charset="utf-8"></script>
+
+<script>
+  console.log("new");
+  var agent = navigator.userAgent.toLowerCase();
+  if ((navigator.appName == 'Netscape' && agent.indexOf('trident') != -1) || (agent.indexOf("msie") != -1)) {
+    alert("<?=$사이트명1?>는 ie 11 에서 정상동작하지 않습니다.  엣지 또는 크롬,사파리 등 다른 브라우저를 이용해주세요")
+    // ie일 경우
+  } else {
+    // ie가 아닐 경우
+  }
+</script>
+<?php if (isset($M_login['user_id']) && $_GET["mm"] == "y") { // 최초로그인 마일리지 지급 안내 ?>
+<script>
+  window.setTimeout(function () {
+    alert("[<?=$M_login['name']?>] 회원님! 축하드립니다.\n\n1게임 구매가능한 [6,000 마일리지]가 지급되었습니다.\n\n마일리지는 즉시 사용 가능합니다.");
+  }, 1000);
+</script>
+<?php } ?>
+
+<?php if ($_GET['c'] == 'o') { // 회원가입 완료 후 전환 스크립트 실행 ?>
+<!-- Taboola Pixel Code -->
+<script>
+  window._tfa = window._tfa || [];
+  window._tfa.push({
+    notify: 'event',
+    name: 'lead',
+    id: 1472939
+  });
+</script>
+<!-- End of Taboola Pixel Code -->
+
+<!-- Taboola Pixel Code -->
+<script>
+  _tfa.push({
+    notify: 'event',
+    name: 'lead',
+    id: 1550122
+  });
+</script>
+<!-- End of Taboola Pixel Code -->
+
+<!-- Taboola Pixel Code -->
+<script>
+  _tfa.push({
+    notify: 'event',
+    name: 'lead',
+    id: 1591987
+  });
+</script>
+<!-- End of Taboola Pixel Code -->
+<?php } ?>
+
+<?php if (!empty($main_accumulate_ok)) { ?>
+<script>
+  const $winners = document.querySelector('.winners');
+  const $winmoney = document.querySelector('.winmoney');
+
+  const wincnt = <?= json_encode((int) ($tot_wininfo['WIN_CNT'] ?? 0)) ?>;
+  const wincash = <?= json_encode((int) ($tot_wininfo['WIN_MONEY'] ?? 0)) ?>;
+
+  setTimeout(() => counter($winners, wincnt, false), 10);
+  setTimeout(() => counter($winmoney, wincash, true), 10);
+</script>
+<?php } ?>
+
+</html>

@@ -1,0 +1,178 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+
+  F_admin_chk($S_login);
+
+  $스캔본도메인 = "http://15.164.231.154";
+  $티켓도메인 = "https://img.mekosystem.com";
+?>
+
+<style>
+    .rimg {width:200px;}
+</style>
+
+<!--app-content open-->
+<div class="app-content">
+    <div class="side-app">
+        <!-- PAGE-HEADER -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">티켓이미지</h1>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#">구매내역</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">구매내역</li>
+                </ol>
+            </div>
+
+        </div>
+        <!-- PAGE-HEADER END -->
+
+        <!-- Row -->
+        <div class="row row-sm">
+            <div class="col-lg-12">
+                <div class="card custom-card">
+                    <div class="card-body">
+                        <div>
+                            <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                                <div class="form-group mr-3 fl-left">
+                                    <input type="hidden" name="game" value="<?= $game ?>" />
+                                    <input type="hidden" name="round" value="<?= $round ?>" />
+                                    <div>
+                                        <a href="/order/new_scan.html?game=PB" class="btn btn-secondary">파워볼</a>
+                                        <a href="/order/new_scan.html?game=MM" class="btn btn-secondary">메가밀리언</a>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mr-3 fl-left">
+                                    <?
+                                       $sql = "select * from WININFO where GUBUN = '{$game}' and PRIZ1 != '' order by DRAWNUM desc ";
+                                       //echo $sql;
+
+                                       $result = $db->query($sql);
+                                    ?>
+                                    <select name="round" id="round"  class="form-control form-select select2">
+                                        <option value="">--회차--</option>
+                                        <?
+                                            foreach($result as $data){
+                                          ?>
+                                        <option value="<?=$data['DRAWNUM'] ?>" <?=$data['DRAWNUM']==$round ? "selected":"" ?> ><?=$data['DRAWNUM']?></option>
+                                        <? } ?>
+                                    </select>
+                                </div>
+
+                                <div class="input-group col-md-2 fl-left">
+                                    <input type="text" class="form-control auto-submit" name="userid" value="">
+                                </div>
+
+                                <div>
+                                  <button type="button" onclick="go_submit()" class="btn btn-secondary" >검색</button>
+                                </div>
+                            </form>
+                        </div>
+
+
+
+                    </div>
+
+
+                    <div style="display: flex;flex-wrap: wrap;"" >
+                    <?
+                        if($userid){
+                            $where = " and USER_ID = '{$userid}' ";
+                        }
+
+                        $sql = "select * from ORDERS where GUBUN = '{$game}' and DRAWNUM = '{$round}' {$where} order by REG_DATE desc ";
+                        //echo $sql;
+                        $scan_result = $db->query($sql);
+                        foreach($scan_result as $ticket){
+
+                        $ticketImgDate = $ticket['IMG_DATE'];
+                        $ticketTime = strtotime($ticketImgDate);
+                        $ticketDir = date("ymd", $ticketTime);
+
+
+                        if($game=="PB"){
+                        $page = "power_ball_new_print.html";
+                        }else{
+                        $page = "mega_ball_new_print.html";
+                        }
+
+                        $ticket_img_path = $티켓도메인."/ticket/".$ticketDir."/".$ticket['IMG_PATH']."?date=".date('his');
+                        $scan_img_path = $스캔본도메인."/admin/manage/".$page."?ticket_no=".$ticket['ORDERS_NO'];
+                    ?>
+                    <div style="border: 1px solid;" >
+                        <div style="height: 400px;" >
+                            <img src="<?=$ticket_img_path?>" class="rimg" />
+                        </div>
+                        <div>
+                            <div>
+                                스캔상태 :
+                                <? if($ticket['PRINT']==0){ ?>
+                                    스캔대기
+                                <? }else if($ticket['PRINT']==1){ ?>
+                                    <span style="color: #333; font-weight: bold;" >노출완료</span>
+                                <? }else if($ticket['PRINT']==2){ ?>
+                                    <a href="javascript:go_update('2','<?=$ticket[ORDERS_NO]?>')" style="color: red; font-weight: bold;" >스캔완료</a>
+                                <? } ?>
+                                | <a href="javascript:go_new_print('<?=$ticket['ORDERS_NO']?>');"  >재스캔</a>
+                            </div>
+                            <span><?=$ticket['ORDERS_NO']?></span> |
+                            <span><?=$ticket['USER_ID']?></span> |
+                            <a href="<?=$scan_img_path?>" target="_blank" >스캔본</a>
+
+                            <div>구매시각 : <?=$ticket['REG_DATE']?></div>
+                        </div>
+                    </div>
+                    <? } ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Row -->
+    </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+
+<script>
+    function go_submit(){
+        $("#srForm").submit();
+    }
+    function go_new_print(obj){
+        if(confirm("재 스캔을 진행하시겠습니까?")){
+            alert('결과가 나올때까지 잠시 기다려주세요.');
+            window.open("http://3.35.231.253/lotto/new_scan.php?idx="+obj);
+        }
+    }
+
+    function go_update(obj1, obj2){
+        if(obj1==2){
+            if(confirm("[스캔완료] 상태 입니다. 노출완료 상태로 변경하여야 사용자에게 노출됩니다. [노출완료]로 변경하시겠습니까?")){
+                $.ajax({
+                    type : "POST",
+                    url: "_ajax_mscan_status_update.php",
+                    async: false,
+                    data: {
+                        orderno : obj2
+                    },
+                    success: function(result) {
+                        var r = result.trim();
+                        if(r==1){
+                            alert("회원이 확인 가능한 상태로 변경되었습니다.");
+                            location.reload();
+                            return false;
+                        }
+                    },
+                    error:function(e) {
+                        alert(e.responseText);
+                    }
+                });
+            }
+        }
+
+    }
+</script>

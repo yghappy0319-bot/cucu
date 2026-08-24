@@ -1,0 +1,238 @@
+<?php
+if (is_numeric($_GET['no'])) {
+  require_once $_SERVER['DOCUMENT_ROOT']."/_common/config.php";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_NOTICE.php";
+  $no = xss_clean($_GET['no']);
+  $info = F_NOTICE(array("mode"=>"read", "BBS_NO"=>$no));
+
+  $page_title = stripDescription(strip_tags($info['SUBJECT'])) . " - 파워볼, 메가밀리언, 미국 로또, 파메코 [고객센터 | 최신뉴스]";
+  $page_description = cutString(stripDescription(strip_tags($info['CONTENT'])),150);
+};
+
+require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_BBS.php";
+
+$menu_on['bbs'] = true;
+
+## INJECTION
+if (!is_numeric($no)) {
+  meta_go('/');
+  exit();
+}
+$no = xss_clean($no);
+
+$l_href = "news.html";
+$v_href = "news_details.html";
+$info   = F_NOTICE(array("mode"=>"read", "BBS_NO"=>$no));
+
+$fild   = '';
+$table  = "NOTICE";
+
+$subject = $info['SUBJECT'];
+$subject = str_replace("{new}","<img src='/common/images/icon_new_pc.png'>",$subject);
+$subject = str_replace("{i}","<img src='/common/images/icon_i_pc.png'>",$subject);
+$initialValue = stripslashes($info['CONTENT']);
+
+if (count($info) < 1) {
+  meta_go('/');
+  exit();
+}
+
+## 1:1 문의 일 경우 작성자만 보도록 처리 (SLK-452)
+if ($info['GUBUN'] == "QNA") {
+  if ($M_login['user_id'] != $info['USER_ID']) {
+    meta_go('/');
+    exit();
+  }
+}
+
+$sql = "
+  select * from (
+    SELECT a.BBS_NO,a.REG_DATE,a.GUBUN,(@rowno:=@rowno+1) as rowno
+    FROM BBS a,(select (@rowno:=0)) b WHERE a.GUBUN='NEWS' ORDER BY a.REG_DATE DESC
+  ) t
+  where t.BBS_NO='".$no."'
+";
+$row = $db->get_data($sql);
+
+$up  = $row['rowno'];
+$sql = "SELECT * FROM NOTICE WHERE GUBUN='NEWS' ORDER BY REG_DATE DESC LIMIT ".$up.",1";
+
+if ($up != '') { $up_info = $db->get_data($sql); }
+
+$down = $row['rowno'] - 2;
+if ($down >= 0) {
+  $sql = "SELECT * FROM NOTICE WHERE GUBUN='NEWS' ORDER BY REG_DATE DESC LIMIT ".$down.",1";
+  $down_info = $db->get_data($sql);
+} else {
+  $down_info = array();
+}
+
+$find_op = array(
+  "SUBJECT" => "질문",
+  "CONTENT" => "내용"
+);
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html";?>
+  <main id="main">
+    <div class="location ls50">
+      <div class="wrap_com">
+        <ol class="clear">
+          <li><a href="" class="add_before"><span class="hide">홈</span></a></li>
+          <li><a href="">고객센터</a></li>
+          <li><a href="">최신뉴스</a></li>
+        </ol>
+      </div>
+    </div>
+    <form name="read_hit" action="#" enctype='multipart/form-data' method="post">
+      <input type="hidden" name="fild" value="<?=$table?>">
+      <input type="hidden" name="table" value="<?=$table?>">
+      <input type="hidden" name="no" value="<?=$no?>">
+    </form>
+    <section class="sec_cs sec_tab wrap_com">
+      <h2 class="h_type4">고객센터</h2>
+      <div class="wrap_tab">
+        <ul class="tab_type1 flex align_center ls75">
+          <li><a href="/contents/cs/faq.html">자주묻는질문</a></li>
+          <li class="on"><a href="/contents/cs/news.html">최신뉴스</a></li>
+          <li><a href="/contents/cs/notice.html">공지사항</a></li>
+          <li><a href="/contents/cs/direct.html">1:1 문의</a></li>
+          <li><a href="/contents/cs/report.html">보이스피싱 제보</a></li>
+        </ul>
+      </div>
+      <form role="form" name="topSearch" id="srForm" method="get" action="./news.html">
+        <div class="wrap_tabbox">
+          <div class="tabbox ">
+            <h3 class="hide">최신 뉴스</h3>
+            <div class="wrap_board winners f_NotoSansKR ls50">
+              <div class="top clear">
+                <div class="wrap_search flex align_center right">
+                  <select name="find_object">
+                    <option value="all">전체</option>
+                    <?=option_make($find_op, "")?>
+                  </select>
+                  <div class="inp_search">
+                    <input type="search" placeholder="검색어를 입력해 주세요." name="find_text" value="">
+                    <button type="button" class="searchBtn"><span class="hide">검색</span></button>
+                  </div>
+                </div>
+              </div>
+              <div class="board_type1 bt bb f_NotoSansKR">
+                <div class="title flex align_center space">
+                  <div class="left">
+                    <p><?=$subject?></p>
+                    <span><?=date("Y-m-d", strtotime($info['REG_DATE']))?></span>
+                  </div>
+                  <div class="right views">조회수 <span><?=number_format($info['HIT'])?></span></div>
+                </div>
+                <div class="contents" style="word-break: break-all;">
+                  <?php if ($info['YUTUBE'] != '') { ?>
+                  <div class="play" id="player_box">
+                    <div id="player"></div>
+                  </div>
+                  <?php } ?>
+                  <p>
+                    <iframe src="/nse/text_detail.html?no=<?=$info['BBS_NO']?>" style="width:100%;" scrolling="no" frameborder="0" onload="this.height=this.contentWindow.document.documentElement.scrollHeight"></iframe>
+                  </p>
+                </div>
+                <div>
+                  <ol class="list_type4">
+                    <?php if ($up_info['BBS_NO'] != '') { ?>
+                    <li class="prev">
+                      <a href="<?=$v_href?>?no=<?=$up_info['BBS_NO']?>">
+                        <span>이전글</span>
+                        <p><?php
+                          //new, important image
+                          $up_info['SUBJECT'] = str_replace("{new}", "<img src='/common/images/icon_new_pc.png'>", $up_info['SUBJECT']);
+                          $up_info['SUBJECT'] = str_replace("{i}", "<img src='/common/images/icon_i_pc.png'>", $up_info['SUBJECT']);
+                          echo $up_info['SUBJECT'];
+                        ?></p>
+                      </a>
+                    </li>
+                    <?php } else { ?>
+                    <li class="prev">
+                      <a href="">
+                        <span>이전글</span>
+                        <p>이전글이 없습니다.</p>
+                      </a>
+                    </li>
+                    <?php } ?>
+                    <?php if ($down_info['BBS_NO'] != '') { ?>
+                    <li class="next">
+                      <a href="<?=$v_href?>?no=<?=$down_info['BBS_NO']?>">
+                        <span>다음글</span>
+                        <p><?
+                          //new, important image
+                          $down_info['SUBJECT'] = str_replace("{new}", "<img src='/common/images/icon_new_pc.png'>", $down_info['SUBJECT']);
+                          $down_info['SUBJECT'] = str_replace("{i}", "<img src='/common/images/icon_i_pc.png'>", $down_info['SUBJECT']);
+                          echo $down_info['SUBJECT'];
+                        ?></p>
+                      </a>
+                    </li>
+                    <?php } else { ?>
+                    <li class="next">
+                      <a href="">
+                        <span>다음글</span>
+                        <p>다음글이 없습니다.</p>
+                      </a>
+                    </li>
+                    <?php } ?>
+                  </ol>
+                </div>
+              </div>
+              <div class="wrap_btn space_btm">
+                <a href="./news.html" class="btn_navy">목록</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </section>
+    <?php include $_SERVER['DOCUMENT_ROOT']."/inc/quick-sub.html";?>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html";?>
+</body>
+
+<script>
+  $(document).ready(function() {
+    function hit() {
+      var frm = $('[name="read_hit"]');
+      $.post("/hit_chk.php", {
+        fild: frm.find('[name="fild"]').val(),
+        table: frm.find('[name="table"]').val(),
+        no: frm.find('[name="no"]').val(),
+      }, function(e){}, 'json');
+    }
+
+    hit();
+  });
+
+  if ($("#player_box").length > 0) {
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    var player;
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        videoId: "<?=$info['YUTUBE']?>",
+        events: {
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerStateChange(event) {
+      if (event.data == 0) {
+        $("#player_box").html('<div id="player"></div>');
+        onYouTubeIframeAPIReady();
+      }
+    }
+  }
+</script>
+
+</html>

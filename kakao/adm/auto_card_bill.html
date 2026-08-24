@@ -1,0 +1,277 @@
+<?php
+include_once('../common.php');
+include_once "../_chk.php";
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
+    <title>무통장 입금 자동확인 - 럭키뱅크</title>
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <style>
+        /* 기본 스타일 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .wrap {
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+
+        h2 {
+            font-size: 1.25em;
+            margin-top: 0;
+            padding-bottom: 15px;
+            color: #444;
+        }
+
+        .first, .second {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .first {
+            padding: 30px;
+        }
+
+        .second {
+            padding: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        td {
+            padding: 10px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        input {
+            border: 1px solid #aaa;
+            border-radius: 4px;
+            padding: 8px;
+            width: 100%;
+            font-size: 1em;
+        }
+
+        button {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #1e5dd2;
+            border: none;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #165bb5;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .first, .second {
+                width: 100%;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            button {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .wrap {
+                padding: 15px;
+            }
+
+            h2 {
+                font-size: 1em;
+            }
+
+            table {
+                font-size: 0.8em;
+            }
+            .first {padding:0px;}
+        }
+    </style>
+</head>
+
+<?
+if($member['billKey']){
+  ?>
+    <script type="text/javascript">
+    $(document).ready(function () {
+      $("#orderFrm").attr("action","/adm/auto_card_bill_create.html");
+      $("#orderFrm").submit();
+    });
+
+  </script>
+
+  <?
+}
+
+if(!$paydata){
+  echo "비정상 접근";
+  exit;
+}
+
+$pd = explode("/", $paydata);
+
+?>
+
+<body>
+<div class="wrap">
+    <h2>1. 자동결제 인증</h2>
+    <div class="first" id="first">
+      <form id="orderFrm" method="POST">
+          <input type="hidden" name="paydata" value="<?=$paydata?>">
+          <input type="hidden" name="pay_config_key" value="<?=$pd[4]?>">
+          <input type="hidden" name="mid" value="pgerrormam">
+          <input type="hidden" name="auto_amt" value="<?=$pd[2]?>">
+          <table id="regCardTable">
+              <tr>
+                  <td>결제금액</td>
+                  <td>
+                      <input value="<?= number_format($pd[2]) ?>원" readonly >    <!-- 필수: 등록자 이름 -->
+                  </td>
+              </tr>
+              <tr>
+                  <td>소유주명</td>
+                  <td>
+                      <input name="buyerName" value="<?=$member['mb_name']?>" placeholder="카드 소유주명">    <!-- 필수: 등록자 이름 -->
+                  </td>
+              </tr>
+              <tr>
+                  <td>카드번호</td>
+                  <td>
+                    <input type="text" name="cardNum1" maxlength="4" style="width:40px;" oninput="moveNext(this, 'cardNum2')">-
+                    <input type="text" name="cardNum2" maxlength="4" style="width:40px;" oninput="moveNext(this, 'cardNum3')">-
+                    <input type="password" name="cardNum3" maxlength="4" style="width:40px;" autocomplete="new-password" oninput="moveNext(this, 'cardNum4')">-
+                    <input type="password" name="cardNum4" maxlength="4" style="width:40px;" autocomplete="new-password">
+
+                    <script>
+                    function moveNext(current, nextName) {
+                      if (current.value.length >= 4) {
+                        const form = current.form || document;
+                        const next = form.querySelector(`[name="${nextName}"]`);
+                        if (next) next.focus();
+                      }
+                    }
+                    </script>
+
+                      <!-- 필수: 카드번호 (숫자) -->
+                  </td>
+              </tr>
+              <tr>
+                  <td>유효기간</td>
+                  <td>
+                      유효기간 (MMYY, 월년)
+                      <input name="cardExpire" value="" placeholder="MMYY, 월년">
+                  </td>
+              </tr>
+              <tr>
+                  <td>비밀번호</td>
+                  <td>
+                      카드 비밀번호 앞 2자리
+                      <input name="cardPwd" value="">
+                  </td>
+              </tr>
+              <tr>
+                  <td>인증번호</td>
+                  <td>
+                      개인카드: 주민번호 앞 6자리<br />
+                      법인카드: 사업자번호 10자리
+                      <input name="idNum" value="">    <!-- 필수: 개인카드: 주민번호 앞 6자리, 법인카드: 사업자번호 10자리 -->
+                  </td>
+              </tr>
+              <input type="hidden" name="moid" id="moid" value="">  <!-- 필수: 가맹점 주문번호 -->
+              <input type="hidden" name="billKey" value="">
+              <input type="hidden" name="userId" value="<?=$member['mb_id']?>">  <!-- 필수: 등록자 고유 아이디 -->
+              <input type="hidden" name="arsUseYn" value="N">   <!-- 필수: 자동결제 등록 ARS 사용 여부 (default: “Y” : ARS사용, “N” : 사용안함 ) -->
+          </table>
+      </form>
+
+      <p style="font-size:12px;">입력하신 정보는 럭키뱅크 서버에 저장되지 않으며 카드사로 전송 됩니다.</p>
+      <button onclick="javascript:send();" style="cursor:pointer">요청</button>
+      <button onclick="javascript:back();" style="cursor:pointer">닫기</button>
+  </div>
+</div>
+<script type="text/javascript">
+    function setDate() {
+        var d = new Date();
+        var year = d.getFullYear();
+        var month = d.getMonth() + 1;
+        var date = d.getDate();
+        if (month < 10) {
+            month = '0' + month;
+        }
+        if (date < 10) {
+            date = '0' + date;
+        }
+
+        for (var i = 0; i < document.getElementsByName("moid").length; i++) {
+            document.getElementsByName("moid")[i].value = year + "" + month + "" + date + "001";
+        }
+
+        for (var i = 0; i < document.getElementsByName("payExpDate").length; i++) {
+            document.getElementsByName("payExpDate")[i].value = year + "" + month + "" + date + "235959";
+        }
+    }
+
+    function send() {
+        var params = jQuery("#orderFrm").serialize();
+        $.ajax({
+            type: "POST",
+            url: "/ajax/_ajax_card_bill_key.php",
+            async: false,
+            data: params,
+            dataType: "json",
+            success: function(result) {
+                console.log(result);
+                if (result.resultCode == "0000") {
+                    alert(result.resultMsg);
+                    location.reload();
+                } else {
+                    alert(result.resultMsg);
+                    location.reload();
+                    return false;
+                }
+            },
+            error: function(e) {
+                alert(e.responseText);
+            }
+        });
+    }
+
+    function back() {
+      window.close();
+    }
+</script>
+<script type="text/javascript">
+$(document).ready(function () {
+    setDate();
+});
+</script>
+</body>
+</html>

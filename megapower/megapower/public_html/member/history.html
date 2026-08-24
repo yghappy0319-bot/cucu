@@ -1,0 +1,658 @@
+<?php
+include "../header.html";
+include "../_chk.php";
+$지급퍼센트 = 구매금액_마일리지_지급퍼센트($member['grade']) * 100;
+
+$page_num = 5;
+$page = isset($_GET["page"])? $_GET["page"] : 1;
+
+if($_GET['list_num']>0){
+  $list_num = $_GET['list_num'];
+}else{
+  $list_num = 20;
+}
+
+
+?>
+<link rel="stylesheet" href="/assets/css/style.css">
+<link rel="stylesheet" href="/assets/css/cssprogress.css">
+<style>
+  .add_list{    text-align: center;  margin-top: 10px;}
+  .list_btn {
+    border-color: #537db2;
+    background: #537db2;
+    font-weight: 600;
+    color: #FFF;
+    font-size: 1.1rem;
+    padding: 10px 30px;
+    border-radius: 30px;
+	margin-top:15px;
+  }
+</style>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">나의 이용내역</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>Mypage</p></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>나의 이용내역</p></li>
+            </ul>
+        </div>
+
+        <?php
+        include_once "mypage_menu.php";
+        ?>
+
+        <?php
+        include_once "mypage_myinfo.php";
+        ?>
+        <!--<form id="searchFrm">
+            <input type="hidden" name="page" id="page" />
+        </form>
+
+        <?
+        $_신청내역 = db_select("select * from lr_deposit_log where midx = {$member['idx']} and status = 1 ");
+        ?>
+
+        <? if($_신청내역['cash']>0){?>
+        <div class="point_deposit_info">
+            <div class="fl">
+                <div class="ft"><strong>* 입금예정</strong> 신청건이 있습니다.</div>
+                <div class="fb">입금자명 <font><?=$_신청내역['deposit_name']?></font> / <font><?=number_format($_신청내역['cash'])?></font>원을 입금하면 실시간 자동 충전됩니다.</div>
+            </div>
+            <a class="btn" href="javascript:go_cancle(<?=$_신청내역['idx']?>)">취소하기</a>
+        </div>
+        <? } ?>-->
+
+        <div class="new_mypage_history" style="margin: 0;">
+            <div class="menu">
+                <a class="on">전체</a>
+                <a>메가파워월드포인트 내역</a>
+                <a>캐시 내역</a>
+                <a>당첨금 내역</a>
+                <a>쿠폰 내역</a>
+            </div>
+            <div class="body">
+                <div class="list list_01 on">
+                  <div class="">
+                      <ul>
+                          <?
+                          $new_countSql = "select count(*) as totalRecords  from (
+                          SELECT midx
+                          FROM lr_point_log
+                          UNION ALL
+                          SELECT midx
+                          FROM lr_deposit_log
+                          UNION ALL
+                          SELECT midx FROM lr_prize_log
+                          UNION ALL
+                          SELECT midx from lr_coupon_log
+                          ) as a
+                          where midx = {$member['idx']} ";
+
+                          include_once "../page_code.php";
+
+                          $sql = "
+
+                          select gubun, midx, status, point, title, regdate from (
+
+                          select '카드' as gubun, midx, 0 as status, pg_status2 as title, cash as point,  regdate
+                          from lr_card_log
+                          UNION ALL
+                          SELECT '메가파워월드포인트' as gubun, midx, status, etc as title, point, regdate
+                          FROM lr_point_log where name = '메가파워월드포인트'
+                          UNION ALL
+                          SELECT '당첨금' as gubun, midx, status, etc as title, point, regdate
+                          FROM lr_point_log where name = '당첨금'
+                          UNION ALL
+                          SELECT '캐시충전', midx, status,
+                          CASE
+                          WHEN deposit_type = 'reward' THEN '보상캐시'
+                          WHEN status = 1 THEN '입금대기'
+                          WHEN status = 2 THEN '지급완료'
+                            WHEN status = 5 THEN '입금취소'
+                            WHEN status = 6 THEN '사용'
+                            ELSE '기타'
+                           END AS title
+                          , point, regdate
+                          FROM lr_deposit_log
+                          UNION ALL
+                          SELECT '당첨금', midx, status,
+                           CASE
+                               WHEN gubun = '차감' THEN '포인트로 전환'
+                               WHEN gubun = '대기' THEN '출금신청'
+                               WHEN gubun = '사용' THEN '출금완료'
+                               WHEN gubun = '반환' THEN '당첨금 반환'
+                               ELSE '기타'
+                           END AS title,
+                          prizemoney,
+                          regdate
+                          FROM lr_prize_log where gubun != '지급'
+                          UNION ALL
+                          SELECT '쿠폰', midx, status, name, discount, regdate from lr_coupon_log_list
+                          ) as a where midx = {$member['idx']} ORDER BY regdate DESC limit $start, $list_num ";
+
+                          //echo $sql;
+                          $result = db_query($sql);
+                          $_cnt = mysqli_num_rows($result);
+                          while($row=db_fetch($result)){
+                          ?>
+                                <li>
+                                  <div class="wrap">
+                                      <div class="status po_rtive"></div>
+                                      <div class="fl">
+                                          <div class="tit">
+                                              <span style="color:#194A9C;font-weight: 700;">
+                                              <? if($row['gubun']=="쿠폰"){
+                                                    if($row['status']){
+                                                      $상태 = "사용";
+                                                    }else{
+                                                      $상태 = "지급";
+                                                    }
+                                                    echo $상태;
+                                                  }else if($row['gubun']=="캐시충전"){
+                                                    if($row['status']==6){
+                                                      $상태 = "사용";
+                                                    }else if($row['status']==2){
+                                                      $상태 = "지급";
+                                                    }else{
+                                                      $상태 = "대기";
+                                                    }
+                                                    echo $상태;
+                                                  }else if($row['gubun']=="메가파워월드포인트"){
+                                                   if($row['status']==2){
+                                                    $상태 = "사용";
+                                                   }else{
+                                                    $상태 = "지급";
+                                                   }
+                                                    echo $상태;
+                                                  }else if($row['gubun']=="당첨금"){
+                                                    if($row['status']==2){
+                                                     $상태 = "사용";
+                                                   }else if($row['status']==4){
+                                                    $상태 = "반환";
+                                                    }else if($row['status']==3){
+                                                     $상태 = "차감";
+                                                   }else if($row['status']==1){
+                                                    $상태 = "지급";
+                                                    }else{
+                                                     $상태 = "대기";
+                                                    }
+                                                     echo $상태;
+                                                  }else if($row['gubun']=="카드"){
+                                                    $상태 = $row['title'];
+                                                    echo $상태;
+                                                  }else{
+                                                  $상태 = "지급";
+                                                  echo $상태;
+                                                } ?>
+                                              </span>
+
+                                              <?
+                                              if($row['gubun']=="쿠폰"){
+                                                $단위 = "";
+                                              }else if($row['gubun']=="메가파워월드포인트"){
+                                                $단위 = " P";
+                                              }else if($row['gubun']=="당첨금"){
+                                                $단위 = "당첨금";
+                                              }else if($row['gubun']=="카드"){
+                                                $단위 = "캐시";
+                                              }else{
+                                                $단위 = "캐시";
+                                              }
+                                              ?>
+
+                                              <span class="amount">
+                                              <? if($row['gubun']=="쿠폰"){ ?>
+                                                <b><?= 나의이용내역_지급사용색상($상태, $row['title'], $단위) ?></b>
+                                              <? }else if($row['gubun']=="카드"){ ?>
+                                                <?=number_format($row['point'])?>캐시
+                                              <? }else{ ?>
+                                                <b><?= 나의이용내역_지급사용색상($상태, number_format($row['point']), $단위) ?></b>
+                                              <? } ?>
+
+
+
+                                              </span>
+                                          </div>
+
+                                          <div class="buy">
+                                          <? if($row['gubun']=="쿠폰"){ ?>
+                                            <?=$row['regdate']?>
+
+                                          <? }else if($row['gubun']=="캐시충전"){ ?>
+                                            <? if($row['status']==6){ ?>
+                                              티켓구매 사용
+
+                                            <? }else{ ?>
+                                              <?=$row['title']?>
+                                            <? } ?>
+                                          <? }else if($row['gubun']=="카드"){ ?>
+                                            카드 <?=$row['title']?>
+                                          <? }else{ ?>
+                                            <?=$row['title']?>
+                                          <? } ?>
+                                          </div>
+                                      </div>
+                                      <div class="date"><?= date("Y/m/d H:i", strtotime($row['regdate'])) ?></div>
+                                  </div>
+                                </li>
+                          <? } ?>
+
+                          <? if($_cnt==0){?>
+                          <li>
+                              <div class="wrap">
+                                  <p class="no_data">내역이 없습니다.</p>
+                              </div>
+                          </li>
+                          <? } ?>
+                      </ul>
+                  </div>
+                  <div class="add_list">
+                    <button type="button" class="list_btn" onclick="go_add_list(5,'<?=$member['idx']?>')">더보기</button>
+                  </div>
+                </div>
+
+                <!-- 02 메가파워월드포인트 내역-->
+                <div class="list list_02">
+
+                  <div class="">
+                      <ul id="list1">
+                        <?
+                        $sql = "select idx,status, gubun, name, point, etc, regdate from lr_point_log
+                        where midx = {$member['idx']} and name != '당첨금' order by regdate desc limit {$list_num} ";
+                        //echo $sql;
+                        $diposit = db_query($sql);
+                        $_cnt1 = mysqli_num_rows($diposit);
+                        for($i=0;$dip=db_fetch($diposit);$i++){
+                        ?>
+                                <li>
+                                  <div class="wrap">
+                                      <div class="status po_rtive"></div>
+                                      <div class="fl">
+                                        <div class="tit">
+                                          <span style="color:#194A9C;font-weight: 700;">
+                                          <?=$dip['gubun']?>
+                                          </span>
+                                          <span class="amount">
+                                            <b><?= 나의이용내역_지급사용색상($dip['gubun'], number_format($dip['point']), ' P') ?></b>
+                                          </span>
+                                        </div>
+
+                                        <div class="buy">
+                                        <?=$dip['etc']?>
+                                        </div>
+                                      </div>
+                                      <div class="date"><?= date("Y/m/d H:i", strtotime($dip['regdate'])) ?></div>
+                                  </div>
+                                </li>
+                          <? } ?>
+
+                          <? if($_cnt1==0){?>
+                          <li>
+                              <div class="wrap">
+                                  <p class="no_data">내역이 없습니다.</p>
+                              </div>
+                          </li>
+                          <? } ?>
+                      </ul>
+
+                  </div>
+
+                    <div class="add_list">
+                      <button type="button" class="list_btn" onclick="go_add_list(1,'<?=$member['idx']?>')">더보기</button>
+                    </div>
+                </div>
+
+                <!-- 03 캐시 충전 내역-->
+                <div class="list list_03">
+
+                  <div class="">
+                      <ul id="list2">
+                        <?
+                        $sql = "
+
+                        select midx, point, status, title, pg_status2, deposit_type, regdate from (
+                        	select midx, cash as point, 0 as status, '카드' as title, pg_status2, '' as deposit_type, regdate from lr_card_log
+                        	union all
+                        	select midx, point, status,'계좌이체' as title, '' as pg_status2, deposit_type, regdate from lr_deposit_log
+                        ) as t where midx = {$member['idx']} order by regdate desc limit {$list_num}
+
+
+                        ";
+                        //echo $sql;
+                        $diposit = db_query($sql);
+                        $_cnt = mysqli_num_rows($diposit);
+                        for($i=0;$dip=db_fetch($diposit);$i++){
+                        ?>
+                                <li>
+                                  <div class="wrap">
+                                      <div class="status po_rtive"></div>
+                                      <div class="fl">
+                                        <div class="tit">
+                                          <span style="color:#194A9C;font-weight: 700;">
+
+                                            <? if($dip['title']=="계좌이체"){ ?>
+                                              <? if($dip['status']==1){ $gubun = "입금대기"; ?>
+                                                <?=$gubun?>
+                                              <? }else if($dip['status']==2){ $gubun = "지급완료"; ?>
+                                                <?=$gubun?>
+                                              <? }else if($dip['status']==6){ $gubun = "사용"; ?>
+                                                <?=$gubun?>
+                                              <? }else{ $gubun = "입금취소"; ?>
+                                                <?=$gubun?>
+                                              <? } ?>
+                                            <? }else{ ?>
+                                                신용카드 <?=number_format($dip['point'])?>캐시
+                                            <? } ?>
+                                          </span>
+                                          <span class="amount">
+                                            <b>
+                                              <?= 나의이용내역_지급사용색상($gubun, number_format($dip['point']), '캐시') ?>
+                                            </b>
+                                          </span>
+                                        </div>
+
+                                        <div class="buy">
+                                          <? if($dip['deposit_type']=='reward'){ ?>
+                                            보상캐시
+                                          <? }else if($dip['title']=="계좌이체"){ ?>
+                                            <?=$dip['status']==6 ? "티켓 구매":"계좌이체 캐시 충전" ?>
+                                          <? }else{ ?>
+                                            <?=$dip['pg_status2'] ?>
+                                          <? } ?>
+                                        </div>
+                                      </div>
+                                      <div class="date">
+
+                                        <? if($dip['status']==1){ ?>
+                                          <?= date("Y/m/d H:i", strtotime($dip['regdate'])) ?>
+                                        <? }else if($dip['point']==2){ ?>
+                                          <?= date("Y/m/d H:i", strtotime($dip['deposit_date'])) ?>
+                                        <? }else{ ?>
+                                          <?= date("Y/m/d H:i", strtotime($dip['regdate'])) ?>
+                                        <? } ?>
+                                      </div>
+                                  </div>
+                                </li>
+                          <? } ?>
+
+                          <? if($_cnt==0){?>
+                          <li>
+                              <div class="wrap">
+                                  <p class="no_data">내역이 없습니다.</p>
+                              </div>
+                          </li>
+                          <? } ?>
+                      </ul>
+                  </div>
+
+                    <div class="add_list">
+                      <button type="button" class="list_btn" onclick="go_add_list(2,'<?=$member['idx']?>')">더보기</button>
+                    </div>
+                </div>
+
+                <!-- 04 당첨금 내역-->
+                <div class="list list_04">
+
+                  <div class="">
+                      <ul id="list3">
+                        <?
+                        // 당첨금 1등 2등 3등 은 나오지 않는다
+                        $sql = "
+                          SELECT gubun, prizemoney, ranking, status, regdate, etc
+                          FROM lr_prize_log
+                          WHERE midx = {$member['idx']}
+                          
+                          UNION ALL
+                          
+                          SELECT 
+                              '사용' AS gubun,
+                              point AS prizemoney,
+                              0 AS ranking,
+                              status,
+                              regdate,
+                              etc
+                          FROM lr_point_log
+                          WHERE midx = {$member['idx']}
+                            AND etc = '티켓 구매'
+                            AND name = '당첨금'
+                          
+                          ORDER BY regdate DESC
+                          LIMIT {$list_num};                        
+                        ";
+
+                        //echo $sql;
+                          $prize_result = db_query($sql);
+                          $_cnt = mysqli_num_rows($prize_result);
+                          foreach($prize_result as $prize){
+                        ?>
+                                <li>
+                                  <div class="wrap">
+                                      <div class="status po_rtive"></div>
+                                      <div class="fl">
+                                        <div class="tit">
+                                          <span style="color:#194A9C;font-weight: 700;">
+                                            <?=$prize['gubun']?>
+                                          </span>
+                                          <span class="amount">
+                                            <b>
+                                              <?= 나의이용내역_지급사용색상($prize['gubun'], number_format($prize['prizemoney']), '당첨금') ?>
+                                            </b>
+                                          </span>
+                                        </div>
+
+                                        <div class="buy">
+                                          <? if($prize['gubun']=="대기"){ ?>
+                                            출금신청
+                                          <? }else if($prize['gubun']=="사용"){ ?>
+                                            티켓 구매
+                                          <? }else if($prize['gubun']=="반환"){ ?>
+                                            당첨금 반환
+                                          <? }else if($prize['gubun']=="당첨금"){ ?>
+
+                                          <? }else{ ?>
+                                            <?= $prize['ranking']>0 ? $prize['ranking']."등 당첨":"포인트로 전환" ?>
+                                          <? } ?>
+
+                                        </div>
+                                      </div>
+                                      <div class="date">
+                                        <?= date("Y/m/d H:i", strtotime($prize['regdate'])) ?>
+                                      </div>
+                                  </div>
+                                </li>
+                          <? } ?>
+
+                          <? if($_cnt==0){?>
+                          <li>
+                              <div class="wrap">
+                                  <p class="no_data">내역이 없습니다.</p>
+                              </div>
+                          </li>
+                          <? } ?>
+                      </ul>
+                  </div>
+                  <? if($_cnt > 0){?>
+                    <div class="add_list">
+                      <button type="button" class="list_btn" onclick="go_add_list(3,'<?=$member['idx']?>')">더보기</button>
+                    </div>
+                  <? } ?>
+
+                </div>
+
+                <!-- 05 쿠폰 내역-->
+                <div class="list list_05">
+
+                  <div class="">
+                      <ul id="list4">
+                        <?
+                        $sql = "select * from lr_coupon_log_list where midx = {$member['idx']} order by regdate desc limit {$list_num} ";
+                          $coupon_result = db_query($sql);
+                          foreach($coupon_result as $data){
+                        ?>
+                                <li>
+                                  <div class="wrap">
+                                      <div class="status po_rtive"></div>
+                                      <div class="fl">
+                                        <div class="tit">
+                                          <span style="color:#194A9C;font-weight: 700;">
+                                            <? if($data['status']){ $gubun = "사용"; ?>
+                                              <?=$gubun?>
+                                            <? }else{ $gubun = "지급"; ?>
+                                              <?=$gubun?>
+                                            <? } ?>
+                                          </span>
+                                          <span class="amount">
+                                            <b><?= 나의이용내역_지급사용색상($gubun, $data['name'], '') ?></b>
+                                          </span>
+                                        </div>
+
+                                        <div class="buy">
+                                          <? if($data['recommend_id']){?>
+                                            <? if($data['status']==0){?>
+                                              아이디:<?=$data['recommend_id']?>
+                                            <? }else{ ?>
+                                              티켓구매
+                                            <? } ?>
+
+                                          <? }else{ ?>
+                                            <?=$data['usedate1']?>
+                                          <? } ?>
+                                        </div>
+                                      </div>
+                                      <div class="date">
+                                        <?= date("Y/m/d H:i", strtotime($data['regdate'])) ?>
+                                      </div>
+                                  </div>
+                                </li>
+                          <? } ?>
+
+                          <? if($_cnt==0){?>
+                          <li>
+                              <div class="wrap">
+                                  <p class="no_data">내역이 없습니다.</p>
+                              </div>
+                          </li>
+                          <? } ?>
+                      </ul>
+                  </div>
+
+                    <div class="add_list">
+                      <button type="button" class="list_btn" onclick="go_add_list(4,'<?=$member['idx']?>')">더보기</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+var listnum = parseInt("<?=$list_num?>");
+
+    $(document).ready(function(){
+        $(".new_mypage_history .menu a").click(function(){
+            $(".new_mypage_history .menu a").removeClass("on")
+            $(this).addClass("on");
+            listnum = 20;
+        });
+        $(".new_mypage_history .menu a:eq(0)").click(function(){
+            $(".new_mypage_history .list").removeClass("on")
+            $(".new_mypage_history .list_01").addClass("on")
+            listnum = 20;
+        });
+        $(".new_mypage_history .menu a:eq(1)").click(function(){
+            $(".new_mypage_history .list").removeClass("on")
+            $(".new_mypage_history .list_02").addClass("on")
+            listnum = 20;
+        });
+        $(".new_mypage_history .menu a:eq(2)").click(function(){
+            $(".new_mypage_history .list").removeClass("on")
+            $(".new_mypage_history .list_03").addClass("on")
+            listnum = 20;
+        });
+        $(".new_mypage_history .menu a:eq(3)").click(function(){
+            $(".new_mypage_history .list").removeClass("on")
+            $(".new_mypage_history .list_04").addClass("on")
+            listnum = 20;
+        });
+        $(".new_mypage_history .menu a:eq(4)").click(function(){
+            $(".new_mypage_history .list").removeClass("on")
+            $(".new_mypage_history .list_05").addClass("on")
+            listnum = 20;
+        });
+    });
+
+
+
+    $(function(){
+        $(".mypage_logout_bnt").show();
+        $(".my_login_id").css("display","none");
+    });
+    function go_cancle(obj){
+      if(confirm("입금신청을 취소 하시겠습니까?")){
+        $.ajax({
+          type : "POST",
+          url: "/buy/ajax_deposit_cancle.php",
+          async: false,
+          data: {
+            idx : obj
+          },
+          success: function(result) {
+            var r = result.trim();
+            console.log(r);
+            if(r==1){
+              alert("취소되었습니다.");
+              location.reload();
+            }else{
+              alert(r);
+              location.reload();
+            }
+          },
+          error:function(e) {
+            alert(e.responseText);
+          }
+        });
+      }
+    }
+
+    function go_add_list(obj1, obj3){
+      var addcount = 5;
+      console.log(listnum);
+      listnum += parseInt(addcount);
+      $.ajax({
+        type : "POST",
+        url: "ajax_history_list.php",
+        async: false,
+        data: {
+          historylist : obj1,
+          midx : obj3,
+          list_num : listnum
+        },
+        success: function(result) {
+          var r = result.trim();
+          if(r=="end"){
+            alert("내역의 끝 입니다.");
+            return false;
+          }else{
+            $("#list"+obj1).html(r);
+          }
+        },
+        error:function(e) {
+          alert(e.responseText);
+        }
+      });
+
+    }
+</script>
+
+<?php
+include_once "../lib/channer_talk.php";
+include "../footer_new.html";
+?>

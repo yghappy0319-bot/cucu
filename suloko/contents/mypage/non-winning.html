@@ -1,0 +1,138 @@
+<?php
+include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+if ($M_login['user_id'] == '') {
+  meta_go("/login.html");
+  exit;
+}
+
+meta_go("/");
+exit;
+if (!$page) $page = 1;
+$limit       = 10;
+$find_text   = "";
+$find_object = "";
+$add_query   = " AND USER_ID='".$M_login['user_id']."' AND HIDE_YN IS NULL AND WIN_YN='N' AND IMG_PATH !=''";
+
+$condition = array(
+  "row"         => $limit,
+  "page"        => $page,
+  "order"       => " REG_DATE DESC",
+  "find_text"   => $find_text,
+  "find_object" => $find_object,
+  "add_query"   => $add_query,
+);
+$list = F_ORDERS_list($condition);
+
+if ($list['total'] <= 0) {
+  $list['ORDERS_NO'] = array();
+}
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html";?>
+  <main id="main">
+    <div class="wrap_mypage clear wrap_com">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/nav-mypage.html";?>
+      <div class="right">
+        <section class="sec_nonwin">
+          <div class="wrap_title">
+            <h3 class="heading">낙첨 복권 받기</h3>
+          </div>
+          <div class="bx_gray bx_padding mb30">
+            <ul class="list_bul gray fw500">
+              <li>고객께서 구매하신 티켓 중 낙첨으로 분류된 티켓에 한하여, 실물티켓 배송 요청이 가능합니다. <br>요청시 항공우편으로 배송됩니다.
+              </li>
+              <li>낙첨티켓 해외배송(EMS) 비용은 <?= number_format($site['낙첨티켓신청금액']) ?>캐시입니다.</li>
+              <li>해외배송(EMS) 신청 후 수령까지 최대 4~5주 소요될 수 있습니다.</li>
+            </ul>
+          </div>
+          <div class="wrap_tb">
+            <!--<ul class="status clear">
+              <li><strong>신청중</strong><span>(출금신청 완료)</span></li>
+              <li><strong>처리중</strong><span>(접수완료)</span></li>
+              <li><strong>캐시조정</strong><span>(출금신청액, 수수료 설정)</span></li>
+              <li><strong>출금완료</strong></li>
+            </ul>-->
+            <table class="tb_type2">
+              <caption>
+                <div class="hide">
+                  낙첨복권에 대한 정보를 제공하는 표
+                </div>
+              </caption>
+              <colgroup>
+                <col width="8.38%">
+                <col width="22%">
+                <col width="22%">
+                <col width="22%">
+                <col width="">
+              </colgroup>
+              <thead class="bg_navy">
+                <tr>
+                  <th>NO</th>
+                  <th>게임명</th>
+                  <th>구매일자</th>
+                  <th>추첨일시</th>
+                  <th>해외배송(EMS)신청</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php
+                  for ($i = 0; $i < count($list['ORDERS_NO']); $i++) {
+                    $no = $list['total'] - (($page - 1) * $list['row']) - $i;
+                    $gubun = ($list['GUBUN'][$i] == 'MM') ? "메가밀리언" : "파워볼";
+
+                    if ($list['NON_MAIL'][$i] == 'Y') {
+                      $non = $db->get_data("SELECT * FROM NON_WINING WHERE ORDERS_NO='".$list['ORDERS_NO'][$i]."'");
+
+                      if (isset($non['STATUS'])) {
+                        $type = $mail_status_op[$non['STATUS']];
+                      }
+                    }
+                ?>
+                <tr>
+                  <td><?=$no?></td>
+                  <td><?=$gubun?></td>
+                  <td><?=date("Y년 m월 d일 H:i", strtotime($list['REG_DATE'][$i]))?></td>
+                  <td><?=date("Y년 m월 d일", strtotime($list['PLAYDATE'][$i]))?></td>
+                  <td>
+                    <?php if ($list['NON_MAIL'][$i] == 'Y') { ?>
+                    <?=$type?>
+                    <?php } else { ?>
+                    <a href="./non-winning-apply.html?no=<?=$list["ORDERS_NO"][$i]?>" class="color_red">낙첨복권 배송신청</a>
+                    <?php } ?>
+                  </td>
+                </tr>
+                <?php
+                  }
+                ?>
+                <?php if ($list['total'] <= 0) { ?>
+                <tr>
+                  <td colspan="5" class="txt_center">신청가능한 티켓이 없습니다.</td>
+                </tr>
+                <?php } ?>
+              </tbody>
+            </table>
+            <?php if ($list['total'] > 0) { ?>
+            <!-- 페이징 숫자 표시는 5개까지 -->
+            <div class="wrap_paging">
+              <?php
+                $page_info['cur'] = $condition['page'];
+                $page_info['row'] = $condition['row'];
+                $page_info['total'] = $list['total'];
+                $list['page_string'] = print_page_num1($page_info);
+                echo $list['page_string'];
+              ?>
+            </div>
+            <?php } ?>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html";?>
+</body>
+
+</html>

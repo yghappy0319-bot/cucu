@@ -1,0 +1,47 @@
+<?php
+  $service_on_class['purchase'] = "";
+  $service_on_class['mega'] = "";
+  $service_on_class['power'] = "";
+  $service_on_class['receive'] = "";
+  $service_on_class['policy'] = "";
+
+  if ($service_sub['purchase'] == true) $service_on_class['purchase'] = "on";
+  if ($service_sub['mega'] == true) $service_on_class['mega'] = "on";
+  if ($service_sub['power'] == true) $service_on_class['power'] = "on";
+  if ($service_sub['receive'] == true) $service_on_class['receive'] = "on";
+  if ($service_sub['policy'] == true) $service_on_class['policy'] = "on";
+?>
+
+<section class="sec_service wrap_com section bg_white">
+  <div class="wrap_tab type2">
+    <ul class="tab_type_service flex wrap">
+      <li class="<?=$service_on_class['purchase']?>">
+        <a href="/contents/service/purchase.html">
+          <p>미국복권 구매대행 이용안내</p>
+        </a>
+      </li>
+    </ul>
+    <ul class="tab_type2 flex wrap">
+      <li class="<?=$service_on_class['mega']?>">
+        <a href="/contents/service/mega.html">
+          <p>메가밀리언 소개</p>
+        </a>
+      </li>
+      <li class="<?=$service_on_class['power']?>">
+        <a href="/contents/service/power.html">
+          <p>파워볼 소개</p>
+        </a>
+      </li>
+      <li class="<?=$service_on_class['receive']?>">
+        <a href="/contents/service/receive.html">
+          <p>당첨금 수령안내</p>
+        </a>
+      </li>
+      <li class="<?=$service_on_class['policy']?>">
+        <a href="/contents/service/policy.html">
+          <p>회원 등급 안내</p>
+        </a>
+      </li>
+    </ul>
+  </div>
+</section>

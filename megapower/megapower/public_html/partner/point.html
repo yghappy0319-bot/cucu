@@ -1,0 +1,78 @@
+<? include_once "header.php";
+
+$page_num = 10;
+$page = isset($_GET["page"])? $_GET["page"] : 1;
+
+if($_GET['list_num']>0){
+  $list_num = $_GET['list_num'];
+}else{
+  $list_num = 15;
+}
+
+if($status){
+  $_status = " and status = {$status} ";
+}
+if($receipts){
+  $_receipts = " and status = 2 and receipts >= 1  ";
+}
+
+if($member['code']){
+  $referral = " and b.recommender = '{$member['code']}' and b.idx != {$member['idx']} ";
+}
+
+$countSql = " select count(*) as totalRecords from lr_deposit_log a left join lr_member b
+on a.midx = b.idx where 1=1 {$_status} {$_receipts} {$referral} ";
+include_once "pager_result.php";
+
+$포인트신청리스트 = 파트너_포인트신청리스트(""," {$_status} {$_receipts} {$referral} order by regdate desc limit $start, $list_num ");
+
+?>
+      <div class="content">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title"> 캐시충전내역</h4>
+              </div>
+
+              <form id="searchFrm" >
+                <input type="hidden" name="page" id="page" value="<?=$page?>" >
+              </form>
+
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead class=" text-primary">
+                      <th>입금자명</th>
+                      <th>신청금액</th>
+                      <th>상태</th>
+                      <th>상태2</th>
+                      <th>신청일</th>
+                    </thead>
+                    <tbody
+                    <?
+                    foreach($포인트신청리스트 as $신청내역){
+                        $회원 = 회원($신청내역['midx']);
+                    ?>
+                      <tr>
+                        <td><?=$신청내역['deposit_name']?></td>
+                        <td><?=number_format($신청내역['cash'])?>원</td>
+                        <td><?=입금상태($신청내역['status'])?></td>
+                        <td><?= $신청내역['sms_send'] ? "<font color='blue'>[문자발송완료]</font>":"" ?><?=$신청내역['memo']?></td>
+                        <td><?=$신청내역['regdate']?></td>
+                      </tr>
+                      <? } ?>
+                    </tbody>
+                  </table>
+                </div>
+                <?php include_once "pager.php" ?>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+<? include_once "footer.php";?>
+<script>
+  $(".nav li").removeClass('active');
+  $(".nav li").eq(2).addClass('active');
+</script>

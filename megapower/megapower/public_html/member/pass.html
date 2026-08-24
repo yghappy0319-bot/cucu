@@ -1,0 +1,325 @@
+<?php
+include "../header.html";
+
+$임시비밀번호 = false;
+?>
+<style>
+.idpass-find {text-align: center;    min-height: 500px;}
+.idpass-find .login_id {background-color: #EEEEEE; border: 0px; font-size: 18px; padding: 8px; margin-bottom: 12px; border-radius: 4px; width: 250px;}
+.idpass-find .login_id::placeholder {    font-weight: 600;}
+.idpass-find .phonecode {border-radius: 4px; font-weight: 800; font-size: 16px; border: 1px solid; width: 250px; padding: 10px; display: inline-block;text-decoration: none; background-color: #fff;}
+.idpass-find .code_chk {border-radius: 4px; font-weight: 800; font-size: 16px; border: 1px solid; width: 250px; padding: 10px; display: inline-block;text-decoration: none; background-color: #333; color:#fff; margin-bottom: 10px; }
+</style>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+          <div class="modle_sub_title">비밀번호 찾기</div>
+          <ul>
+            <li><i class="xi-home"></i></li>
+            <li><i class="xi-angle-right"></i></li>
+            <li><p>비밀번호 찾기</p></li>
+          </ul>
+        </div>
+
+        <div class="modle_menu_01">
+          <ul>
+            <li><a href="/member/idpass.html"><p>아이디 찾기</p></a></li>
+            <li class="on"><a href="/member/pass.html"><p>비밀번호 찾기</p></a></li>
+          </ul>
+        </div>
+
+        <div class="new_member_find">
+
+            <div class="head_text">
+                <p>아이디, 휴대폰번호로 가입된 정보를 조회하여 비밀번호 찾기가 가능합니다.</p>
+            </div>
+
+            <form method="POST" id="idpassFrm" >
+                <input type="hidden" id="sms_send_chk" />
+                <input type="hidden" name="find_id_result" id="find_id" />
+                <div class="in">
+                  <a class="logo" href="/index_new.html"><img src="/images/logo.gif"></a>
+
+                  <? if($발송타입=="sms"){?>
+                    <input type="text" name="id" id="passid" placeholder="아이디" class="login_id" value="<?=$myid?>"/>
+                    <input type="text" name="phone" id="findpass" class="login_id" placeholder="휴대폰번호" maxlength="13" onkeyup="isNumberOrHyphen(this);cvtPhoneNumber(this);" />
+
+
+                    <? if($임시비밀번호){?>
+                    <button type="button" onclick="go_password_find()" class="phonecode" >임시비밀번호 발급</button>
+                    <? }else{ ?>
+                      <div class="sms_form">
+                          <div class="codechk_form code_input" style="display:none;">
+                              <input type="text" id="smscode" class="in login_id" placeholder="인증번호를 입력해주세요.">
+                              <button type="button" onclick="go_code_chke()" class="code_chk_btn">인증번호 확인</button>
+                          </div>
+                          <button type="button" onclick="go_send_sms()" class="phonecode smscodebtn" >인증번호요청</button>
+                      </div>
+                    <? } ?>
+
+                    <div class="passform" style="display:none;" >
+                      <input type="text" name="newpass" id="newpass" class="login_id" placeholder="변경할 비밀번호 입력"  />
+                      <input type="text" name="newrepass" id="newrepass" class="login_id" placeholder="변경할 비밀번호 재입력" style="    margin-top: 10px;"  />
+                      <button type="button" onclick="go_password_update()" class="phonecode" >비밀번호 변경</button>
+                    </div>
+                    <? }else{ ?>
+
+
+                      <input type="text" name="email_id" id="email_id" placeholder="아이디" class="login_id" value="<?=$myid?>" style="margin-top: 20px;" />
+                      <input type="text" name="email_address" id="email_address" class="login_id" placeholder="이메일주소"  />
+                      <input type="hidden" id="email_status" />
+
+                    <button type="button" onclick="go_password_find_email()" class="phonecode" >임시 비밀번호 이메일로 발송하기</button>
+                    <p class="txt" style="color:#CC1F3B;" >* 이메일이 도착하지 않았다면 가입 시 이메일을 잘못 입력했거나, 스팸함에 있는지 확인해주세요.</p>
+                    <? } ?>
+                </div>
+            </form>
+
+
+
+            <div class="foot_text">
+                <p class="t1"><i class="xi-info"></i>가입된 정보가 조회되지 않는다면?</p>
+                <p class="t2"><a href="/member/inquiry.html">1:1문의 페이지 바로가기</a></p>
+                <p class="t2">이메일로임시 비밀번호 요청하기</p>
+                <p class="t2">mepawor88@gmail.com</p>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+
+<script>
+  function go_password_find_email(){
+
+    var email_id = $("#email_id").val();
+    var email_address = $("#email_address").val();
+    var email_send_status = $("#email_status").val();
+    if(!email_id){
+      alert("아이디를 입력해주세요.");
+      return false;
+    }
+    if(!email_address){
+      alert("이메일 주소를 입력해주세요.");
+      return false;
+    }
+    alert("발송 결과가 나올때까지 잠시 기다려주세요.");
+    $("#email_status").val(1);
+
+    var params = jQuery("#idpassFrm").serialize();
+    params += "&pages=비번찾기"
+      $.ajax({
+        type : "POST",
+        url: "_ajax_send_email.php",
+        async: true,
+        data: params,
+        dataType:"json",
+        // ✅ 호출 전 실행
+        beforeSend: function() {
+          if(email_send_status==1){
+            alert("메일보내기가 진행중 입니다. 결과가 나올때까지 잠시만 기다려주세요.");
+            return false;
+          }
+        },
+        success: function(result) {
+          console.log(result);
+          if(result.status==1){
+            alert(result.msg);
+            $("#email_status").val(" ");
+            location.reload();
+            return false;
+          }else{
+            alert(result.msg);
+            return false;
+          }
+          console.log(r);
+        },
+        error:function(e) {
+          alert(e.responseText);
+        }
+      });
+
+  }
+
+  function go_password_find(){
+    var passid = $("#passid").val();
+    if(passid==""){
+      alert("아이디를 입력해주세요.");
+      return false;
+    }
+    var findpass = $("#findpass").val();
+    if(findpass==""){
+      alert("휴대폰번호를 입력해주세요.");
+      return false;
+    }
+
+    var params = jQuery("#idpassFrm").serialize();
+      $.ajax({
+        type : "POST",
+        url: "ajax_sms_password.php",
+        async: false,
+        data: params,
+        success: function(result) {
+          console.log(result);
+          var r = result.trim();
+          if(r==1){
+            alert('가입된 번호로 임시비밀번호를 발송하였습니다.');
+            location.href="/member/login.html";
+          }else if(r=="over"){
+            alert("금일 인증문자 발송개수가 초과되었습니다.\n관리자에게 문의해 주시거나 내일 다시 시도해주세요.");
+            go_chet();
+            return false;
+          }else{
+            alert(r);
+            return false;
+          }
+
+        },
+        error:function(e) {
+          alert(e.responseText);
+        }
+      });
+  }
+
+  function go_send_sms(){
+    var id = $("#passid").val();
+    var phone = $("#findpass").val();
+    var sms_send_chk = $("#sms_send_chk").val();
+    if(phone==""){
+      alert("휴대폰번호를 입력해주세요.");
+      return false;
+    }
+    if(sms_send_chk==1){
+      alert("인증번호가 발송되었습니다.\n인증문자가 도착하지 않았다면 새로고침 후 재발송 해주세요.");
+      return false;
+    }
+    $.ajax({
+       type : "POST",
+       url: "ajax_send_sms.php",
+       async: false,
+       data: {
+          id : id,
+          phone :phone,
+          pages : '비밀번호찾기'
+       },
+       success: function(result) {
+          var r = result.trim();
+          console.log(r);
+          if(r==1){
+            $("#findpass").prop("readonly", true);
+            $("#sms_send_chk").val(1);
+            $(".code_input").show();
+            $(".smscodebtn").css("display","none");
+            alert("인증번호가 발송되었습니다.\n문자가 도착하지 않았다면 새로고침 후 재발송 해주세요.");
+            return false;
+          }else if(r=="over"){
+            alert("인증문자 발송개수가 초과되었습니다. 관리자에게 문의해주세요.");
+            return false;
+          }else{
+            alert(r);
+            return false;
+          }
+       },
+       error:function(e) {
+          alert(e.responseText);
+       }
+    });
+  }
+
+  function go_code_chke(){
+    var phone = $("#findpass").val();
+    var smscode = $("#smscode").val();
+    if(smscode==""){
+      alert("인증번호를 입력해주세요.");
+      return false;
+    }
+
+    $.ajax({
+       type : "POST",
+       url: "ajax_sms_code_chk.php",
+       async: false,
+       data: {
+          smscode : $("#smscode").val(),
+          phone : phone,
+          page : "idfind"
+       },
+       success: function(result) {
+          var obj = jQuery.parseJSON(result);
+          if(obj.msg=="success"){
+            $("#smscode").prop("readonly", true);
+            $("#passid").prop("readonly", true);
+            alert("인증번호가 확인되었습니다.");
+            $(".passform").show();
+            // $("#find_id").val(obj.member_id);
+            // $("#idFindFrm").attr("action","/member/find_id_result.html");
+            // $("#idFindFrm").submit();
+          }else{
+            alert("인증번호를 확인해주세요.");
+          }
+
+       },
+       error:function(e) {
+          alert(e.responseText);
+       }
+    },'json');
+  }
+  function go_password_update(){
+    var newpass = $("#newpass").val();
+    var newrepass = $("#newrepass").val();
+    var smscode = $("#smscode").val();
+    if(smscode==""){
+      alert("인증번호를 입력해주세요.");
+      return false;
+    }
+    if(newpass==""){
+      alert("변경할 비밀번호를 입력해주세요.");
+      return false;
+    }
+    if(newrepass==""){
+      alert("변경할 비밀번호를 재입력해주세요.");
+      return false;
+    }
+
+    if(newpass != newrepass){
+      alert("변경할 비밀번호를 다시 확인해주세요.");
+      return false;
+    }
+
+    if(!find_pass_password_valid()){
+      alert('6자 이상 20자 이하의 비밀번호를 입력해주세요.');
+      return false;
+    }
+
+    var params = jQuery("#idpassFrm").serialize();
+      $.ajax({
+        type : "POST",
+        url: "ajax_pass_find_update.php",
+        async: false,
+        data: params,
+        success: function(result) {
+        var r = result.trim();
+          if(r==1){
+            alert('비밀번호가 변경되었습니다. 로그인페이지로 이동합니다.');
+            location.href="/member/login.html";
+          }else{
+            alert(r);
+            location.reload();
+            return false;
+          }
+          console.log(r);
+        },
+        error:function(e) {
+          alert(e.responseText);
+        }
+      });
+
+  }
+</script>
+<?php
+  include_once "../lib/channer_talk.php";
+  include "../footer_new.html";
+?>

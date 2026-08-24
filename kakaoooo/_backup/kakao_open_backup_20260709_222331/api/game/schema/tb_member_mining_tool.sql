@@ -1,0 +1,3 @@
+-- @deprecated tb_member_mining.sql 사용
+-- 이전: tb_member 에 ALTER 로 추가하던 채굴 컬럼 → 별도 테이블 tb_member_mining 으로 분리됨
+-- 신규 설치: api/game/schema/tb_member_mining.sql 실행

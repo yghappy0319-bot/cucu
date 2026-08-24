@@ -1,0 +1,271 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_UM_BANNER.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page   = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit";
+
+  $banner_static_url = $partner_domain."/static/ptnbanner/";
+
+  $type_op = array(
+    "P" => "PC",
+    "M" => "MOBILE"
+  );
+
+  $list = F_UM_BANNER_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query
+  ));
+
+  if ($list['total'] == 0) {
+    $list['IDX'] = array();
+  }
+?>
+
+<style>
+  #modal-subject {
+    text-align: center;
+    background: #F2F3F9;
+    vertical-align: middle;
+    width:25%;
+  }
+</style>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">배너관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">언더마케팅</a></li>
+          <li class="breadcrumb-item active" aria-current="page">배너관리</li>
+        </ol>
+      </div>
+
+      <div class="ms-auto pageheader-btn">
+        <a href="" class="btn btn-primary btn-icon text-white me-2" data-bs-target="#modaldemo1" data-bs-toggle="modal" onClick="init_form()">
+          <span>
+            <i class="fe fe-plus"></i>
+          </span> Add Banner
+        </a>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+
+            </div>
+            <div class="table-responsive">
+              <table class="table border text-nowrap table-bordered" id="table-list">
+                <thead>
+                  <tr style="text-align: center; background-color: #F2F3F9;">
+                    <th>No</th>
+                    <th>사이즈</th>
+                    <th>타입</th>
+                    <th>배너이미지</th>
+                    <th>최종수정일</th>
+                    <th>출력여부</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['IDX']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                  ?>
+                  <tr style="text-align:center; cursor:pointer;" data-bs-target="#modaldemo1" data-bs-toggle="modal" class="add_banner_btn" data-no="<?=$list['IDX'][$i]?>">
+                    <td><?=$no?></td>
+                    <td><?=$list['SIZE'][$i]?></td>
+                    <td><?=$type_op[$list['TYPE'][$i]]?></td>
+                    <td><img src="<?=$banner_static_url.$list['BANNER_URL'][$i]?>" style="width: 250px;"></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                    <td><?=$use_op[$list['STATUS'][$i]]?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+
+<!-- BASIC MODAL -->
+<div class="modal fade" id="modaldemo1">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content modal-content-demo" style="width: 670px;">
+      <div class="modal-header">
+        <h6 class="modal-title">배너이미지 등록/수정</h6>
+        <button aria-label="Close" class="btn-close" data-bs-dismiss="modal">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="card-body" id="order-view" style="padding: 0;">
+          <div class="table-responsive">
+            <form name="w_frm" id="w_frm" method="post" action="<?=$partner_domain?>/contents/banner/banner_action.php" enctype='multipart/form-data'>
+              <input type="hidden" name="mode" value="insert" />
+              <input type="hidden" class="form-control" name="IDX" class="custom-form-control" />
+              <table class="table border text-nowrap table-bordered">
+                <tbody>
+                  <tr>
+                    <td id="modal-subject">배너타입</td>
+                    <td>
+                      <select name="TYPE" id="type" class="form-select select2 form-control" style="width: 100%;">
+                        <?=option_make($type_op, "")?>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td id="modal-subject">사이즈</td>
+                    <td>
+                      <input type="text" class="form-control" name="SIZE" class="custom-form-control" />
+                      <div>* 300x150 형태, 파일의 이름에 사용됩니다.</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td id="modal-subject">배너이미지</td>
+                    <td>
+                      <div class="form-file">
+                        <input type="file" class="form-file-input" name="BANNER_URL" id="validatedCustomFile1" />
+                        <label class="form-file-label" for="validatedCustomFile1">Choose file...</label>
+                      </div>
+                      <br><span id="banner_url"></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td id="modal-subject">출력유무</td>
+                    <td>
+                      <div class="form-inline">
+                        <div class="custom-control custom-radio me-4">
+                          <input type="radio" class="custom-control-input" id="customControlValidation3" name="STATUS" value='Y' checked />
+                          <label class="custom-control-label" for="customControlValidation3">출력</label>
+                        </div>
+                        <div class="custom-control custom-radio me-4">
+                          <input type="radio" class="custom-control-input" id="customControlValidation2" name="STATUS" value='N' />
+                          <label class="custom-control-label" for="customControlValidation2">미출력</label>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td id="modal-subject">등록 일시</td>
+                    <td><span id="REG_DATE"></span></td>
+                  </tr>
+                  <tr>
+                    <td id="modal-subject">수정 일시</td>
+                    <td><span id="UPDATE_DATE"></span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: space-between;">
+        <div>
+          <button type="button" class="btn btn-danger delete_btn">Delete</button>
+        </div>
+        <div>
+          <button type="button" class="btn btn-success ok_save_btn">Save</button>
+          <button type="button" class="btn btn-light cancel_btn" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+    $(document).on("click", ".delete_btn", function(e) {
+      if (confirm("삭제하시겠습니까?")) {
+        $("#w_frm").find('[name="mode"]').val("delete");
+        $("#w_frm").submit();
+      }
+    });
+
+    $(document).on("click", ".ok_save_btn", function(e) {
+      let f = $("#w_frm");
+      e.preventDefault();
+
+      if (f.find('[name="SIZE"]').val() == "") {
+        alert("사이즈를 입력해 주세요.");
+        f.find('[name="SIZE"]').focus();
+        return false;
+      }
+
+      if (f.find('[name="mode"]').val() == "insert" && f.find('[name="BANNER_URL"]').val() == "") {
+        alert("배너이미지를 선택해 주세요.");
+        return false;
+      }
+
+      if (confirm("저장하시겠습니까?")) {
+        $("#w_frm").submit();
+      }
+
+    });
+
+    $(document).on("click", ".add_banner_btn", function() {
+      let no = $(this).data("no");
+      init_form();
+
+      $.post("./default.php", {
+        mode: "search_banner_info",
+        no: no
+      }, function(e) {
+        if (e.error) {
+          alert(e.msg);
+        } else {
+          $(".delete_btn").show();
+          $("#w_frm").find('[name="mode"]').val("update");
+          $("#w_frm").find('[name="IDX"]').val(e.IDX);
+          $("#w_frm").find('#type').val(e.TYPE).trigger("change");
+          $("#w_frm").find('[name="SIZE"]').val(e.SIZE);
+          $("#w_frm").find('#banner_url').html("<img src='<?=$banner_static_url?>"+e.BANNER_URL+"'>");
+          $("#w_frm").find('[name="STATUS"]:radio[value="'+e.STATUS+'"]').prop("checked",true);
+          $("#w_frm").find('#REG_DATE').html(e.REG_DATE);
+          $("#w_frm").find('#UPDATE_DATE').html(e.UPDATE_DATE);
+        }
+      }, "json");
+    });
+});
+
+function init_form() {
+  $(".delete_btn").hide();
+  $("#w_frm").find('[name="mode"]').val("insert");
+  $("#w_frm").find('[name="IDX"]').val("");
+  $("#w_frm").find('[name="SIZE"]').val("");
+  $("#w_frm").find('#banner_url').html("");
+  $("#w_frm").find('[name="STATUS"]:radio[value="Y"]').prop("checked",true);
+  $("#w_frm").find('#REG_DATE').html("");
+  $("#w_frm").find('#UPDATE_DATE').html("");
+}
+</script>

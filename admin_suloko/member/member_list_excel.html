@@ -1,0 +1,123 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/_common/config.php";
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/export.php";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_MEMBER.php";
+
+  F_admin_chk($S_login);
+
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/_check-auth-readonly.php"; // 권한체크
+
+  error_reporting(E_ERROR);
+  ini_set("display_errors", 1);
+  ini_set("memory_limit", $csv_memory);
+
+  // file name
+  $file_name = "member_list_".date("Ymd").".csv";
+  $page_name = "회원관리";
+
+  $find_text = $_GET["find_text"];
+  $find_object = $_GET["find_object"];
+  $sdate = $_GET["sdate"];
+  $edate = $_GET["edate"];
+  $gender = $_GET["gender"];
+  $level = $_GET["level"];
+  $marketing = $_GET["marketing"];
+  $notification = $_GET["notification"];
+  $standard = $_GET["standard"];
+  $cashtype = $_GET["cashtype"];
+  $separator = $_GET["separator"];
+  $cash = $_GET["cash"];
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND M.{$standard} BETWEEN '{$sDate}' AND '{$eDate}'";
+  }
+
+  $find_text = preg_replace("/\s+/", "", $find_text);
+
+  if ($find_object == "all" && $find_text != "") {
+    if (strstr($find_text, '-') == false) {
+      $add_query .= " AND (M.USER_ID LIKE '%{$find_text}%' OR replace(M.NAME, ' ', '') LIKE '%{$find_text}%' OR replace(M.HP, '-', '') LIKE '%{$find_text}%')";
+    } else {
+      $add_query .= " AND (M.USER_ID LIKE '%{$find_text}%' OR replace(M.NAME, ' ', '') LIKE '%{$find_text}%' OR M.HP LIKE '%{$find_text}%')";
+    }
+    $find_object = "";
+  }
+
+  if ($country != "") {
+    $add_query .= " AND M.COUNTRY='{$country}'";
+  }
+
+  if ($gender != "") {
+    $add_query .= " AND M.GENDER='{$gender}'";
+  }
+
+  if ($level != "") {
+    $add_query .= " AND M.LEVEL='{$level}'";
+  }
+
+  if ($marketing != "") {
+    $add_query .= " AND M.IS_MARKETING='{$marketing}'";
+  }
+
+  if ($notification != "") {
+    $add_query .= " AND M.TOKEN='{$notification}'";
+  }
+
+  if ($cashtype != "") {
+    if ($cashtype == "C.CASH") {
+      $add_query .= " AND USER_ID IN (SELECT USER_ID FROM CASH WHERE IS_USE = 'Y' GROUP BY USER_ID HAVING SUM(CASH) {$separator} {$cash})";
+    } else if ($cashtype == "O.CASH" || $cashtype == "O.WIN_MONEY") {
+      $add_query .= " AND USER_ID IN (SELECT USER_ID FROM ORDERS AS O GROUP BY USER_ID HAVING SUM({$cashtype}) {$separator} {$cash})";
+    } else {
+      $add_query .= " AND {$cashtype} {$separator} {$cash}";
+    }
+  }
+
+  $list  = F_MEMBER_list(array(
+    "row"         => $csv_max_row,
+    "page"        => 1,
+    "order"       => "",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query
+  ));
+
+  // default
+  $csv_dump = "";
+
+  // 컬럼명
+  $titles = array("", "ID", "성명", "생년월일", "국적", "성별", "휴대폰번호", "회원등급", "마케팅동의", "알림동의", "가입일시", "마지막 접속일시", "누적결제금액(VAT포함)", "누적결제캐시", "누적당첨금", "사용캐시", "잔여캐시", "잔여당첨금", "잔여마일리지", "잔여보너스포인트");
+  $csv_dump .= implode(",", $titles);
+  $csv_dump .= "\r\n";
+
+  // 데이터 삽입
+  for ($i = 0; $i < count($list["MEMBER_NO"]); $i++) {
+    $cnt = $i + 1;
+
+    $csv_dump .= $cnt.",";
+    $csv_dump .= $list["USER_ID"][$i].",";
+    $csv_dump .= $list["NAME"][$i].",";
+    $csv_dump .= $list["BIRTH"][$i].",";
+    $csv_dump .= (strlen($list["COUNTRY"][$i]) > 0 ? $country_op[$list["COUNTRY"][$i]] : "").",";
+    $csv_dump .= (strlen($list["GENDER"][$i]) > 0 ? $gender_op[$list["GENDER"][$i]] : "").",";
+    $csv_dump .= $list["HP"][$i].",";
+    $csv_dump .= $mlevel_op[$list["LEVEL"][$i]].",";
+    $csv_dump .= $list["IS_MARKETING"][$i].",";
+    $csv_dump .= $list["IS_NOTIFICATION"][$i].",";
+    $csv_dump .= $list["REG_DATE"][$i].",";
+    $csv_dump .= $list["LASTDATE"][$i].",";
+    $csv_dump .= "\"".number_format($list["SUM_PRICE"][$i])."\"".",";
+    $csv_dump .= "\"".number_format($list["SUM_CASH"][$i])."\"".",";
+    $csv_dump .= "\"".number_format($list["SUM_WIN_MONEY"][$i])."\"".",";
+    $csv_dump .= "\"".number_format($list["SUM_ORDERS"][$i])."\"".",";
+    $csv_dump .= "\"".number_format($list["CASH"][$i])."\"".",";
+    $csv_dump .= "\"".number_format($list["WINCASH"][$i])."\"".",";
+    $csv_dump .= "\"".number_format($list["IPOINT"][$i])."\"".",";
+    $csv_dump .= "\"".number_format($list["POINT"][$i])."\"";
+    $csv_dump .= "\r\n";
+  }
+
+  export_csv($file_name, $csv_dump, $cnt, $page_name);
+?>

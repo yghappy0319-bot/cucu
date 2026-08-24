@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#ffffff">
+  <title>연결할 수 없습니다 - 슈로코</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+      background: #f5f5f5;
+      color: #333;
+    }
+    .wrap {
+      min-height: 100%;
+      max-width: 540px;
+      margin: 0 auto;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+    }
+    .brand {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #008ecb;
+      letter-spacing: -0.04em;
+      margin-bottom: 2rem;
+    }
+    h1 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      margin-bottom: 0.75rem;
+    }
+    p {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #666;
+      letter-spacing: -0.03em;
+    }
+    .actions {
+      margin-top: 2rem;
+      width: 100%;
+    }
+    button {
+      display: block;
+      width: 100%;
+      max-width: 280px;
+      margin: 0 auto;
+      padding: 0.85rem 1rem;
+      border: 0;
+      border-radius: 6px;
+      background: #008ecb;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      cursor: pointer;
+    }
+    .hint {
+      margin-top: 1.25rem;
+      font-size: 0.8rem;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">슈로코</div>
+    <h1>사이트에 연결할 수 없습니다</h1>
+    <p>네트워크 상태를 확인한 뒤<br>다시 시도해 주세요.</p>
+    <div class="actions">
+      <button type="button" id="retryBtn">다시 시도</button>
+      <p class="hint">와이파이 또는 모바일 데이터가 켜져 있는지 확인해 주세요.</p>
+    </div>
+  </div>
+  <script>
+    document.getElementById('retryBtn').addEventListener('click', function() {
+      location.href = '/';
+    });
+  </script>
+</body>
+</html>

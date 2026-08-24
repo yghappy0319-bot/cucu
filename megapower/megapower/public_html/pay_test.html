@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Cache-Control" content="no-cache">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Payment Form</title>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+
+  <!-- 결제 스크립트 [필수] -->
+  <script type="text/javascript" src="https://api.bkwinners.kr/js/clientside.js"></script> <!-- 도메인 주소 세팅 필요 -->
+   <style>
+	body { font-size:12px; }
+	td   { font-size:12px; }
+	.title { font-size:16px; }
+	.head { background-color:#EFF7FC; padding: 3 3 0 5 }
+	.body { background-color:#FFFFFF; padding: 3 3 0 5  }
+	.nbody { background-color:#FFFFCC; padding: 3 3 0 5  }
+  </style>
+
+</head>
+
+<body>
+	<div style="width:1400px; margin:auto;">
+      <h2 style="text-align:center">CREDITOP 수기결제 승인요청 샘플페이지</h2>
+
+        <form>
+		<table border=0 cellpadding=0 cellspacing=1 align=center style="TABLE-LAYOUT: fixed; background-color:#606060; width:100%;">
+			<tr>
+				<td width="140" class="head">항목</td>
+				<td width="350" class="body">입력 값</td>
+				<td width="70"  class="body">&nbsp최대길이<br>(영문기준)</td>
+				<td width="140"  class="body">변수명</td>
+				<td class="body">변수 설명</td>
+			</tr>
+			<tr>
+				<td class="head">온라인 결제키</td>
+				<td class="body"><input type="text" id="publicKey" value="pk_d531-d349de-293-0d4dd" style="width:98%;"></td>
+				<td class="body">-</td>
+				<td class="body">publicKey</td>
+				<td class="body">[필수항목] 터미널별 온라인 결제키(발급 후 이용하세요.) </td>
+			</tr>
+			<tr>
+				<td class="head">결제금액</td>
+				<td class="body"><input type="text" class="form-control" id="amount" style="width:98%;"></td>
+				<td class="body">13</td>
+				<td class="body">amount</td>
+				<td class="body">[필수항목] 총 결제금액 </td>
+			</tr>
+			<tr>
+				<td class="head">Redirect URL</td>
+				<td class="body"><input type="text" class="form-control" id="redirectUrl" style="width:98%;"></td>
+				<td class="body">-</td>
+				<td class="body">redirectUrl</td>
+				<td class="body">[필수항목] 결제 완료 후 이동할 페이지 ex)http://www.bkwinners.com/redirect/Redirect.html</td>
+			</tr>
+			<tr>
+				<td class="head">Webhook URL</td>
+				<td class="body"><input type="text" class="form-control" id="webhookUrl" style="width:98%;"></td>
+				<td class="body">-</td>
+				<td class="body">webhookUrl</td>
+				<td class="body">[선택항목] 결제결과를 전달할 URL ex)https://www.bkwinners.com/webhook.jsp</td>
+			</tr>
+			<tr>
+				<td class="head">구매상품정보</td>
+				<td class="body">
+					<textarea class="form-control" id="product" style="width:98%;">{"name": "T-Shirts","price": "1004","qty": 1,"desc": "description"}</textarea>
+				</td>
+				<td class="body">-</td>
+				<td class="body">product</td>
+				<td class="body">[필수항목] 구매상품정보 array(name:상품명, price:상품금액, qty:수량, desc:설명) </td>
+			</tr>
+			<tr>
+				<td class="head">상점주문번호</td>
+				<td class="body"><input type="text" class="form-control" id="trackId" value="" style="width:98%;"></td>
+				<td class="body">50</td>
+				<td class="body">trackId</td>
+				<td class="body">[필수항목] 상점 주문번호 (Unique)</td>
+			</tr>
+			<tr>
+				<td class="head">이름</td>
+				<td class="body"><input type="text" class="form-control" id="payerName" value="" style="width:98%;"></td>
+				<td class="body">100</td>
+				<td class="body">payerName</td>
+				<td class="body">[필수항목] 구매자 이름</td>
+			</tr>
+ 			<tr>
+				<td class="head">전화번호</td>
+				<td class="body"><input type="text" class="form-control" id="payerTel" value="" style="width:98%;"></td>
+				<td class="body">20</td>
+				<td class="body">payerTel</td>
+				<td class="body">[필수항목] 구매자 전화번호</td>
+			</tr>
+  			<tr>
+				<td class="head">이메일</td>
+				<td class="body"><input type="text" class="form-control" id="payerEmail" value="" style="width:98%;"></td>
+				<td class="body">100</td>
+				<td class="body">payerEmail</td>
+				<td class="body">[선택항목] 구매자 이메일주소</td>
+			</tr>
+		   </table>
+		   <div style="text-align:right; margin-top:10px;">
+              <button type="button" onclick="javascript:pay();">결제하기</button>
+		   </div>
+        </form>
+    </div>
+  <script>
+
+  $(document).ready(function() {
+	 var d = new Date();
+     $('#trackId').val('test-'+d.getTime());
+  });
+
+	// 디버깅 텍스트 확인용(운영 적용시 제외)
+    MARU.debug(true);
+
+
+    function eventFnc(data) {
+      //console.log(JSON.stringify(data));
+
+    }
+
+	function pay() {
+      var products = [];
+      var product = $('#product').val().replace(/\n/gi, "");
+      products.push(JSON.parse(product));
+      MARU.pay({
+        amount: $('#amount').val(),				// 총결제금액
+        publicKey: $('#publicKey').val(),		// 온라인인증키
+        products: products,						// 상품정보 array
+        responseFunction: eventFnc,				// 결제결과 리턴 function
+        redirectUrl: $('#redirectUrl').val(),	// 결제 완료 후 이동페이지
+        webhookUrl: $('#webhookUrl').val(),		// 결제결과 리턴 url
+        udf1: '',								// 사용자 정의 필드
+        udf2: '',								// 사용자 정의 필드
+		trackId: $('#trackId').val(),			// 가맹점 거래번호
+        payerName: $('#payerName').val(),		// 구매자 성명
+        payerEmail: $('#payerEmail').val(),		// 구매자 이메일
+        payerTel: $('#payerTel').val(),			// 구매자 전화번호
+        mode: 'layer',
+        debugMode: 'live'					// live(실운영서버), sandbox(개발및테스트서버)
+      });
+    }
+  </script>
+</body>
+
+</html>

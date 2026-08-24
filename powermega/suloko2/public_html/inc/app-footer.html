@@ -1,0 +1,58 @@
+<footer class="f_NotoSansKR">
+  <div class="wrap_com">
+    <div class="top ls25">
+      <h2 class="hide">회사 정보</h2>
+      <ul class="flex align_center space">
+        <li><a href="https://m.<?=$domain?>/policy-privacy.html" class="color_red">개인정보처리방침</a></li>
+        <li><a href="https://m.<?=$domain?>/terms.html">이용약관</a></li>
+        <li><a href="https://m.<?=$domain?>/contents/service/purchase.html">서비스안내</a></li>
+        <li><a href="https://m.<?=$domain?>/contents/cs/news.html">고객센터</a></li>
+        <li><a href="https://m.<?=$domain?>/contents/cs/direct.html">1:1문의</a></li>
+      </ul>
+    </div>
+    <div class="mid">
+      <h2 class="hide">사업 정보</h2>
+      <ul>
+      </ul>
+      <!-- <p class="copyright f_Montserrat" >
+      <span>&copy;Copyright 파워메가코리아 2022 Ltd.</span>
+      </p> -->
+      <p class="ls50 pt5" style="line-height:1.38">본 홈페이지는 게시된 이메일 주소가 자동 수집되는 것을 거부하며, 이를 위반시 정보통신망법에 의해 처벌됨을 유념하여 주시길 바랍니다. 청소년은 복권을 구매하거나 당첨금을 수령할 수 없습니다.</p>
+    </div>
+    <div class="btm">
+      <div class="flex space align_end">
+        <div class="wrap_sns" style="display:none;">
+          <h2 class="hide">관련 사이트</h2>
+          <ul class="sns flex justify_center align_center">
+            <li class="facebook"><a href="" title=""><span class="hide">페이스북</span></a></li>
+            <li class="insta"><a href="" title=""><span class="hide">인스타그램</span></a></li>
+            <li class="youtube"><a href="" title=""><span class="hide">유튜브</span></a></li>
+          </ul>
+        </div>
+        <div class="app clear" style="display:none;">
+          <h2 class="left f_NotoSansKR fw500 ls50" style="color:#ccc">서비스 APP</h2>
+          <ul class="left">
+            <li class="googleplay"><a href=""><span class="hide">구글플레이</span></a></li>
+            <li class="appstore"><a href=""><span class="hide">애플 앱스토어</span></a></li>
+          </ul>
+        </div>
+      </div>
+      <!--<div class="familysite ">
+        <select name="" id="">
+          <option value="">FAMILY SITE</option>
+        </select>
+      </div>-->
+    </div>
+  </div>
+</footer>
+
+<?php include $_SERVER['DOCUMENT_ROOT']."/inc/popup.html";?>
+<script>
+$(function() {
+  $(document).on("change", "#service_navy", function() {
+    if ($(this).val() != '') {
+      location.href=$(this).val();
+    }
+  });
+});
+</script>

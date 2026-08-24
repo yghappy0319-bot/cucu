@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Pokazone">
+  <!-- Android ??? badge: ?? ???? (?? ??). ?? ???? badge? ?? ??? ??? -->
+  <path fill="#FFFFFF" fill-rule="evenodd" d="M48 10a38 38 0 1 1 0 76A38 38 0 0 1 48 10Zm0 12a26 26 0 0 0-25.6 21.2h51.2A26 26 0 0 0 48 22Zm-25.6 27.2a26 26 0 0 0 51.2 0H22.4Zm25.6 14.8a26 26 0 0 1 25.6-21.2V43.2A26 26 0 0 1 48 64Z"/>
+  <circle cx="48" cy="49.2" r="9" fill="#FFFFFF"/>
+</svg>

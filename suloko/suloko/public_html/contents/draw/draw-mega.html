@@ -1,0 +1,270 @@
+<?php
+$page_title = "메가밀리언 추첨 안내 - 파워볼, 미국 로또, 슈로코";
+$page_description = "메가밀리언, 파워볼 등 미국 로또 당첨 번호 확인 및 추첨 안내";
+
+include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_WININFO.php";
+
+$menu_on['draw'] = true;
+
+// 환율
+$won = $db->get_data("SELECT * FROM EXCHANGE WHERE DATE = '".date("Y-m-d")."' LIMIT 1");
+
+if (!isset($won['WON'])) {
+  $won = $db->get_data("SELECT * FROM EXCHANGE ORDER BY DATE DESC LIMIT 1");
+}
+
+$date = date("Y-m-d");
+
+if (!$page) $page = 1;
+if (!$limit) $limit = 20;
+$add_query = " AND GUBUN='MM' AND PLAYDATE < '".$date."' AND PLAYDATE > '2022-03-15'";
+$PARAM     = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit";
+
+$condition = array(
+  "row"         => $limit,
+  "page"        => $page,
+  "order"       => " PLAYDATE DESC",
+  "find_text"   => $find_text,
+  "find_object" => $find_object,
+  "add_query"   => $add_query,
+);
+$list = F_WININFO_list($condition);
+
+$info = $db->get_data("SELECT * FROM WININFO WHERE GUBUN='MM' AND PLAYDATE < '".$date."' ORDER BY PLAYDATE DESC LIMIT 1");
+$info['price'] = $info['PRIZ1'];
+
+// 실시간 환율 적용
+// $info['PRIZ1'] = $info['PRIZ1'] * $won_one['WON'];
+$info['PRIZ1']    = $info['PRIZ1'] * $won['WON'];
+$info['allprice'] = $info['PRIZ1'];
+
+if ($info['PRIZ1'] > 0) {
+  $info['PRIZ1'] = number_format($info['PRIZ1']);
+  $info['PRIZ1'] = str_replace(",", "", $info['PRIZ1']);
+  $info['PRIZ1'] = str_replace(".", "", $info['PRIZ1']);
+  $info['PRIZ1'] = substr($info['PRIZ1'], 0, -8);
+}
+
+$weekee          = date("w",strtotime($info['TIME_E']));
+$weeks           = $week_op[$weekee];
+$info['TIME_E']  = date("m월 d일 ", strtotime($info['TIME_E'])).$weeks." ".get_dst_drawtime(date("Y-m-d", strtotime($info['TIME_E'])));
+$weekee          = date("w", strtotime($info['TIME_S']));
+$weeks           = $week_op[$weekee];
+$info['TIME_S']  = date("m월 d일 ", strtotime($info['TIME_S'])).$weeks." ".date("H:i", strtotime($info['TIME_S']));
+$win_tp          = win_tp($info['IS_TYPE'], $info['PLAYDATE'], $info['BALLP'], $info['PRIZCNT9'],$draw_time_num);
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html";?>
+  <main id="main">
+    <div class="location ls50">
+      <div class="wrap_com">
+        <ol class="clear">
+          <li><a href="#" class="add_before"><span class="hide">홈</span></a></li>
+          <li><a href="#">당첨번호 확인</a></li>
+          <li><a href="#">메가밀리언 당첨 결과</a></li>
+        </ol>
+      </div>
+    </div>
+    <section class="sec_draw sec_tab wrap_com">
+      <h2 class="h_type4">당첨번호 확인</h2>
+      <div class="wrap_tab">
+        <ul class="tab_type1 flex align_center ls75 ">
+          <li><a href="draw-guide.html">추첨 안내</a></li>
+          <li class="on"><a href="draw-mega.html">메가밀리언 당첨 결과</a></li>
+          <li><a href="draw-power.html">파워볼 당첨 결과</a></li>
+        </ul>
+      </div>
+      <div class="wrap_tabbox">
+        <div class="tabbox on">
+          <div class="sec_info wrap_com f_NotoSansKR">
+            <h2 class="hide">메가밀리언 정보</h2>
+            <div class="bx_info bx_gray">
+              <ul class="flex align_center">
+                <li>
+                  <div>
+                    <div class="title flex align_center justify_center">
+                      <p><span>메가밀리언 <strong>1등 당첨금</strong></span></p>
+                      <p class="<?=$win_tp[3]?> flex align_center justify_center ml5"><?=$win_tp[1]?></p>
+                    </div>
+                    <strong class="txt_type1 ls25 f_GmarketSans">$ <?=number_format($info['price'])?>
+                      <span class="color_red">(<?=getNumberStringKorean($info['PRIZ1'])?>원)</span>
+                    </strong>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <p class="title add_after ico_date"><span class="va_mid">추첨일시</span></p>
+                    <ul class="nation">
+                      <li class="ko add_before ico_ko"><span class="va_mid"><?=$info['TIME_E']?></span></li>
+                      <li class="us add_before ico_us"><span class="va_mid"><?=$info['TIME_S']?></span></li>
+                    </ul>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <p class="title"><span class="va_mid"><strong><?=$info["DRAWNUM"]?>회차</strong> 추첨번호</span></p>
+                    <ul class="list_ball clear">
+                      <li><span><?=$info["BALL1"]?></span></li>
+                      <li><span><?=$info["BALL2"]?></span></li>
+                      <li><span><?=$info["BALL3"]?></span></li>
+                      <li><span><?=$info["BALL4"]?></span></li>
+                      <li><span><?=$info["BALL5"]?></span></li>
+                      <li class="mega"><span><?=$info["BALLP"]?></span></li>
+                    </ul>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="wrap_tb wrap_board f_NotoSansKR space_btm">
+            <div class="top flex space align_center">
+              <h3 class="left ls50 fw400">메가밀리언 당첨결과</h3>
+              <!-- <a href="https://www.megamillions.com/" target="_blank" class=" btn_gray right ls75 "><span>메가밀리언 공식사이트</span></a> -->
+            </div>
+            <table class="tb_type2">
+              <caption>
+                <div class="hide">
+                  최근 구매내역에 대한 정보를 제공하는 표
+                </div>
+              </caption>
+              <colgroup>
+                <col width="">
+                <col width="">
+                <col width="">
+                <col width="">
+                <col width="">
+                <col width="">
+                <col width="">
+              </colgroup>
+              <thead class="bg_navy">
+                <tr>
+                  <th>NO</th>
+                  <th>추첨일(한국시간)</th>
+                  <th>추첨번호</th>
+                  <th>1등 당첨금</th>
+                  <th>추첨결과</th>
+                  <th>추첨방송</th>
+                  <th>상세보기</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php
+                $now = date("Y-m-d", strtotime("-1 day"));
+
+                for ($i = 0; $i < count($list['WININFO_NO']); $i++) {
+                  if ($list['PRIZ1'][$i] < 19000000 && $list['PRIZ1'][$i] > 0) {
+                    $k = $i - 1;
+                    $list['PRIZ1'][$i] = $list['price'][$k];
+                  }
+
+                  $list['price'][$i]    = $list['PRIZ1'][$i];
+                  $list['PRIZ1'][$i]    = $list['PRIZ1'][$i] * $won['WON'];
+                  $list['allprice'][$i] = $list['PRIZ1'][$i];
+
+                  if ($list['PRIZ1'][$i] > 0) {
+                    $list['PRIZ1'][$i] = number_format($list['PRIZ1'][$i]);
+                    $list['PRIZ1'][$i] = str_replace(",", "", $list['PRIZ1'][$i]);
+                    $list['PRIZ1'][$i] = str_replace(".", "", $list['PRIZ1'][$i]);
+                    $list['PRIZ1'][$i] = substr($list['PRIZ1'][$i], 0, -8);
+                  }
+
+                  $weekee = date("w", strtotime($list['TIME_E'][$i]));
+                  $weeks  = $week_op[$weekee];
+
+                  $list['TIME_E'][$i] = date("Y년 m월 d일 ", strtotime($list['TIME_E'][$i])).$weeks." ".get_dst_drawtime(date("Y-m-d", strtotime($list['TIME_E'][$i])));
+                  $win_tp = win_tp($list['IS_TYPE'][$i], $list['PLAYDATE'][$i], $list['BALLP'][$i], $list['PRIZCNT9'][$i], $draw_time_num);
+                ?>
+                <tr>
+                  <td><?=$list["DRAWNUM"][$i]?></td>
+                  <td><?=$list['TIME_E'][$i]?></td>
+                  <td>
+                    <ul class="list_ball clear" style="padding-left: 45px;">
+                      <li><span><?=$list['BALL1'][$i]?></span></li>
+                      <li><span><?=$list['BALL2'][$i]?></span></li>
+                      <li><span><?=$list['BALL3'][$i]?></span></li>
+                      <li><span><?=$list['BALL4'][$i]?></span></li>
+                      <li><span><?=$list['BALL5'][$i]?></span></li>
+                      <li class="mega"><span><?=$list['BALLP'][$i]?></span></li>
+                    </ul>
+                  </td>
+                  <td class="text-right">
+                    <span class="f_GmarketSans ls75">$ <?=number_format($list['price'][$i])?></span> /
+                    <span class="f_GmarketSans"><?=getNumberStringKorean($list['PRIZ1'][$i])?>원</span>
+                  </td>
+                  <td><?=$win_tp[0]?></td>
+                  <td class="td_click">
+                    <?php if ($list["YUTUBE"][$i] != '') { ?>
+                    <a class="btn btn_popup youtube_detail_btn" data-youtube="<?=$list["YUTUBE"][$i]?>" data-draw="<?=$list["DRAWNUM"][$i]?>" id="btn_video"><span class="va_mid">방송보기</span></a>
+                    <?php } else { ?>
+                    <a href="javascript:alert('영상준비중입니다.');"><span class="va_mid">방송보기</span></a>
+                    <?php } ?>
+                  </td>
+                  <td class="td_click">
+                    <?php if ($list['PRIZ2'][$i] > 0) { ?>
+                    <a class="btn btn_popup draw_detail_btn" data-no="<?=$list["WININFO_NO"][$i]?>" id="btn_draw"><span class="va_mid">상세보기</span></a>
+                    <?php } else {  echo $win_tp[0]; } ?>
+                  </td>
+                </tr>
+                <?php } ?>
+              </tbody>
+            </table>
+            <?php if ($list['total'] > 0) { ?>
+            <!-- 페이징 숫자 표시는 5개까지 -->
+            <div class="wrap_paging">
+              <?php
+                $page_info['cur'] = $condition['page'];
+                $page_info['row'] = $condition['row'];
+                $page_info['total'] = $list['total'];
+                $list['page_string'] = print_page_num1($page_info);
+                echo $list['page_string'];
+              ?>
+            </div>
+            <?php } ?>
+          </div>
+        </div>
+      </div>
+    </section>
+    <?php include $_SERVER['DOCUMENT_ROOT']."/inc/quick-sub.html";?>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html";?>
+</body>
+
+<script>
+  $(document).on("click", ".draw_detail_btn", function() {
+    let no = $(this).data("no");
+    $.post("/other.php", {
+      mode: "winner_detail",
+      no: no
+    }, function(e){
+      $("#wininfo_draw").html(e.DRAWNUM + '회차');
+      $("#wininfo_time_e").html(e.TIME_E + ' (한국시간)');
+      $("#wininfo_balls").find("li").eq(0).find("span").html(e.BALL1);
+      $("#wininfo_balls").find("li").eq(1).find("span").html(e.BALL2);
+      $("#wininfo_balls").find("li").eq(2).find("span").html(e.BALL3);
+      $("#wininfo_balls").find("li").eq(3).find("span").html(e.BALL4);
+      $("#wininfo_balls").find("li").eq(4).find("span").html(e.BALL5);
+      $("#wininfo_balls").find("li").eq(5).find("span").html(e.BALLP);
+      $("#wininfo_balls").find("li").eq(5).addClass(e.cla);
+      $("#wininfo_price").html(e.html);
+
+      let state = (e.DRAWNUM > "1982") ? "오레곤" : "캘리포니아";
+      let multiplier = (e.DRAWNUM >= "2066") ? `* 당첨금에 무작위 배수가 자동 계산됩니다.` : "";
+      $(".desc").html(`* 위 결과는 미국 ${state}주의 결과입니다.`);
+      $(".wininfo_multiplier").html(multiplier);
+    }, "json");
+  });
+
+  $(document).on("click", ".youtube_detail_btn", function() {
+    let youtube = $(this).data("youtube");
+    let draw    = $(this).data("draw");
+    youtube     = youtube.split("v=");
+
+    $("#youtube_draw").html(`${draw}회차`);
+    $("#youtube_ifrm").attr("src", `https://www.youtube.com/embed/${youtube[1]}`);
+  });
+</script>
+
+</html>

@@ -1,0 +1,214 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $mb    = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}'");
+  $order = $db->get_data("SELECT * FROM ORDERS WHERE ORDERS_NO='{$_GET['no']}'");
+
+  if (!isset($order['ORDERS_NO'])) {
+    alert_print("티켓이 존재하지 않습니다.");
+    history_go();
+    exit;
+  }
+
+  if ($order['USER_ID'] != $mb['USER_ID']) {
+    alert_print("티켓이 본인소유가 아닙니다.");
+    history_go();
+    exit;
+  }
+
+  if ($order['NON_MAIL'] == 'Y') {
+    alert_print("이미 배송신청한 티켓입니다.");
+    history_go();
+    exit;
+  }
+?>
+
+<body class="body_idx">
+    <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage bg">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub bb border_dcdcdc" style="margin-bottom: 0;">
+            <h2 class="title">낙첨 (실물)복권 받기</h2>
+            <a href="./non-winning.html" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <section class="sec_apply">
+            <div class="section bx_gray wrap_com lh14 txt_type1">
+              <h3 class="h_type4 color_000">낙첨복권 배송 신청</h3>
+              <p>해외배송(EMS) 신청 후 수령까지 최대 4~5주 소요될 수 있습니다.</p>
+              <p class="color_red">※ 제주/도서사간지역은 배송이 더 지연될 수 있습니다.</p>
+            </div>
+            <div class="wrap_form section wrap_com bg_white">
+              <form class="f_NotoSansKR fs25" name="w_frm" id="w_frm" method="post" action="./non-winning-action.php">
+                <input type="hidden" name="ORDERS_NO" id="orders_no" class="chk_on" value="<?=$_GET["no"]?>" alt="배송 받으실 티켓을 선택해 주세요." />
+                <input type="hidden" id="my_cash" value="<?=$mb['CASH']?>" />
+                <fieldset>
+                  <legend class="hide">캐시 출금신청 입력 폼</legend>
+                  <ul class="list_form">
+                    <li class="required">
+                      <label for="to_name"><span>받으시는 분</span></label>
+                      <div class="bx_input">
+                        <input type="text" id="to_name" name="NAME" class="chk_on" alt="성함을 입력해 주세요" placeholder="성함을 입력해 주세요" />
+                      </div>
+                    </li>
+                    <li class="required">
+                      <label for="to_tel"><span>연락처</span></label>
+                      <div class="bx_input">
+                        <input type="tel" id="to_tel" name="HP" class="chk_on" alt="연락처를 입력해 주세요." placeholder="- 없이 숫자만 입력해 주세요" maxlength="13" />
+                      </div>
+                    </li>
+                    <li class="required">
+                      <label for="post1"><span>배송주소</span></label>
+                      <div class="wrap_type1 flex mb10">
+                        <div class="bx_input">
+                          <input type="text" id="post1" name="POST1" class="chk_on" alt="우편번호를 입력해 주세요." readonly />
+                        </div>
+                        <button type="button" class="btn btn_navy" onclick="execDaumPostcode()">우편번호 찾기</button>
+                      </div>
+                      <div class="bx_input mb10">
+                        <input type="text" id="addr1" name="ADDR1" class="chk_on" alt="배송주소를 입력해 주세요." readonly />
+                      </div>
+                      <div class="bx_input">
+                        <input type="text" id="addr2" name="ADDR2" class="chk_on" alt="상세주소를 입력해 주세요." placeholder="상세주소를 입력해 주세요" />
+                      </div>
+                      <div id="layer" style="display: none; position: fixed; overflow: hidden; z-index: 1; -webkit-overflow-scrolling: touch;">
+                        <img src="//t1.daumcdn.net/postcode/resource/images/close.png" id="btnCloseLayer"
+                            style="position: absolute; right: -3px; top: -3px; z-index: 1;" onclick="closeDaumPostcode()" alt="닫기 버튼" />
+                      </div>
+                    </li>
+                    <li>
+                      <label for="fee"><span class="fw700 fs28">배송비</span></label>
+                      <div class="bx_gray br5 wrap_com pt30 pb30">
+                        <p>
+                          <strong class="color_red2 fw500">20,000</strong> 캐시
+                          <span class="color_red2">(회원님의 현재 보유 캐시 <?=number_format($mb['CASH'])?> 캐시)</span>
+                        </p>
+                      </div>
+                    </li>
+                  </ul>
+                  <button type="button" class="btn_navy type2 dp_b mt30" id="ok_btn" style="width: 100%;">낙첨복권 배송신청 접수</button>
+                </fieldset>
+              </form>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
+<script>
+  $(function() {
+  });
+
+  $('#post1, #addr1').click(function() {
+    alert('우편번호 찾기를 선택해주세요.');
+  });
+
+  $('#to_tel').keyup(function (event) {
+    event = event || window.event;
+    var _val = this.value.trim();
+    this.value = autoHypenTel(_val);
+  });
+
+  $('#ok_btn').click(function() {
+    let chk = false;
+    let myCash = Number($('#my_cash').val());
+
+    $('.chk_on').each(function() {
+      if ($.trim($(this).val()) == '') {
+        alert($(this).attr('alt'));
+        chk = true;
+        return false;
+      }
+    });
+
+    if (chk) {
+      return false;
+    }
+
+    if (myCash < 10000) {
+      alert('캐시가 부족합니다.');
+      return false;
+    }
+
+    $('#w_frm').submit();
+  });
+
+
+  // 우편번호 찾기 화면을 넣을 element
+  let element_layer = document.getElementById('layer');
+
+  function closeDaumPostcode() {
+    // iframe을 넣은 element를 안보이게 한다.
+    element_layer.style.display = 'none';
+  }
+
+  function execDaumPostcode() {
+    new daum.Postcode({
+      oncomplete: function(data) {
+        let addr = ''; // 주소 변수
+        let extraAddr = ''; // 참고항목 변수
+
+        if (data.userSelectedType === 'R') {
+          addr = data.roadAddress; // 도로명 주소
+        } else {
+          addr = data.jibunAddress; // 지번 주소
+        }
+
+        // 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
+        if (data.userSelectedType === 'R') {
+          if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+            extraAddr += data.bname;
+          }
+          // 건물명이 있고, 공동주택일 경우 추가한다.
+          if (data.buildingName !== '' && data.apartment === 'Y') {
+            extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+          }
+
+          // 조합형 주소의 유무에 따라 양쪽에 괄호를 추가하여 최종 주소를 만든다.
+          addr += (extraAddr !== '' ? ' ('+ extraAddr +')' : '');
+        }
+
+        // 우편번호와 주소 정보를 해당 필드에 넣는다.
+        document.getElementById('post1').value = data.zonecode;
+        document.getElementById("addr1").value = addr;
+        // 커서를 상세주소 필드로 이동한다.
+        document.getElementById('addr2').focus();
+
+        // iframe을 넣은 element를 안보이게 한다.
+        element_layer.style.display = 'none';
+      },
+      width: '100%',
+      height: '100%',
+      maxSuggestItems: 5
+    }).embed(element_layer);
+    // iframe을 넣은 element를 보이게 한다.
+    element_layer.style.display = 'block';
+    // iframe을 넣은 element의 위치를 화면의 가운데로 이동시킨다.
+    initLayerPosition();
+  }
+
+  function initLayerPosition() {
+    let width = 300; // 우편번호서비스가 들어갈 element의 width
+    let height = 400; // 우편번호서비스가 들어갈 element의 height
+    let borderWidth = 2; // 샘플에서 사용하는 border의 두께
+
+    // 위에서 선언한 값들을 실제 element에 넣는다.
+    element_layer.style.width = width + 'px';
+    element_layer.style.height = height + 'px';
+    element_layer.style.border = borderWidth + 'px solid';
+    // 실행되는 순간의 화면 너비와 높이 값을 가져와서 중앙에 뜰 수 있도록 위치를 계산한다.
+    element_layer.style.left = (((window.innerWidth || document.documentElement.clientWidth) - width)/2 - borderWidth) + 'px';
+    element_layer.style.top = (((window.innerHeight || document.documentElement.clientHeight) - height)/2 - borderWidth) + 'px';
+  }
+</script>
+</html>

@@ -1,0 +1,501 @@
+<?php
+if(isset($_COOKIE['redirect'])) { //리다이렉트쿠키가 있는경우
+  $cookie_name = "redirect";
+  setcookie($cookie_name, "", time() - 3600, "/");
+  //쿠키 삭제
+}
+include_once "../adm/head.php";
+
+
+
+  $service1 = array(
+    array("1개월","30","100건", 10000, 100),
+    array("3개월","90","300건", 30000, 330),
+    array("6개월","180","600건", 60000, 660),
+    array("12개월","360","1200건", 120000, 1500)
+  );
+
+  $service2 = array(
+    array("1개월","30","무제한", 1, 50000),
+    array("3개월","90","무제한", 3, 47500),
+    array("6개월","180","무제한", 6, 45000),
+    array("12개월","360","무제한", 12, 40000)
+  );
+
+  $service3 = array(
+    array("1개월","30","100건", 10000, 100),
+    array("3개월","90","300건", 30000, 330),
+    array("6개월","180","600건", 60000, 660),
+    array("12개월","360","1200건", 120000, 1500)
+  );
+
+function calculateDiscountRate($originalPrice, $discountedPrice) {
+    // 할인된 금액 계산
+    $discountAmount = $originalPrice - $discountedPrice;
+
+    // 할인율 계산
+    $discountRate = ($discountAmount / $originalPrice) * 100;
+
+    // 할인율 반환
+    return $discountRate;
+}
+if(!$member['mb_email']){
+  echo "<script>alert('마이페이지로 이동하여 이메일 정보를 등록/수정해주세요.');location.href='/adm/mypage.htm';</script>";
+  exit;
+}
+?>
+<!-- <?=$member['mb_8']?> -->
+<!-- <?=$member['mb_10']?> -->
+  <?php include_once "../adm/nav.php";?>
+
+    <!-- main menu-->
+    <div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+      <!-- main menu header-->
+      <div class="main-menu-header">
+        <input type="text" placeholder="Search" class="menu-search form-control round"/>
+      </div>
+      <?php include_once "../adm/menu.php";?>
+    </div>
+    <!-- / main menu-->
+
+    <div class="app-content content container-fluid">
+      <div class="content-wrapper">
+        <div class="content-header row">
+          <div class="content-header-left col-md-6 col-xs-12 mb-1">
+            <h2 class="content-header-title">이용료 결제</h2>
+            <p class="text-muted mb-0">보유 캐시 <strong><?= number_format(isset($member['mb_cash']) ? (int)$member['mb_cash'] : 0) ?>원</strong>으로도 결제할 수 있습니다. 캐시 결제는 <strong>부가세 없이</strong> 상품 표시 금액만큼 차감됩니다.</p>
+          </div>
+        </div>
+        <div class="content-body"><!-- Basic example section start -->
+
+          <section id="basic-examples">
+          	<div class="row match-height">
+              <div class="col-xl-3 col-md-6 col-sm-12">
+          			<div class="card">
+          				<div class="card-body">
+          					<!-- <img class="card-img-top img-fluid" src="../../app-assets/images/carousel/06.jpg" alt="Card image cap"> -->
+          					<div class="card-block">
+          						<h4 class="card-title">포인트충전</h4>
+                      <p class="card-text"></p>
+                      <div class="form-group">
+                        <select class="form-control"  onchange="go_service1(this.value,3)" >
+                          <?
+                            foreach($service3 as $data3){
+                          ?>
+                          <option value="포인트/<?=$data3[1]?>/<?=$data3[3]?>/<?=$data3[4]?>" ><?=$data3[4]?>건 <?=number_format($data3[3])?>원</option>
+                        <? } ?>
+                        </select>
+                      </div>
+                      <button type="button" class="btn btn-outline-deep-orange bnt_s3 mb-1" onclick="pay_popup_btn(this)" data-toggle="modal" data-target="#default1" data-pay="포인트/30/10000/100">11,000원 결제하기</button>
+                      <button type="button" class="btn btn-outline-secondary bnt_cash_s3 mb-1" onclick="pay_cache_btn(this)" data-pay="포인트/30/10000/100">10,000원 캐시로 결제하기</button>
+                      <!-- <a href="javascript:go_service_update()">test</a> -->
+          					</div>
+          				</div>
+          			</div>
+          		</div>
+
+          		<div class="col-xl-3 col-md-6 col-sm-12">
+          			<div class="card">
+          				<div class="card-body">
+          					<!-- <img class="card-img-top img-fluid" src="../../app-assets/images/carousel/06.jpg" alt="Card image cap"> -->
+          					<div class="card-block">
+          						<h4 class="card-title">1개월 알뜰형 서비스</h4>
+          						<p class="card-text">처리건수 제한이 있는 서비스 입니다.</p>
+                      <p class="card-text">웹사이트(계좌)연결 1개 가능</p>
+                      <p>
+                        처리건수 소진시 서비스 이용 불가
+                      </p>
+
+                      <div class="form-group">
+                        <select class="form-control" id="service1" onchange="go_service1(this.value,1)" >
+                          <?
+                            foreach($service1 as $data1){
+                          ?>
+                          <option value="알뜰형/<?=$data1[1]?>/<?=$data1[3]?>/<?=$data1[4]?>" ><?=$data1[1]?>일 <?=$data1[4]?>건 <?=number_format($data1[3])?>원</option>
+                        <? } ?>
+                        </select>
+                      </div>
+
+                      <button type="button" class="btn btn-outline-deep-orange bnt_s1 mb-1" onclick="pay_popup_btn(this)" data-toggle="modal" data-target="#default1" data-pay="알뜰형/30/10000/100">11,000원 결제하기</button>
+                      <button type="button" class="btn btn-outline-secondary bnt_cash_s1 mb-1" onclick="pay_cache_btn(this)" data-pay="알뜰형/30/10000/100">10,000원 캐시로 결제하기</button>
+                      <div>
+                        <p>
+                          자동결제시 매월 10% 할인된 금액 9,900원
+                        </p>
+
+                        <button type="button" class="btn btn-outline-info mb-1" onclick="go_card_auto_pop(this,'a')" data-pay="a/30/9900/100">알뜰형서비스 매월 자동결제</button>
+                        <!-- <?=$member['auto_payment_status']?> -->
+                      </div>
+          					</div>
+
+          				</div>
+          			</div>
+          		</div>
+
+              <div class="col-xl-3 col-md-6 col-sm-12">
+          			<div class="card">
+          				<div class="card-body">
+          					<!-- <img class="card-img-top img-fluid" src="../../app-assets/images/carousel/06.jpg" alt="Card image cap"> -->
+          					<div class="card-block">
+          						<h4 class="card-title">1개월 무제한 서비스</h4>
+          						<p class="card-text">처리건수 제한이 없는 서비스 입니다.</p>
+                      <p class="card-text">웹사이트(계좌)연결 3개 지원</p>
+                      <p class="card-text">-</p>
+                      <div class="form-group">
+                        <select class="form-control" id="service2" onchange="go_service1(this.value,2)">
+                          <?
+                            foreach($service2 as $data2){
+                              $price = $data2[4]*$data2[3];
+
+                              // 예제 사용
+                              $originalPrice = 50000;
+                              $discountedPrice = $data2[4];
+                              $discountRate = calculateDiscountRate($originalPrice, $discountedPrice);
+
+                              if($discountRate>0){
+                                $할인율 = $discountRate."%할인";
+                              }
+                          ?>
+                          <option value="무제한/<?=$data2[1]?>/<?=$price?>"><?=$data2[1]?>일 <?=number_format($price)?>원(30일당 <?=number_format($data2[4])?>원 <?=$할인율?>)</option>
+                        <? } ?>
+                        </select>
+                      </div>
+
+                      <button type="button" class="btn btn-outline-deep-orange bnt_s2 mb-1" onclick="pay_popup_btn(this)" data-toggle="modal" data-target="#default1" data-pay="무제한/30/50000">55,000원 결제하기</button>
+                      <button type="button" class="btn btn-outline-secondary bnt_cash_s2 mb-1" onclick="pay_cache_btn(this)" data-pay="무제한/30/50000">50,000원 캐시로 결제하기</button>
+
+                      <div>
+                        <p>
+                          자동결제시 매월 10% 할인된 금액 49,500원
+                        </p>
+
+                        <button type="button" class="btn btn-outline-info mb-1" onclick="go_card_auto_pop(this,'b')" data-pay="b/30/49500/100">무제한서비스 매월 자동결제</button>
+                        <!-- <?=$member['auto_payment_status']?> -->
+                      </div>
+
+          					</div>
+          				</div>
+          			</div>
+          		</div>
+          		</div>
+              <div>
+                <h2>알뜰형 서비스의 경우</h2>
+                <p>서비스 기간 중 <b>처리건수 소진시 서비스 중지</b> 됩니다.</p>
+                <p>처리건수가 남아있는 상태에서 서비스 이용기간 종료 될 시에도 서비스는 중지 됩니다.</p>
+                <p>중지 없이 서비스를 이용하시려면 처리건수를 별도로 충전하여야 합니다.(포인트충전)</p>
+              </div>
+          	</div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade text-xs-left" id="default1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel1" style="display: none;" aria-hidden="true">
+		  <div class="modal-dialog" role="document">
+			<div class="modal-content">
+			  <div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				  <span aria-hidden="true">×</span>
+				</button>
+				<h4 class="modal-title" id="myModalLabel1">무통장 입금 자동확인 서비스 기간연장</h4>
+			  </div>
+			  <div class="modal-body">
+				<h5 class="popup_title">서비스 기간을 연장합니다.</h5>
+				<p class="popup_content">
+          <span class="start_date">2024-06-25</span> ~
+          <span class="end_date">2024-07-25</span>까지 서비스 기간을 연장합니다.
+        </p>
+			  </div>
+			  <div class="modal-footer">
+				<button type="button" class="btn grey btn-outline-secondary" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-outline-primary" onclick="go_innopay()">결제하기</button>
+			  </div>
+			</div>
+		  </div>
+		</div>
+
+<form name="forderform" id="forderform">
+  <input type="hidden" name="PayMethod" value="CARD" >  <!-- 신용카드 -->
+  <input type="hidden" name="MID" value="pgerrormam" > <!-- (발급받은 상점MID를 입력) -->
+  <input type="hidden" name="MerchantKey" value="UiT8d25EpHP2nSXJfQS009tE3fDPnL7u3neVCod6JG1yEPg6ieEsThbL6iX3E8lmvj63Dfk0Tsg7IKwGl2601g=="> <!-- 발급된 가맹점키 -->
+  <input type="hidden" name="GoodsName" id="GoodsName" value="" >
+  <input type="hidden" name="Amt" id="inno_amt" value="1000" >
+
+  <input type="hidden" name="BuyerName" value="<?=$member['mb_id']?>" >
+  <input type="hidden" name="BuyerTel" value="<?=$member['mb_hp']?>" >
+  <input type="hidden" name="BuyerEmail" value="<?=$member['mb_email']?>" >
+  <input type="hidden" name="ResultYN" value="Y" > <!-- (N:결제결과창 없음, 가맹점 ReturnURL로 결과전송) -->
+  <input type="hidden" name="ReturnURL" value="" >
+  <input type="hidden" name="resultcode" id="resultcode" value="" >
+  <input type="hidden" name="idata" id="idata" >
+  <input type="hidden" name="midx" id="midx" value="<?=$member['mb_no']?>" >
+  <input type="hidden" name="userid" id="userid" value="<?=$member['mb_id']?>" >
+  <input type="hidden" name="_moid" id="moid" >
+</form>
+
+<form method="post" name="frmData" id="auto_bill_frm">
+  <input type="hidden" name="paydata" id="paydata" />
+  <input type="hidden" name="type_status" id="type_status" />
+</form>
+
+<script type="text/javascript" src="https://pg.innopay.co.kr/ipay/js/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="https://pg.innopay.co.kr/ipay/js/innopay-2.0.js" charset="utf-8"></script>
+<script type="text/javascript">
+function go_card_auto_pop(obj,types){
+
+  const str = obj.getAttribute('data-pay');
+    console.log(str);
+  $("#paydata").val(str);
+  $("#type_status").val(types);
+
+  /** log **/
+  var userid = $("#userid").val();
+  $("#idata").val(str);
+  const parts = str.split('/');
+  var amount = parts[2];
+  $("#inno_amt").val(amount);
+  $("#GoodsName").val("서비스 연장(자동결제) - "+amount+"원");
+  var moid = userid+getCurrentTimestamp();
+  go_pay_log();
+
+  var pop_title = "popupOpener" ;
+  window.open("", pop_title, "width=480,height=600") ;
+
+  var frmData = document.frmData ;
+  frmData.target = pop_title ;
+  frmData.action = "auto_card_bill.html" ;
+
+  frmData.submit() ;
+
+}
+
+
+function pay_cache_btn(obj){
+  var str = obj.getAttribute('data-pay');
+  if (!str) {
+    alert('상품을 선택해 주세요.');
+    return;
+  }
+  var parts = str.split('/');
+  var base = parseFloat(parts[2], 10);
+  if (isNaN(base)) {
+    alert('금액을 확인할 수 없습니다.');
+    return;
+  }
+  var cost = Math.round(base);
+  var costFmt = cost.toLocaleString();
+  var kind = parts[0];
+  var msg = '';
+  if (kind === '포인트') {
+    msg = '보유 캐시 ' + costFmt + '원을 사용하여 포인트를 충전합니다.\n진행할까요?';
+  } else if (kind === '알뜰형') {
+    msg = '보유 캐시 ' + costFmt + '원을 차감하고 알뜰형 서비스를 ' + parts[1] + '일 연장합니다.\n진행할까요?';
+  } else if (kind === '무제한') {
+    msg = '보유 캐시 ' + costFmt + '원을 차감하고 무제한 서비스를 ' + parts[1] + '일 연장합니다.\n진행할까요?';
+  } else {
+    alert('캐시로 결제할 수 없는 상품입니다.');
+    return;
+  }
+  if (!confirm(msg)) {
+    return;
+  }
+  var midx = $('#midx').val();
+  $.ajax({
+    type: 'POST',
+    url: '/ajax/_ajax_pay_service_cash.php',
+    data: { midx: midx, idata: str },
+    success: function(result) {
+      var r = (result || '').trim();
+      if (r === '1') {
+        alert('캐시 결제가 완료되었습니다. 감사합니다.');
+        location.reload();
+        return;
+      }
+      alert(r || '처리 중 오류가 발생했습니다.');
+    },
+    error: function(e) {
+      alert(e.responseText || '요청에 실패했습니다.');
+    }
+  });
+}
+
+function pay_popup_btn(obj){
+  const str = obj.getAttribute('data-pay');
+  console.log(str);
+  const parts = str.split('/');
+  var amount = tax(parts[2]);
+  var popup_title = "";
+  //console.log(amount);
+  $("#idata").val(str);
+  if(parts[0]==3){
+    var point = parseInt(parts[2]).toLocaleString();
+    $(".popup_title").html(point+"포인트를 충전 합니다.");
+    $("#GoodsName").val("포인트 충전 - "+amount+"원");
+    $(".popup_content").html("");
+  }else{
+    if(parts[0]==1){
+      popup_title = "알뜰형 서비스 기간을 "+parts[1]+"일 연장 합니다.";
+    }else{
+      popup_title = "무제한 서비스 기간을 "+parts[1]+"일 연장 합니다.";
+    }
+    $(".popup_title").html(popup_title);
+    $("#GoodsName").val("서비스 연장 - "+amount+"원");
+    $(".popup_content").html("");
+  }
+  $("#inno_amt").val(amount);
+}
+
+function getCurrentTimestamp() {
+    var now = new Date();
+
+    var year = now.getFullYear();
+    var month = ('0' + (now.getMonth() + 1)).slice(-2); // 0부터 시작하므로 +1
+    var day = ('0' + now.getDate()).slice(-2);
+    var hour = ('0' + now.getHours()).slice(-2);
+    var minute = ('0' + now.getMinutes()).slice(-2);
+    var second = ('0' + now.getSeconds()).slice(-2);
+
+    var timestamp = year + month + day + hour + minute + second;
+    return timestamp;
+}
+
+function go_innopay(){
+  var userid = $("#userid").val();
+  var pv = $("#idata").val();
+  var moid = userid+getCurrentTimestamp();
+  $("#moid").val(moid);
+  console.log(moid);
+  // 결제요청 함수
+  innopay.goPay({
+    //// 필수 파라미터
+    PayMethod: forderform.PayMethod.value,		// 결제수단(CARD,BANK,VBANK,CARS,CSMS,DSMS,EPAY,EBANK)
+    MID: forderform.MID.value,							// 가맹점 MID
+    MerchantKey:forderform.MerchantKey.value,	// 가맹점 라이센스키
+    GoodsName:forderform.GoodsName.value,		// 상품명
+    Amt:forderform.Amt.value,							// 결제금액(과세)
+    BuyerName:forderform.BuyerName.value,		// 고객명
+    BuyerTel:forderform.BuyerTel.value,				// 고객전화번호
+    BuyerEmail:forderform.BuyerEmail.value,			// 고객이메일
+    ResultYN:forderform.ResultYN.value,				// 결제결과창 출력유뮤
+
+    Moid:moid,			// 가맹점에서 생성한 주문번호 셋팅
+    //// 선택 파라미터
+    ReturnURL:forderform.ReturnURL.value,			// 결제결과 전송 URL(없는 경우 아래 innopay_result 함수에 결제결과가 전송됨)
+//			ArsConnType:'02', 							///* ARS 결제 연동시 필수 01:호전환, 02(가상번호), 03:대표번호 */
+
+//			FORWARD:'',									// 결제창 연동방식 (X:레이어, 기본값)
+//			GoodsCnt:'',									// 상품갯수 (가맹점 참고용)
+//			MallReserved:'',								// 가맹점 데이터
+//			OfferingPeriod:'',								// 제공기간
+//			DutyFreeAmt:'',								// 결제금액(복합과세/면세 가맹점의 경우 금액설정)
+//			EncodingType:'utf-8',						// 가맹점 서버 인코딩 타입 (utf-8, euc-kr)
+//			MallIP:'',											// 가맹점 서버 IP
+//			UserIP:'',											// 고객 PC IP
+//			mallUserID:'',									// 가맹점 고객ID
+//			User_ID:'',										// Innopay에 등록된 영업사원ID
+    Currency:''										// 통화코드가 원화가 아닌 경우만 사용(KRW/USD)
+    });
+    go_pay_log(); //결제시도로그
+}
+
+function go_pay_log(){
+
+  var params = jQuery("#forderform").serialize();
+  $.ajax({
+    type : "POST",
+    url: "/ajax/_ajax_pay_log.php",
+    async: false,
+    data: params,
+    success: function(result) {
+      console.log(result);
+      var r = result.trim();
+      if(r!=1){
+        alert("관리자에게 문의해주세요.");
+        return false;
+      }
+    },
+    error:function(e) {
+      alert(e.responseText);
+    }
+  });
+
+}
+
+/**
+ * 결제결과 수신 Javascript 함수
+ * ReturnURL이 없는 경우 아래 함수로 결과가 리턴됩니다 (함수명 변경불가!)
+ */
+	function innopay_result(data){
+		var a = JSON.stringify(data);
+		// Sample
+		var mid = data.MID;					// 가맹점 MID
+		var tid = data.TID;					// 거래고유번호
+		var amt = data.Amt;					// 금액
+		var moid = data.MOID;				// 주문번호
+		var authdate = data.AuthDate;		// 승인일자
+		var authcode = data.AuthCode;		// 승인번호
+		var resultcode = data.ResultCode;	// 결과코드(PG)
+		var resultmsg = data.ResultMsg;		// 결과메세지(PG)
+		var errorcode = data.ErrorCode;		// 에러코드(상위기관)
+		var errormsg = data.ErrorMsg;		// 에러메세지(상위기관)
+		var EPayCl   = data.EPayCl;
+    var resultcode = $("#resultcode").val(resultcode);
+    $("#moid").val(moid);
+		alert("["+resultcode+"]"+resultmsg);
+    go_service_update();
+	}
+
+
+function go_service_update(){
+  //$("#idata").val("1/30/10000"); //test
+  var params = jQuery("#forderform").serialize();
+  $.ajax({
+    type : "POST",
+    url: "/ajax/_ajax_pay.php",
+    async: false,
+    data: params,
+    success: function(result) {
+      console.log(result);
+    var r = result.trim();
+    if(r==1){
+      alert("결제가 완료 되었습니다. 감사합니다.");
+      location.reload();
+      return false;
+    }
+    if(r=="0000"){
+      alert("결제가 완료되어 서비스 기간이 연장 되었습니다. 감사합니다.");
+      location.reload();
+    }
+    console.log(r);
+    },
+    error:function(e) {
+      alert(e.responseText);
+    }
+  });
+}
+
+function tax(value){
+  var increasedValue = value * 1.10; // 10% 증가
+  increasedValue = parseFloat(increasedValue.toFixed(2));
+  console.log(increasedValue);
+  return increasedValue;
+}
+function go_service1(obj,obj2){
+  $(".bnt_s"+obj2).attr("data-pay",obj);
+  $(".bnt_cash_s"+obj2).attr("data-pay",obj);
+  const str = obj;
+  const parts = str.split('/');
+
+  var value = parseFloat(parts[2]); // 값을 숫자로 변환
+  if (!isNaN(value)) { // 값이 유효한 숫자인지 확인
+      var cardFmt = tax(value).toLocaleString();
+      var cashFmt = Math.round(value).toLocaleString();
+       console.log(cardFmt); // 포맷된 값을 콘솔에 출력
+       $(".bnt_s"+obj2).html(cardFmt + "원 결제하기"); // 부가세 포함(PG)
+       $(".bnt_cash_s"+obj2).html(cashFmt + "원 캐시로 결제하기"); // 공급가(캐시)
+   }
+}
+
+</script>
+
+  <?php include_once "../adm/footer.php";?>

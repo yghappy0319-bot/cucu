@@ -1,0 +1,168 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_MEMBER.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page)  $page  = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM  = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit";
+
+  $add_query = ' AND LENGTH(M.PARTNER_ID) > 0';
+
+  // tmadmin
+  if ($S_login['user_id'] == "tmadmin") $add_query .= " AND M.PARTNER_ID IN (SELECT PARTNER_ID FROM UM_PARTNER WHERE ROLE = 'TM_USER')";
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND M.REG_DATE BETWEEN '".$sDate."' AND '".$eDate."'";
+  }
+
+  if ($find_object == "all" && $find_text != "") {
+    $add_query .= " AND (USER_ID LIKE '%".$find_text."%' OR M.NAME LIKE '%".$find_text."%' OR REG_IP LIKE '%".$find_text."%' OR M.PARTNER_ID LIKE '%".$find_text."%')";
+    $find_object = "";
+  }
+
+  $find_op = array(
+    "all"          => "전체",
+    "USER_ID"      => "아이디",
+    "M.NAME"       => "이름",
+    "REG_IP"       => "아이피",
+    "M.PARTNER_ID" => "파트너 아이디"
+  );
+
+  // 파트너 목록
+  $list = F_MEMBER_with_UM_PARTNER_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query
+  ));
+
+  if ($list['total'] == 0) {
+    $list['MEMBER_NO'] = array();
+  }
+?>
+
+<style>
+  #modal-subject {
+    text-align: center;
+    background: #F2F3F9;
+    vertical-align: middle;
+    width:25%;
+  }
+  .input-readonly {
+    background-color: #e2e2e2;
+    border: 1px solid darkgray;
+  }
+</style>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">파트너 유입 회원</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">언더마케팅</a></li>
+          <li class="breadcrumb-item active" aria-current="page">유입 회원</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                    <span style="margin: 8px 5px 0 5px;">~</span>
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker mr-3" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                  </div>
+                </div>
+                <div class="form-group fl-left">
+                  <select name="find_object" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control auto-submit" name="find_text" value="<?$find_text?>" />
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>파트너정보</th>
+                    <th>아이디</th>
+                    <th>회원명</th>
+                    <th>가입일</th>
+                    <th>가입아이피</th>
+                    <th>첫결제액</th>
+                    <th>첫결제일</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['MEMBER_NO']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                      $price_str = ($list['PRICE'][$i] > 0) ? number_format($list['PRICE'][$i])."원" : "";
+                  ?>
+                  <tr class="text-center">
+                    <td><?=$no?></td>
+                    <td><?=$list['PARTNER_NAME'][$i]?>(<?=$list['PARTNER_ID'][$i]?>)</td>
+                    <td><?=$list['USER_ID'][$i]?><i class="modal-effect fa fa-search checkUser"
+                        title="상세정보"
+                        style="cursor: pointer; margin-left: 3px;"
+                        data-bs-effect="effect-scale"
+                        data-bs-target="#memberModal"
+                        data-bs-toggle="modal"
+                        data-no="<?=$list['MEMBER_NO'][$i]?>">
+                      </i></td>
+                    <td><?=$list['NAME'][$i]?></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                    <td><?=$list['REG_IP'][$i]?></td>
+                    <td><?=$price_str?><??></td>
+                    <td><?=$list['CASH_DATE'][$i]?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_member.html"; ?>

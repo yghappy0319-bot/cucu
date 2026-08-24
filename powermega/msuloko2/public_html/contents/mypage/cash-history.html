@@ -1,0 +1,176 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_CASH.php";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+?>
+
+<style>
+  [data-tooltip]{position:relative;}
+  [data-tooltip]:before,
+  [data-tooltip]:after{visibility:hidden;opacity:0;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;transition:all .2s ease;font-size:11px;font-family:dotum;letter-spacing:-1px;}
+  [data-tooltip]:before{content:attr(data-tooltip);height:13px;position:absolute;top:-20px;padding:5px 10px;border-radius:5px;color:#000000;background:#EFEFEF;box-shadow:0 3px 8px rgba(165, 165, 165, 0.5);}
+  [data-tooltip]:after{content: "";border-left:5px solid transparent;top:2px;border-right:5px solid transparent;border-top:5px solid #025272;}
+  [data-tooltip]:not([data-tooltip=""]):hover:before{visibility:visible;opacity:1;top:-30px}
+  [data-tooltip]:not([data-tooltip=""]):hover:after{visibility:visible;opacity:1;top:-8px}
+</style>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub bb border_dcdcdc" style="margin-bottom: 0;">
+            <h2 class="title">캐시관리</h2>
+            <a href="./" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <section class="sec_cash wrap_com section bg_white pb40">
+            <div class="wrap_tab">
+              <ul class="tab_type1 flex">
+                <li class="on"><a href="cash-history.html">충전내역</a></li>
+                <li><a href="cash-history-use.html">사용내역</a></li>
+              </ul>
+            </div>
+            <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+              <div class="bx_search">
+                <div class="wrap_sel">
+                  <ul class="list_sel flex align_center">
+                    <li><button type="button" data-tp="7D" class='gubun'>1주일</button></li>
+                    <li><button type="button" data-tp="1M" class='gubun'>1개월</button></li>
+                    <li><button type="button" data-tp="3M" class='gubun'>3개월</button></li>
+                    <li><button type="button" data-tp="6M" class='gubun'>6개월</button></li>
+                  </ul>
+                </div>
+                <div class="wrap_date flex align_center space">
+                  <div class="flex space">
+                    <input type="text" autocomplete="off" name="sdate" id="sdate" value="<?=$sdate?>" />
+                    <span class="mr5">~</span>
+                    <input type="text" autocomplete="off" name="edate" id="edate" value="<?=$edate?>" />
+                  </div>
+                  <button class="btn_navy btn">검색</button>
+                </div>
+              </div>
+            </form>
+            <div class="section mt30">
+              <h3 class="h_type4">충전내역</h3>
+              <div class="wrap_tb bt ls50 lh10">
+                <table class="tb_type2" id="list_box">
+                  <caption>
+                    <div class="hide">
+                      캐시 충전내역에 대한 정보를 제공하는 표
+                    </div>
+                  </caption>
+                  <colgroup>
+                    <col width="">
+                    <col width="">
+                  </colgroup>
+                </table>
+              </div>
+              <button type="button" class="btn_more btn_center bg_navy add_after br5 type_btn_more"><span class="va_mid">더보기</span></button>
+            </div>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script>
+  $(document).ready(function() {
+    $(document).on('click', '.gubun', function() {
+      $.post('/other.php', {
+        mode : 'search_date',
+        schdate : $(this).data('tp')
+      }, function(e) {
+        if (e.errNo > 0) {
+        } else {
+          $('#sdate').val(e.sdate);
+          $('#edate').val(e.edate);
+        }
+      }, 'json');
+    });
+
+    let page = 1;
+    function list_read(page) {
+      let sdate = $('#sdate').val();
+      let edate = $('#edate').val();
+
+      $.post('/other.php', {
+        mode: 'my_cash_list',
+        sdate: sdate,
+        edate: edate,
+        page: page
+      }, function(e) {
+        $('#list_box').append(e.html);
+        if (e.html == '') {
+          $('.type_btn_more').hide();
+        }
+
+        if ($('#list_box').find('tbody').length <= 0 && page == 1) {
+          let html = `<tbody id="box">
+                        <tr>
+                          <td style="text-align: center;">등록된 충전내역이 없습니다.</td>
+                        </tr>
+                      </tbody>`;
+          $('#list_box').html(html);
+        }
+      }, 'json');
+    }
+    list_read(page);
+
+    $(document).on('click', '.type_btn_more', function() {
+      page++;
+      list_read(page);
+    });
+
+    $(document).on('click', '.bank_cancel', function() {
+      let no = $(this).data('no');
+      if (confirm('무통장 입금 신청을 취소 하시겠습니까?')) {
+        $.post('/other.php', {
+          mode: 'bank_cancel',
+          no: no
+        }, function(e) {
+          if (e.error == false) {
+            alert(e.msg);
+          } else {
+            alert('취소 되었습니다.', '/contents/mypage/cash-history.html');
+          }
+        }, 'json');
+      }
+    });
+
+    // 입금 대기 - 계좌정보
+    $(document).on('click', '.btn_bank_waiting', function() {
+      let price = $(this).data('price');
+      $('#cash_bank_cash3').html(price);
+      $('.bank_step3').addClass('active');
+      $('body').css('overflow', 'hidden');
+      $('body').css('height', '100%');
+    });
+
+    // 현금 영수증 신청
+    $(document).on('click', '.apply_cash_receipt', function() {
+      let no = $(this).data('no');
+      if (confirm('현금 영수증 신청을 하시겠습니까?\n홈택스에서 <현금영수증 소비자 발급수단>을 입력하셔야만 영수증 사용내역이 집계되니 필히 입력하여 주시기 바랍니다.')) {
+        $.post('/other.php', {
+          mode: 'apply_cash_receipt',
+          no: no
+        }, function(e) {
+          if (e.error) {
+            alert('현금영수증 발급 신청이 정상 접수되었습니다.\n 국세청-현금영수증(www.hometax.go.kr)에서 1~2일 후에 확인하실 수 있습니다.');
+          } else {
+            alert(e.msg);
+          }
+          location.reload();
+        }, 'json');
+      }
+    })
+  });
+</script>
+
+</html>

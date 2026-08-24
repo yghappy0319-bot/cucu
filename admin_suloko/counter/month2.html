@@ -1,0 +1,183 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+  if ($year == "") {
+    $year = date("Y");
+  }
+
+  // 22만/12만 카드결제 숨김 (month2) — 해당 적립캐시 열 전체 제외
+  $hide_cash_filter = get_staff_hide_month2_cash_filter();
+
+  // head 사용할 금액
+  $query = "
+    SELECT CASH FROM CASH
+    WHERE IS_USE='Y' AND REG_DATE BETWEEN '{$year}-01-01 00:00:00' AND '{$year}-12-31 23:59:59'
+      {$hide_cash_filter}
+    GROUP BY CASH
+    ORDER BY CASH ASC
+  ";
+  $head_list = $db->get_list($query);
+
+  // 월별, 금액별 합계 건수, 금액
+  $query = "
+    SELECT
+      LEFT(IFNULL(CON_REG_DATE, REG_DATE), 7) AS DATE,
+      CASH,
+      SUM(PRICE) AS PRICE,
+      COUNT(PRICE) AS CNT
+    FROM CASH
+    WHERE
+      IS_USE = 'Y'
+      AND IFNULL(CON_REG_DATE, REG_DATE) BETWEEN '{$year}-01-01 00:00:00' AND '{$year}-12-31 23:59:59'
+      {$hide_cash_filter}
+    GROUP BY LEFT(IFNULL(CON_REG_DATE, REG_DATE), 7), CASH
+    ORDER BY LEFT(IFNULL(CON_REG_DATE, REG_DATE), 7) ASC, CASH ASC
+  ";
+  $list = $db->get_list($query);
+
+  $s_year = date("Y");
+  $e_year = "2022";
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">월별 매출</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">매출현황</a></li>
+          <li class="breadcrumb-item active" aria-current="page">년도별 매출</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+              <div class="input-group" style="padding-bottom: 10px;">
+                <select name="year" id="year" class="form-control form-select auto-submit">
+                  <option disabled>년도선택</option>
+                  <?php
+                    for ($i = $s_year; $i >= $e_year; $i--) {
+                  ?>
+                  <option value="<?=$i?>" <?=($year==$i) ? "selected" : ""?>><?=$i?></option>
+                  <?php } ?>
+                </select>
+              </div>
+            </form>
+            <div class="table-responsive">
+              <table class="table table-center border text-nowrap table-bordered">
+                <thead>
+                  <tr style="background: #F2F3F9;">
+                    <th>Date</th>
+                    <th colspan="2">TOTAL</th>
+                    <?php for ($i = 0; $i < count($head_list['CASH']); $i++) { // 결제금액 기준 ?>
+                    <th colspan="2"><?=number_format($head_list['CASH'][$i])?>원</th>
+                    <?php } ?>
+                  </tr>
+                  <tr>
+                    <th></th>
+                    <th>금액</th>
+                    <th>건수</th>
+                    <?php for ($i = 0; $i < count($head_list['CASH']); $i++) { ?>
+                    <th>금액</th>
+                    <th>건수</th>
+                    <?php } ?>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    $total_price = array();
+                    $total_cnt   = array();
+
+                    $total_price['total'] = 0;
+                    $total_cnt['total']   = 0;
+
+                    // 12개월
+                    for ($s = 1; $s <= 12; $s++) {
+                      $month = $s;
+                      if ($month < 10) $month = "0".$month;
+
+                      $date = $year."-".$month;
+
+                      $style = "";
+                      if ($date == date("Y-m")) {
+                        $style = 'background: #F8E5D0;';
+                      }
+
+                      // 같은 월에 속한 금액/건수 합계
+                      for ($i = 0; $i < count($list['DATE']); $i++) {
+                        if ($date == $list['DATE'][$i]) {
+                          if (!isset($total_price[$list['DATE'][$i]])) $total_price[$list['DATE'][$i]] = 0;
+                          if (!isset($total_cnt[$list['DATE'][$i]])) $total_cnt[$list['DATE'][$i]] = 0;
+
+                          $total_price[$list['DATE'][$i]] += $list['PRICE'][$i];
+                          $total_cnt[$list['DATE'][$i]] += $list['CNT'][$i];
+                        }
+                      }
+                      // 전체 금액/건수
+                      $total_price['total'] += $total_price[$date];
+                      $total_cnt['total'] += $total_cnt[$date];
+
+                      // 월별 합계 금액/건수 출력
+                  ?>
+                  <tr style="<?=$style?>">
+                    <td><?=date("Y년 m월", strtotime($date))?></td>
+                    <td><strong><?=number_format($total_price[$date])?></strong></td>
+                    <td><strong><?=number_format($total_cnt[$date])?></strong></td>
+                    <?php
+                      // 월별 결제금액기준 금액/건수 합계 출력
+                      for ($c = 0; $c < count($head_list['CASH']); $c++) {
+                        $price = 0;
+                        $cnt   = 0;
+
+                        for ($i = 0; $i < count($list['DATE']); $i++) {
+                          if ($date == $list['DATE'][$i]) {
+                            if ($head_list['CASH'][$c] == $list['CASH'][$i]) {
+                              if (!isset($total_price[$head_list['CASH'][$c]])) $total_price[$head_list['CASH'][$c]] = 0;
+                              if (!isset($total_cnt[$head_list['CASH'][$c]])) $total_cnt[$head_list['CASH'][$c]] = 0;
+                              $price = $list['PRICE'][$i];
+                              $cnt = $list['CNT'][$i];
+                              $total_price[$head_list['CASH'][$c]] += $price;
+                              $total_cnt[$head_list['CASH'][$c]] += $cnt;
+                            }
+                          }
+                        }
+                    ?>
+                    <td><?=number_format($price)?></td>
+                    <td><?=number_format($cnt)?></td>
+                    <?php } ?>
+                  </tr>
+                  <?php } ?>
+                  <tr>
+                    <td>합계</td>
+                    <td><strong><?=number_format($total_price['total'])?></strong></td>
+                    <td><strong><?=number_format($total_cnt['total'])?></strong></td>
+                    <?php
+                      for ($c = 0; $c < count($head_list['CASH']); $c++) {
+                    ?>
+                    <td><?=number_format($total_price[$head_list['CASH'][$c]])?></td>
+                    <td><?=number_format($total_cnt[$head_list['CASH'][$c]])?></td>
+                    <?php } ?>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>

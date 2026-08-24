@@ -1,0 +1,117 @@
+<?php
+include_once "../adm/head.php";
+include_once $_SERVER['DOCUMENT_ROOT']."/lib/sms_server_function.php";
+
+if($member['mb_id']=="admin"){
+  $member_no_where = " 1=1 ";
+}else{
+  $member_no_where = " midx = {$member['mb_no']} ";
+}
+
+?>
+
+  <?php include_once "../adm/nav.php";?>
+  <div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+    <div class="main-menu-header">
+      <form>
+        <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+      </form>
+    </div>
+    <?php include_once "../adm/menu.php";?>
+  </div>
+
+<style>
+.addbtn {    padding: 1px;}
+</style>
+
+  <div class="app-content content container-fluid">
+    <div class="content-wrapper">
+
+      <div class="content-body"><!-- Basic Tables start -->
+        <div class="row">
+            <div class="col-xs-12">
+              <form id="searchFrm" >
+                <input type="hidden" name="page" id="page" value="<?=$page?>" >
+                <input type="hidden" name="status" value="<?=$status?>" >
+                <input type="hidden" name="site" id="site" value="<?=$site?>"  >
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">서비스 이용 결재내역</h4>
+                        <a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+
+                        <div class="heading-elements">
+                            <ul class="list-inline mb-0">
+                                <li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+                                <li><a data-action="reload"><i class="icon-reload"></i></a></li>
+                                <li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+                                <li><a data-action="close"><i class="icon-cross2"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead class="thead-inverse">
+                                <tr>
+                                  <th >No</th>
+                                  <th >내역</th>
+                                  <th >결제금액</th>
+                                  <th >신청일</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    <?php
+                    $page_num = 5;
+                    $page = isset($_GET["page"])? $_GET["page"] : 1;
+
+                    if($_GET['list_num']>0){
+                      $list_num = $_GET['list_num'];
+                    }else{
+                      $list_num = 15;
+                    }
+
+                    $table = "tb_orderlist";
+                    $where = " {$member_no_where}  ";
+                    include_once "pager_count.php";
+
+                    $sql = "select * from tb_orderlist where
+                    {$member_no_where} {$a_count_where} {$상태} {$search_where} {$site_where} order by regdate desc limit $start, $list_num ";
+                    echo $sql."<br />";
+
+                    $result = db_query($sql);
+
+                    $no= $num - $list_num * ($page-1);
+                    for($a=0;$row=db_fetch($result);$a++){
+
+                    ?>
+                            <tr  >
+                              <th scope="row"><?=$no?></th>
+                              <td >
+                                
+                                <?=$row['subject']?><?=$row['gubun']?>
+                              </td>
+                              <td ><?=number_format($row['amount'])?>원</td>
+                              <td ><?=$row['regdate']?></td>
+                            </tr>
+                    <?php
+                      $no--;
+                    } ?>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <?php include_once "pager.php" ?>
+                </div>
+                </form>
+            </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+<?php include_once "sms_js.php" ?>
+
+<?php include_once "../adm/footer.php";?>

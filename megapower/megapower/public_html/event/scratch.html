@@ -1,0 +1,365 @@
+<?
+include_once "../header.html";
+include_once "../lib/function.php";
+include_once "../_chk.php";
+
+$오늘 = date("Y-m-d");
+
+$midx = !empty($member['idx']) ? (int)$member['idx'] : 0;
+if ($midx > 0) {
+  $sql = "select count(*) as cnt from event_scratch where midx = {$midx} and status = 0  ";
+  $_오늘참여여부 = db_select($sql);
+}
+
+
+
+?>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name='HandheldFriendly' content='True' />
+    <!-- <meta name='viewport' content='initial-scale=1.0; maximum-scale=1.0; user-scalable=0;' /> -->
+    <meta name='viewport' content='user-scalable=0' />
+    <meta name="viewport" content="width=device-width" />
+    <title><?=$config['사이트명2']?> 스크레치</title>
+
+    <style type="text/css">
+
+      a {
+        color: #000;
+      }
+      .box {
+        display: inline-block;
+        color: #FFF;
+        background: #000;
+        padding: 10px;
+        cursor: pointer;
+      }
+      #robot {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        z-index: 1;
+        text-align: center;
+        width: 100%;
+        border-radius: 15px;
+      }
+
+      #robot_result {    position: absolute;
+    z-index: 1;
+    width: 100%;}
+
+      #redux {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        z-index: 2;
+      }
+
+      #progress {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        color: black;
+        pointer-events: none;
+        z-index: 3;
+        text-shadow: 0px 0px 2px #FFFFFF;
+      }
+      small {
+        font-size: 12px;
+        color: #BBB;
+        font-weight: normal;
+      }
+
+      .main {width: 500px; margin: 0px auto; border: 1px solid #ccc;}
+      .main img {width: 100%;}
+      .container {position: relative; height:354px;}
+      canvas {width:100% !important;}
+      .startbtn {width: 200px; font-size: 3rem; margin-bottom: 5px; background-color: #fff; color:#333; border: 1px solid;box-shadow: 3px 3px;}
+      .clearbtn {width: 100px; font-size: 1rem;}
+      #scratch_start{ font-size: 1rem; }
+      .lucky_point {  font-size: 3rem; font-weight: bold; display: flex; flex-direction: column; height: 348px;
+        align-items: center; justify-content: center; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; border-radius: 15px;}
+      .scratch_point {font-size: 5rem;}
+      .scratch_info {font-size: 1.3rem; font-weight: 400;}
+    </style>
+
+	<script>
+      $(".new_header .bottom .fl .menu ul li:eq(5)").addClass("on")
+      $(".new_header_m .menu:eq(1) ul li:eq(1)").addClass("on")
+      $(".new_all_menu .menu_fb > ul > li:eq(5)").addClass("on")
+</script>
+
+
+</head>
+<body>
+
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide" style="position:relative;">
+            <div class="modle_sub_title">이벤트</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>이벤트</p></li>
+            </ul>
+            <div class="guide_box" >
+              <div>
+                <a href="/member/view.html?gubun=notice&idx=146" target="_blank" class="coupon_guide" ><p>쿠폰&포인트 사용방법</p></a>
+              </div>
+            </div>
+        </div>
+
+        <div class="modle_menu_02">
+            <a href="/member/coupon.html"><p>쿠폰발급</p></a>
+            <a class="on" href="/event/scratch.html"><p>스크래치</p></a>
+            <a href="/event/calendar.php"><p>출석체크</p></a>
+        </div>
+
+        <div class="new_event">
+
+            <div class="new_scratch_info">
+                <div class="fl">
+                    <p>스크래치 사용권 : <b><?= number_format($_오늘참여여부['cnt']) ?></b>개</p>
+                </div>
+                <div class="fr">
+                    <p>포인트 : <b><?= number_format($member['lucky_point']); ?></b>P</p>
+                </div>
+            </div>
+
+            <div class="new_scratch_body main">
+                <div class="container">
+                    <div id="robot_result"></div>
+                    <img id="redux" src="/assets/scratch.png" />
+                    <div id="progress">0%</div>
+                    <img id="robot" src="/assets/st_bg.png" />
+                </div>
+                <div id="toggleBtn" class="startbtn"><?=$config['사이트명2']?> 스크래치 사용권 사용하기</div>
+                <!-- <div id="clearBtn" class="box clearbtn"> CLEAR </div> -->
+                <div id="scratch_start"></div>
+                <style>
+                .point_list{ position: absolute !important; margin-top: 127px !important; width: 100% !important;    font-family: monospace;}
+                .point_list .list {display: flex; justify-content: space-between;    text-align: left; margin-bottom: 6px !important; width:100%;}
+                .point_list ul {margin: 0px; padding: 0px;}
+                .point_list ul li {margin: 0px 30px !important;}
+                .user_id {   width: 100px;overflow: hidden; white-space: nowrap; text-overflow: ellipsis; word-break: break-all;}
+                .main_move_btn {width: 100%; border: 0px; font-size: 2rem; padding: 10px;}
+                </style>
+
+                <div style="display: none; position: relative;">
+                    <div class="point_list" id="news-container" >
+                        <ul>
+                            <?
+                            $result = db_query("select * from event_scratch where event_date = '{$오늘}' ");
+                            for($a=0;$arow=db_fetch($result);$a++){
+                            $회원 = 로그인정보($arow['midx']);
+                            ?>
+                            <li class="list" >
+                                <div class="user_id" >
+                                    <?=이름가운데별표처리($회원['id'])?>
+                                </div>
+                                <div>
+                                    <?=$arow['event']?>
+                                </div>
+                                <div>
+                                    <?=$arow['regdate']?>
+                                </div>
+                            </li>
+                            <? } ?>
+                        </ul>
+                    </div>
+                    <img src="/assets/scratch02.png" />
+                    <div>
+                        <button type="button" class="main_move_btn" onclick="location.href='/';">메인으로</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="new_scratch_banner">
+                <img src="/images/event_banner_01.png">
+                <p>※ <?=$config['사이트명2']?> 포인트는 구매시 사용 가능 합니다.</p>
+            </div>
+
+            <? /**
+            <div id="resetBtn" class="box"> RESET </div>
+            <div id="clearBtn" class="box"> CLEAR </div>
+            **/ ?>
+
+            <form method="POST" id="scratch_frm">
+              <input type="hidden" id="scratch_status"  />
+              <input type="hidden" id="lucky_point"  />
+              <input type="hidden" name="midx" value="<?=$member['idx']?>"  />
+
+            </form>
+
+            <script src='//code.jquery.com/jquery-3.6.1.min.js' type='text/javascript'></script>
+            <script src='jquery.eraser.js' type='text/javascript'></script>
+            <script type="text/javascript" src="/assets/js/jquery.vticker-min.js"></script>
+            <script src="/assets/js/bpopup.js"></script>
+            <script type = "text/javascript">
+            var sc_count = "<?=$_오늘참여여부['cnt']?>";
+            $(function(){
+             $("#news-container").vTicker({
+               speed: 350,
+               pause: 3000,
+               animation: 'fade',
+               mousePause: false,
+               showItems: 9
+             });
+
+            });
+            $(document).ready(function(){
+              $('#redux').eraser('disable');
+            });
+
+            var sc_count = "<?=$_오늘참여여부['cnt']?>";
+            var scratchVoucherProcessed = false;  // 스크래치 사용권 처리 여부
+            if (sc_count == 0) {
+                console.log("<?=$config['사이트명2']?> 스크래치 사용권이 부족합니다.");
+
+            } else {
+                $('#redux').eraser({
+                    progressFunction: function(p) {
+                        var lucky_point = $("#lucky_point").val();
+                        $('#progress').html(Math.round(p * 100) + '%');
+                        var percent = Math.round(p * 100);
+
+                        // 스크래치 하는 순간 사용권 처리 (한 번만 실행)
+                        if (percent >= 3 && !scratchVoucherProcessed) {
+                            scratchVoucherProcessed = true;
+                            go_event_set();
+                        }
+
+                        if (percent > 59) {
+                            $('#redux').eraser('clear');
+                            $('#progress').html('100%');
+                            alert('축하드립니다!\n티켓구매시 바로 사용하실수 있는\n <?=$config['사이트명2']?> 포인트( ' + lucky_point + 'P )가 지급되었습니다!');
+                            location.reload();
+                        }
+                    }
+                });
+            }
+
+                $('#redux').click(function(event) {
+                  if(sc_count==0){
+                    alert("사용권이 부족하여 이용 할 수 없습니다. ");
+                    return false;
+                  }else{
+                    if (!$('#redux').eraser('enabled')) {
+                      alert("<?=$config['사이트명2']?> 스크래치 사용권 사용하기 버튼을 클릭한 후, 복권을 긁으면 사용권 1개가 소진됩니다.");
+                      event.preventDefault();
+                    }
+                  }
+
+
+                });
+
+                $('#resetBtn').click(function(event) {
+                  $('#redux').eraser('reset');
+                    $('#progress').html('0%');
+                  event.preventDefault();
+                });
+
+                $('#clearBtn').click(function(event) {
+                  $('#redux').eraser('clear');
+                    $('#progress').html('100%');
+                    go_event_set();
+                  event.preventDefault();
+                });
+
+                $('#toggleBtn').click(function(event) {
+                  if(sc_count==0){
+                    alert("사용권이 부족하여 이용 할 수 없습니다. ");
+                    return false;
+                  }
+
+                  var $redux = $('#redux'),
+                    $toggleBtn = $('#toggleBtn');
+
+                  if ($redux.eraser('enabled')) {
+                    $("#scratch_status").val(1);
+                    $toggleBtn.text(' <?=$config['사이트명2']?> 스크래치 사용권 사용하기 ');
+                    $redux.eraser('disable');
+
+                  } else {
+                    alert("복권 긁기를 시작해주세요!\n긁는 순간 사용권 1개가 소진됩니다.");
+                    var status = $("#scratch_status").val();
+                    console.log(status);
+                    if(status!=1){
+                      //location.reload();
+                    }
+
+                    $toggleBtn.text(' START ');
+                    $redux.eraser('enable');
+                    $("#toggleBtn").css("background-color","#1a2cdb");
+                    $("#toggleBtn").css("color","#fff");
+                    //$("#toggleBtn").remove();
+                    $("#scratch_start").css("margin","12px");
+                    $("#scratch_start").html("스크레치 기능이 작동하지 않을시 START 버튼을 다시 눌러주세요!");
+
+                  }
+                  event.preventDefault();
+                });
+
+
+              function go_event_set(){
+                var params = jQuery("#scratch_frm").serialize();
+                $.ajax({
+                  type : "POST",
+                  url: "_ajax_event_scratch_set.php",
+                  async: false,
+                  data: params,
+                success: function(result) {
+
+                  var obj = jQuery.parseJSON(result);
+                  console.log(obj.status);
+                  console.log(obj.point);
+                  $("#lucky_point").val(obj.point);
+
+                  if(obj.status==1){
+                    var html = "";
+                    html+= "<div class='lucky_point' >";
+                    html+= "<div><?=$config['사이트명2']?> 포인트</div>";
+                    html+= "<div class='scratch_point' >"+obj.point+"P 당첨!</div>";
+                    html+= "<div class='scratch_info'><?=$config['사이트명2']?> 포인트는 티켓구매시 사용하실 수 있습니다.</div>";
+                    html+= "<div class='scratch_info'>(지급완료)</div>";
+                    html+= "</div>";
+                    $("#robot_result").html(html);
+                  }else{
+                    var html = "";
+                    html+= "<div class='lucky_point' >";
+                    html+= "<div><?=$config['사이트명2']?> 스크래치!</div>";
+                    html+= "<div>오늘은 사용완료!</div>";
+                    html+= "<div class='scratch_point' >"+obj.point+"P 당첨!</div>";
+                    html+= "<div class='scratch_info'>금일 <?=$config['사이트명2']?> 포인트는 지급 되었습니다!</div>";
+                    html+= "<div class='scratch_info'>내일 또 이용해주세요!</div>";
+                    html+= "</div>";
+                    $("#robot_result").html(html);
+                    location.reload();
+                  }
+
+
+                  // if(r!=1){
+                  //   alert("관리자에게 문의해주세요!");
+                  //   location.href="/";
+                  // }
+
+                  },
+                  error:function(e) {
+                    alert(e.responseText);
+                  }
+                });
+              }
+            </script>
+
+        </div>
+    </div>
+</div>
+<?php
+  //include_once "./lib/channer_talk.php";
+  include "../footer_new.html";
+?>
+</body>
+</html>

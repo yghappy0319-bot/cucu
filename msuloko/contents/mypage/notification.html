@@ -1,0 +1,129 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_TOPIC.php";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $add_query = " AND T.STATUS = 'Y'";
+
+  // 테스트 계정 상태 값 조건 해제
+  $managers = array(
+
+  );
+  if (in_array($M_login['user_id'], $managers)) {
+    $add_query = "";
+  }
+
+  $list = F_TOPIC_LIST(array(
+    "USER_ID" => $M_login['user_id'],
+    "add_query" => $add_query
+  ));
+
+  $query = "
+    SELECT
+      M.MEMBER_NO,
+      M.IS_MARKETING,
+      T.TOKEN
+    FROM
+      MEMBER AS M
+        LEFT JOIN
+      MEMBER_TOKEN AS T ON T.USER_ID = M.USER_ID
+    WHERE
+      M.USER_ID = '{$M_login['user_id']}'
+    AND
+      T.DEVICE = '{$_SERVER['HTTP_USER_AGENT']}'
+    ORDER BY CREATED_AT DESC
+    LIMIT 1
+  ";
+  $info = $db->get_data($query);
+?>
+
+<style>
+  .webappBtn {
+    position: absolute;
+    right: .3rem;
+    padding: .25rem;
+  }
+
+  .webappInfo {
+    color: tomato;
+    font-size: .62rem;
+    border: 1px solid tomato;
+    border-radius: .3rem;
+    padding: .2rem;
+  }
+</style>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub bb border_dcdcdc mb5 flex column align_center">
+            <h2 class="title">알림 설정</h2>
+            <div class="webappBtn">
+              <button class="btn_popup webappInfo" id='btn_webappGuide'>설정 안내</button>
+            </div>
+            <a href="./" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+        </div>
+        <div class="bg_light_gray2">
+          <section class="notification wrap_com section ls50 bg_white">
+            <?php
+              for ($i = 0; $i < count($list['TOPIC_IDX']); $i++) {
+                if ($list['IS_BASIC'][$i] == 'Y') {
+            ?>
+            <h3 class="h_type4" style="padding-bottom: 1.5rem;">서비스 알림
+              <label class="custom-switch">
+                <input type="hidden" name="TOPIC_IDX" value="<?=$list['TOPIC_IDX'][$i]?>" />
+                <input type="hidden" name="TOPIC_NAME" value="<?=$list['TOPIC_NAME'][$i]?>" />
+                <input type="checkbox" name="custom-switch-checkbox" class="custom-switch-input topic-basic" <?=(($list['STATUS'][$i] == 'Y')) ? "checked" : ""?> />
+                <span class="custom-switch-indicator"></span>
+              </label>
+            </h3>
+            <?php } else { ?>
+            <ul class="list_group">
+              <li>
+                <label class="custom-switch topic-group">
+                  <input type="hidden" name="TOPIC_IDX" value="<?=$list['TOPIC_IDX'][$i]?>" />
+                  <input type="hidden" name="TOPIC_NAME" value="<?=$list['TOPIC_NAME'][$i]?>" />
+                  <input type="checkbox" name="custom-switch-checkbox" class="custom-switch-input topic-item" <?=(($list['STATUS'][$i] == 'Y')) ? "checked" : ""?> />
+                  <span class="custom-switch-description"><?=$list['TOPIC_TITLE'][$i]?></span>
+                  <span class="custom-switch-indicator"></span>
+                </label>
+              </li>
+            </ul>
+            <?php }
+              }
+            ?>
+          </section>
+          <section class="notification wrap_com section bg_white">
+            <h3 class="h_type4">마케팅 동의</h3>
+              <label class="custom-switch">
+                <ul class="list_group">
+                  <li>
+                    <input type="hidden" name="MEMBER_NO" value="<?=$info['MEMBER_NO']?>" />
+                    <input type="hidden" name="TOKEN" value="<?=$info['TOKEN']?>" />
+                    <input type="checkbox" name="custom-switch-checkbox-m" class="custom-switch-input is-marketing" <?=($info['IS_MARKETING'] == "Y") ? "checked" : ""?> />
+                    <span class="custom-switch-description">마케팅 활용을 위한 개인정보 수집/이용 동의</span>
+                    <span class="custom-switch-indicator"></span>
+                  </li>
+                  <p class="fs24" style="margin-left: 0.5rem;">※ 거래정보와 관련된 내용은 수신동의 여부와 관계없이 발송됩니다.</p>
+                </ul>
+              </label>
+          </section>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script src="/common/js/config.js?version=<?=$version?>" charset="utf-8"></script>
+<script src="/common/js/notification.js?version=<?=$version?>" charset="utf-8"></script>
+
+</html>

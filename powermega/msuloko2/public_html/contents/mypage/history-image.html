@@ -1,0 +1,87 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="mypage">
+        <div class="contents f_NotoSansKR">
+          <div class="title_sub bb border_dcdcdc mb30">
+            <h2 class="title">스캔본 확인</h2>
+            <a href="/contents/mypage/" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div>
+          <div>
+            <section class="sec_history wrap_com section ls50 bg_white">
+              <ul class="list_option">
+                <li>
+                  <div class="title">복권유형</div>
+                  <div>
+                    <select id="gubun" class="bx_type2">
+                      <option value="">전체(복권)</option>
+                      <option value="MM">메가밀리언</option>
+                      <option value="PB">파워볼</option>
+                    </select>
+                  </div>
+                </li>
+                <li style="display: none;">
+                  <div class="title">당첨/낙첨여부</div>
+                  <div>
+                    <select id="win_yn" class="bx_type2">
+                      <option value="">전체(결과)</option>
+                      <option value="Y">당첨</option>
+                      <option value="N">낙첨</option>
+                    </select>
+                  </div>
+                </li>
+                <li style="display: none;">
+                  <div class="title">조회결과 순서</div>
+                  <div>
+                    <select id="order" class="bx_type2">
+                      <option value=" REG_DATE DESC">최신순</option>
+                      <option value=" REG_DATE ASC">과거순</option>
+                    </select>
+                  </div>
+                </li>
+              </ul>
+            </section>
+            <section class="sec_history wrap_com section mt30 bg_white pb40">
+              <h3 class="h_type4">스캔본</h3>
+              <div class="wrap_tab" style="display: none;">
+                <ul class="tab_type1 flex">
+                  <li class="on"><button>메가밀리언</button></li>
+                  <li><button>파워볼</button></li>
+                </ul>
+              </div>
+              <div class="wrap_tb bt ls50 lh10">
+                <table class="tb_type2" id="list_box">
+                  <thead>
+                    <caption>
+                      <div class="hide">최근 구매내역에 대한 정보를 제공하는 표</div>
+                    </caption>
+                    <colgroup>
+                      <col width="">
+                      <col width="70%">
+                    </colgroup>
+                  </thead>
+                </table>
+              </div>
+              <button class="btn_more btn_center bg_navy add_after br5 type_btn_more">
+                <span class="va_mid">더보기</span>
+              </button>
+            </section>
+          </div>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+<script src="/common/js/my_lotto_image.js?version=<?=$version?>" charset="utf-8"></script>
+</html>

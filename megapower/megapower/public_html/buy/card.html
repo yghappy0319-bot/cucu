@@ -1,0 +1,681 @@
+<?php
+include "../header.html";
+include "../_chk.php";
+
+// 캐시 충전 일시 중단: 충전 페이지 비노출
+?>
+<script>
+$(function(){
+  show_cash_charge_notice();
+});
+</script>
+<?php
+include "../footer_new.html";
+exit;
+
+$_신청내역 = db_select("select * from lr_deposit_log where midx = {$member['idx']} and status = 1 ");
+
+if(!$config['카드여부']){
+  echo '<script>location.href="/";</script>';
+  exit;
+}
+
+if(!$_SESSION['midx']){
+  echo '<script>location.href="/buy/point.html";</script>';
+  exit;
+}
+
+?>
+<script>
+      $(".new_header .bottom .fl .menu ul li:eq(4)").addClass("on")
+      $(".new_header_m .menu:eq(1) ul li:eq(1)").addClass("on")
+      $(".new_all_menu .menu_fb > ul > li:eq(4)").addClass("on")
+</script>
+
+<style>
+.amount {font-size: 24px;font-weight: bold;}
+.checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkbox [type='checkbox'] {
+  width: 1.5rem;
+  height: 1.5rem;
+  appearance: none;
+  border-radius: 50%;
+  background-color: #ffffff;
+  transition: background 300ms;
+  cursor: pointer;
+
+&::before {
+   content: '';
+   color: transparent;
+   display: block;
+   width: inherit;
+   height: inherit;
+   border-radius: inherit;
+   border: 0;
+   background-color: transparent;
+   background-size: contain;
+   box-shadow: inset 0 0 0 1px #ccd3d8;
+ }
+
+&:checked {
+   background-color: #007bff;
+ }
+
+&:checked::before {
+   box-shadow: none;
+   background-image: url("data:image/svg+xml,%3Csvg   xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E %3Cpath d='M15.88 8.29L10 14.17l-1.88-1.88a.996.996 0 1 0-1.41 1.41l2.59 2.59c.39.39 1.02.39 1.41 0L17.3 9.7a.996.996 0 0 0 0-1.41c-.39-.39-1.03-.39-1.42 0z' fill='%23fff'/%3E %3C/svg%3E");
+ }
+}
+
+.checkbox label {
+  cursor: pointer;
+  padding-left: 0.5rem;
+}
+
+.depo_amount {font-size: 24px; padding-bottom: 10px;}
+._amount {font-weight: bold;}
+.review_pop_content .row {padding: 10px !important;}
+.review_pop_wrap .review_pop_content .row { border-top: 0px; }
+.review_pop_content .cinput .row{padding-bottom: 0px !important; padding-top: 10px !important;  }
+.review_pop_content .cinput .row input {height:34px; margin-top: 5px !important; }
+</style>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">캐시 충전</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>캐시 충전</p></li>
+            </ul>
+        </div>
+        <div class="modle_menu_02">
+            <a href="javascript:;">선택1</a>
+            <a href="/buy/point.html">계좌이체</a>
+            <a class="on" href="/buy/card.html">신용카드</a>
+        </div>
+
+        <? //include_once "../member/mypage_menu.php"; ?>
+
+        <div class="new_buy_point_wrap">
+
+            <div class="new_service_level_my">
+                <div class="my">
+                    <p>나의 <br>메가파워월드 등급</p>
+                    <span><?=나의등급($member['grade'])?></span>
+                </div>
+                <div class="list">
+                    <div class="wrap">
+                        <div class="tit">
+                            <p>레벨1</p>
+                            <span style="color: #e5e5e5;">White</span>
+                        </div>
+                        <div class="txt">
+                            회원가입과 동시에 부여되는 기본등급 이용금액의 <b>0.5%</b> 포인트 적립
+                        </div>
+                    </div>
+                    <div class="wrap">
+                        <div class="tit">
+                            <p>레벨2</p>
+                            <span style="color: #7ac75e;">Green</span>
+                        </div>
+                        <div class="txt">
+                            누적 50만 캐시 충전 시 이용금액의 <b>2.5%</b> 포인트 적립
+                        </div>
+                    </div>
+                    <div class="wrap">
+                        <div class="tit">
+                            <p>레벨3</p>
+                            <span style="color: #999;">Silver</span>
+                        </div>
+                        <div class="txt">
+                            누적 100만 캐시 충전 시 이용금액의 <b>5%</b> 포인트 적립
+                        </div>
+                    </div>
+                    <div class="wrap">
+                        <div class="tit">
+                            <p>레벨4</p>
+                            <span style="color: #e9c200;">Gold</span>
+                        </div>
+                        <div class="txt">
+                            누적 200만 캐시 충전 시 이용금액의 <b>8%</b> 포인트 적립
+                        </div>
+                    </div>
+                    <div class="wrap">
+                        <div class="tit">
+                            <p style="color: #FFF;">레벨5</p>
+                            <span style="color: #FFF;">Black</span>
+                        </div>
+                        <div class="txt">
+                            누적 300만 캐시 충전 시 이용금액의 <b>9%</b> 포인트 적립
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="new_point_charge">
+
+
+                <div class="list" style="margin-left:0px !important;">
+                    <div class="point_sub_rb_content bank">
+
+                        <div class="new_amount_btn">
+                            <div class="head">
+                                <p>충전할 금액을 선택해 주세요.</p>
+                            </div>
+
+                            <?php $포인트리스트 = 카드충전리스트(); for($p=0;$point=db_fetch($포인트리스트);$p++){?>
+
+                            <div class="wrap cash_box cash_list<?=$point['idx']?> " onclick="go_diposit_amount('<?=$point['camount']?>','<?=$point['cpoint']?>','<?= $point['coupon'] ?>',<?=$point['idx']?>)" >
+                                <div class="fl">
+                                  <div>
+                                    <div class="t1 u"><?=number_format($point['cname'])?>원</div>
+									                  <div class="t1"><b><?=number_format($point['cpoint'])?></b>원</div>
+                                  </div>
+                                  <div>
+                                    <? if($point['scratch']>0 || $point['add_point']>0){?>
+                                      <div class="t2">
+                                        <? if($point['add_point']>0){?>
+                                          <!-- <p class="p1">메가파워월드 포인트&nbsp;<b><?=number_format($point['add_point'])?>P</b></p> -->
+                                        <? } ?>
+                                        <? if($point['scratch']>0){?>
+                                          <p class="p2">메가파워월드 스크래치 <b><?=$point['scratch']?>장</b></p>
+                                        <? } ?>
+                                      </div>
+                                    <? } ?>
+                                  </div>
+
+                                </div>
+                                <div class="fr">
+                                    <div class="t1">
+                                      <b class="b1">
+                                        <?=number_format($point['cpoint'])?></b>&nbsp;캐시
+                                        <? if($point['add_point']>0){?>
+                                        + <b class="b2"><?=number_format($point['add_point'])?></b>&nbsp;메가파워월드 포인트(bonus)
+                                        <? } ?>
+                                    </div>
+
+                                    <div class="t2">
+                                        = <?=$point['memo']?>
+                                        <? if($point['scratch']>0){?>
+                                        + 메가파워월드 스크래치&nbsp;<b class="b2"><?=$point['scratch']?>장</b>
+                                        <? } ?>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <? } ?>
+
+
+                            <!-- <div class="wrap">
+                                <div class="fl">
+                                    <div class="t1"><b>18,000</b>원</div>
+                                </div>
+                                <div class="fr">
+                                    <div class="t1"><b class="b1">18,000</b>&nbsp;캐시</div>
+                                    <div class="t2">
+                                        = <b class="b1">&nbsp;3게임</b>&nbsp;가능
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="wrap">
+                                <div class="fl">
+                                    <div class="t1"><b>12,000</b>원</div>
+                                </div>
+                                <div class="fr">
+                                    <div class="t1"><b class="b1">12,000</b>&nbsp;캐시</div>
+                                    <div class="t2">
+                                        = <b class="b1">&nbsp;2게임</b>&nbsp;가능
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="wrap">
+                                <div class="fl">
+                                    <div class="t1"><b>6,000</b>원</div>
+                                </div>
+                                <div class="fr">
+                                    <div class="t1"><b class="b1">6,000</b>&nbsp;캐시</div>
+                                    <div class="t2">
+                                        = <b class="b1">&nbsp;1게임</b>&nbsp;가능
+                                    </div>
+                                </div>
+                            </div> -->
+                        </div>
+
+
+                        <div class="point_rb_amount_name">
+                            <div class="deposit_info">
+                                <div class="row deposit_amount1"></div>
+                                <div class="row deposit_amount3"></div>
+                                <div class="row deposit_amount2"></div>
+
+                            </div>
+                            <div class="rb_btn" >
+                                <? if($_신청내역['cash']>0){?>
+                                <button type="button" class="point_rb_go_pay cencle" onclick="go_cancle('<?=$_신청내역['idx']?>')" >취소하기</button>
+                                <? } ?>
+                                <button type="button" class="point_rb_go_pay"
+onclick="<?=$_SESSION['midx'] !='' ? 'go_test_pop(\'bank\')':'_go_login()' ?>" >결제하기</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <div class="point_sub_rb_content card" style="display:none;">
+                    <div class="point_rb_sct_text_center">
+                        <div class="poa">충전할 금액을 선택해주세요.</div>
+                        <div class="msg">
+                          <!-- 18만원 이상일 경우 쿠폰내역 이곳에 출력 -->
+                        </div>
+                    </div>
+
+                    <div style="background-color: #F4F4F4;" >
+                        <div class="amount_btn_card">
+                          <?php
+                              $포인트리스트 = 포인트리스트();
+                              for($p=0;$point=db_fetch($포인트리스트);$p++){
+                                 if($point['cpoint']>120000){ ?>
+                          <div class="point_rb_high_amonut_box " >
+                              <button type="button" class="poitn_rb_amount_high p<?=$point['idx']?>" onclick="go_diposit_amount('<?=$point['camount']?>','<?=$point['cpoint']?>','<?= $point['coupon'] ?>',<?=$point['idx']?>)">
+                                  <div><?=number_format($point['cpoint'])?>원</div>
+                                  <div class="point_coupon pc<?=$point['idx']?>" >+ <?= $point['coupon'] ?></div>
+                              </button>
+                          </div>
+                          <? } ?>
+                          <? } ?>
+                        </div>
+                    </div>
+                </div>
+    </div>
+</div>
+
+<div class="review_bk_bg_wrap">
+    <div class="review_bk_bg">
+
+        <div class="bank review_pop_wrap" style="display: none;">
+            <a class="review_pop_btn" href="javascript:review_pop_close('bank')">
+              <i class="xi-close"></i>
+            </a>
+
+            <form method="post" id="pointFrm">
+                <input type="hidden" name="org_name" value="<?=$member['name']?>" />
+                <input type="hidden" name="amount" id="amount" />
+                <input type="hidden" name="cash" id="cash" />
+                <input type="hidden" name="cash_config_idx" id="cash_config_idx" />
+                <input type="hidden" name="cash_idx" value="<?=$_신청내역['idx']?>" />
+
+                <div class="review_pop_content">
+                    <div class="row" style="justify-content: unset;">
+                        <p>결제금액</p><span class="d_amount2" ></span>
+                    </div>
+                    <div class="row" style="justify-content: unset;border-bottom: 1px solid #e5e5e5;">
+                        <p>충전캐시</p><span class="d_amount1" ></span>
+                    </div>
+
+                    <div class="cinput">
+                      <div class="row">
+                          <p class="cardp">생년월일 (YYMMDD/6자리)</p>
+                          <div >
+                            <input type="text" class="point_rb_input" id="authDob" name="authDob" maxlength="6" placeholder="생년월일 (YYMMDD/6자리)" required>
+                          </div>
+                      </div>
+                    </div>
+
+                    <div class="cinput">
+                      <div class="row">
+                          <p class="cardp">카드번호</p>
+                          <div style="display: flex; align-items: baseline;">
+                            <input type="text" class="point_rb_input" id="cn1" autocomplete="new-password" name="number1" maxlength="4" required oninput="checkInputLength(event, document.getElementById('cn2'))" > -
+                            <input type="text" class="point_rb_input" id="cn2" autocomplete="new-password" name="number2" maxlength="4" required oninput="checkInputLength(event, document.getElementById('cn3'))"> -
+                            <input type="text" class="point_rb_input" id="cn3" autocomplete="new-password" name="number3" maxlength="4" required oninput="checkInputLength(event, document.getElementById('cn4'))"> -
+                            <input type="password" class="point_rb_input" id="cn4" autocomplete="new-password" name="number4" maxlength="4" required>
+                          </div>
+                      </div>
+                    </div>
+
+                    <div class="cinput">
+                      <div class="row">
+                          <p class="cardp">할부</p>
+                          <div >
+                            <select name="installment" class="point_rb_input">
+                              <option value="00" >일시불</option>
+                              <option value="02" >2개월</option>
+                              <option value="03" >3개월</option>
+                              <option value="04" >4개월</option>
+                              <option value="05" >5개월</option>
+                              <option value="06" >6개월</option>
+                              <option value="07" >7개월</option>
+                              <option value="08" >8개월</option>
+                              <option value="09" >9개월</option>
+                              <option value="10" >10개월</option>
+                              <option value="11" >11개월</option>
+                              <option value="12" >12개월</option>
+                            </select>
+                          </div>
+                      </div>
+                    </div>
+
+                    <div class="cinput">
+                      <div class="row">
+                          <p class="cardp">유효기간 (월2자리/년도2자리)</p>
+                          <div >
+                            <input type="text" class="point_rb_input" autocomplete="new-password" id="expiry" name="expiry" maxlength="4" placeholder="유효기간 (MMYY)" required>
+                          </div>
+                      </div>
+                    </div>
+
+                    <div class="cinput">
+                      <div class="row">
+                          <p class="cardp">카드 뒷면 3자리 숫자</p>
+                          <div >
+                            <input type="text" class="point_rb_input" id="cvv" name="cvv" maxlength="3" placeholder="카드 뒷면 3자리 숫자">
+                          </div>
+                      </div>
+                    </div>
+
+                    <div class="cinput">
+                      <div class="row">
+                          <p class="cardp">비밀번호(앞2자리/숫자만 입력)</p>
+                          <div >
+                            <input type="password" class="point_rb_input" id="authPw" name="authPw" maxlength="2" placeholder="비밀번호(앞2자리/숫자만 입력)">
+                          </div>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                        <button type="button" class="depo_chk_btn" onclick="go_pay()" >결제하기</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="fb">
+                <div class="tit">카드결제시 꼭 확인해주세요!</div>
+                <div class="txt">
+                    <p>모든 결제상품은 부가세(VAT) 10% 포함 입니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bankinfo review_pop_wrap" style="display: none;">
+            <a class="review_pop_btn" href="javascript:review_pop_close()">
+                <i class="xi-close"></i>
+            </a>
+            <div class="tit_ok">카드결제가 완료되었습니다.</div>
+
+            <button class="ok" type="button" onclick="review_pop_close('bank')">완료</button>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- 캐시충전신청 버튼 클릭후 나오는 팝업창 입니다. -->
+<!--<div class="b-modal __b-popup1__" style="background-color: rgb(0, 0, 0); position: fixed; inset: 0px; opacity: 0.7; z-index: 9998; cursor: pointer;"></div>
+<div class="new_point_charge_popup priz_tax_info" style="left: 0px; position: absolute; top: 0px; z-index: 9999; opacity: 1;">
+    <div class="wrap">
+        <div class="head">
+            <p>입금하기</p>
+            <a class="b-close"><i class="xi-close"></i></a>
+        </div>
+        <div class="body">
+            <div class="scroll">
+                <div class="ft">
+                    <i class="xi-check"></i>
+                    <p>캐시 충전은 입금 확인 후 완료됩니다.<br>이용해 주셔서 감사합니다.</p>
+                </div>
+                <div class="text">
+                    <p><b>입금은행</b>기업은행</p>
+                    <p><b>계좌번호</b>986-032098-04-018 <a>복사</a></p>
+                    <p><b>예금주</b>홍길동</p>
+                    <p><b>입금금액</b>330,000원(VAT포함)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>-->
+
+
+<script>
+  // 숫자 4자리가 입력되면 자동으로 Tab을 눌러서 다음 필드로 포커스 이동
+   function checkInputLength(event, nextField) {
+       var inputField = event.target;
+       console.log(inputField.value.length);
+       if (inputField.value.length == 4) {  // 4자리가 입력되면
+           nextField.focus();  // 다음 입력 필드로 포커스 이동
+       }
+   }
+
+  function go_test_pop(obj){
+    if(obj=="bank"){
+      var amount = $("#amount").val();
+      if(!amount){
+        alert("결제상품을 선택해주세요.");
+        return false;
+      }
+
+      var amount1 = $(".deposit_amount1 .amount").text();
+      $(".d_amount1").html(amount1);
+      var amount2 = $(".deposit_amount3 .amount").text();
+      $(".d_amount2").html(amount2);
+    }
+    $(".review_pop_wrap").css("display","none");
+    $('.review_bk_bg_wrap .'+obj).show();
+    $('.review_bk_bg_wrap').show();
+
+  }
+
+
+  function review_pop_close(){
+    $("#amount").val("");
+    $('.review_bk_bg_wrap').css("display","none");
+    location.reload();
+  }
+
+  function go_pay(){
+    var amount = $("#amount").val();
+    if(!amount){
+      alert("결제상품을 선택해주세요.");
+      return false;
+    }
+    var authDob = $("#authDob");
+    var authPw = $("#authPw");
+
+    var cn1 = $("#cn1");
+    var cn2 = $("#cn2");
+    var cn3 = $("#cn3");
+    var cn4 = $("#cn4");
+    var expiry = $("#expiry");
+    var cvv = $("#cvv");
+
+    if(!authDob.val()){
+      alert("생년월일 6자리를 입력해주세요.");
+      authDob.focus();
+      return false;
+    }
+
+    if(!authPw.val()){
+      alert("비밀번호(앞2자리/숫자만 입력)를 입력해주세요.");
+      authPw.focus();
+      return false;
+    }
+
+    if(!cn1.val()){
+      alert("카드번호 4자리를 입력해주세요.");
+      cn1.focus();
+      return false;
+    }
+    if(!cn2.val()){
+      alert("카드번호 4자리를 입력해주세요.");
+      cn2.focus();
+      return false;
+    }
+    if(!cn3.val()){
+      alert("카드번호 4자리를 입력해주세요.");
+      cn3.focus();
+      return false;
+    }
+    if(!cn4.val()){
+      alert("카드번호 4자리를 입력해주세요.");
+      cn4.focus();
+      return false;
+    }
+
+    if(!expiry.val()){
+      alert("유효기간 (년/월)를 입력해주세요.");
+      cn4.focus();
+      return false;
+    }
+    if(!cvv.val()){
+      alert("카드 뒷면 3자리 숫자를 입력해주세요.");
+      cn4.focus();
+      return false;
+    }
+
+
+    var params = jQuery("#pointFrm").serialize();
+    $.ajax({
+      type : "POST",
+      url: "ajax_set_card.php",
+      async: false,
+      data: params,
+      dataType: "json",
+      success: function(result) {
+        console.log(result);
+        // console.log(r);
+        if(result.status=="0000"){
+          alert("카드결제가 성공하여 캐시가 지급 되었습니다.");
+<?=$config['script_card']?>
+
+          $(".diposit_name").html($(".point_rb_input").val());
+          let amount = $(".amount").text();
+          $(".depo_amount").html(amount);
+          go_test_pop('bankinfo');
+        }else{
+          alert(result.msg);
+          $("#authPw").val("");
+          //location.reload();
+          return false;
+        }
+      },
+      error:function(e) {
+        alert(e.responseText);
+      }
+    });
+  }
+
+  function go_cash_bill_chk(){
+    var checkedCount = $('.cash_tax:checked').length;
+    var 입금금액 = 콤마제거($("#amount").val());
+    var cash = $("#cash").val();
+    if(cash<100000){
+      if(checkedCount){
+        var originalAmount = 입금금액;
+        var discountRate = 0.1;
+        var discountedAmount = originalAmount * discountRate;
+        var VAT_TOTLE = parseInt(입금금액) + parseInt(discountedAmount);
+        $("#amount").val(VAT_TOTLE);
+        $(".amount").html(콤마추가(VAT_TOTLE)+"원");
+        $("._amount").html(콤마추가(VAT_TOTLE));
+      }else{
+        var 캐시 = $("#cash").val();
+        var originalAmount = 캐시;
+        var discountRate = 0.1;
+        var discountedAmount = originalAmount * discountRate;
+        var VAT_TOTLE = parseInt(입금금액) - parseInt(discountedAmount);
+        $("#amount").val(VAT_TOTLE);
+
+        $(".amount").html(콤마추가(VAT_TOTLE)+"원");
+        $("._amount").html(콤마추가(VAT_TOTLE));
+      }
+    }
+  }
+
+
+
+
+  function go_payment_type(obj){
+    if(obj=="bank"){
+      $(".point_sub_r_content .card").removeClass('active');
+      $(".point_sub_r_content .bank").addClass('active');
+
+    }else{
+      $(".point_sub_r_content .bank").removeClass('active');
+      $(".point_sub_r_content .card").addClass('active');
+    }
+
+
+    $(".point_sub_rb_content").css("display","none");
+    $(".point_sub_rb_content."+obj).show();
+  }
+
+  function go_bank_show(obj){
+    if(obj>0){
+      $(".bank_acount").toggle();
+    }else{
+      alert("결제하기를 신청후 확인해주세요.");
+      return false;
+    }
+
+  }
+  function go_bank_type(obj){
+    if(obj=="card"){
+      alert("신용카드 결제지원은 준비중 입니다.");
+    }
+
+    $(".bank_type2").prop("checked",false)
+    $(".bank_type1").prop("checked",true)
+
+  }
+
+
+  function go_diposit_amount(obj,cash,msg,idx){
+    $(".cash_tax").prop("checked", false);
+    $(".cash_box").removeClass("on");
+    $(".cash_box.cash_list"+idx).addClass("on");
+
+    const number = obj;
+    const formattedNumber = number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); // "1,000,000"
+    const formattedCash = cash.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); // "1,000,000"
+    var taxinfo = "";
+
+    $(".deposit_amount1").html("<div class='li'><p>결제상품</p><span class='amount' ><b>" + formattedCash + "</b>캐시</span></div>"+taxinfo);
+    $(".deposit_amount3").html("<div class='li'><p>입금금액</p><span class='amount' ><b>" + formattedNumber + "</b>원 (VAT포함)</span></div>"+taxinfo);
+    $(".deposit_amount2").html("<div class='li'><p></p><span' >입금금액과 입금자명이 일치해야 실시간으로 충전이 완료됩니다.</span></div>");
+    $("._amount").html(formattedNumber);
+    $(".msg").html(msg);
+
+    $(".cash_receipts").show();
+
+    $("#cash_config_idx").val(idx);
+    $("#amount").val(obj);
+    $("#cash").val(cash);
+
+    $('html, body').animate({
+        scrollTop: $('.point_rb_amount_name').offset().top
+    }, 500);  // 500ms 동안 부드럽게 스크롤
+
+  }
+
+  function go_pay_chk(){
+    $('#bpopup1').bPopup({
+      modalClose : true,
+      onClose: function() {
+        location.reload();
+      }
+    });
+  }
+
+
+</script>
+
+<?php
+include "../footer_new.html";
+?>

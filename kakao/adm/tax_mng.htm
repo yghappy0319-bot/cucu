@@ -1,0 +1,149 @@
+<?php
+include_once "../adm/head.php";
+include_once $_SERVER['DOCUMENT_ROOT']."/lib/sms_server_function.php";
+$page = 1;
+
+if($member['mb_id']=="admin"){
+  $member_no_where = "";
+}else{
+  $member_no_where = " and member_no = {$member['mb_no']} ";
+}
+if($member['mb_id']=="admin"){
+  $member_where = " ";
+}else{
+  $member_where = " and member_no = {$member['mb_no']} ";
+}
+?>
+<?php include_once "../adm/nav.php";?>
+  <div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+    <div class="main-menu-header">
+      <form>
+        <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+      </form>
+    </div>
+    <?php include_once "../adm/menu.php";?>
+  </div>
+
+  <div class="app-content content container-fluid">
+    <div class="content-wrapper">
+      <!-- <div class="content-header row">
+        <div class="content-header-left col-md-6 col-xs-12 mb-1">
+          <h2 class="content-header-title">사이트 리스트</h2>
+        </div>
+
+      </div> -->
+      <div class="content-body"><!-- Basic Tables start -->
+        <div class="row">
+            <div class="col-xs-12">
+              <form id="searchFrm" >
+                <input type="hidden" name="page" id="page" value="<?=$page?>" >
+                <input type="hidden" name="status" value="<?=$status?>" >
+                <input type="hidden" name="site" id="site" value="<?=$site?>"  >
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">현금영수증, 세금계산서 관리</h4>
+                        <a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+
+                        <div class="heading-elements">
+                            <ul class="list-inline mb-0">
+                                <li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+                                <li><a data-action="reload"><i class="icon-reload"></i></a></li>
+                                <li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+                                <li><a data-action="close"><i class="icon-cross2"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead class="thead-inverse">
+                                <tr>
+                                  <th>상태</th>
+                                  <th>주소</th>
+                                  <th>은행</th>
+                                  <th>계좌번호</th>
+                                  <th>예금주</th>
+                                  <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                              <?php
+
+                              if(!$search){
+                                $orderby = "regdate desc";
+                              }else{
+                                $orderby = "status desc";
+                              }
+
+                              $page_url = "/page/add_site.php";
+                              $countSql = "select count(*) as totalRecords from site where 1=1 {$member_where} ";
+                              $countResult = db_select($countSql);
+                              include_once "pager_count.php";
+                              $sql = "select * from site where 1=1 {$member_where} order by {$orderby} ";
+                              //echo $sql;
+                              $result = db_query($sql);
+
+                              $allcnt = mysqli_num_rows($result);
+                              for($a=0;$row=db_fetch($result);$a++){
+                                        $sitename = explode("//",$row['site']);
+
+                                if($row['status']==0){
+                                  $status = "no";
+                                }else{
+                                  $status = $row['biz_status'];
+                                }
+
+                              ?>
+                              <tr>
+                                <td>
+                                  <? if($status==1){ ?>
+                                    <button type="button" class="btn btn-warning" disabled>승인대기</button>
+                                  <? }elseif($status==2){ ?>
+                                    <button type="button" class="btn btn-success" disabled>정상</button>
+                                  <? }elseif($status=="no"){ ?>
+                                    <button type="button" class="btn btn-secondary" disabled>중지</button>
+                                  <? }else{ ?>
+                                    <button type="button" class="btn btn-outline-secondary" disabled>미신청</button>
+                                  <? } ?>
+                                </td>
+                                <td>
+                                  <? if($member['mb_id']=="admin"){ ?>
+                                  <a href="siteview.htm?idx=<?=$row['idx']?>">
+                                      <?= idn_to_utf8($sitename[1])?>
+                                  </a>
+                                <? }else{ ?>
+                                  <?= idn_to_utf8($sitename[1])?>
+                                <? } ?>
+
+                                </td>
+                                <td><?=$row['bank']?></td>
+                                <td><?=$row['o_acount']?></td>
+                                <td><?=$row['acount_name']?></td>
+
+                                <td><a href="/adm/tax_reg.htm?idx=<?=$row['idx']?>">사업자 정보 수정</a></td>
+                              </tr>
+                              <? } ?>
+
+                              <? if($allcnt==0){?>
+                                <tr>
+                                  <td colspan="8" >
+                                    내역이 없습니다.
+                                  </td>
+                                </tr>
+                              <? } ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+
+                </div>
+                </form>
+            </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+<?php include_once "../adm/footer.php";?>

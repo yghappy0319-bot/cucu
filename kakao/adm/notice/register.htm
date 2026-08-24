@@ -1,0 +1,222 @@
+<?php
+include_once __DIR__ . '/../head.php';
+
+if ($member['mb_id'] !== 'admin') {
+    echo '<script>alert("접근 권한이 없습니다.");location.href="/adm/index.php";</script>';
+    exit;
+}
+
+$form_status = 'insert';
+$form_idx = 0;
+$data = array(
+    'title' => '',
+    'content' => '',
+    'is_pinned' => 0,
+    'is_visible' => 1,
+);
+
+if (!empty($_GET['idx'])) {
+    $form_idx = (int)$_GET['idx'];
+    if ($form_idx > 0) {
+        $_row = db_select("select * from tb_notice where idx = {$form_idx} limit 1 ");
+        if ($_row && isset($_row['idx'])) {
+            $data = $_row;
+            $form_status = 'update';
+        }
+    }
+}
+?>
+<?php include_once __DIR__ . '/../nav.php'; ?>
+<div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+  <div class="main-menu-header">
+    <form>
+      <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+    </form>
+  </div>
+  <?php include_once __DIR__ . '/../menu.php'; ?>
+</div>
+
+<div class="app-content content container-fluid">
+  <div class="content-wrapper">
+    <div class="content-header row">
+      <div class="content-header-left col-md-8 col-xs-12 mb-1">
+        <h2 class="content-header-title"><?= $form_status === 'update' ? '공지 수정' : '공지 등록' ?></h2>
+        <p class="text-muted mb-0">등록한 공지는 관리자 대시보드에 표시됩니다.</p>
+      </div>
+    </div>
+    <div class="content-body">
+      <div class="row match-height">
+        <div class="col-md-10">
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">공지 내용</h4>
+              <a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+              <div class="heading-elements">
+                <ul class="list-inline mb-0">
+                  <li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+                  <li><a data-action="reload"><i class="icon-reload"></i></a></li>
+                  <li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+                  <li><a data-action="close"><i class="icon-cross2"></i></a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="card-body collapse in">
+              <div class="card-block">
+                <input type="hidden" id="form_idx" value="<?= (int)$form_idx ?>" />
+                <input type="hidden" id="form_save_action" value="<?= htmlspecialchars($form_status) ?>" />
+
+                <div class="form-group">
+                  <label for="notice_title">제목 <span class="text-danger">*</span></label>
+                  <input type="text" id="notice_title" class="form-control" maxlength="255" value="<?= htmlspecialchars($data['title'] ?? '') ?>" placeholder="공지 제목을 입력하세요" />
+                </div>
+
+                <div class="form-group">
+                  <label for="notice_content">내용 <span class="text-danger">*</span></label>
+                  <textarea id="notice_content" class="form-control" rows="12" placeholder="공지 내용을 입력하세요"><?= htmlspecialchars($data['content'] ?? '') ?></textarea>
+                  <small class="text-muted">줄바꿈은 그대로 저장됩니다.</small>
+                </div>
+
+                <div class="form-group">
+                  <label>상단 고정</label>
+                  <div>
+                    <label class="display-inline-block custom-control custom-radio mr-1">
+                      <input type="radio" name="notice_is_pinned" class="custom-control-input" value="0"<?= (int)($data['is_pinned'] ?? 0) !== 1 ? ' checked' : '' ?> />
+                      <span class="custom-control-indicator"></span>
+                      <span class="custom-control-description ml-0">일반</span>
+                    </label>
+                    <label class="display-inline-block custom-control custom-radio">
+                      <input type="radio" name="notice_is_pinned" class="custom-control-input" value="1"<?= (int)($data['is_pinned'] ?? 0) === 1 ? ' checked' : '' ?> />
+                      <span class="custom-control-indicator"></span>
+                      <span class="custom-control-description ml-0">상단 고정</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>노출 여부</label>
+                  <div>
+                    <label class="display-inline-block custom-control custom-radio mr-1">
+                      <input type="radio" name="notice_is_visible" class="custom-control-input" value="1"<?= (int)($data['is_visible'] ?? 1) !== 0 ? ' checked' : '' ?> />
+                      <span class="custom-control-indicator"></span>
+                      <span class="custom-control-description ml-0">노출</span>
+                    </label>
+                    <label class="display-inline-block custom-control custom-radio">
+                      <input type="radio" name="notice_is_visible" class="custom-control-input" value="0"<?= (int)($data['is_visible'] ?? 1) === 0 ? ' checked' : '' ?> />
+                      <span class="custom-control-indicator"></span>
+                      <span class="custom-control-description ml-0">숨김</span>
+                    </label>
+                  </div>
+                </div>
+
+                <?php if ($form_status === 'update') { ?>
+                <div class="form-group">
+                  <label>등록 정보</label>
+                  <p class="form-control-static mb-0 text-muted">
+                    작성자: <?= htmlspecialchars($data['writer_id'] ?? '') ?>
+                    <?php if (!empty($data['regdate'])) { ?>
+                    · 등록일: <?= date('Y-m-d H:i', strtotime($data['regdate'])) ?>
+                    <?php } ?>
+                    <?php if (!empty($data['moddate'])) { ?>
+                    · 수정일: <?= date('Y-m-d H:i', strtotime($data['moddate'])) ?>
+                    <?php } ?>
+                  </p>
+                </div>
+                <?php } ?>
+
+                <div class="form-actions">
+                  <button type="button" id="btn_notice_save" class="btn btn-primary"><?= $form_status === 'update' ? '수정 저장' : '등록' ?></button>
+                  <a href="/adm/notice/list.htm" class="btn btn-secondary">목록</a>
+                  <?php if ($form_status === 'update' && $form_idx > 0) { ?>
+                  <button type="button" id="btn_notice_delete" class="btn btn-danger pull-right">삭제</button>
+                  <?php } ?>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/app-assets/js/core/libraries/jquery.min.js" type="text/javascript"></script>
+<script>
+(function() {
+  $('#btn_notice_save').on('click', function() {
+    var title = $.trim($('#notice_title').val());
+    var content = $.trim($('#notice_content').val());
+    var st = $('#form_save_action').val();
+    var fid = parseInt($('#form_idx').val(), 10) || 0;
+    var pinned = $('input[name="notice_is_pinned"]:checked').val();
+    var visible = $('input[name="notice_is_visible"]:checked').val();
+
+    if (!title) {
+      alert('제목을 입력해 주세요.');
+      $('#notice_title').focus();
+      return;
+    }
+    if (!content) {
+      alert('내용을 입력해 주세요.');
+      $('#notice_content').focus();
+      return;
+    }
+
+    var params =
+      'title=' + encodeURIComponent(title) +
+      '&content=' + encodeURIComponent(content) +
+      '&is_pinned=' + encodeURIComponent(pinned) +
+      '&is_visible=' + encodeURIComponent(visible) +
+      '&save_action=' + encodeURIComponent(st);
+    if (st === 'update' && fid > 0) {
+      params += '&idx=' + fid;
+    }
+
+    $.ajax({
+      type: 'POST',
+      url: '/adm/notice/ajax/_ajax_notice_save.php',
+      data: params,
+      success: function(result) {
+        var r = (result || '').toString().trim();
+        if (r === '1') {
+          alert(st === 'update' ? '수정되었습니다.' : '등록되었습니다.');
+          location.href = '/adm/notice/list.htm';
+        } else {
+          alert(r || '저장에 실패했습니다.');
+        }
+      },
+      error: function(xhr) {
+        alert(xhr.responseText || '요청 오류');
+      }
+    });
+  });
+
+  $('#btn_notice_delete').on('click', function() {
+    var fid = parseInt($('#form_idx').val(), 10) || 0;
+    if (fid <= 0) {
+      return;
+    }
+    if (!confirm('이 공지사항을 삭제하시겠습니까?')) {
+      return;
+    }
+    $.ajax({
+      type: 'POST',
+      url: '/adm/notice/ajax/_ajax_notice_delete.php',
+      data: { idx: fid },
+      success: function(result) {
+        var r = (result || '').toString().trim();
+        if (r === '1') {
+          alert('삭제되었습니다.');
+          location.href = '/adm/notice/list.htm';
+        } else {
+          alert(r || '삭제에 실패했습니다.');
+        }
+      },
+      error: function(xhr) {
+        alert(xhr.responseText || '요청 오류');
+      }
+    });
+  });
+})();
+</script>
+
+<?php include_once __DIR__ . '/../footer.php'; ?>

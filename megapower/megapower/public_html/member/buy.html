@@ -1,0 +1,428 @@
+<?php
+include "../header.html";
+$piz_sql = "select * from lr_prize_log where midx = {$member['idx']} order by round desc ";
+$piz_list = db_query($piz_sql);
+$나의당첨결과 = mysqli_num_rows($piz_list);
+$서머타임 = 미국서머타임();
+
+$page_num = 5;
+$page = isset($_GET["page"])? $_GET["page"] : 1;
+
+if($_GET['list_num']>0){
+  $list_num = $_GET['list_num'];
+}else{
+  $list_num = 9;
+}
+?>
+
+<style>
+    .member_buy .lastTwoDigits_pb{ background-color: #CC1F3B;}
+    .member_buy .lastTwoDigits_mm{ background-color: #316ccf;}
+</style>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">티켓 구매내역</div>
+            <ul>
+              <li><i class="xi-home"></i></li>
+              <li><i class="xi-angle-right"></i></li>
+              <li><p>Mypage</p></li>
+              <li><i class="xi-angle-right"></i></li>
+              <li><p>티켓 구매내역</p></li>
+            </ul>
+        </div>
+
+        <?php
+        include "mypage_menu.php";
+        ?>
+        <div class="modle_menu_02 mt">
+            <a href="/member/buy.html?game=pb" class="scrollable_menu <?=$game=="pb" ? "on":"" ?>" >파워볼 구매내역</a>
+            <a href="/member/buy.html?game=mm" class="scrollable_menu <?=$game=="mm" ? "on":"" ?>">메가밀리언 구매내역</a>
+        </div>
+
+        <div class="new_buy_ball_head">
+            <div class="wrap date w50">
+                <div class="ft"><span>스캔본</span> 확인 가능시간</div>
+                <div class="fb">
+                    <p>00:00 ~ 10:00 > <span style="margin: 0 5px; background: #0051c7;">당일</span> 12:00 이전</p>
+                    <p>10:00 ~ 24:00 > <span style="margin: 0 5px; background: #F00;">익일</span> 07:00 이후</p>
+                </div>
+            </div>
+            <div class="wrap time w50">
+                <div class="ft">주문 마감시간</div>
+                <div class="fb">
+                    <p>
+                        <i class="xi-alarm-o"></i>
+                        <span>당회차 <b> AM 10:00</b></span>
+                    </p>
+                    <p>추첨이 있는 날 AM 10:00 이후 주문건은 차회차로 구매됩니다.</p>
+                </div>
+            </div>
+        </div>
+        <div class="new_my_buy_info">
+            <? if($game=="pb"){?>
+            <a href="/buy/service_power.html">* 파워볼 당첨기준</a>
+            <? }else{ ?>
+            <a href="/buy/service_megamillion.html">* 메가밀리언 당첨기준</a>
+            <? } ?>
+        </div>
+
+        <div class="new_my_buy">
+            <ul>
+              <? if(!$game){ ?>
+                  <? if(!$나의당첨결과){ ?>
+                  <div class="no_data">당첨된 내역이 없습니다.</div>
+                  <? } ?>
+              <? } ?>
+
+          <? if($game){ 
+
+              $records = 9;
+              $table = "lr_orders";
+              if($game){
+                $where = " midx = {$member['idx']}  and gubun = '{$game}' and delete_data = 0 and status = 1 ";
+              }
+
+              include_once "../page_code.php";
+
+              $sql = "select * from lr_orders where {$where} order by regdate desc limit $start, $list_num ";
+              //echo $sql."<br />";
+              $orderlist = db_query($sql);
+              $order_cnt = mysqli_num_rows($orderlist);
+              for($i=0;$order=db_fetch($orderlist);$i++){
+                $당첨있음 = !($order['win1']==0 && $order['win2']==0 && $order['win3']==0 && $order['win4']==0 && $order['win5']==0 &&
+                            $order['win6']==0 && $order['win7']==0 && $order['win8']==0 && $order['win9']==0 && $order['win10']==0);
+                $스캔본처리완료 = strtotime(date('Y-m-d')) > strtotime(date('Y-m-d', strtotime($order['drawing_day'])));
+              ?>
+                <li>
+                    <div class="wrap">
+                        <? if($order['macth_status']==1 && !$당첨있음 && !$스캔본처리완료){ ?>
+                        <div class="scan_img">
+                            <i class="xi-close"></i>
+                            <img src="<?=$복권이미지주소?>ticket/<?=$order['scan_path']?>/<?=$order['scan_img']?>?a=1" class="protected-image">
+                        </div>
+                        <? } ?>
+                        <? if($order['result_status']==0){?>
+                        <div class="win">추첨전</div>
+                        <? }else{ ?>
+                        <div class="win on">추첨완료</div>
+                        <? }?>
+
+                        <div class="title">
+                          <?= 게임명($order['gubun'])?>
+                          <b><?= $order['round'] ?></b>회차
+                          <span><?= $order['buy_cnt'] ?></span>게임
+                        </div>
+
+                        <div class="ball">
+                            <ul>
+                                <? if($order['lotto1']){?>
+                                <li><p>A</p><?= 구매번호콤마제거1($order['lotto1'],$order['gubun'])?></li>
+                                <? } ?>
+                                <? if($order['lotto2']){?>
+                                <li><p>B</p><?= 구매번호콤마제거1($order['lotto2'],$order['gubun'])?></li>
+                                <? } ?>
+                                <? if($order['lotto3']){?>
+                                <li><p>C</p><?= 구매번호콤마제거2($order['lotto3'],$order['gubun'])?></li>
+                                <? } ?>
+                                <? if($order['lotto4']){?>
+                                <li><p>D</p><?= 구매번호콤마제거2($order['lotto4'],$order['gubun'])?></li>
+                                <? } ?>
+                                <? if($order['lotto5']){?>
+                                <li><p>E</p><?= 구매번호콤마제거2($order['lotto5'],$order['gubun'])?></li>
+                                <? } ?>
+
+                            </ul>
+                        </div>
+                        <? if($order['macth_status']==1){ ?>
+                            <div class="scan">
+                                <div class="on" data-won="<?=$당첨있음 ? '1' : '0'?>" data-expired="<?=$스캔본처리완료 ? '1' : '0'?>"><p>스캔본 확인</p></div>
+                            </div>
+                        <? }else{ ?>
+                          <div class="scan">
+                              <div class="off">
+                                <p>스캔본 준비 중... 확인시간
+
+                                  <?=스캔본_확인시간($order['regdate'])?>
+                                </p>
+                              </div>
+                          </div>
+                        <? } ?>
+
+                        <div class="fb">
+                            <div class="txt"><span><strong>구매일자</strong></span><?=$order['regdate']?></div>
+                            <div class="txt"><span><strong>추첨일자</strong></span><?=date("m월 d일", strtotime($order['drawing_day']))?> <?=요일($order['drawing_day'])?> 오후 <?=$서머타임['추첨시간']?>시</div>
+                            <div class="txt">
+                              <span><strong>당첨유무</strong></span>
+                              <? if($order['result_status']==0){?>
+                              <span class="win_off">추첨전</span>
+                              <? }else{ ?>
+                                <? if($order['win1']==0 && $order['win2']==0 && $order['win3']==0 && $order['win4']==0 && $order['win5']==0 &&
+                                    $order['win6']==0 && $order['win7']==0 && $order['win8']==0 && $order['win9']==0 && $order['win10']==0){ ?>
+                                <b style="color: #F00;">미당첨</b>
+                                <? } ?>
+                              <? } ?>
+                              <?=당첨내역('A', $order['win1'], $order['gubun'])?>
+                              <?=당첨내역('B', $order['win2'], $order['gubun'])?>
+                              <?=당첨내역('C', $order['win3'], $order['gubun'])?>
+                              <?=당첨내역('D', $order['win4'], $order['gubun'])?>
+                              <?=당첨내역('E', $order['win5'], $order['gubun'])?>
+                              <?=당첨내역('F', $order['win6'], $order['gubun'])?>
+                              <?=당첨내역('G', $order['win7'], $order['gubun'])?>
+                              <?=당첨내역('H', $order['win8'], $order['gubun'])?>
+                              <?=당첨내역('I', $order['win9'], $order['gubun'])?>
+                              <?=당첨내역('J', $order['win10'], $order['gubun'])?>
+                            </div>
+
+                            <div class="btn_delete">
+                              <a href="javascript:go_order_delete(<?= $order['idx'] ?>)" style="color:#fff;">구매내역 삭제</a>
+                            </div>
+                        </div>
+                        <div class="ok_ball">
+                            <div class="tit">당첨번호</div>
+                            <?php
+                            $sql2 = "select * from lr_result where round = {$order['round']} ";
+
+                              $추첨결과 = db_select($sql2);
+                              if($추첨결과['status']){
+                            ?>
+                            <div class="row">
+                              <span><?=$추첨결과['ball1']?></span>
+                              <span><?=$추첨결과['ball2']?></span>
+                              <span><?=$추첨결과['ball3']?></span>
+                              <span><?=$추첨결과['ball4']?></span>
+                              <span><?=$추첨결과['ball5']?></span>
+                              <span style="background: #FEDC00;"><?=$추첨결과['ball6']?></span>
+                            </div>
+                            <? }else{ ?>
+                              <div class="row">
+                                <span>?</span>
+                                <span>?</span>
+                                <span>?</span>
+                                <span>?</span>
+                                <span>?</span>
+                                <span style="background: #FEDC00;">?</span>
+                              </div>
+                            <? } ?>
+
+                        </div>
+                    </div>
+                </li>
+                <? } ?>
+              <? } ?>
+
+
+
+                <!-- <li>
+                    <div class="wrap">
+                        <div class="scan_img">
+                            <i class="xi-close"></i>
+                            <img src="/images/lotto_01.jpg">
+                        </div>
+                        <div class="win on">추첨완료</div>
+                        <div class="title">파워볼 <b>3967</b>회차 <span>5</span>게임</div>
+                        <div class="ball">
+                            <ul>
+                                <li><p>A</p><span>17</span><span>22</span><span>29</span><span>32</span><span>45</span><span style="background: #0051c7;">26</span></li>
+                                <li><p>B</p><span>16</span><span>18</span><span>35</span><span>39</span><span>56</span><span style="background: #0051c7;">15</span></li>
+                                <li><p>C</p><span>37</span><span>42</span><span>54</span><span>57</span><span>69</span><span style="background: #e13b2c;">23</span></li>
+                                <li><p>D</p><span>03</span><span>13</span><span>15</span><span>35</span><span>42</span><span style="background: #e13b2c;">08</span></li>
+                            </ul>
+                        </div>
+                        <div class="scan">
+                            <div class="on"><p>스캔본 확인</p></div>
+                        </div>
+                        <div class="fb">
+                            <div class="txt"><span>구매일자</span>2024-12-13 18:06:23</div>
+                            <div class="txt"><span>추첨일자</span>12월15일 일요일 오후1시</div>
+                            <div class="txt"><span>당첨유무</span><b style="color: #2649ff;">8등 당첨</b></div>
+                            <div class="btn_delete">구매내역 삭제</div>
+                        </div>
+                        <div class="ok_ball">
+                            <div class="tit">당첨번호</div>
+                            <div class="row"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span style="background: #FEDC00;">6</span></div>
+                        </div>
+                    </div>
+                </li>
+
+                <li>
+                    <div class="wrap">
+                        <div class="scan_img">
+                            <i class="xi-close"></i>
+                            <img src="/images/lotto_01.jpg">
+                        </div>
+                        <div class="win">추첨전</div>
+                        <div class="title">파워볼 <b>3967</b>회차 <span>5</span>게임</div>
+                        <div class="ball">
+                            <ul>
+                                <li><p>A</p><span>17</span><span>22</span><span>29</span><span>32</span><span>45</span><span style="background: #0051c7;">26</span></li>
+                                <li><p>B</p><span>16</span><span>18</span><span>35</span><span>39</span><span>56</span><span style="background: #0051c7;">15</span></li>
+                            </ul>
+                        </div>
+                        <div class="scan">
+                            <div class="off"><p>스캔본 준비 중... 확인시간 <span>07:00</span> 이후</p></div>
+                        </div>
+                        <div class="fb">
+                            <div class="txt"><span>구매일자</span>2024-12-13 18:06:23</div>
+                            <div class="txt"><span>추첨일자</span>12월15일 일요일 오후1시</div>
+                            <div class="txt"><span>당첨유무</span><b style="color: #F00;">미당첨</b></div>
+                            <div class="btn_delete">구매내역 삭제</div>
+                        </div>
+                        <div class="ok_ball">
+                            <div class="tit">당첨번호</div>
+                            <div class="row"><span>?</span><span>?</span><span>?</span><span>?</span><span>?</span><span style="background: #FEDC00;">?</span></div>
+                        </div>
+                    </div>
+                </li> -->
+
+            </ul>
+        </div>
+        <script>
+            $(document).ready(function(){
+                $(".new_my_buy .scan .on").click(function(){
+                  if($(this).attr("data-expired") === "1"){
+                    alert("이미 처리가 완료 된 건 입니다.");
+                    return;
+                  }
+                  if($(this).attr("data-won") === "1"){
+                    alert("이미 당첨처리가 완료 된 건 입니다.");
+                    return;
+                  }
+                  $(".scan_img").removeClass("on");
+                    $(this).parents(".wrap").find(".scan_img").addClass("on")
+                });
+                $(".new_my_buy .scan_img i").click(function(){
+                    $(this).parents(".scan_img").removeClass("on")
+                });
+
+                document.addEventListener('keydown', function(e) {
+                    if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
+                        e.preventDefault(); // Ctrl+S 방지
+                    }
+                    if (e.ctrlKey && (e.key === 'u' || e.key === 'U')) {
+                        e.preventDefault(); // Ctrl+U 방지
+                    }
+                });
+                document.addEventListener('keydown', function(e) {
+                    // PrintScreen 키가 눌렸을 때 방지
+                    if (e.key === 'PrintScreen') {
+                        e.preventDefault();
+                        alert('캡처 기능이 비활성화되었습니다.');
+                    }
+                });
+            });
+        </script>
+
+        <form id="searchFrm">
+            <input type="hidden" name="page" id="page">
+            <input type="hidden" name="game" value="<?=$game?>">
+        </form>
+
+<!--        <div class="new_my_buy_info">-->
+<!--            <? if($game=="pb"){?>-->
+<!--            <a href="/buy/service_power.html">* 파워볼 당첨기준</a>-->
+<!--            <? }else{ ?>-->
+<!--            <a href="/buy/service_megamillion.html">* 메가밀리언 당첨기준</a>-->
+<!--            <? } ?>-->
+<!--            <a href="javascript:go_popup_prize()">* 내가 구매한 티켓의 스캔본은 언제 업로드 되나요?</a>-->
+<!--        </div>-->
+
+        <div class="page"><?php include_once "../pager.php" ?></div>
+    </div>
+</div>
+
+<div class="new_mypage_win_popup scan_info" style="display: none;">
+    <div class="wrap">
+        <div class="head">
+            <p>스캔본 언제 업로드 되나요?</p>
+            <a class="b-close"><i class="xi-close"></i></a>
+        </div>
+        <div class="body">
+            <div class="scroll">
+                <?
+                $_전날 = date("m월 d일");
+                $_오늘 = date("m월 d일", strtotime("+1 days"));
+                ?>
+                <div class="time_up">
+                    <p>
+                        예) <?=$_전날?> 오전 <?=$서머타임['주문마감시간']?>:00(주문시작) 부터 <?=$_오늘?> 오전 <?=$서머타임['주문마감시간']?>:00(주문마감) 사이 티켓을 구매하신 경우
+                        <?=$_전날?> 오전 <?=$서머타임['주문마감시간']?>:00 이후 부터 <?=$_오늘?> 오전 <?=$서머타임['주문마감시간']?>:00 까지 주문건을 <?=$_오늘?> 오전 04:00 ~ 12:00시 사이 순차적으로 업로드 진행 됩니다!
+                    </p>
+                    <span>궁금하신 사항은 <a href="/member/inquiry.html">1:1고객센터</a>로 문의해주세요!</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="new_mypage_win_popup" id="ticket_popup" style="display: none;">
+    <div class="wrap">
+        <div class="head">
+          <p>스캔본</p>
+          <a class="b-close"><i class="xi-close"></i></a>
+        </div>
+        <div class="body">
+            <div class="scroll">
+                <img src="" id="my_ticket" style="width: 100%;">
+                <div style="margin: 20px 0 0 0; text-align: center; line-height: 1.4; font-size: 14px; color: #F00;">스캔본이 정상적으로 보일때까지 기다려주세요.</div>
+                <button type="button" class="scan_down_btn" onclick="go_scan_file_download()">스캔본 다운로드</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="POST" id="scan_frm" action="./_scan_download.php" >
+	<input type="hidden" name="idx" id="idx" />
+</form>
+
+<script>
+  function go_order_delete(obj){
+    if(confirm("*주의* 해당 구매내역을 삭제하시겠습니까?\n삭제한 구매내역은 복구할 수 없습니다!")){
+      if(confirm("*주의* 해당 구매내역을 완전 삭제하시겠습니까? - 마지막 경고 -")){
+        $.ajax({
+           type : "POST",
+           url: "ajax_order_data_delete.php",
+           async: false,
+           data: {
+             idx : obj
+           },
+           success: function(result) {
+              var r = result.trim();
+              console.log(r);
+              if(r==1){
+                alert("정상적으로 삭제되었습니다.");
+                location.reload();
+              }
+           },
+           error:function(e) {
+              alert(e.responseText);
+           }
+        });
+      }
+    }
+
+  }
+  function go_scan_file_download(){
+    alert("스마트폰에서 다운로드 하신경우 갤러리를 확인해보세요.");
+    $("#scan_frm").submit();
+  }
+  function go_sacn_ticket_show(obj,idx){
+    $("html").scrollTop(0);
+    $("#idx").val(idx);
+    $("#my_ticket").attr("src", obj);
+    $('#ticket_popup').bPopup({
+         modalClose : true
+     });
+  }
+
+  function go_popup_prize(){
+    $('.scan_info').bPopup({
+         modalClose : true,
+     });
+  }
+</script>
+
+<?php
+include "../footer_new.html";
+?>

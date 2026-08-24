@@ -1,0 +1,132 @@
+<?php
+  include $_SERVER["DOCUMENT_ROOT"]."/_common/config.php";
+  include $_SERVER["DOCUMENT_ROOT"]."/_library/function_ORDERS.php";
+
+  F_admin_chk($S_login);
+
+  error_reporting(E_ERROR);
+  ini_set("display_errors", 1);
+  ini_set("memory_limit", $csv_memory);
+
+  function format_ballno($ball) {
+    $tmp = explode(",",$ball);
+    return "{$tmp[0]},{$tmp[1]},{$tmp[2]},{$tmp[3]},{$tmp[4]} ({$tmp[5]})";
+  }
+
+  $gubun = $_GET["gubun"];
+  $sdate = $_GET["sdate"];
+  $print = $_GET["print"];
+
+  // file name
+  $file_name = "suloko_".$gubun."_".date("md").".xls";
+  $page_name = "구매목록";
+  $add_query = "";
+
+  header( "Content-type: application/vnd.ms-excel; charset=utf-8");
+  header( "Content-Disposition: attachment; filename = {$file_name}" );     //filename = 저장되는 파일명을 설정합니다.
+  header( "Content-Description: PHP4 Generated Data" );
+
+  $add_query .= " AND o.SIGN_YN != 'C'";
+  $add_query .= " AND o.GUBUN='".$gubun."'";
+
+  if ($S_login['level'] == 1) {
+    switch ($S_login['user_id']) {
+      case "3dsys":
+        $add_query .= " AND AGENT_NO = 1 AND o.REG_DATE < '2024-07-21 03:00:00'";
+        break;
+      default: //VoyageX
+        $add_query .= " AND AGENT_NO = 0";
+    }
+  }
+
+/*
+ * DST에 대응 예외 처리
+ * (평시) 03:00 ~ 02:59 주문건
+ * (평시 > DST 전환시) 03:00 ~ 01:59 (23h) 주문건
+ * (DST) 02:00 ~ 01:59 주문건
+ * (DST > 평시 전환시) 02:00 ~ 02:59 (25h) 주문건
+ * (평시) 03:00 ~ 02:59 주문건
+*/
+  if ($sdate != '' ) {
+    $ssdate = $sdate . (check_dst($sdate) ? " 02:00:00" : " 03:00:00");
+    $eedate = date("Y-m-d", strtotime($sdate." +1 day")) . (check_dst(date("Y-m-d", strtotime($sdate." +1 day"))) ? " 01:59:59" : " 02:59:59");
+  } else {
+    $ssdate = date("Y-m-d",strtotime("-1 day")) . (check_dst(date("Y-m-d",strtotime("-1 day"))) ? " 02:00:00" : " 03:00:00");
+    $eedate = date("Y-m-d") . (check_dst(date("Y-m-d")) ? " 01:59:59" : " 02:59:59");
+  }
+
+  $add_query  .=  " AND o.REG_DATE BETWEEN '".$ssdate."' AND '".$eedate."'";
+
+  if ($print == "N") {
+    $add_query  .=  " AND PRINT_YN != 'Y' ";
+  }
+
+  $list = F_ORDERS_MEMBER_list(array(
+    "row"         => $csv_max_row,
+    "page"        => 1,
+    "order"       => "",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query
+  ));
+
+  $arr_order_no = array();
+
+  // 컬럼명
+  $EXCEL_FILE = "
+  <table border='1'>
+      <tr>
+        <td>번호</td>
+        <td>회원ID</td>
+        <td>구매번호</td>
+        <td>구매방식</td>
+        <td>추첨일</td>
+        <td>구매일시</td>
+      </tr>
+  ";
+
+  // 데이터 삽입
+  for ($i = 0; $i < count($list["ORDERS_NO"]); $i++) {
+
+    $arr_order_no[] = $list["ORDERS_NO"][$i];
+
+    $cnt = $i + 1;
+    $EXCEL_FILE .= "
+        <tr>
+          <td rowspan={$list["GAMECNT"][$i]}>".$cnt."</td>
+          <td rowspan={$list["GAMECNT"][$i]}>".$list["USER_ID"][$i]."</td>
+          <td>".format_ballno($list["BALL1"][$i])."</td>
+          <td rowspan={$list["GAMECNT"][$i]}>".$ball_op[$list["GUBUN"][$i]]."</td>
+          <td rowspan={$list["GAMECNT"][$i]}>".date("Y.n.j", strtotime($list["PLAYDATE"][$i]))."</td>
+          <td rowspan={$list["GAMECNT"][$i]}>".date("Y.n.j g:i:s A", strtotime($list["REG_DATE"][$i]))."</td>
+        </tr>
+    ";
+    if ($list["GAMECNT"][$i] > 1) {
+      for ($j = 2 ; $j <= $list["GAMECNT"][$i] ; $j++ ) {
+        $EXCEL_FILE .= "
+        <tr>
+          <td>".format_ballno($list["BALL".$j][$i])."</td>
+        </tr>
+    ";
+      }
+    }
+  }
+
+
+  $EXCEL_FILE .= "</table>";
+
+  // 출력여부 업데이트
+  if (count($arr_order_no) > 0) {
+    $nos = implode(",",$arr_order_no);
+    $sql = "INSERT INTO TICKET_PRINT_LOG(NO,INIP,PHPSELF,ORDERS_NO,REG_DATE) VALUES('','".$ip_address."','".$_SERVER['PHP_SELF']."','".$nos."',NOW())";
+    $db->query($sql);
+
+    $sql = "UPDATE ORDERS SET PRINT_YN='Y' WHERE ORDERS_NO IN (".$nos.") AND PRINT_YN != 'Y'";
+    $db->query($sql);
+  }
+
+  // 만든 테이블을 출력해줘야 만들어진 엑셀파일에 데이터가 나타납니다.
+  echo "<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>";
+  echo $EXCEL_FILE;
+
+?>

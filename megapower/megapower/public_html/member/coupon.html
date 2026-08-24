@@ -1,0 +1,186 @@
+<?php
+  include "../header.html";
+  $midx = !empty($member['idx']) ? (int)$member['idx'] : 0;
+  $_사용가능쿠폰 = array('cnt' => 0);
+  if ($midx > 0) {
+    $_사용가능쿠폰 = db_select("select count(*) as cnt from lr_coupon_log where midx = {$midx} and status = 0");
+  }
+?>
+<script>
+    $(".new_header .bottom .fl .menu ul li:eq(5)").addClass("on")
+    $(".new_header_m .menu:eq(1) ul li:eq(1)").addClass("on")
+    $(".new_all_menu .menu_fb > ul > li:eq(5)").addClass("on")
+</script>
+
+<div class="w_max">
+    <div class="w_min">
+
+        <div class="modle_guide" style="position:relative;" >
+          <div class="modle_sub_title">이벤트</div>
+          <ul>
+              <li><i class="xi-home"></i></li>
+              <li><i class="xi-angle-right"></i></li>
+              <li><p>이벤트</p></li>
+          </ul>
+          <div class="guide_box" >
+            <div>
+              <a href="/member/view.html?gubun=notice&idx=146" target="_blank" class="coupon_guide" ><p>쿠폰&포인트 사용방법</p></a>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="modle_menu_02">
+          <a class="on" href="/member/coupon.html"><p>쿠폰발급</p></a>
+          <a href="/event/scratch.html"><p>스크래치</p></a>
+          <a href="/event/calendar.php"><p>출석체크</p></a>
+        </div>
+
+        <div class="new_event">
+          <div class="new_coupon_menu sub_category scrollable_menu_wrap">
+              <a href="/member/coupon.html" class="scrollable_menu <?=$my=='coupon' ? '':'on' ?>" >발급가능한 쿠폰</a>
+              <a href="/member/coupon.html?my=coupon" class="scrollable_menu <?=$my=='coupon' ? 'on':'' ?>" >내 쿠폰함<?= $_사용가능쿠폰['cnt'] > 0 ? "(".$_사용가능쿠폰['cnt'].")":""; ?></a>
+          </div>
+
+          <div class="new_coupon_body coupon_content">
+              <? if($my==""){?>  <!-- 발급가능 쿠폰 -->
+              <div class="my_cp_list">
+                  <?
+                  $cou_sql = "select * from lr_coupon where status = 0 and downdate1 >= '".date("Y-m-d")."' order by downdate1 asc ";
+                  $coupon_result = db_query($cou_sql);
+                  $coupons = array();
+                  while ($row = db_fetch($coupon_result)) {
+                    $coupons[] = $row;
+                  }
+                  foreach($coupons as $coupon){
+                  $_발급내역 = array();
+                  if ($midx > 0) {
+                    $_발급내역 = db_select("select * from lr_coupon_log where midx = {$midx} and cidx = {$coupon['idx']} ");
+                  }
+                  ?>
+                  <div class="coupon_list">
+                      <div class="my_cp_inner">
+                          <a href="javascript:go_get_coupon(<?=$coupon['idx']?>)">
+                          <div class="coupon_box" >
+                              <? if($_발급내역['idx']!=""){ ?>
+                              <div class="coupon_download_ok">발급완료</div>
+                              <? } ?>
+                              <div class="cp_name" ><?=$coupon['name']?></div>
+                              <div class="date">발급 유효기간 : <?=$coupon['downdate1']?></div>
+                          </div>
+                          <? if($_발급내역['idx']==""){?>
+                              <img src="/assets/coupon30.png" class="coupon_img img_<?=$coupon['discount']?>_board " />
+                          <? }else{ ?>
+                          <img src="/assets/point30.png" class="coupon_img img_<?=$coupon['discount']?>_board " />
+                          <? } ?>
+                          </a>
+                      </div>
+                      <div class="icon"><img src="/images/event_coupon.png"></div>
+                  </div>
+                  <? } ?>
+              </div>
+              <? }else{ ?>
+              <div class="my_cp_list" >
+                  <?
+                  $my_coupon_cnt = 0;
+                  if ($midx > 0) {
+                    $cou_sql = "select * from lr_coupon_log where midx = {$midx} order by status asc, usedate1 desc ";
+                    $coupon_result = db_query($cou_sql);
+                    $my_coupons = array();
+                    while ($row = db_fetch($coupon_result)) {
+                      $my_coupons[] = $row;
+                    }
+                    $my_coupon_cnt = count($my_coupons);
+                    foreach($my_coupons as $coupon){
+                  ?>
+                  <div class="coupon_list" >
+                      <div class="my_cp_inner">
+                          <div class="coupon_box" >
+
+                              <div class="coupon_download_ok2"><?=쿠폰사용가능여부($coupon['status'], $coupon['usedate1'])?></div>
+                              <div class="cp_name" ><?=$coupon['name']?></div>
+                              <? if($coupon['gubun']!="포인트"){?>
+                                <div class="date">사용 유효기간 : <?=$coupon['usedate1']?></div>
+
+                                <!-- <a href="javascript:go_coupon_delete()" style="color: #666;">사용완료,기간만료 쿠폰 삭제</a> -->
+                              <? } ?>
+
+                          </div>
+                          <img src="/assets/point<?=$coupon['discount']?>.png" class="coupon_img img_<?=$coupon['discount']?>_board " />
+                      </div>
+                      <div class="icon"><img src="/images/event_coupon.png"></div>
+                  </div>
+                  <? }
+                  } ?>
+                  <? if($my_coupon_cnt==0){?>
+                    <? if(!$midx){ ?>
+                    로그인 후 내 쿠폰함을 확인하실 수 있습니다.
+                    <? }else{ ?>
+                    사용가능한 쿠폰이 없습니다.
+                    <? } ?>
+                  <? } ?>
+              </div>
+              <? } ?>
+              </div>
+            </div>
+        </div>
+
+        <script>
+          function go_get_coupon(cidx){
+            $.ajax({
+               type : "POST",
+               url: "ajax_coupon_download.php",
+               async: false,
+               data: {
+                  cidx : cidx
+               },
+               success: function(result) {
+                 console.log(result);
+                  var obj = jQuery.parseJSON(result);
+                  if(obj.status=="session_null"){
+                    alert('로그인 후 이용가능한 서비스 입니다.');
+                    _go_login();
+                    //top.location.href='/member/login.html';
+                  }else if(obj.status=="ok"){
+                    alert(obj.msg);
+                    location.reload();
+                  }else if(obj.status=="no"){
+                    alert("이미 발급 받은 쿠폰 입니다.");
+                    return false;
+                  }
+
+               },
+               error:function(e) {
+                  alert(e.responseText);
+               }
+            });
+          }
+          function go_coupon_delete(){
+            if(confirm("사용완료, 기간만료 쿠폰을 전체 삭제 하시겠습니까?")){
+              $.ajax({
+                 type : "POST",
+                 url: "ajax_coupon_delete.php",
+                 async: false,
+                 data: {
+                 },
+                 success: function(result) {
+                    var obj = jQuery.parseJSON(result);
+                    if(obj.status=="ok"){
+                      alert("사용완료, 기간만료 쿠폰 삭제 완료");
+                      location.reload();
+                    }
+                 },
+                 error:function(e) {
+                    alert(e.responseText);
+                 }
+              });
+            }
+          }
+        </script>
+
+
+    </div>
+</div>
+<?php
+  include "../footer_new.html";
+?>

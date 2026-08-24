@@ -1,0 +1,172 @@
+<?php
+  $page_title = "자주묻는질문 | 고객센터 - 파워볼, 메가밀리언, 미국 복권, 파메코";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_NOTICE.php";
+
+  ## INJECTION
+  $page = xss_clean($page);
+  $limit = xss_clean($limit);
+  $order = xss_clean($order);
+  $find_text = xss_clean($find_text);
+  $find_object = xss_clean($find_object);
+  $qtype = xss_clean($qtype);
+
+  if (!is_numeric($page)) $page = 1;
+  if (!is_numeric($limit)) $limit = 20;
+
+  $add_query = " AND GUBUN='FAQ'";
+  $PARAM ="&order=$order&find_text=$find_text&find_object=$find_object&qtype=$qtype&limit=$limit";
+
+  if ($find_object == 'all') {
+    $add_query .= " AND (SUBJECT like '%".$find_text."%' OR CONTENT like '%".$find_text."%' OR REPLY like '%".$find_text."%')";
+    $find_object = '';
+  }
+
+  if ($qtype != '') {
+    $add_query .= " AND QNA_TYPE='".$qtype."'";
+  }
+
+  $find_op = array(
+    "SUBJECT" => "제목",
+    "CONTENT" => "내용"
+  );
+
+
+  $list = F_NOTICE_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => " REG_DATE DESC",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['BBS_NO'] = array();
+  }
+
+  $find_op = array(
+    "SUBJECT" => "질문",
+    "CONTENT" => "내용"
+  );
+
+  $total = 0;
+  if ($list['total'] > 0) {
+    $total = ceil($list['total'] / $limit);
+  }
+
+  $menu_on['bbs'] = true;
+?>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html";?>
+  <main id="main">
+    <div class="location ls50">
+      <div class="wrap_com">
+        <ol class="clear">
+          <li><a href="" class="add_before"><span class="hide">홈</span></a></li>
+          <li><a href="">고객센터</a></li>
+          <li><a href="">자주묻는질문</a></li>
+        </ol>
+      </div>
+    </div>
+    <section class="sec_faq sec_cs sec_tab wrap_com">
+      <div class="mb60 text-center f_NotoSansKR">
+        <div><span class="h_type4">고객센터</span></div>
+        <div>
+          <span class="fs16 pr20" style="float: right; margin-top: -15px; letter-spacing: 0.005em;">
+            <img class="pr15" src="/common/images/stopwatch.svg" style="width: 20px; padding-bottom: 2px; opacity:0.4;" />상담시간 평일 오전 10시 ~ 저녁 7시
+          </span>
+        </div>
+      </div>
+      <div class="wrap_tab">
+        <ul class="tab_type1 flex align_center ls75">
+          <li class="on"><a href="/contents/cs/faq.html">자주묻는질문</a></li>
+          <li><a href="/contents/cs/news.html">최신뉴스</a></li>
+          <li><a href="/contents/cs/notice.html">공지사항</a></li>
+          <li><a href="/contents/cs/direct.html">1:1 문의</a></li>
+          <li><a href="/contents/cs/report.html">보이스피싱 제보</a></li>
+        </ul>
+      </div>
+      <form role="form" name="topSearch" id="srForm" method="get" action="<?=$_SERVER['PHP_SELF']?>">
+        <input type="hidden" name="qtype" value="<?=$qtype?>">
+        <div class="wrap_board f_NotoSansKR ls50">
+          <div class="top clear">
+            <h3 class="left ls50 fw400">자주묻는질문</h3>
+            <div class="wrap_search flex align_center right">
+              <select name="find_object">
+                <option value="all">전체</option>
+                <?=option_make($find_op, $find_object)?>
+              </select>
+              <div class="inp_search">
+                <input type="search" placeholder="검색어를 입력해 주세요." name="find_text" value="<?=$find_text?>">
+                <button type="button" class="searchBtn"><span class="hide">검색</span></button>
+              </div>
+            </div>
+          </div>
+          <div class="wrap_tab">
+            <ul class="tab_type1 type2 flex align_center ls75">
+              <li class="<?=($qtype=='') ? "on" : ""?>"><a href="./faq.html">전체</a></li>
+              <li class="<?=($qtype=='FAQ1') ? "on" : ""?>"><a href="./faq.html?qtype=FAQ1">복권구매</a></li>
+              <li class="<?=($qtype=='FAQ2') ? "on" : ""?>"><a href="./faq.html?qtype=FAQ2">이용안내</a></li>
+              <li class="<?=($qtype=='FAQ3') ? "on" : ""?>"><a href="./faq.html?qtype=FAQ3">캐시</a></li>
+              <li class="<?=($qtype=='FAQ4') ? "on" : ""?>"><a href="./faq.html?qtype=FAQ4">마일리지, 포인트, 쿠폰</a></li>
+              <li class="<?=($qtype=='FAQ5') ? "on" : ""?>"><a href="./faq.html?qtype=FAQ5">당첨금</a></li>
+              <li class="<?=($qtype=='FAQ6') ? "on" : ""?>"><a href="./faq.html?qtype=FAQ6">기타</a></li>
+            </ul>
+          </div>
+          <div class="bb bt space_btm">
+            <ol class="list_type4">
+            <?php
+              for ($i = 0; $i < count($list['BBS_NO']); $i++) {
+                $no = $list['total'] - (($page - 1) * $list['row']) - $i;
+            ?>
+              <li>
+                <a href="faq_details.html?no=<?=$list["BBS_NO"][$i]?>" class="btn reply_on">
+                  <p><?php echo "<span style='color:#f00;'>[".$faq_op[$list['QNA_TYPE'][$i]]."]</span> ".$list['SUBJECT'][$i]; ?></p>
+                </a>
+                <div class="none">
+                  <?=nl2br($list['CONTENT'][$i])?>
+                </div>
+              </li>
+            <?php } ?>
+            <?php if ($list['total'] <= 0) { ?>
+              <li>
+                <a class="btn reply_on">
+                  <p>등록된 글이 없습니다.</p>
+                </a>
+                <div style="display: none;"></div>
+              </li>
+            <?php } ?>
+            </ol>
+          </div>
+          <?php if ($list['total'] > 0) { ?>
+          <!-- 페이징 숫자 표시는 5개까지 -->
+          <div class="wrap_paging">
+            <?php
+              $page_info['cur'] = $page;
+              $page_info['row'] = $limit;
+              $page_info['total'] = $list['total'];
+              $list['page_string'] = print_page_num1($page_info);
+              echo $list['page_string'];
+            ?>
+          </div>
+          <?php } ?>
+        </div>
+      </form>
+    </section>
+    <?php include $_SERVER['DOCUMENT_ROOT']."/inc/quick-sub.html";?>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html";?>
+</body>
+
+<script>
+  $(document).ready(function() {
+    $(document).on('click', '.searchBtn', function() {
+      $('#srForm').submit();
+    });
+  });
+</script>
+</html>

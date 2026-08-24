@@ -1,0 +1,18 @@
+# 업로드 디렉토리에서는 스크립트 실행 금지
+<FilesMatch "\.(php|php3|php4|php5|phtml|pl|py|jsp|asp|sh|cgi|htaccess)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# 디렉토리 리스팅에서 파일 숨기기
+<IfModule mod_autoindex.c>
+    IndexIgnore *
+</IfModule>
+
+# php_flag engine off 는 PHP-FPM·일부 호스팅에서 .htaccess 미허용 시 이 폴더 전체 500 유발.
+# FilesMatch 스크립트 차단만으로 업로드 폴더의 PHP 실행 위험은 대부분 막을 수 있음.

@@ -1,0 +1,79 @@
+<div class="popup login-bg login type1">
+  <div class="inner">
+    <div class="login-wrap">
+      <button class="btn close btn_close"><span class="material-icons-round">close</span></button>
+      <!-- 로그인 1배너 -->
+      <div class="banner-area">
+        <img src="<?=$commonImageURI?>login/login-banner1.png?date=<?=date('his')?>" alt="로그인" id="loginImg" width="100%" />
+      </div>
+      <!-- 로그인 -->
+      <div class="login-area">
+        <h2 class="login-tit"><?=$사이트명1?> 로그인</h2>
+        <form onsubmit="return false">
+          <input type="text" class="check_on" name="login_id" id="login_id" alt="아이디를 입력해주세요."
+                 value="<?=(isset($_COOKIE['c_user_id'])) ? $_COOKIE['c_user_id'] : ""?>" placeholder="아이디" />
+          <input type="password" class="check_on" name="login_passwd" id="login_passwd"
+                 alt="비밀번호를 입력해주세요." placeholder="비밀번호 (영문, 숫자 포함 8~20자)" />
+          <div class="find-wrap">
+            <a href="/find-id.html" class="btn id-find">아이디 찾기</a>
+            <a href="/find-pw.html" class="btn fw-find">비밀번호 찾기</a>
+          </div>
+          <button class="btn login style01 login_btn">로그인</button>
+          <div class="id-save-wrap">
+            <input type="checkbox" id="rememberme" <?=(isset($_COOKIE['c_user_id'])) ? "checked" : ""?>
+                   class="id-save" name="rememberme" value="Y" />
+            <label for="rememberme">아이디 저장</label>
+          </div>
+        </form>
+        <div class="join-wrap">
+          <p class="join-txt">지금 <span>무료 가입</span>하세요!</p>
+          <a href="/signup.html" class="btn join">회원가입</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  $('.login_btn').click(function() {
+    let i = true;
+    let rememberme = '';
+
+    $('.check_on').each(function() {
+      if ($.trim($(this).val()) == '') {
+        alert($(this).attr('alt'));
+        $(this).focus();
+        i = false;
+        return false;
+      }
+    });
+
+    if (!i) {
+      return false;
+    }
+
+    if ($('#rememberme').is(':checked')) {
+      rememberme = 'Y';
+    }
+
+    $.post('/login.php', {
+      user_id: $('#login_id').val(),
+      passwd: $('#login_passwd').val(),
+      rememberme: rememberme,
+    }, function(e) {
+      if (!e.error) {
+        let path = $(location).attr('pathname');
+        let filename = path.split('/').pop();
+
+        if (filename === 'mega.html' || filename === 'power.html') {
+          let targetPage = (filename === 'mega.html') ? '/contents/lottery/mega.html?tp=y' : '/contents/lottery/power.html?tp=y';
+          location.href = targetPage;
+        } else {
+          window.location.reload();
+        }
+      } else {
+        alert(e.msg);
+      }
+    }, 'json');
+  });
+</script>

@@ -1,0 +1,235 @@
+<?php
+require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_BBS.php";
+F_admin_chk($S_login);
+
+if ($mode == 'update') {
+  $info = F_BBS(array("mode"=>"read", "BBS_NO"=>$no));
+} else {
+  $info = array();
+}
+
+if (!isset($mode)) $mode = "insert";
+
+$info['QNA_TYPE'] = isset($info['QNA_TYPE'])?$info['QNA_TYPE']:"";
+
+$baseReply = "안녕하세요 슈로코 고객지원팀입니다.<br /><br />저희 슈로코를 이용해주셔서 대단히 감사합니다.";
+
+// 매크로 1차 카테고리 가져오기
+$macroCate = $db->get_list(" SELECT distinct(category) as category FROM `BBS_MACRO_DIRECT` WHERE (1) ");
+?>
+
+<script type="text/javascript" src="/nse/js/HuskyEZCreator.js" charset="utf-8"></script>
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">1:1문의</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">게시판관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">1:1문의</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- PAGE-HEADER END -->
+    <div class="row">
+      <div class="col-lg-12 col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">1:1문의 답변</h3>
+          </div>
+          <div class="card-body">
+            <form class="needs-validation" novalidate method="post" name="w_frm" action="qna_action.php" enctype='multipart/form-data' onsubmit="return contentIn()">
+              <input type="hidden" name="BBS_NO" value="<?=(isset($info['BBS_NO'])) ? $info['BBS_NO'] : ""?>">
+              <input type="hidden" name="USER_ID" value="<?=(isset($info['USER_ID'])) ? $info['USER_ID'] : $S_login['user_id']?>">
+              <input type="hidden" name="NAME" value="<?=(isset($info['NAME'])) ? $info['NAME'] : $S_login['name']?>">
+              <input type="hidden" name="mode" value="<?=$mode?>">
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom03">아이디</label>
+                  <input class="form-control" type="text" name="USER_ID" value="<?=$info['USER_ID']?>" readonly />
+                  <div class="invalid-feedback">Please provide a valid TYPE.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom03">유형</label>
+                  <input class="form-control" type="text" name="QNA_TYPE" value="<?=$info['QNA_TYPE']?>" readonly />
+                  <div class="invalid-feedback">Please provide a valid TYPE.</div>
+                </div>
+                <div class="col-md-6 mb-3"></div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom03">질문제목</label>
+                  <input type="text" class="form-control" name="SUBJECT" value="<?=(isset($info['SUBJECT'])) ? $info['SUBJECT'] : ""?>" id="validationCustom03" readonly>
+                  <div class="invalid-feedback">Please provide a valid subject.</div>
+                </div>
+                <div class="col-md-6 mb-3"></div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom03">질문내용</label>
+                  <textarea class="form-control" name="CONTENT" id="validationCustom03" readonly style="height:300px;"><?=(isset($info['CONTENT'])) ? trim($info['CONTENT']) : ""?></textarea>
+                  <div class="invalid-feedback">Please provide a valid subject.</div>
+                </div>
+                <div class="col-md-6 mb-3"></div>
+              </div>
+              <div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <div>
+                    <label for="validationCustom03">답변 매크로 선택</label>
+                  </div>
+                  <div class="form-group fl-left">
+                    <select name="find_object_category1" id="select-beast" class="form-control form-select select2 firstCate" onChange="cateChage(this,'first')">
+                      <option value="">--카테고리--</option>
+                  <?for($i=0;$i<count($macroCate['category']);$i++) {?>
+                      <option value="<?=$macroCate['category'][$i]?>"><?=$macroCate['category'][$i]?></option>
+                  <?}?>
+                    </select>&nbsp;
+                  </div>
+                  <div class="form-group fl-left">
+                    <select name="find_object_category2" id="select-beast" class="form-control form-select select2 secondCate" onChange="cateChage(this,'second')">
+                      <option value="">--카테고리를 먼저 선택 하세요--</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="form-row" style="width:766px;">
+                <div class="col-md-6 mb-3" style="max-width:100%;flex:none;">
+                  <label for="content">답변내용</label>
+                  <textarea class="form-control is-invalid h-415" id="content" name="content" placeholder="Required example textarea" style="display:none;"  required><?=($info['REPLY'])? nl2br($info['REPLY']) : $baseReply; ?></textarea>
+                  <div class="invalid-feedback">모바일에서 이미지 가로크기가 화면보다 클경우 화면 크기에 맞게 표현됩니다.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                </div>
+              </div>
+              <div class="form-row">
+                <button class="btn btn-success me-3" type="button" onClick="history.go(-1);" style="width:100px">목록</button>
+                <? if ($S_login['user_id'] != "admin216") { ?>
+                <button class="btn btn-primary" type="submit" style="width:100px">답변저장</button>
+                <? } ?>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ROW CLOSED -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script type="text/javascript">
+var oEditors = [];
+nhn.husky.EZCreator.createInIFrame({
+  oAppRef: oEditors,
+  elPlaceHolder: "content",
+  sSkinURI: "/nse/SmartEditor2Skin.html",
+  htParams : {bUseToolbar : true,
+    fOnBeforeUnload : function() {
+      //alert("아싸!");
+    }
+  }, //boolean
+  fOnAppLoad : function() {
+    //예제 코드
+    //oEditors.getById["content"].exec("PASTE_HTML", [""]);
+  },
+  fCreator: "createSEditor2"
+});
+
+function pasteHTML() {
+  var sHTML = "<span style='color:#FF0000;'>이미지도 같은 방식으로 삽입합니다.<\/span>";
+  oEditors.getById["content"].exec("PASTE_HTML", [sHTML]);
+}
+
+function showHTML() {
+  var sHTML = oEditors.getById["content"].getIR();
+  alert(sHTML);
+}
+
+function submitContents() {
+  oEditors.getById["content"].exec("UPDATE_CONTENTS_FIELD", []);  // 에디터의 내용이 textarea에 적용됩니다.
+
+  // 에디터의 내용에 대한 값 검증은 이곳에서 document.getElementById("content").value를 이용해서 처리하면 됩니다.
+
+  /*try {
+    elClickedObj.form.submit();
+  } catch(e) {}*/
+}
+
+function setDefaultFont() {
+  var sDefaultFont = '돋움';
+  var nFontSize = 24;
+  oEditors.getById["content"].setDefaultFont(sDefaultFont, nFontSize);
+}
+
+function contentIn() {
+  submitContents();
+
+  return true;
+}
+
+function cateChage(obj, flag) {
+  $.post("./qnaAjax.php",{
+    mode      :  "cateChange",
+    category  :  obj.value,
+    flag : flag
+  },function(e) {
+    if (e.state == 'ok') {
+
+      switch(flag) {
+        case "first" :
+          var option = "";
+          $('.secondCate').empty();
+
+          if (obj.value == '') {
+            $('.secondCate').append('<option value="">--카테고리를 먼저 선택 하세요--</option>');
+            return false;
+          } else {
+            $('.secondCate').append('<option value="">--매크로를 선택 하세요--</option>');
+          }
+
+          $.each(e.data,function(index) {
+            option = '<option value="'+e.data[index].idx+'">'+e.data[index].title+'</option>';
+            $('.secondCate').append(option);
+          });
+        break;
+        case "second" :
+          var option = "";
+
+          if (obj.value == '') {
+            return false;
+          }
+
+          console.log(htmlCon);
+
+          var htmlCon = e.html;
+          oEditors.getById["content"].exec("SET_IR",[""]);
+          oEditors.getById["content"].exec("PASTE_HTML", [htmlCon]);
+        break;
+      }
+    }
+  },"json");
+}
+</script>
+<script language="javascript">
+$(document).ready(function() {
+  $(".side-menu").find(".slide").eq(8).addClass("is-expanded");
+  $(".side-menu").find(".slide").eq(8).find(".side-menu__item").addClass("active");
+  $(".side-menu").find(".slide").eq(8).find(".slide-menu").addClass("open");
+  $(".side-menu").find(".slide").eq(8).find(".slide-menu").find("li").eq(4).addClass("active");
+  $(".side-menu").find(".slide").eq(8).find(".slide-menu").find("li").eq(4).find("a").addClass("active");
+
+});
+</script>

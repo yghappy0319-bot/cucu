@@ -1,0 +1,113 @@
+<?php
+  // 환율
+  $won = $db->get_data("SELECT * FROM EXCHANGE WHERE DATE = '".date("Y-m-d")."'");
+
+  if (!isset($won['WON'])) {
+    $won = $db->get_data("SELECT * FROM EXCHANGE ORDER BY DATE DESC");
+  }
+?>
+
+<div class="banner hide">
+  <div class="wrap_com top_banner">
+    <img src="<?=$commonImageURI?>index/top-banner.png" />
+  </div>
+</div>
+
+<header>
+  <div class="top_area">
+    <div class="wrap_com">
+      <a href="/index.html" class="mainlogo">
+        <img src="<?=$commonImageURI?>logo_kor.svg" />
+      </a>
+      <nav class="util">
+        <h2 class="hide">유틸리티 메뉴</h2>
+        <ul class="login">
+          <?php if ($M_login['user_id'] != '') { ?>
+          <li class="add_after"><a href="/logout.php">로그아웃</a></li>
+          <li class="add_after"><a href="/contents/mypage/mypage.html">마이페이지</a></li>
+          <li class="add_after"><a href="/contents/mypage/history.html">나의 구매/당첨내역</a></li>
+          <?php } else { ?>
+          <li class="add_after"><a class="btn_popup" id="btn_login">로그인</a></li>
+          <li class="add_after"><a href="/signup.html">회원가입</a></li>
+          <?php } ?>
+          <li><a <?=(isset($M_login['user_id'])) ? 'href="/contents/mypage/coupon.html"' : 'class="btn_popup" id="btn_login"'?>>쿠폰등록</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+  <div class="bottom_area">
+    <div class="wrap_com">
+      <h2 class="hide">대메뉴</h2>
+      <nav class="gnb">
+        <ul class="nav_gnb clear">
+          <li <?=($menu_on['service'] == true) ? "class='on'" : ""?>><a href="/contents/service/purchase.html">서비스안내</a></li>
+          <li <?=($menu_on['mega'] == true) ? "class='on'" : ""?>><a href="/contents/lottery/mega.html">메가밀리언 구매</a><div class="babgeB">새로워진</div></li>
+          <li <?=($menu_on['power'] == true) ? "class='on'" : ""?>><a href="/contents/lottery/power.html">파워볼 구매</a></li>
+          <li <?=($menu_on['draw'] == true) ? "class='on'" : ""?>><a href="/contents/draw/draw-guide.html">당첨번호 확인</a></li>
+          <li <?=($menu_on['stats'] == true) ? "class='on'" : ""?>><a href="/contents/statistic/frequency.html">당첨번호 통계</a></li>
+          <li <?=($menu_on['cash'] == true) ? "class='on'" : ""?>><a <?=(isset($M_login['user_id'])) ? 'href="/contents/mypage/cash-charge.html"' : 'class="btn_popup" id="btn_login"'?>>캐시 충전</a></li>
+          <li <?=($menu_on['shop'] == true) ? "class='on'" : ""?>><a href="/contents/shop/list.html">슈로코몰</a></li>
+          <li <?=($menu_on['bbs'] == true) ? "class='on'" : ""?>><a href="/contents/cs/faq.html">고객센터</a></li>
+
+        </ul>
+      </nav>
+      <ul class="nav_guide">
+        <li class ="rate color_blue"><span class="add_before">오늘의 환율</span> $1=<span><?=number_format($won['WON'])?></span>원</li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<div class="nav_float mt20">
+  <ul>
+    <a href="/webapp_guide.html"><img src="<?=$commonImageURI?>pc_right_banner.png" /></a>
+    <!-- <a href="https://play.google.com/store/apps/details?id=com.sulotko&hl=ko" target="_blank"><img src="<?=$commonImageURI?>pc_right_banner2.png" /></a> -->
+    <li style="margin-top: 0.3rem;">
+      <a <?=(isset($M_login['user_id'])) ? 'href="/contents/mypage/cash-charge.html"' : 'class="btn_popup" id="btn_login"'?>>
+        <p>캐시충전</p>
+      </a>
+    </li>
+    <li class="coupon">
+      <a <?=(isset($M_login['user_id'])) ? 'href="/contents/mypage/coupon.html"' : 'class="btn_popup" id="btn_login"'?>>
+        <p>쿠폰등록</p>
+      </a>
+    </li>
+  </ul>
+  <button type="button" class="btn_top add_after"><span class="va_mid">TOP</span></button>
+</div>
+
+
+<script>
+  // Shop 메뉴
+  const shopCate = $('.btn.cate');
+  const shopCateCont = $('.cate_cont');
+
+  $(shopCate).click(function() {
+    $(this).toggleClass('on');
+    if($(this).hasClass('on')){
+      $(shopCateCont).addClass('open')
+    }else {
+      $(shopCateCont).removeClass('open');
+    }
+  })
+
+  $(".drop1_item").on("click", function() {
+    $(this).addClass("active");
+    $(".drop1_item").not($(this)).removeClass("active");
+    if($(this).hasClass("active")) {
+      var drop2 = $(this).find("[class^=dropmenu2-]");
+      drop2.addClass("active");
+      $("[class^=dropmenu2-]").not(drop2).removeClass("active");
+    }
+  });
+
+  $('.cate_cont .btn.close').click(function() {
+    $(shopCate).removeClass('on');
+    $(shopCateCont).removeClass('open');
+  })
+
+  // Shop 장바구니 뱃지
+  function cartBadge(cnt) {
+    $('.myshop_nav .count').html('<span>'+cnt+'</span>');
+  }
+</script>

@@ -1,0 +1,693 @@
+<?php
+if(isset($_COOKIE['redirect'])) { //리다이렉트쿠키가 있는경우
+  $cookie_name = "redirect";
+  setcookie($cookie_name, "", time() - 3600, "/");
+  //쿠키 삭제
+}
+include_once "../adm/head.php";
+if(!$member['mb_email']){
+  echo "<script>alert('마이페이지로 이동하여 이메일 정보를 등록/수정해주세요.');location.href='/adm/mypage.htm';</script>";
+  exit;
+}
+?>
+<!-- <?=$member['mb_8']?> -->
+<!-- <?=$member['mb_10']?> -->
+  <?php include_once "../adm/nav.php";?>
+    <div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+      <div class="main-menu-header">
+        <input type="text" placeholder="Search" class="menu-search form-control round"/>
+      </div>
+      <?php include_once "../adm/menu.php";?>
+    </div>
+<?php $service2_mb_cash = isset($member['mb_cash']) ? (int)$member['mb_cash'] : 0; ?>
+<style>
+.service2-page .discount { text-decoration-line: line-through; color: #90a4ae; font-size: 0.9rem; }
+.service2-page .discount_persent { color: #F12C67; font-weight: 600; font-size: 0.85rem; margin-left: 0.35rem; }
+.service2-page .service2-hero {
+  background: linear-gradient(135deg, #1a3a52 0%, #2d5f7a 55%, #3d7a9c 100%);
+  color: #fff;
+  border-radius: 12px;
+  padding: 1.35rem 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 32px rgba(22, 38, 71, 0.14);
+}
+.service2-page .service2-hero h2 { margin: 0 0 0.35rem; font-weight: 600; font-size: 1.35rem; }
+.service2-page .service2-hero p { margin: 0; opacity: 0.92; font-size: 0.9rem; line-height: 1.5; }
+.service2-page .service2-cash-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  background: linear-gradient(180deg, #f4faf7 0%, #ecf5f0 100%);
+  border: 1px solid rgba(61, 122, 156, 0.22);
+  border-radius: 10px;
+  margin-bottom: 1.75rem;
+}
+.service2-page .service2-cash-strip .cash-label { font-size: 0.85rem; color: #546e7a; }
+.service2-page .service2-cash-strip .cash-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a3a52;
+  font-variant-numeric: tabular-nums;
+}
+.service2-page .service2-section {
+  margin-bottom: 2rem;
+  padding-bottom: 0.5rem;
+}
+.service2-page .service2-section-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #eceff1;
+}
+.service2-page .service2-section-icon {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: #fff;
+}
+.service2-page .service2-section-icon--budget { background: linear-gradient(135deg, #00838f, #26a69a); }
+.service2-page .service2-section-icon--unlimited { background: linear-gradient(135deg, #5e35b1, #7e57c2); }
+.service2-page .service2-section-icon--auto { background: linear-gradient(135deg, #1565c0, #42a5f5); }
+.service2-page .service2-section-title { margin: 0; font-size: 1.15rem; font-weight: 600; color: #263238; }
+.service2-page .service2-section-desc { margin: 0.25rem 0 0; font-size: 0.85rem; color: #78909c; line-height: 1.45; }
+.service2-page .service2-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+.service2-page .service2-plan-card {
+  border: 1px solid #e0e6ed;
+  border-radius: 12px;
+  background: #fff;
+  padding: 1.15rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.service2-page .service2-plan-card:hover {
+  border-color: #b0bec5;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+}
+.service2-page .service2-plan-card--budget { border-top: 3px solid #26a69a; }
+.service2-page .service2-plan-card--unlimited { border-top: 3px solid #7e57c2; }
+.service2-page .service2-plan-card--auto { border-top: 3px solid #42a5f5; }
+.service2-page .service2-plan-name {
+  margin: 0 0 0.65rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #37474f;
+}
+.service2-page .service2-plan-meta {
+  font-size: 0.82rem;
+  color: #607d8b;
+  line-height: 1.55;
+  flex: 1;
+  margin-bottom: 1rem;
+}
+.service2-page .service2-plan-meta strong { color: #455a64; }
+.service2-page .service2-plan-price {
+  margin-bottom: 0.85rem;
+  min-height: 1.75rem;
+}
+.service2-page .service2-plan-price .price-main {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1a3a52;
+  font-variant-numeric: tabular-nums;
+}
+.service2-page .service2-plan-actions .btn { width: 100%; font-weight: 600; }
+.service2-page .service2-plan-actions .btn-cash {
+  background: linear-gradient(135deg, #37474f, #546e7a);
+  border: 0;
+  color: #fff;
+}
+.service2-page .service2-plan-actions .btn-cash:hover { opacity: 0.92; color: #fff; }
+.service2-page .service2-plan-actions .btn-auto {
+  border-color: #42a5f5;
+  color: #1565c0;
+}
+.service2-page .service2-plan-actions .btn-auto-active {
+  background: #e3f2fd;
+  border-color: #42a5f5;
+  color: #1565c0;
+}
+.service2-page .service2-hint {
+  font-size: 0.8rem;
+  color: #90a4ae;
+  margin-top: 0.5rem;
+}
+@media (max-width: 575px) {
+  .service2-page .service2-plan-grid { grid-template-columns: 1fr; }
+}
+</style>
+    <div class="app-content content container-fluid service2-page">
+      <div class="content-wrapper">
+        <div class="content-body">
+          <section>
+            <div class="service2-hero">
+              <h2>이용료 결제</h2>
+              <p>알뜰형·무제한은 럭키캐시로, 자동결제는 카드로 이용하실 수 있습니다. 캐시 결제는 부가세 없이 표시 금액만 차감됩니다.</p>
+            </div>
+
+            <div class="service2-cash-strip">
+              <span class="cash-label">보유 럭키캐시</span>
+              <span class="cash-value"><?= number_format($service2_mb_cash) ?>원</span>
+            </div>
+
+            <!-- 알뜰형 -->
+            <div class="service2-section" id="service2-budget">
+              <div class="service2-section-head">
+                <div class="service2-section-icon service2-section-icon--budget"><i class="icon-mobile"></i></div>
+                <div>
+                  <h3 class="service2-section-title">알뜰형 (문자)</h3>
+                  <p class="service2-section-desc">웹사이트(계좌) 연결 1개 · 기간 내 처리건수 소진 시 중단 · 건수 충전 시 재가동</p>
+                </div>
+              </div>
+              <div class="service2-plan-grid">
+              <?
+                $result = db_query("select * from tb_pay_config where gubun = '알뜰형' order by sort asc ");
+                foreach($result as $data){
+                  if($data['discount']>0){
+                    $discountRate = $data['discount'];
+                    $decimalRate = $discountRate / 100;
+                    $할인가 = $data['price'] * $decimalRate;
+                    $total_price = $data['price'] - $할인가;
+                  }else{
+                    $total_price = $data['price'];
+                  }
+                  $계좌이체 = $total_price;
+              ?>
+                <div class="service2-plan-card service2-plan-card--budget">
+                  <h4 class="service2-plan-name"><?= htmlspecialchars($data['product'], ENT_QUOTES, 'UTF-8') ?></h4>
+                  <div class="service2-plan-meta">
+                    <strong><?= (int)$data['service_day'] ?>일</strong> · 처리 <strong><?= number_format((int)$data['service_sms']) ?>건</strong><br>
+                    기간 내 건수 소진 시 서비스가 중단됩니다.
+                  </div>
+                  <div class="service2-plan-price">
+                    <? if($data['discount']>0){ ?>
+                      <span class="discount"><?= number_format($data['price']) ?>원</span>
+                      <span class="discount_persent"><?=$data['discount']?>% 할인</span><br>
+                    <? } ?>
+                    <span class="price-main"><?= number_format($계좌이체) ?>원</span>
+                  </div>
+                  <div class="service2-plan-actions">
+                    <button type="button" class="btn btn-cash"
+                      onclick="pay_service2_cash_btn(this)"
+                      data-pay="<?=$data['gubun']?>/<?=$data['service_day']?>/<?=$계좌이체?>/<?=$data['service_sms']?>/<?=$data['idx']?>/cash/<?= htmlspecialchars($data['product'], ENT_QUOTES, 'UTF-8') ?>">캐시로 결제</button>
+                  </div>
+                </div>
+              <? } ?>
+              </div>
+            </div>
+
+            <!-- 무제한 -->
+            <div class="service2-section" id="service2-unlimited">
+              <div class="service2-section-head">
+                <div class="service2-section-icon service2-section-icon--unlimited"><i class="icon-infinite"></i></div>
+                <div>
+                  <h3 class="service2-section-title">무제한 (문자)</h3>
+                  <p class="service2-section-desc">웹사이트(계좌) 연결 최대 3개 (추가 시 개당 5,000원) · 기간 내 처리건수 제한 없음</p>
+                </div>
+              </div>
+              <div class="service2-plan-grid">
+              <?
+                $result = db_query("select * from tb_pay_config where gubun = '무제한' and status = 1 order by sort asc ");
+                foreach($result as $data){
+                  if($data['discount']>0){
+                    $discountRate = $data['discount'];
+                    $decimalRate = $discountRate / 100;
+                    $할인가 = $data['price'] * $decimalRate;
+                    $total_price = $data['price'] - $할인가;
+                  }else{
+                    $total_price = $data['price'];
+                  }
+                  $계좌이체 = $total_price;
+              ?>
+                <div class="service2-plan-card service2-plan-card--unlimited">
+                  <h4 class="service2-plan-name"><?= htmlspecialchars($data['product'], ENT_QUOTES, 'UTF-8') ?></h4>
+                  <div class="service2-plan-meta">
+                    <strong><?= (int)$data['service_day'] ?>일</strong> · 처리건수 <strong>무제한</strong>
+                  </div>
+                  <div class="service2-plan-price">
+                    <? if($data['discount']>0){ ?>
+                      <span class="discount"><?= number_format($data['price']) ?>원</span>
+                      <span class="discount_persent"><?=$data['discount']?>% 할인</span><br>
+                    <? } ?>
+                    <span class="price-main"><?= number_format($계좌이체) ?>원</span>
+                  </div>
+                  <div class="service2-plan-actions">
+                    <button type="button" class="btn btn-cash"
+                      onclick="pay_service2_cash_btn(this)"
+                      data-pay="<?=$data['gubun']?>/<?=$data['service_day']?>/<?=$계좌이체?>/<?=$data['service_sms']?>/<?=$data['idx']?>/cash/<?= htmlspecialchars($data['product'], ENT_QUOTES, 'UTF-8') ?>">캐시로 결제</button>
+                  </div>
+                </div>
+              <? } ?>
+              </div>
+            </div>
+
+            <!-- 자동결제 -->
+            <div class="service2-section" id="service2-auto">
+              <div class="service2-section-head">
+                <div class="service2-section-icon service2-section-icon--auto"><i class="icon-credit-card"></i></div>
+                <div>
+                  <h3 class="service2-section-title">자동결제</h3>
+                  <p class="service2-section-desc">카드 등록 후 매월 자동 결제 · 별도 신청 없이 서비스 연장</p>
+                </div>
+              </div>
+              <div class="service2-plan-grid">
+              <?
+                $result = db_query("select * from tb_pay_config where gubun = '자동결제' order by sort asc ");
+                foreach($result as $data){
+                  if($data['discount']>0){
+                    $discountRate = $data['discount'];
+                    $decimalRate = $discountRate / 100;
+                    $할인가 = $data['price'] * $decimalRate;
+                    $total_price = $data['price'] - $할인가;
+                  }else{
+                    $total_price = $data['price'];
+                  }
+                  $vat = $total_price * 0.1;
+                  $계좌이체 = $total_price;
+                  $카드결제 = $total_price + $vat;
+                  $auto_active = (!empty($member['billKey']) && (int)$data['idx'] === (int)$member['pay_config_key']);
+              ?>
+                <div class="service2-plan-card service2-plan-card--auto">
+                  <h4 class="service2-plan-name"><?= htmlspecialchars($data['product'], ENT_QUOTES, 'UTF-8') ?></h4>
+                  <div class="service2-plan-meta">
+                    <? if($data['discount']>0){ ?>
+                      <span class="discount"><?= number_format($data['price']) ?>원</span>
+                      <span class="discount_persent"><?=$data['discount']?>% 할인</span><br>
+                    <? } else { ?>
+                      처리건수 <strong><?= number_format((int)$data['service_sms']) ?>건</strong><br>
+                    <? } ?>
+                    매월 자동 갱신
+                  </div>
+                  <div class="service2-plan-price">
+                    <span class="price-main"><?= number_format($계좌이체) ?>원</span>
+                    <span class="service2-hint">/ 월 (카드, VAT 별도)</span>
+                  </div>
+                  <div class="service2-plan-actions">
+                    <? if($auto_active){ ?>
+                    <button type="button" class="btn btn-outline-info btn-auto-active" onclick="go_card_auto_pop(this)"
+                      data-payid="<?=$data['idx']?>"
+                      data-pay="<?=$data['gubun']?>/<?=$data['service_day']?>/<?=$카드결제?>/<?=$data['service_sms']?>/<?=$data['idx']?>/card">자동결제 설정됨</button>
+                    <? }else{ ?>
+                    <button type="button" class="btn btn-outline-info btn-auto" onclick="go_card_auto_pop(this)"
+                      data-payid="<?=$data['idx']?>"
+                      data-pay="<?=$data['gubun']?>/<?=$data['service_day']?>/<?=$카드결제?>/<?=$data['service_sms']?>/<?=$data['idx']?>/card">매월 자동결제 신청</button>
+                    <? } ?>
+                  </div>
+                </div>
+              <? } ?>
+              </div>
+            </div>
+
+          </section>
+        </div>
+      </div>
+    </div>
+
+
+
+    <div class="modal fade text-xs-left" id="default1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel1" aria-hidden="true">
+		  <div class="modal-dialog" role="document">
+  			<div class="modal-content">
+
+
+
+  			</div>
+		  </div>
+		</div>
+
+<form name="forderform" id="forderform">
+  <input type="hidden" name="PayMethod" value="CARD" >  <!-- 신용카드 -->
+  <input type="hidden" name="MID" value="pgerrormam" > <!-- (발급받은 상점MID를 입력) -->
+  <input type="hidden" name="MerchantKey" value="UiT8d25EpHP2nSXJfQS009tE3fDPnL7u3neVCod6JG1yEPg6ieEsThbL6iX3E8lmvj63Dfk0Tsg7IKwGl2601g=="> <!-- 발급된 가맹점키 -->
+  <input type="hidden" name="GoodsName" id="GoodsName" value="" >
+  <input type="hidden" name="Amt" id="inno_amt" value="1000" >
+
+  <input type="hidden" name="pay_method" id="pay_method" value="">
+  <input type="hidden" name="bank_receipt" id="bank_receipt" value="">
+
+  <input type="hidden" name="BuyerName" value="<?=$member['mb_id']?>" >
+  <input type="hidden" name="BuyerTel" value="<?=$member['mb_hp']?>" >
+  <input type="hidden" name="BuyerEmail" value="<?=$member['mb_email']?>" >
+  <input type="hidden" name="ResultYN" value="Y" > <!-- (N:결제결과창 없음, 가맹점 ReturnURL로 결과전송) -->
+  <input type="hidden" name="ReturnURL" value="" >
+  <input type="hidden" name="resultcode" id="resultcode" value="" >
+  <input type="hidden" name="resultmsg" id="resultmsg" value="" >
+
+  <input type="hidden" name="idata" id="idata" >
+  <input type="hidden" name="midx" id="midx" value="<?=$member['mb_no']?>" >
+  <input type="hidden" name="userid" id="userid" value="<?=$member['mb_id']?>" >
+  <input type="hidden" name="_moid" id="moid" >
+  <input type="hidden" name="payid" id="payid" >
+</form>
+
+<form method="post" name="frmData" id="auto_bill_frm">
+  <input type="hidden" name="paydata" id="paydata" />
+</form>
+
+<script type="text/javascript" src="https://pg.innopay.co.kr/ipay/js/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="https://pg.innopay.co.kr/ipay/js/innopay-2.0.js" charset="utf-8"></script>
+<script type="text/javascript">
+function go_card_auto_pop(obj){
+  const str = obj.getAttribute('data-pay');
+    console.log(str);
+  $("#paydata").val(str);
+
+  /** log **/
+  var userid = $("#userid").val();
+  $("#idata").val(str);
+  const parts = str.split('/');
+  var amount = parts[2];
+  $("#inno_amt").val(amount);
+  $("#GoodsName").val("서비스 연장(자동결제) - "+amount+"원");
+  var moid = userid+getCurrentTimestamp();
+  go_pay_log();
+
+  var pop_title = "popupOpener" ;
+  window.open("", pop_title, "width=480,height=600") ;
+
+  var frmData = document.frmData ;
+  frmData.target = pop_title ;
+  frmData.action = "auto_card_bill.html" ;
+  frmData.submit() ;
+}
+
+
+function pay_service2_cash_btn(btn) {
+  var str = btn.getAttribute('data-pay');
+  if (!str) {
+    alert('상품을 확인할 수 없습니다.');
+    return;
+  }
+  var parts = str.split('/');
+  if (parts.length < 7 || parts[5] !== 'cash') {
+    alert('상품 정보가 올바르지 않습니다.');
+    return;
+  }
+  var cost = parseInt(parts[2], 10);
+  if (isNaN(cost) || cost <= 0) {
+    alert('금액을 확인할 수 없습니다.');
+    return;
+  }
+  var gubun = parts[0];
+  var days = parts[1];
+  var costFmt = cost.toLocaleString();
+  var msg = '보유 캐시 ' + costFmt + '원을 차감하여 ';
+  if (gubun === '알뜰형') {
+    msg += '알뜰형 서비스를 ' + days + '일 연장합니다.';
+  } else if (gubun === '무제한') {
+    msg += '무제한 서비스를 ' + days + '일 연장합니다.';
+  } else {
+    alert('캐시로 결제할 수 없는 상품입니다.');
+    return;
+  }
+  msg += '\n진행할까요?';
+  if (!confirm(msg)) {
+    return;
+  }
+  var midx = $('#midx').val();
+  $.ajax({
+    type: 'POST',
+    url: '/ajax/_ajax_pay_service_cash.php',
+    data: { midx: midx, idata: str },
+    success: function(result) {
+      var r = (result || '').trim();
+      if (r === '1') {
+        alert('캐시 결제가 완료되었습니다. 감사합니다.');
+        location.reload();
+        return;
+      }
+      alert(r || '처리 중 오류가 발생했습니다.');
+    },
+    error: function(e) {
+      alert(e.responseText || '요청에 실패했습니다.');
+    }
+  });
+}
+
+
+function pay_popup_btn(obj){
+  $("#inno_amt").val("");
+  const str = obj.getAttribute('data-pay');
+  console.log(str);
+  $("#idata").val(str);
+  const parts = str.split('/');
+  var amount = parts[2];
+  var popup_title = "";
+
+  $("#GoodsName").val(parts[6]);
+  $("#inno_amt").val(amount);
+  $("#payid").val(obj.getAttribute('data-payid'));
+
+  $.ajax({
+     type : "POST",
+     url: "./back/_get_pay_form.php",
+     async: false,
+     data: {
+       payinfo : str
+     },
+     success: function(result) {
+      $("#default1 .modal-content").html(result);
+     },
+     error:function(e) {
+        alert(e.responseText);
+     }
+  });
+}
+
+
+function getCurrentTimestamp() {
+    var now = new Date();
+
+    var year = now.getFullYear();
+    var month = ('0' + (now.getMonth() + 1)).slice(-2); // 0부터 시작하므로 +1
+    var day = ('0' + now.getDate()).slice(-2);
+    var hour = ('0' + now.getHours()).slice(-2);
+    var minute = ('0' + now.getMinutes()).slice(-2);
+    var second = ('0' + now.getSeconds()).slice(-2);
+
+    var timestamp = year + month + day + hour + minute + second;
+    return timestamp;
+}
+
+function go_innopay(){
+  var userid = $("#userid").val();
+  var pv = $("#idata").val();
+  var moid = userid+getCurrentTimestamp();
+  $("#moid").val(moid);
+  $("#pay_method").val('card');
+  console.log(moid);
+  // 결제요청 함수
+  innopay.goPay({
+    //// 필수 파라미터
+    PayMethod: forderform.PayMethod.value,		// 결제수단(CARD,BANK,VBANK,CARS,CSMS,DSMS,EPAY,EBANK)
+    MID: forderform.MID.value,							// 가맹점 MID
+    MerchantKey:forderform.MerchantKey.value,	// 가맹점 라이센스키
+    GoodsName:forderform.GoodsName.value,		// 상품명
+    Amt:forderform.Amt.value,							// 결제금액(과세)
+    BuyerName:forderform.BuyerName.value,		// 고객명
+    BuyerTel:forderform.BuyerTel.value,				// 고객전화번호
+    BuyerEmail:forderform.BuyerEmail.value,			// 고객이메일
+    ResultYN:forderform.ResultYN.value,				// 결제결과창 출력유뮤
+
+    Moid:moid,			// 가맹점에서 생성한 주문번호 셋팅
+    //// 선택 파라미터
+    ReturnURL:forderform.ReturnURL.value,			// 결제결과 전송 URL(없는 경우 아래 innopay_result 함수에 결제결과가 전송됨)
+//			ArsConnType:'02', 							///* ARS 결제 연동시 필수 01:호전환, 02(가상번호), 03:대표번호 */
+
+//			FORWARD:'',									// 결제창 연동방식 (X:레이어, 기본값)
+//			GoodsCnt:'',									// 상품갯수 (가맹점 참고용)
+//			MallReserved:'',								// 가맹점 데이터
+//			OfferingPeriod:'',								// 제공기간
+//			DutyFreeAmt:'',								// 결제금액(복합과세/면세 가맹점의 경우 금액설정)
+//			EncodingType:'utf-8',						// 가맹점 서버 인코딩 타입 (utf-8, euc-kr)
+//			MallIP:'',											// 가맹점 서버 IP
+//			UserIP:'',											// 고객 PC IP
+//			mallUserID:'',									// 가맹점 고객ID
+//			User_ID:'',										// Innopay에 등록된 영업사원ID
+    Currency:''										// 통화코드가 원화가 아닌 경우만 사용(KRW/USD)
+    });
+    go_pay_log(); //결제시도로그
+}
+
+function go_pay_log(){
+
+  var params = jQuery("#forderform").serialize();
+  $.ajax({
+    type : "POST",
+    url: "/ajax/_ajax_pay_log.php",
+    async: false,
+    data: params,
+    success: function(result) {
+      console.log(result);
+      var r = result.trim();
+      if(r!=1){
+        alert("관리자에게 문의해주세요1.");
+        return false;
+      }
+    },
+    error:function(e) {
+      alert(e.responseText);
+    }
+  });
+
+}
+
+/**
+ * 결제결과 수신 Javascript 함수
+ * ReturnURL이 없는 경우 아래 함수로 결과가 리턴됩니다 (함수명 변경불가!)
+ */
+	function innopay_result(data){
+		var a = JSON.stringify(data);
+		// Sample
+		var mid = data.MID;					// 가맹점 MID
+		var tid = data.TID;					// 거래고유번호
+		var amt = data.Amt;					// 금액
+		var moid = data.MOID;				// 주문번호
+		var authdate = data.AuthDate;		// 승인일자
+		var authcode = data.AuthCode;		// 승인번호
+		var resultcode = data.ResultCode;	// 결과코드(PG)
+		var resultmsg = data.ResultMsg;		// 결과메세지(PG)
+		var errorcode = data.ErrorCode;		// 에러코드(상위기관)
+		var errormsg = data.ErrorMsg;		// 에러메세지(상위기관)
+		var EPayCl   = data.EPayCl;
+		$("#resultcode").val(resultcode);
+    $("#resultmsg").val(resultmsg);
+		$("#moid").val(moid);
+		alert("["+resultcode+"]"+resultmsg);
+    go_service_update(resultcode);
+	}
+
+
+function go_service_update(resultcode){
+  
+  var params = jQuery("#forderform").serialize();
+  $.ajax({
+    type : "POST",
+    url: "/ajax/_ajax_pay.php",
+    async: false,
+    data: params,
+    success: function(result) {
+      console.log(result);
+    var r = (result || "").trim();
+    if (r.charAt(0) === "{") {
+      try {
+        var j = JSON.parse(r);
+        if (String(j.resultcode) === "3001") {
+          alert(j.resultmsg || "결제가 완료 되었습니다. 감사합니다.");
+          location.reload();
+          return;
+        }
+      } catch (e) { console.log(e); }
+    }
+    if(r==1){
+      alert("결제가 완료 되었습니다. 감사합니다.");
+      location.reload();
+      return false;
+    }
+    if(r=="0000"){
+      alert("결제가 완료되어 서비스 기간이 연장 되었습니다. 감사합니다.");
+      location.reload();
+      return;
+    }
+    if (r) {
+      alert(r);
+    }
+    console.log(r);
+    },
+    error:function(e) {
+      alert(e.responseText);
+    }
+  });
+}
+
+
+
+
+
+function tax(value){
+  var increasedValue = value * 1.10; // 10% 증가
+  increasedValue = parseFloat(increasedValue.toFixed(2));
+  console.log(increasedValue);
+  return increasedValue;
+}
+function go_service1(obj,obj2){
+  $(".bnt_s"+obj2).attr("data-pay",obj);
+  const str = obj;
+  const parts = str.split('/');
+
+  var value = parseFloat(parts[2]); // 값을 숫자로 변환
+  if (!isNaN(value)) { // 값이 유효한 숫자인지 확인
+      var increasedValue = tax(value);
+       var formattedValue = increasedValue.toLocaleString(); // 천 단위 콤마 추가
+       console.log(formattedValue); // 포맷된 값을 콘솔에 출력
+       $(".bnt_s"+obj2).html(formattedValue + "원 결제하기"); // 포맷된 값을 HTML 요소에 삽입
+   }
+}
+
+function go_tax_info_save(){
+  var params = jQuery("#bankFrm").serialize();
+  $.ajax({
+    type : "POST",
+    url: "./back/_set_tax_info.php",
+    async: false,
+    data: params,
+  success: function(result) {
+  var r = result.trim();
+    console.log(r);
+    },
+    error:function(e) {
+      alert(e.responseText);
+    }
+  });
+}
+
+function go_bank_chk(){
+
+  // 무통장 결제 시 현금영수증/세금계산서 및 상세 입력값을 함께 전송
+  var receipt = $("input[name='receipt1']:checked").val();
+  $("#bank_receipt").val(receipt);
+  $("#pay_method").val('bank');
+
+  // forderform + bankFrm 모두 직렬화하여 전송
+  var params = jQuery("#forderform, #bankFrm").serialize();
+  $.ajax({
+    type : "POST",
+    url: "/ajax/_ajax_pay_log.php",
+    async: false,
+    data: params,
+    success: function(result) {
+      console.log(result);
+      var r = result.trim();
+      if(r==1){
+        alert("이용료 결제 신청이 완료 되었습니다. 이용료를 이체해주시면 서비스기간이 연장 됩니다.");
+        location.href = "/adm/pay.html";
+        return false;
+      }
+    },
+    error:function(e) {
+      alert(e.responseText);
+    }
+  });
+
+  
+}
+
+</script>
+
+  <?php include_once "../adm/footer.php";?>

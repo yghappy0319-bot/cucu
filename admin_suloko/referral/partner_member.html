@@ -1,0 +1,212 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_REFERRAL_MEMBER.php";
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 25;
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&find_object_refer=$find_object_refer&limit=$limit&sdate=$sdate&edate=$edate&schdate=$schdate";
+
+  $add_query = "";
+
+  if ($sdate != "" && $edate != "") {
+    $sDate = $sdate." 00:00:01";
+    $eDate = $edate." 23:59:59";
+    $add_query .= " AND REG_DATE BETWEEN '".$sDate."' AND '".$eDate."'";
+  }
+
+  $list = F_REFERRAL_MEMBER_list(array(
+    "row"               => $limit,
+    "page"              => $page,
+    "order"             => $order,
+    "find_text"         => $find_text,
+    "find_object"       => $find_object,
+    "find_object_refer" => $find_object_refer,
+    "add_query"         => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['MEMBER_NO'] = array();
+  }
+
+  $find_op = array(
+    "USER_ID" => "아이디",
+    "NAME"    => "성명"
+  );
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">가입회원목록</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">제휴파트너관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">가입회원목록</li>
+        </ol>
+      </div>
+      <!-- SLK-339
+      <div class="ms-auto pageheader-btn">
+        <a href="./partner_member_excel.html?order=<?=$order?>&find_text=<?=$find_text?>&find_object=<?=$find_object?>&find_object_refer=<?=$find_object_refer?>&sdate=<?=$sdate?>&edate=<?=$edate?>&schdate=<?=$schdate?>" target="_blank" class="btn btn-primary btn-icon text-white me-2">
+          <span>
+            <i class="fa fa-file-excel-o"></i>
+          </span> Excel Download
+        </a>
+      </div> -->
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="find_object_refer" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <option value="">--전체(파트너)--</option>
+                    <?php
+                      $query = "SELECT Idx, NAME FROM REFERRAL_PARTNER ORDER BY Idx";
+                      $refer_list = $db->get_list($query);
+                      for ($i = 0; $i < count($refer_list['Idx']); $i++) {
+                        $refer_idx = $refer_list["Idx"][$i];
+                        $refer_name = $refer_list["NAME"][$i];
+                    ?>
+                    <option value="<?=$refer_idx?>" <?php if ($find_object_refer == $refer_idx) echo "selected"; ?> ><?=$refer_name?></option>
+                    <?php } ?>
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select name="schdate" id="schdate" class="form-control form-select select2">
+                    <option value="">--기간선택--</option>
+                    <?=option_make($search_date_op, $schdate)?>
+                  </select>
+                </div>
+                <input type="hidden" name="find_object" value="PLAYDATE" />
+                <div class="form-group mr-3 fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                    <span style="margin: 8px 5px 0 5px;">~</span>
+                      <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div>
+                    <input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                  </div>
+                </div>
+                <div class="form-group fl-left">
+                  <select name="find_object" id="select-beast" class="form-control form-select select2">
+                    <option value="all">--전체(회원)--</option>
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control auto-submit" name="find_text" size="3" value="<?=$find_text?>" >
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+                <!--
+                <div class="form-group mr-3 fl-left">
+                  <select name="schdate" id="schdate" class="form-control form-select select2">
+                    <option value="">--기간(가입일)--</option>
+                    <?=option_make($search_date_op, $schdate)?>
+                  </select>
+                </div>
+                <div class="form-group fl-left">
+                  <div class="input-group">
+                    <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div><input class="form-control fc-datepicker" placeholder="YYYY-MM-DD" name="sdate" id="sdate" type="text" value="<?=$sdate?>" />
+                    <span>&nbsp;~&nbsp;</span>
+                      <div class="input-group-text">
+                      <i class="fa fa-calendar tx-16 lh-0 op-6"></i>
+                    </div><input class="form-control fc-datepicker mr-3" placeholder="YYYY-MM-DD" name="edate" id="edate" type="text" value="<?=$edate?>" />
+                  </div>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <div class="input-group-text btn btn-primary" id="btn-search2" style="padding: 11px;">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+                -->
+              </form>
+            </div>
+            <div class="table-responsive">
+              <table class="table border text-nowrap table-striped" id="table-list">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>파트너명</th>
+                    <th>ID</th>
+                    <th>이름</th>
+                    <th>가입일</th>
+                    <th>첫 결제금액</th>
+                    <th>첫 충전일</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['MEMBER_NO']); $i++) {
+                      $no = $list['total'] - (($page-1)*$list['row']) - $i;
+                      $first_date = "";
+                      $first_price = 0;
+
+                      // 레퍼럴 파트너
+                      $referral_id = $db->get_data("SELECT NAME FROM REFERRAL_PARTNER WHERE Idx='".$list['REFERRAL_NO'][$i]."'");
+                      // 회원
+                      $c_price = $db->get_data("SELECT * FROM CASH WHERE MEMBER_NO='".$list['MEMBER_NO'][$i]."' ORDER BY REG_DATE ASC");
+
+                      if (isset($c_price['REG_DATE'])) {
+                        $first_date = date("Y-m-d H:i",strtotime($c_price['REG_DATE']));
+                        if (!$first_date) {
+                          $first_date = "-";
+                        }
+                        $first_price = $c_price["PRICE"];
+                        if ($first_price == '') {
+                          $first_price  =  0;
+                        }
+                      }
+                  ?>
+                  <tr>
+                    <td><?=$no?></td>
+                    <td><?=$referral_id["NAME"]?></td>
+                    <!--td style="cursor:pointer;" data-bs-target="#modaldemo1" data-bs-toggle="modal" class="checkUser" data-no="<?php echo $list['MEMBER_NO'][$i]; ?>"><?php echo $list['USER_ID'][$i]; ?></td-->
+                    <td><?=$list['USER_ID'][$i]?></td>
+                    <td><?=$list['NAME'][$i]?></td>
+                    <td><?=date("Y-m-d H:i", strtotime($list['REG_DATE'][$i]))?></td>
+                    <td><?=number_format($first_price)?></td>
+                    <td><?=$first_date?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+$(document).ready(function() {
+  $(document).on("click", "#btn-search2", function() {
+    $("#seForm").submit();
+  });
+});
+</script>

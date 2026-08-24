@@ -1,0 +1,355 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_SHOP_ORDERS.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page   = 1;
+  if (!$limit) $limit = 20;
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit";
+
+  $add_query = "";
+  if($vi=="0"){
+      $add_query = " view_status = '0' ";
+  }
+
+  if($vi=="1"){
+      $add_query = " view_status = '1' ";
+  }
+
+  // 22만 카드결제 숨김 ON: 2026-08-07 이후 결제금액 123000만 제외
+  // ※ 12만 카드결제 숨김은 이 페이지에 적용하지 않음
+  if (is_admin204_hide('hide_card_wayup')) {
+    $hide_from = get_staff_hide_from_datetime();
+    $order_hide = " NOT ((IFNULL(order_price,0) + IFNULL(order_delivery,0)) = 123000 AND regdate >= '{$hide_from}') ";
+    if ($add_query !== "") {
+      $add_query .= " AND ".$order_hide;
+    } else {
+      $add_query = $order_hide;
+    }
+  }
+
+$list = F_SHOP_ORDER_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query
+));
+
+if ($list['total'] == 0) {
+$list['idx'] = array();
+}
+?>
+
+<style>
+    #modal-subject {
+        text-align: center;
+        background: #F2F3F9;
+        vertical-align: middle;
+        width:25%;
+    }
+    /* 에디터의 부모 div나 summernote 자체에 적용 가능 */
+    .note-editor {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+
+</style>
+<!-- CSS: Bootstrap + Summernote -->
+
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.css" rel="stylesheet">
+
+
+
+<!--app-content open-->
+<div class="app-content">
+    <div class="side-app">
+
+        <!-- PAGE-HEADER -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">상품 주문내역</h1>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#">쇼핑관리</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">상품 주문내역</li>
+                </ol>
+            </div>
+
+            <div>
+
+                <a href="/shop/order.html?vi=0" class="btn btn-primary btn-icon">주문</a>
+                <a href="/shop/order.html?vi=1" class="btn btn-primary btn-icon">비주문</a>
+            </div>
+
+        </div>
+        <!-- PAGE-HEADER END -->
+
+        <!-- Row -->
+        <div class="row row-sm">
+            <div class="col-lg-12">
+                <div class="card custom-card">
+                    <div class="card-body">
+                        <div>
+
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table border text-nowrap table-bordered" id="table-list">
+                                <thead>
+                                <tr style="text-align: center; background-color: #F2F3F9;">
+                                    <th>No</th>
+                                    <th>상태</th>
+                                    <th>상품명</th>
+                                    <th>결제금액</th>
+                                    <th>이름</th>
+                                    <th>연락처</th>
+                                    <th>주소</th>
+                                    <th>주문일</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <?php
+                                    for ($i = 0; $i < count($list['idx']); $i++) {
+                                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                                  ?>
+                                <tr style="text-align:center; cursor:pointer;" data-bs-target="#modaldemo1" data-bs-toggle="modal" class="add_banner_btn" data-no="<?=$list['idx'][$i]?>">
+                                    <td><?=$no?></td>
+                                    <td><?=주문상태($list['status'][$i])?></td>
+                                    <td><?=$list['product_name'][$i]?></td>
+                                    <td><?= number_format($list['order_price'][$i] + $list['order_delivery'][$i]) ?>원</td>
+
+                                    <td><?=$list['order_name'][$i]?></td>
+                                    <td><?=$list['order_phone'][$i]?></td>
+                                    <td><?=$list['order_zipcode'][$i]?>
+                                        <?=$list['order_address1'][$i]?>
+                                        <?=$list['order_address2'][$i]?>
+                                    </td>
+
+                                    <td><?=$list['regdate'][$i]?></td>
+                                </tr>
+                                <?php } ?>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="card-body">
+                            <?=$list['page_string']?>
+                        </div>
+                        <!-- pagination-wrapper -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Row -->
+    </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+
+<!-- BASIC MODAL -->
+<div class="modal fade" id="modaldemo1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content modal-content-demo" style="width: 670px;">
+            <div class="modal-header">
+                <h6 class="modal-title">상품 등록/수정</h6>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="card-body" id="order-view" style="padding: 0;">
+                    <div class="table-responsive">
+                        <form name="w_frm" id="w_frm" method="post" action="/shop/order_action.php" enctype='multipart/form-data'>
+                            <input type="hidden" name="mode" value="insert" />
+                            <input type="hidden" class="form-control" name="IDX" class="custom-form-control" />
+                            <table class="table border text-nowrap table-bordered">
+                                <tbody>
+                                <tr>
+                                    <td id="modal-subject">상태</td>
+                                    <td>
+                                        <div class="form-inline">
+                                            <div class="custom-control custom-radio me-4">
+                                                <input type="radio" class="custom-control-input" id="customControlValidation3" name="status" value='0' checked />
+                                                <label class="custom-control-label" for="customControlValidation3">배송준비중</label>
+                                            </div>
+                                            <div class="custom-control custom-radio me-4">
+                                                <input type="radio" class="custom-control-input" id="customControlValidation2" name="status" value='1' />
+                                                <label class="custom-control-label" for="customControlValidation2">배송중</label>
+                                            </div>
+                                            <div class="custom-control custom-radio me-4">
+                                                <input type="radio" class="custom-control-input" id="customControlValidation2" name="status" value='2' />
+                                                <label class="custom-control-label" for="customControlValidation2">배송완료</label>
+                                            </div>
+
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td id="modal-subject">상품명</td>
+                                    <td id="product_name">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td id="modal-subject">판매가격</td>
+                                    <td id="order_price">
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td id="modal-subject">배송비</td>
+                                    <td id="order_delivery">
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td id="modal-subject">주문자명</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="order_name" class="custom-form-control" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td id="modal-subject">연락처</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="order_phone" class="custom-form-control" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td id="modal-subject">우편번호</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="order_zipcode" class="custom-form-control" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td id="modal-subject">주소</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="order_address1" class="custom-form-control" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td id="modal-subject">상세주소</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="order_address2" class="custom-form-control" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td id="modal-subject">배송메모</td>
+                                    <td>
+                                        <input type="text" class="form-control" name="order_memo" class="custom-form-control" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td id="modal-subject">등록 일시</td>
+                                    <td><span id="REG_DATE"></span></td>
+                                </tr>
+
+                                </tbody>
+                            </table>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: space-between;">
+                <div>
+                    <button type="button" class="btn btn-danger delete_btn">Delete</button>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-success ok_save_btn">Save</button>
+                    <button type="button" class="btn btn-light cancel_btn" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+    $(function() {
+        $(document).on("click", ".delete_btn", function(e) {
+            if (confirm("삭제하시겠습니까?")) {
+                $("#w_frm").find('[name="mode"]').val("delete");
+                $("#w_frm").submit();
+            }
+        });
+
+        $(document).on("click", ".ok_save_btn", function(e) {
+            let f = $("#w_frm");
+            e.preventDefault();
+
+            if (f.find('[name="product_name"]').val() == "") {
+                alert("상품명을 입력해 주세요.");
+                f.find('[name="product_name"]').focus();
+                return false;
+            }
+            if (f.find('[name="product_price"]').val() == "") {
+                alert("판매가격을 입력해 주세요.");
+                f.find('[name="product_price"]').focus();
+                return false;
+            }
+
+            if (f.find('[name="mode"]').val() == "insert" && f.find('[name="product_img"]').val() == "") {
+                alert("배너이미지를 선택해 주세요.");
+                return false;
+            }
+
+            if (confirm("저장하시겠습니까?")) {
+                $("#w_frm").submit();
+            }
+
+        });
+
+        $(document).on("click", ".add_banner_btn", function() {
+            let no = $(this).data("no");
+            init_form();
+
+            $.post("./default.php", {
+                mode: "search_order_info",
+                no: no
+            }, function(e) {
+                console.log(e);
+                if (e.error) {
+                    alert(e.msg);
+                } else {
+
+                    $(".delete_btn").show();
+                    $("#w_frm").find('[name="mode"]').val("update");
+                    $("#w_frm").find('[name="IDX"]').val(e.idx);
+
+                    $("#w_frm").find('#product_name').html(e.product_name);
+                    $("#w_frm").find('#order_price').html(e.order_price);
+                    $("#w_frm").find('#order_delivery').html(e.order_delivery);
+
+                    $("#w_frm").find('[name="order_name"]').val(e.order_name);
+                    $("#w_frm").find('[name="order_phone"]').val(e.order_phone);
+                    $("#w_frm").find('[name="order_zipcode"]').val(e.order_zipcode);
+                    $("#w_frm").find('[name="order_address1"]').val(e.order_address1);
+                    $("#w_frm").find('[name="order_address2"]').val(e.order_address2);
+                    $("#w_frm").find('[name="order_memo"]').val(e.order_memo);
+
+                    $("#w_frm").find('[name="status"]:radio[value="'+e.status+'"]').prop("checked",true);
+                    $("#w_frm").find('#REG_DATE').html(e.regdate);
+                }
+            }, "json");
+        });
+    });
+
+    function init_form() {
+        $(".delete_btn").hide();
+        $("#w_frm").find('[name="mode"]').val("insert");
+        $("#w_frm").find('[name="IDX"]').val("");
+        $("#w_frm").find('[name="SIZE"]').val("");
+        $("#w_frm").find('#banner_url').html("");
+        $("#w_frm").find('[name="STATUS"]:radio[value="Y"]').prop("checked",true);
+        $("#w_frm").find('#REG_DATE').html("");
+        $("#w_frm").find('#UPDATE_DATE').html("");
+    }
+</script>

@@ -1,0 +1,118 @@
+<?php
+  include "../header.html";
+  if(!$_SESSION['new_pass']){
+    echo "<script>alert('올바른 접근이 아닙니다.');location.href='/';</script>";
+    exit;
+  }
+?>
+<style>
+.passchk {text-align: center;    min-height: 500px;}
+.passchk .login_id {background-color: #EEEEEE; border: 0px; font-size: 18px; padding: 8px; margin-bottom: 12px; border-radius: 4px; width: 250px;}
+.passchk .pass_chk_btn {border-radius: 4px; font-weight: 800; font-size: 16px; border: 1px solid; width: 278px; padding: 10px; display: inline-block;text-decoration: none; background-color: #333; color:#fff; margin-bottom: 10px; }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.min.css" />
+
+<main>
+  <section>
+    <div class="sub_top_title" >새로운 비밀번호로 설정</div>
+    <div class="sub_category" style="text-align: center;" ></div>
+
+    <div class="passchk" >
+      <div style="margin: 30px 0px;">
+        <p>변경하실 새로운 비밀번호를 입력해주세요.</p>
+      </div>
+
+
+      <div>
+        <div>
+          <form method="POST" id="infoFrm" >
+            <div >
+              <div>
+                  <input type="password" name="new_password" id="password" class="new_pass login_id m_password" placeholder="비밀번호" />
+                  <i class="fas fa-eye-slash" onclick="fn_showPw(1)" ></i>
+                  <i class="fas fa-eye" onclick="fn_showPw(2)" style="display:none;"></i>
+              </div>
+            </div>
+
+            <div >
+              <div>
+                  <input type="password" name="new_repassword" class="new_repass login_id m_password" placeholder="비밀번호 재입력" />
+                  <i class="fas fa-eye-slash" onclick="fn_showPw(1)" ></i>
+                  <i class="fas fa-eye" onclick="fn_showPw(2)" style="display:none;"></i>
+              </div>
+            </div>
+
+            <div>
+              <button type="button" onclick="go_new_password_update()" class="pass_chk_btn" >변경하기</button>
+            </div>
+          </form>
+        </div>
+        <div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  function fn_showPw(obj){
+    if(obj==1){
+      $(".fas.fa-eye-slash").css("display","none");
+      $(".fas.fa-eye").show();
+    }else{
+      $(".fas.fa-eye").css("display","none");
+      $(".fas.fa-eye-slash").show();
+    }
+      var passwordInput = $(".m_password");
+      passwordInput.toggleClass('active');
+      if(passwordInput.hasClass('active')){
+          $(".fas fa-eye").show();
+          passwordInput.prop('type', "text");
+      } else {
+          passwordInput.prop('type', "password");
+      }
+    }
+  function go_new_password_update(){
+    var new_pass = $(".new_pass").val();
+    var new_repass = $(".new_repass").val();
+    if(new_pass!=new_repass){
+      alert("입력한 비밀번호가 서로 다릅니다.\n정확한 비밀번호를 입력해주세요.");
+      return false;
+    }
+
+    if(!isPasswordValid()){
+      alert('6자 이상 20자 이하의 비밀번호를 입력해주세요.');
+      return false;
+    }
+
+    if(confirm("비밀번호를 변경하시겠습니까?")){
+      var params = jQuery("#infoFrm").serialize();
+        $.ajax({
+          type : "POST",
+          url: "ajax_new_pass_update.php",
+          async: false,
+          data: params,
+          success: function(result) {
+          var r = result.trim();
+            if(r==1){
+              alert("비밀번호가 변경 되었습니다.");
+              location.href="/";
+              return false;
+            }else{
+              alert(r);
+              location.href="/member/ajax_logout.php";
+              return false;
+            }
+          },
+          error:function(e) {
+            alert(e.responseText);
+          }
+        });
+    }
+  }
+</script>
+
+<?php
+  include "../footer_new.html";
+?>

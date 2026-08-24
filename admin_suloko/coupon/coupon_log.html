@@ -1,0 +1,142 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_COUPON_LOG.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 20;
+  $add_query = '';
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit";
+
+  $list = F_COUPON_LOG_list(array(
+    "row" => $limit,
+    "page" => $page,
+    "order" => $order,
+    "find_text" => $find_text,
+    "find_object" => $find_object,
+    "add_query" => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['LOG_NO'] = array();
+  }
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">쿠폰사용내역</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">쿠폰발행</a></li>
+          <li class="breadcrumb-item active" aria-current="page">쿠폰사용내역</li>
+        </ol>
+      </div>
+      <div class="ms-auto pageheader-btn">
+        <!--<a href="#" class="btn btn-danger allDelChk">선택삭제</a>-->
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div></div>
+            <div class="table-responsive">
+              <table class="table border text-nowrap table-striped" id="table-list">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="chkAll" /></th>
+                    <th>No</th>
+                    <th>쿠폰번호</th>
+                    <th>구분</th>
+                    <th>제목</th>
+                    <th>금액</th>
+                    <th>사용자</th>
+                    <th>사용일시</th>
+                    <th>사용내역</th>
+                    <th>발행일시</th>
+                    <th>파트너ID</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    for ($i = 0; $i < count($list['LOG_NO']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+
+                      if ($list["NUM"][$i] != '') {
+                        $NUM = substr($list["NUM"][$i], 0, 4)." ".substr($list["NUM"][$i], 4, 4)." ".substr($list["NUM"][$i], 8, 4)." ".substr($list["NUM"][$i], 12, 4);
+                      } else {
+                        $NUM = "삭제된 쿠폰";
+                      }
+                  ?>
+                  <tr>
+                    <td><input type="checkbox" name="noChk[]" value="<?=$list['LOG_NO'][$i]?>" /></td>
+                    <td><?=$no?></td>
+                    <td><?=$NUM?></td>
+                    <td><?=$coupon_op[$list['GUBUN'][$i]]?></td>
+                    <td><?=$list['TITLE'][$i]?></td>
+                    <td><?=number_format($list['PRICE'][$i])?></td>
+                    <td><?=$list['NAME'][$i]?></td>
+                    <td><?=$list['USE_DATE'][$i]?></td>
+                    <td><?=$list['LOG_MEMO'][$i] ?></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                    <td><?=$list['PATNER_ID'][$i]?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+
+<script>
+  $(function() {
+    // 선택삭제
+    $(document).on('click', '.allDelChk', function() {
+      var chk_no = new Array();
+      var i = 0;
+      $('[name="noChk[]"]:checked').each(function() {
+        chk_no[i] = $(this).val();
+        i++;
+      });
+
+      if (i > 0) {
+        if (confirm('선택한 항목을 삭제하시겠습니까?')) {
+          $.post('./default.php', {
+            mode: 'all_del',
+            gubun: 'COUPON_LOG',
+            chk_no: chk_no
+          }, function(e) {
+            if (e.error) {
+              alert(e.msg);
+            } else {
+              alert(e.msg);
+            }
+            window.location.reload();
+          }, 'json');
+        }
+      } else {
+        alert('삭제할 항목을 선택하세요');
+      }
+    });
+  });
+</script>

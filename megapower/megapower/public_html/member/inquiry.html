@@ -1,0 +1,233 @@
+<?php
+$title = "미국복권 구매대행 1:1문의 24시간 고객센터";
+include "../header.html";
+?>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">1:1문의</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>고객센터</p></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>1:1문의</p></li>
+            </ul>
+        </div>
+        <?
+        $page_num = 5;
+        $page = isset($_GET["page"])? $_GET["page"] : 1;
+
+        if($_GET['list_num']>0){
+        $list_num = $_GET['list_num'];
+        }else{
+        $list_num = 9;
+        }
+
+        $records = 10;
+        $table = "lr_inquiry";
+        $inquiry_midx = !empty($member['idx']) ? (int)$member['idx'] : 0;
+
+        if ($inquiry_midx > 0) {
+            $where = " midx = {$inquiry_midx} ";
+            include_once "../page_code.php";
+        } else {
+            $num = 0;
+            $total_page = 0;
+            $start = 0;
+        }
+
+        ?>
+        <div class="modle_menu_02">
+          <a href="<?=$_SESSION['midx'] !='' ? '/member/notice.html':'javascript:_go_login();' ?>">공지사항</a>
+          <a href="/member/news.html">최신뉴스</a>
+          <a href="<?=$_SESSION['midx'] !='' ? '/member/faq.html':'javascript:_go_login();' ?>">자주묻는질문</a>
+          <a class="on" href="/member/inquiry.html">1:1문의</a>
+        </div>
+
+        <div class="modle_options">
+            <div class="total">
+                총 <span><?=$num?></span> / <b><?=$page?></b>
+            </div>
+            <button type="button" onclick="go_content_form()" >문의하기</button>
+        </div>
+
+        <div>
+            <div>
+                <div class="mgb20 text-right" >
+                    <div>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="board_inner">
+              <table class="board">
+                <thead>
+                <tr>
+                    <th width="80">번호</th>
+                    <th width="80">상태</th>
+                    <th>제목</th>
+                    <th>작성일</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?
+                $listCnt = 0;
+                if ($inquiry_midx > 0) {
+                $sql = "select * from lr_inquiry where midx = {$inquiry_midx} order by regdate desc limit $start, $list_num ";
+                //echo $sql;
+                $result = db_query($sql);
+                foreach($result as $quiry){
+                  $listCnt += 1;
+                  $no = (($num - $listCnt) + 1) - (($page-1) * $records);
+                ?>
+                <tr>
+                    <td class="text-center" ><?=$no;?></td>
+                    <td class="text-center">
+                        <? if($quiry['status']==0){?>
+                        <span class="unanswered">미답변</span>
+                        <? }else{ ?>
+                        <span class="comment_ok">답변완료</span>
+                        <? } ?>
+                    </td>
+                    <td><a href="javascript:go_show('<?=$quiry['idx']?>')"><?=$quiry['title']?></a></td>
+                    <td class="text-center"><?=date("y-m-d",strtotime($quiry['regdate']))?></td>
+                </tr>
+
+                <tr class="a_content_<?=$quiry['idx']?>" style="display:none;">
+                    <? if($quiry['status']==1){ ?>
+                    <td colspan="4">
+                        <div class="inquiry_q">
+                            <p>문의내용</p>
+                            <div>
+                                <?= nl2br($quiry['content'])?>
+                            </div>
+                        </div>
+                        <div class="inquiry_a">
+                            <p>답변</p>
+                            <div>
+                                <?= nl2br($quiry['comment']) ?>
+                            </div>
+                        </div>
+                    </td>
+                    <? }else{ ?>
+                    <td colspan="4" class="text-center">
+                        답변을 준비중 입니다.
+                    </td>
+                    <? } ?>
+                </tr>
+
+                <? } ?>
+                <? } ?>
+                <? if($num ==0){?>
+                <tr>
+                    <td colspan="4" style="text-align: center;">
+                        <? if(!$inquiry_midx){ ?>
+                        로그인 후 문의내역을 확인하실 수 있습니다.<br>문의하기 버튼을 눌러 1:1문의를 등록해 주세요.
+                        <? }else{ ?>
+                        문의내역이 없습니다.
+                        <? } ?>
+                    </td>
+                </tr>
+                <? } ?>
+                </tbody>
+              </table>
+              <div class="page"><?php include_once "../pager.php" ?></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function countCharacters() {
+        var textarea = document.getElementById("content");
+        var count = textarea.value.length;
+        return count;
+    }
+    function go_show(obj){
+        $(".a_content_"+obj).toggle();
+    }
+
+    function go_content_form(){
+        //$(".content_box").toggle();
+        $('#bpopup2').bPopup({
+            modalClose : true,
+            onClose: function() {
+                location.reload();
+            }
+        });
+
+    }
+    var go_contact_in_progress = false;
+    function go_contact(){
+        if (go_contact_in_progress) {
+            return false;
+        }
+        var title = $("#title").val();
+        var content = $("#content").val();
+
+        if ($('#inquiry_phone').length > 0) {
+            if($('#inquiry_phone').val()==""){
+                // 해당 ID를 가진 input 태그가 존재합니다.
+                alert("연락처를 입력해주세요.");
+                $("#inquiry_phone").focus();
+                return false;
+            }
+
+        }
+
+
+        if(title==""){
+            alert("제목을 입력해주세요.");
+            $("#title").focus();
+            return false;
+        }
+
+        if(countCharacters()<10){
+            alert("내용을 10자 이상 입력해주세요.");
+            return false;
+        }
+
+        if(content==""){
+            alert("내용을 입력해주세요.");
+            $("#content").focus();
+            return false;
+        }
+
+        go_contact_in_progress = true;
+        var $inquirySendBtn = $("#conFrm .search-btn");
+        $inquirySendBtn.prop("disabled", true);
+
+        var params = jQuery("#conFrm").serialize();
+        $.ajax({
+            type : "POST",
+            url: "ajax_inquiry_write.php",
+            data: params,
+            success: function(result) {
+                var r = result.trim();
+                if(r==1){
+                    alert("1:1문의가 접수되었습니다. 빠른시일내로 답변 드리겠습니다. 감사합니다.");
+                    $(".content_box").css("display","none");
+                    location.reload();
+                } else {
+                    go_contact_in_progress = false;
+                    $inquirySendBtn.prop("disabled", false);
+                }
+                console.log(r);
+            },
+            error:function(e) {
+                go_contact_in_progress = false;
+                $inquirySendBtn.prop("disabled", false);
+                alert(e.responseText);
+            }
+        });
+    }
+</script>
+
+
+<?php
+include "../footer_new.html";
+?>

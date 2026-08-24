@@ -1,0 +1,6 @@
+<?php
+  $img_url = "https://pamebol-image.s3.ap-northeast-2.amazonaws.com/ticket/" . $_GET['t'];
+
+  header('Content-Type: image/jpg');
+  readfile($img_url);
+?>

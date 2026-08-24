@@ -1,0 +1,444 @@
+<?php
+include_once "../adm/head.php";
+include_once $_SERVER['DOCUMENT_ROOT']."/lib/sms_server_function.php";
+$member_no = $member['mb_no'];
+$오늘 = date("Y-m-d");
+$page_num = 5;
+$page = isset($_GET["page"])? $_GET["page"] : 1;
+
+if($_GET['list_num']>0){
+  $list_num = $_GET['list_num'];
+}else{
+  $list_num = 15;
+}
+
+if($member['mb_id']=="admin"){
+  $member_no_where = " 1=1 ";
+}else{
+  $member_no_where = " member_no = {$member['mb_no']} ";
+  if(!$member['mb_10']){
+    ?>
+  <script>
+  alert("서비스 기간이 만료되어 서비스 이용이 불가합니다.\n이용료를 결제해주세요.");
+  location.href="/adm/service.htm";
+  </script>
+    <?
+    exit;
+  }
+
+}
+
+?>
+  <?php include_once "../adm/nav.php";?>
+  <div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+    <div class="main-menu-header">
+      <form>
+        <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+      </form>
+    </div>
+    <?php include_once "../adm/menu.php";?>
+  </div>
+  <style>
+  .table th, .table td {padding: 0.75rem 1rem; }
+  /* 모바일: 가로 스크롤 + 셀 한 줄 유지 */
+  .list2-table-wrap {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+  }
+  .list2-table {
+    width: 100%;
+    min-width: 1100px;
+    table-layout: auto;
+  }
+  .list2-table thead th,
+  .list2-table tbody td,
+  .list2-table tbody th[scope="row"] {
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .list2-table tbody td[colspan] {
+    white-space: normal;
+    text-align: center;
+  }
+  </style>
+
+  <div class="app-content content container-fluid">
+    <div class="content-wrapper">
+
+      <div class="content-body"><!-- Basic Tables start -->
+        <div class="row">
+            <div class="col-xs-12">
+              <form id="searchFrm" >
+                <input type="hidden" name="search" value="<?=$search?>" >
+                <input type="hidden" name="page" id="page" value="<?=$page?>" >
+                <input type="hidden" name="status" value="<?=$status?>" >
+                <input type="hidden" name="site" id="site" value="<?=$site?>"  >
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">신청서 기준</h4>
+                        <a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+
+                        <div class="heading-elements">
+                            <ul class="list-inline mb-0">
+                                <li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+                                <li><a data-action="reload"><i class="icon-reload"></i></a></li>
+                                <li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+                                <li><a data-action="close"><i class="icon-cross2"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card-body collapse in">
+                        <div class="card-block">
+
+                          <p class="card-text">입금신청 데이터를 기준으로 확인 가능 합니다.</p>
+
+                          <div class="row">
+                            <div class="">
+
+                              <div class="col-md-1">
+                                <div class="form-group">
+                                  <select name="month" onchange="$('#searchFrm').submit()" class="form-control">
+                                    <option value="">선택</option>
+                                    <? for($a=1;$a<=12;$a++){
+                                      $mo = sprintf("%02d",$a)
+                                      ?>
+                                    <option value="<?=$mo?>" <?=$mo==$month ? "selected":"" ?> ><?=$mo?>월</option>
+                                    <? } ?>
+                                  </select>
+                                </div>
+                              </div>
+
+                              <div class="col-md-2">
+                                <div class="form-group">
+                                  <?php
+                                    $site_sql = "select * from site where {$member_no_where} order by regdate desc ";
+                                    //echo $site_sql;
+                                    $site_result = db_query($site_sql);
+                                    $site_count = mysqli_num_rows($site_result);
+                                    if($site_count>0){
+                                    ?>
+                                    <select id="projectinput5" onchange="go_site_search(this.value)" class="form-control">
+                                      <option value="">전체</option>
+                                    <? foreach($site_result as $sitelist){ ?>
+                                    <option value="<?=$sitelist['idx']?>" <?=$sitelist['idx']==$site ? "selected":"" ?> ><?=$sitelist['site']?></option>
+                                    <?php } ?>
+                                      </select>
+                                  <?php } ?>
+                                </div>
+                              </div>
+
+                              <div class="col-md-1">
+                                <div class="form-group">
+                                  <select id="projectinput5" name="list_num" onchange="$('#searchFrm').submit()" class="form-control">
+                                    <option value="15" <?=$list_num=="15" ? 'selected':'' ?> >15건</option>
+                                    <option value="50" <?=$list_num=="50" ? 'selected':'' ?>>50건</option>
+                                    <option value="100" <?=$list_num=="100" ? 'selected':'' ?>>100건</option>
+                                    <option value="150" <?=$list_num=="150" ? 'selected':'' ?>>150건</option>
+                                    <option value="200" <?=$list_num=="200" ? 'selected':'' ?>>200건</option>
+                                  </select>
+                                </div>
+                              </div>
+
+                              <?php
+                                $sqls = "select * from site where {$member_no_where} ";
+                                $my_site = db_query($sqls);
+                                for($a=0;$arow=db_fetch($my_site);$a++){
+                                    if($a==0) $f_gubun = "'".$arow['site']."'";
+                                    else $f_gubun .= ",'".$arow['site']."'";
+                                }
+                                $sql = "SELECT
+                                COUNT(CASE WHEN status = 0 and del_status = 0 THEN 1 END) as 신청,
+                                COUNT(CASE WHEN status = 1 and del_status = 0 THEN 1 END) as 성공,
+                                COUNT(CASE WHEN status = 2 and del_status = 0 THEN 1 END) as 실패,
+                                COUNT(CASE WHEN status = 3 and del_status = 0 THEN 1 END) as 수동,
+                                COUNT(CASE WHEN status = 4 and del_status = 0 THEN 1 END) as 삭제
+                                FROM bank_request WHERE {$member_no_where}; ";
+                                if($member['mb_id']=="admin"){
+                                  //echo $sql."<br />";
+                                }
+                                $cnt = db_select($sql);
+                              ?>
+                              <button type="button" class="btn btn-secondary mb-1" onclick="location.href='/adm/list2.htm'">전체</button>
+                              <button type="button" class="btn btn-success mb-1" onclick="location.href='/adm/list2.htm?page=<?=$page?>&status=0&site=<?=$site?>'">입금 <?=$cnt['신청']?>건</button>
+                              <button type="button" class="btn btn-info mb-1" onclick="location.href='/adm/list2.htm?page=<?=$page?>&status=1&site=<?=$site?>'">성공 <?=$cnt['성공']?>건</button>
+                              <button type="button" class="btn btn-danger mb-1" onclick="location.href='/adm/list2.htm?page=<?=$page?>&status=2&site=<?=$site?>'">실패 <?=$cnt['실패']?>건</button>
+                              <button type="button" class="btn btn-warning mb-1" onclick="location.href='/adm/list2.htm?page=<?=$page?>&status=3&site=<?=$site?>'">수동 <?=$cnt['수동']?>건</button>
+                              <button type="button" class="btn btn-warning mb-1" onclick="location.href='/adm/list2.htm?page=<?=$page?>&status=4&site=<?=$site?>'">삭제 <?=$cnt['삭제']?>건</button>
+                            </div>
+                          </div>
+                          <div class="del_status_box" style="display:none;">
+                            <span class="del_count">0건이 선택되었습니다.</span>
+                            <a href="javascript:go_list2_delete()">선택한 데이터를 삭제 합니다.</a>
+
+                          </div>
+                        </div>
+
+                    </div>
+
+                    <div class="table-responsive list2-table-wrap">
+                        <table class="table list2-table">
+                            <thead class="thead-inverse">
+                                <tr>
+                                  <th ><input type="checkbox" class="allchk" /></th>
+                                  <th >아이디</th>
+                                  <th >입금자명</th>
+                                  <th>입금액</th>
+                                  <th>상태</th>
+                                  <th>계산서</th>
+                                  <th>비고</th>
+                                  <th>관리</th>
+                                  <th>접수일</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    <?php
+                    if($status==1){
+                    $상태 = " and status = 1 ";
+                    }else if($status==2){
+                    $상태 = " and status = 2 ";
+                    }else if($status==3){
+                    $상태 = " and status = 3 ";
+                    }else if($status==4){
+                    $상태 = " and status = 4 ";
+                    }else if($status=="0"){
+                    $상태 = " and status = 0 ";
+                    }else{
+                    $상태 = "  ";
+                    }
+
+                    if($site){
+                        $site_where = " and site_idx = {$site} ";
+                    }
+
+                    if($search){
+                      $search_where = " and name like '%{$search}%' ";
+                    }
+
+                    if($month){
+                      $year = date("Y");
+                      $month_search = " and date_format(regdate, '%Y-%m') = '{$year}-{$month}' ";
+                    }
+
+                    $table = "bank_request";
+                    $where = " {$member_no_where} {$site_where} {$search_where} and del_status = 0 {$상태} {$month_search}  ";
+                    include_once "pager_count.php";
+
+                    $sql = "select * from bank_request where {$member_no_where} {$site_where} {$상태} {$search_where} {$month_search} and del_status = 0
+                    order by regdate desc limit $start, $list_num "; // status asc,
+                    if($member['mb_id']=="admin"){
+                      //echo $sql."<br />";
+                    }
+
+                      $result = db_query($sql);
+                      $allcnt = mysqli_num_rows($result);
+                      $no= $num - $list_num * ($page-1);
+                      for($a=0;$row=db_fetch($result);$a++){
+
+                        $all_total += $row['amount'];
+                        if($row['status']==1){
+                          $성공_total += $row['amount'];
+                        }else if($row['status']==2){
+                          $실패_total += $row['amount'];
+                        }else{
+                          $신청_total += $row['amount'];
+                        }
+                        $sitename = explode("//",$row['site']);
+                    ?>
+                    <tr>
+                        <td>
+                          <input type="checkbox" name="chk[]" value="<?=$row['id']?>" class="idchk" />
+                        </td>
+
+                        <td style="position: relative;" >
+                          <? if($row['user_id']){?>
+                            <div class="sitename sitename_cut">
+                              <a href="<?=$row['site']?>" class="" target="_blank"><?= idn_to_utf8($sitename[1]) ?></a>
+                            </div>
+                            <?=$row['user_id']?>
+                          <? } ?>
+                        </td>
+                        <td ><?=$row['name']?></td>
+                        <td style="text-align: right;"><?=number_format($row['amount'])?>원</td>
+                        <td onmouseover="go_show(<?=$row['id']?>)" onmouseout="go_out(<?=$row['id']?>)" style="text-align: right;" >
+                          <?=문자수신상태($row['status'])?>
+                          <? if($row['status']==1){?>
+                          <div class="message view<?=$row['id']?>" style="position: absolute; background-color: #ccc; padding: 10px; display:none; z-index:9999;" >
+                            수신내역 : <?=$row['data']?>
+                          </div>
+                          <? } ?>
+                        </td>
+                        <td style="position: relative;" >
+
+                          <? if($row['tax1_phone'] != '' || $row['biz_number']>0){ ?>
+                          <!-- <button type="button" onclick="go_tax(<?=$row['id']?>)" class="addbtn btn btn-secondary <?=$row['tax_status']>0 ? "tax_active":"" ?>" >T</button> -->
+                          <? } ?>
+
+
+                          <? if($row['tax1_phone']){ ?>
+                            <? if($row['tax_status']!=1){?>
+                              <button type="button" class="addbtn btn btn-info" onclick="go_cash_view(<?=$row['id']?>)">현금영수증<br />
+                                <span style="font-size: 12px;color:#333;">(<?=$row['tax1_phone']?>)</span></button>
+                              <div class="cash_form cash_<?=$row['id']?>" style="display:none;" >
+                                <button type="button" onclick="go_cash_bill('<?=$row['id']?>','<?= $row['site_idx'] ?>','소득공제용')" >소득공제용</button>
+                                <button type="button" onclick="go_cash_bill('<?=$row['id']?>','<?= $row['site_idx'] ?>','지출증빙용')" >지출증빙용</button>
+                              </div>
+                            <? } ?>
+                          <? } ?>
+
+                          <? if($row['biz_number']>0){?>
+                            <? if($row['tax_status']!=2){?>
+                              <div >
+                                <button type="button" onclick="go_biz_cash_bill('<?=$row['id']?>','<?= $row['site_idx'] ?>','<?=$row['status']?>')" class="addbtn btn btn-success" >세금계산서</button>
+                                <a href="javascript:go_tax_info('<?=$row['id']?>')"><i class="icon-search6"></i></a>
+                                <div class="txinfo tax_info_<?=$row['id']?>" style="width: 350px; display:none; position: absolute; background-color: #fff; z-index: 9999; border: 1px solid;">
+                                  <ul>
+                                    <li>업체명:<?=$row['biz_name1']?></li>
+                                    <li>대표자:<?=$row['biz_name2']?></li>
+                                    <li>사업자번호:<?=$row['biz_number']?></li>
+                                    <li>연락처:<?=$row['biz_etc2']?></li>
+                                    <li>이메일:<?=$row['biz_email']?></li>
+                                  </ul>
+                                </div>
+                              </div>
+
+                            <? } ?>
+                          <? } ?>
+
+                        </td>
+
+                        <td class="btn_list" style="position: relative;" >
+                          <? if($row['tax_status']==1){ ?>
+                            <a href="javascript:go_cash_bill_cancel()">
+                              <font color="blue">현금영수증</font> <?=$row['tax1_phone']?></a>
+                          <? } ?>
+
+
+                          <? if($row['tax_status']==2){?>
+                            <a href="javascript:go_biz_cash_bill_cancel();">
+                              <font color="green">세금계산서</font> <?=$row['biz_name1']?> <?=$row['biz_number']?> <?=$row['biz_name2']?> <?=$row['biz_etc2']?> <?=$row['biz_email']?></a>
+                          <? } ?>
+
+
+                        </td>
+                        <td>
+                          <? if($row['status']!=1){ //처리완료가 아닌경우에만 나옴 ?>
+                          <button type="button" onclick="go_ok('<?=$row['id']?>','ok','<?=$row['site_idx']?>')"
+                            class="addbtn btn btn-secondary <?= ($row['status']==1 || $row['status']==0) ? 'sms_status_none':'' ?>" >
+                            <? if($row['status']==3){?>
+                            처리완료
+                          <? }else{ ?>
+                            강제처리
+                          <? } ?>
+                          </button>
+                          <? } ?>
+                        </td>
+                        <th scope="row">
+                          <?
+                            //$표기 = 날짜표기($오늘, $row['regdate']);
+                            echo $row['regdate'];
+                          ?>
+                        </th>
+
+                      </tr>
+                            <?php
+                              $no--;
+                          } ?>
+
+                          <? if($num==0){?>
+                            <tr>
+                              <td colspan="9" style="text-align: center;">
+                                내역이 없습니다.
+                              </td>
+                            </tr>
+                          <? } ?>
+
+                            <? if($all_total>0){ ?>
+                            <tr>
+                              <td colspan="3"></td>
+                              <td colspan="1" style="text-align: right;">
+                                <div>
+                                  전체 <?=number_format($all_total)?>원
+                                </div>
+                              </td>
+                              <td colspan="5"></td>
+                            </tr>
+                            <? } ?>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <?php include_once "pager.php" ?>
+                </div>
+                </form>
+            </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+  <div id="tax"></div>
+
+
+
+<?php include_once "sms_js.php" ?>
+
+<?php include_once "../adm/footer.php";?>
+<script>
+
+$(document).ready(function(){
+    //최상단 체크박스 클릭
+    $(".allchk").click(function(){
+        //클릭되었으면
+        if($(".allchk").prop("checked")){
+            //input태그의 name이 chk인 태그들을 찾아서 checked옵션을 true로 정의
+            $(".idchk").prop("checked",true);
+            //클릭이 안되있으면
+            var checkedCount = $('.idchk:checked').length;
+            $(".del_status_box").show();
+            $(".del_count").html(checkedCount+"건이 선택되었습니다.");
+            console.log('체크된 체크박스 개수: ' + checkedCount);
+        }else{
+            //input태그의 name이 chk인 태그들을 찾아서 checked옵션을 false로 정의
+            $(".del_status_box").css("display","none");
+            $(".idchk").prop("checked",false);
+        }
+    });
+
+    $('.idchk').change(function() {
+        var checkedCount = $('.idchk:checked').length;
+        if(checkedCount>0){
+          $(".del_status_box").show();
+          $(".del_count").html(checkedCount+"건이 선택되었습니다.");
+        }else{
+          $(".del_status_box").css("display","none");
+        }
+    });
+});
+
+function go_list2_delete(){
+  if(confirm("삭제신청 데이터는 오전12시 일괄 완전삭제 됩니다.\n삭제된 데이터는 복구할 수 없습니다.")){
+    var params = jQuery("#searchFrm").serialize();
+    $.ajax({
+      type : "POST",
+      url: "/ajax/_ajax_data_delete.php",
+      async: false,
+      data: params,
+      success: function(result) {
+      var r = result.trim();
+        if(r==1){
+          alert("삭제예정 등록 되었습니다.");
+          location.reload();
+        }
+        console.log(r);
+        },
+        error:function(e) {
+          alert(e.responseText);
+        }
+    });
+  }
+}
+</script>

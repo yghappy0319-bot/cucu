@@ -1,0 +1,292 @@
+<?php
+include "../../admin/header.html";
+
+$page_num = 10;
+$page = isset($_GET["page"]) ? $_GET["page"] : 1;
+
+if ($_GET['list_num'] > 0) {
+    $list_num = $_GET['list_num'];
+} else {
+    $list_num = 15;
+}
+
+if($searchs=="cashy"){
+  $_search = " and (select count(*) as cnt from lr_deposit_log where midx = a.idx and status = 2 ) > 0 ";
+}else if($searchs=="cashn"){
+  $_search = " and (select count(*) as cnt from lr_deposit_log where midx = a.idx and status = 2 ) = 0 ";
+}
+
+if ($search) {
+    $_search = " and (name like '%{$search}%' or phone like '%{$search}%' or id like '%{$search}%') ";
+}
+
+$countSql = "select count(*) as totalRecords from lr_member a where 1=1 {$_search} ";
+include_once "../pager_result.php";
+
+if ($searchs == "desc_latest") {
+    $최신로그인 = " a.last_login_date desc ";
+} else if ($searchs == "asc_latest") {
+    $최신로그인 = " a.last_login_date asc ";
+} else if ($searchs == "max_point") {
+    $최신로그인 = " a.cash desc ";
+} else if ($searchs == "min_point") {
+    $최신로그인 = " a.cash asc ";
+} else if ($searchs == "asc_regdate") {
+    $최신로그인 = " a.regdate asc ";
+} else if ($searchs == "bank") {
+    $최신로그인 = " bank_cnt desc ";
+} else {
+    $최신로그인 = " a.regdate desc ";
+}
+
+$sql = "
+select a.*,
+(select count(*) as cnt from lr_deposit_log where midx = a.idx and status = 2 ) as bank_cnt,
+(select count(*) as cnt from lr_card_log where midx = a.idx and pg_status1 = '정상' ) as card_cnt
+from lr_member a where 1=1 and cut_off = 0 {$_search} order by {$최신로그인} limit $start, $list_num";
+echo $sql;
+$_data = db_query($sql);
+
+?>
+<main id="main" class="main">
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-10">
+
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">회원관리</h5>
+                        <div>
+                          <div class="card p-3">
+                            <form class="row align-items-center g-2" id="searchFrm" >
+                              <input type="hidden" name="page" id="page" value="<?= $page ?>">
+                              <input type="hidden" name="searchs" value="<?= $searchs ?>" id="searchs">
+
+                              <!-- Customer Name Input -->
+                              <div class="col-auto">
+                                <input type="text" name="search" class="form-control"  placeholder="고객명">
+                              </div>
+
+                              <div class="col-auto">
+                                <button class="btn btn-primary">검색</button>
+                              </div>
+
+                              <div class="col-auto">
+                                <div class="col-auto">
+                                </div>
+                                <? if($admin['grade']==99){?>
+                                <div class="btn-group" role="group" aria-label="Quick Date Selection">
+                                  <a href="javascript:go_excel()" class="btn btn-outline-secondary " >회원EXCEL다운로드</a>
+                                </div>
+                                <? } ?>
+                              </div>
+
+                              <div class="w-100"></div>
+                              <!-- 빠른 날짜 버튼 -->
+
+
+                              <div class="col-auto">
+                                <div class="col-auto">
+                                 <label class="form-label mb-0">캐시충전</label>
+                                </div>
+                                <div class="btn-group" role="group" aria-label="Quick Date Selection">
+                                  <a href="/admin/manage/ad_member.html?searchs=cashy" class="btn btn-outline-secondary <?=$searchs=='cashy' ? 'active':'' ?>" >유</a>
+                                  <a href="/admin/manage/ad_member.html?searchs=cashn" class="btn btn-outline-secondary <?=$searchs=='cashn' ? 'active':'' ?>" >무</a>
+                                </div>
+                              </div>
+
+
+                              <div class="col-auto">
+                                <div class="col-auto">
+                                 <label class="form-label mb-0">누적캐시</label>
+                                </div>
+                                <div class="btn-group" role="group" aria-label="Quick Date Selection">
+                                  <a href="/admin/manage/ad_member.html?searchs=max_point" class="btn btn-outline-secondary <?=$searchs=='max_point' ? 'active':'' ?>" >많은순</a>
+                                  <a href="/admin/manage/ad_member.html?searchs=min_point" class="btn btn-outline-secondary <?=$searchs=='min_point' ? 'active':'' ?>" >적은순</a>
+                                </div>
+                              </div>
+
+                              <div class="col-auto">
+                                <div class="col-auto">
+                                 <label class="form-label mb-0">최근접속</label>
+                                </div>
+                                <div class="btn-group" role="group" aria-label="Quick Date Selection">
+                                  <a href="/admin/manage/ad_member.html?searchs=desc_latest" class="btn btn-outline-secondary <?=$searchs=='desc_latest' ? 'active':'' ?>" >최근순</a>
+                                  <a href="/admin/manage/ad_member.html?searchs=asc_latest" class="btn btn-outline-secondary <?=$searchs=='asc_latest' ? 'active':'' ?>" >오래된순</a>
+                                </div>
+                              </div>
+
+                              <div class="col-auto">
+                                <div class="col-auto">
+                                 <label class="form-label mb-0">가입일</label>
+                                </div>
+                                <div class="btn-group" role="group" aria-label="Quick Date Selection">
+                                  <a href="/admin/manage/ad_member.html?searchs=asc_regdate" class="btn btn-outline-secondary <?=$searchs=='asc_regdate' ? 'active':'' ?>" >오래된순</a>
+                                </div>
+                              </div>
+
+                              <div class="col-auto">
+                                <div class="col-auto">
+                                 <label class="form-label mb-0">충전횟수</label>
+                                </div>
+                                <div class="btn-group" role="group" aria-label="Quick Date Selection">
+                                  <a href="/admin/manage/ad_member.html?searchs=bank" class="btn btn-outline-secondary <?=$searchs=='bank' ? 'active':'' ?>" >많은순</a>
+                                </div>
+                              </div>
+<?
+$오늘 = date("Y-m-d");
+$오늘년도 = date("Y");
+$오늘월 = date("m");
+
+$오늘_가입 = db_select("select count(*) as cnt from lr_member where date_format(regdate, '%Y-%m-%d') = '{$오늘}' ");
+
+$sql = "SELECT COUNT(DISTINCT midx) AS total FROM lr_deposit_log WHERE status = 2 AND date_format(regdate, '%Y-%m-%d') = '{$오늘}' ";
+$오늘충전캐시 = db_select($sql);
+
+$sql = "SELECT COUNT(DISTINCT midx) AS total FROM lr_card_log WHERE pg_status1 = '정상' AND date_format(regdate, '%Y-%m-%d') = '{$오늘}' ";
+$오늘충전카드 = db_select($sql);
+
+
+$_이번달 = " YEAR(regdate) = {$오늘년도} AND MONTH(regdate) = {$오늘월} ";
+$이번달_가입 = db_select("select count(*) as cnt from lr_member where {$_이번달} ");
+
+$sql = "SELECT COUNT(DISTINCT midx) AS total FROM lr_deposit_log WHERE status = 2 AND {$_이번달} ";
+$이번달충전캐시 = db_select($sql);
+
+$sql = "SELECT COUNT(DISTINCT midx) AS total FROM lr_card_log WHERE pg_status1 = '정상' AND {$_이번달} ";
+$이번달충전카드 = db_select($sql);
+
+?>
+                              <div class="col-auto">
+                                <div class="btn-group" role="group" aria-label="Quick Date Selection">
+                                  Today: 가입수 <?=$오늘_가입['cnt']?> / 결제자수 <?=$오늘충전캐시['total'] + $오늘충전카드['total']?><br />
+                                  이번달: 가입수 <?=$이번달_가입['cnt']?> / 결제자수 <?=$이번달충전캐시['total'] + $이번달충전카드['total']?>
+                                </div>
+                              </div>
+
+
+                            </form>
+                          </div>
+
+
+                          <div class="section_table">
+                              <div class="tbl_basic">
+                                  <div class="table-responsive"> <!-- 테이블을 감싸는 div 추가 -->
+                                      <table class="table">
+                                          <thead>
+                                          <tr class="text-nowrap">
+                                              <th>num</th>
+                                              <th class="text-center">아이디</th>
+                                              <th class="text-center">이름</th>
+
+
+                                              <th>쿠폰<br />(사용/보유)</th>
+
+                                              <th>디바이스</th>
+                                              <th>유입</th>
+                                              <th>충전횟수</th>
+                                              <th>최근접속</th>
+                                              <th>가입일</th>
+                                          </tr>
+                                          </thead>
+                                          <tbody>
+
+                                          <?php
+                                          $no = $num - $list_num * ($page-1);
+                                          foreach ($_data as $member) { ?>
+                                              <tr class="text-center text-nowrap">
+                                                  <td class="text-center"><?=$no?></td>
+
+                                                  <td class="text-center">
+<?= $member['id'] ?>
+                                                  </td>
+
+                                                  <td class="text-center">
+                                                      <?= $member['name'] ?>
+
+                                                  </td>
+
+
+
+                                                  <td class="text-center">
+                                                      <?
+                                                      $sql = "select count(*) as cnt from lr_coupon_log where status = 0 and midx = {$member['idx']} ";
+                                                      $미사용개수 = db_select($sql);
+
+                                                      $sql = "select count(*) as cnt from lr_coupon_log where status = 1 and midx = {$member['idx']} ";
+                                                      $사용개수 = db_select($sql);
+                                                      ?>
+                                                      <?= $미사용개수['cnt'] ?>/<?= $사용개수['cnt'] ?>
+                                                  </td>
+
+
+                                                  <td class="text-center"><?= $member['access'] ?></td>
+
+                                                  <td class="text-center"><?= $member['ads'] ?></td>
+
+                                                  <td class="text-center">
+                                                      <?=$member['bank_cnt'] + $member['card_cnt'] ?>
+                                                  </td>
+                                                  <td class="text-center">
+
+                                                    <?= date("y-m-d H:i:s", strtotime($member['last_login_date'])); ?>
+                                                  </td>
+                                                  <td class="text-center"><?= date("y-m-d H:i:s", strtotime($member['regdate'])); ?></td>
+                                              </tr>
+                                          <?php $no--; } ?>
+                                          </tbody>
+                                      </table>
+                                  </div>
+                              </div>
+                          </div>
+
+                        </div>
+                        <?php include_once "../pager.php" ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+<script>
+function go_show(obj){
+  $(".phem"+obj).toggle();
+}
+function go_cut_off(midx, status) {
+    if (confirm(status + " 하시겠습니까?")) {
+        $.ajax({
+            type: "POST",
+            url: "ajax_member_cut_off.php",
+            async: false,
+            data: {
+                midx: midx,
+                status: status
+            },
+            success: function (result) {
+                var r = result.trim();
+                console.log(r);
+                if (r == 1) {
+                  alert("처리되었습니다.");
+                  location.reload();
+                } else {
+                    alert("오류");
+                }
+            },
+            error: function (e) {
+                alert(e.responseText);
+            }
+        });
+    }
+}
+
+function go_excel(){
+  $("#searchFrm").attr("action", "/admin/manage/member_excel_download.php");
+  $("#searchFrm").submit();
+  $("#searchFrm").attr("action", "");
+}
+
+</script>
+
+<?php
+include "../../admin/footer.html";
+?>

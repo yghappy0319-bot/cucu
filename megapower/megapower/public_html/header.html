@@ -1,0 +1,423 @@
+<?php
+include $_SERVER['DOCUMENT_ROOT']."/lib/function.php";
+include $_SERVER['DOCUMENT_ROOT']."/_chk.php";
+
+?>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <?php
+  $header_title = $title;
+  include_once "head.php";
+
+  echo $config['script_head'];
+
+  ?>
+</head>
+<?php
+$userAgent = $_SERVER['HTTP_USER_AGENT'];
+if (isW2nAndroid($userAgent)) {
+	$_SESSION['is_app'] = "APP";
+?>
+
+<?php } ?>
+<script>
+$(function(){
+  $('.scrollable_menu').click(function(){
+    $('.scrollable_menu').removeClass('on');
+    $(this).addClass('on');
+  })
+})
+</script>
+
+<body>
+
+    <!-- 내번호 불러오기 -->
+    <div class="new_popup_my_save_ball"></div>
+
+    <div class="new_all_menu">
+        <div class="row">
+            <div class="scroll">
+                <div class="ft">
+                    <a class="logo" href="/index.html"><img src="/images/logo.gif"></a>
+                    <div class="exc">
+                        오늘의 환율 $1 = <span>₩</span> <b><?=환율()?></b>
+                    </div>
+                </div>
+                <div class="menu_ft">
+                    <ul>
+                        <?php if($_SESSION['midx']){?>
+                        <li><a href="/member/mypage.html"><p>Mypage</p></a></li>
+                        <li><a><p class="point"><img src="/images/icon_point.png"><b><?=number_format($member['point'])?></b>캐시</p></a></li>
+                        <?php }else{ ?>
+                        <li><a href="javascript:_go_login();"><p>로그인</p></a></li>
+                        <li><a href="/member/join.html"><i class="xi-user-plus-o"></i><p>회원가입</p></a></li>
+                        <?php } ?>
+                    </ul>
+                </div>
+
+
+
+                <div class="menu_fb">
+                    <ul>
+                        <li><a href="/buy/service_buy.html"><p>서비스 안내</p></a></li>
+                        <? if(당첨금높은순()==2){?>
+                        <li><a href="<?=$_SESSION['midx'] !='' ? '/buy/megamillion.html':'javascript:_go_login();' ?>"><p>메가밀리언</p></a>
+                          <span class="mu tooltip green">
+            								<span class="tooltip-text">업그레이드</span>
+            							</span>
+                        </li>
+                        <li><a href="<?=$_SESSION['midx'] !='' ? '/buy/power_ball.html':'javascript:_go_login();' ?>"><p>파워볼</p></a></li>
+                        <? }else if(당첨금높은순()==1){ ?>
+                        <li><a href="<?=$_SESSION['midx'] !='' ? '/buy/power_ball.html':'javascript:_go_login();' ?>"><p>파워볼</p></a></li>
+                        <li>
+                          <a href="<?=$_SESSION['midx'] !='' ? '/buy/megamillion.html':'javascript:_go_login();' ?>"><p>메가밀리언</p></a>
+                          <span class="mu tooltip green">
+            								<span class="tooltip-text">업그레이드</span>
+            							</span>
+                        </li>
+                        <? } ?>
+                        <li><a href="/buy/draw_mega.html"><p>당첨 결과</p></a></li>
+
+
+                        <? if (strpos($_SERVER['HTTP_HOST'], 'megapower.world') !== false) {
+                            if($_SESSION['midx']){
+                              ?>
+                              <li>
+                                <a href="/buy/point.html"><p>캐시 충전</p></a>
+                                <span class="mu tooltip">
+                                  <span class="tooltip-text">보너스 행사중</span>
+                                </span>
+                              </li>
+                              <?
+                            }
+                        }else{ ?>
+                        <li>
+                          <a href="/buy/point.html"><p>캐시 충전</p></a>
+                          <span class="mu tooltip">
+                            <span class="tooltip-text">보너스 행사중</span>
+                          </span>
+                        </li>
+                        <? } ?>
+
+
+            						<li >
+                          <a href="/member/coupon.html"><p>이벤트&쿠폰</p></a>
+                          <span class="mu tooltip green">
+                            <span class="tooltip-text">[무료게임 쿠폰]</span>
+                          </span>
+            						</li>
+                    </ul>
+
+
+                    <ul>
+                        <li><a href="/member/mypage.html"><p>마이페이지</p></a></li>
+                        <?php if($_SESSION['midx']){?>
+                        <li><a href="javascript:go_logout();"><p>로그아웃</p></a></li>
+                        <?php }else{ ?>
+                        <?php } ?>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="close"></div>
+    </div>
+<style>
+  .app_icon {    position: absolute; right: -120px;top: 120px; width:112px;}
+</style>
+    <div class="new_header">
+
+        <?php if (basename($_SERVER['PHP_SELF']) == 'index.html') { ?>
+          <?php if(!$_COOKIE['top_banner']){?>
+          <div class="top w_max">
+              <div class="w_min">
+
+                  <div class="txt">
+                      <p><b>🎯 최저가 도전</b> 1게임 5,000원 최저가 아닐 시 차액을 <b>환불</b> 해드립니다. 2등까지 <b>선지급 서비스</b> <!-- <span class="mo_exchange">오늘의 환율 $1 = <span>₩</span> <?= number_format(환율()) ?>원</span> --></p>
+                  </div>
+                  <div class="exc">
+                      오늘의 환율 $1 = <span>₩</span> <?= number_format(환율()) ?>원
+                  </div>
+                  <i class="xi-close" onclick="go_top_banner_close()"></i>
+              </div>
+          </div>
+          <?php } ?>
+        <?php } ?>
+
+
+
+
+
+
+
+        <div class="bottom w_max">
+            <div class="w_min" style="position: relative;" >
+
+                <div class="fl">
+                    <a class="logo" href="/index.html"><img src="/images/logo.gif"></a>
+                    <div class="menu">
+                        <ul>
+                            <!-- 메가,파워 구매페이지 퍼블리싱 페이지  megamillion_new.html // power_ball_new.html 완료 후 _new삭제 -->
+							              <li><a href="/buy/service_buy.html"><p>서비스 안내</p></a></li>
+                            <?php if(당첨금높은순()==2){?>
+                            <li <?=$mm_category_on?>>
+                              <a href="<?=$_SESSION['midx'] !='' ? '/buy/megamillion.html':'javascript:_go_login();' ?>"><p>메가밀리언</p></a>
+                              <span class="tooltip green">
+                                <span class="tooltip-text">업그레이드</span>
+                              </span>
+                            </li>
+
+                            <li <?=$pb_category_on?>><a href="<?=$_SESSION['midx'] !='' ? '/buy/power_ball.html':'javascript:_go_login();' ?>"><p>파워볼</p></a></li>
+
+                            <?php }else if(당첨금높은순()==1){ ?>
+                              <li <?=$pb_category_on?> ><a href="<?=$_SESSION['midx'] !='' ? '/buy/power_ball.html':'javascript:_go_login();' ?>"><p>파워볼</p></a></li>
+                              <li <?=$mm_category_on?> >
+                                <a href="<?=$_SESSION['midx'] !='' ? '/buy/megamillion.html':'javascript:_go_login();' ?>"><p>메가밀리언</p></a>
+                                <span class="tooltip green">
+                  								<span class="tooltip-text">업그레이드</span>
+                  							</span>
+                              </li>
+                            <?php } ?>
+                            <li><a href="/buy/draw_mega.html"><p>당첨 결과</p></a></li>
+
+                            <? if (strpos($_SERVER['HTTP_HOST'], 'megapower.world') !== false) {
+                                if($_SESSION['midx']){
+                                  ?>
+                                  <li>
+                                    <a href="/buy/point.html"><p>캐시 충전</p></a>
+                                    <span class="tooltip">
+                                      <span class="tooltip-text">보너스 행사중</span>
+                                    </span>
+                                  </li>
+                                  <?
+                                }
+                            }else{ ?>
+                            <li>
+                              <a href="/buy/point.html"><p>캐시 충전</p></a>
+                              <span class="tooltip">
+                                <span class="tooltip-text">보너스 행사중</span>
+                              </span>
+                            </li>
+                            <? } ?>
+
+              							<li>
+                              <a href="/member/coupon.html"><p>이벤트&쿠폰</p></a>
+                              <span class="tooltip blue">
+                                <span class="tooltip-text">무료게임 쿠폰</span>
+                              </span>
+              							</li>
+
+                            <!-- <li>
+                              <a href="<?=$_SESSION['midx'] !='' ? '/shop/list.html':'javascript:_go_login();' ?>"><p>SHOP</p></a>
+                            </li> -->
+                        </ul>
+                    </div>
+                </div>
+                <div class="fr">
+                    <div class="menu">
+                        <ul>
+                            <!-- <li class="m_none"><a href="/event/scratch.html"><p>이벤트</p></a></li>
+                            <li class="m_none"><b>ㆍ</b></li> -->
+                            <li class="m_none"><a href="<?=$_SESSION['midx'] !='' ? '/member/mypage.html':'javascript:_go_login();' ?>"><p>마이페이지</p></a></li>
+                            <?php if($_SESSION['midx']){?>
+                            <li class="m_none"><b>ㆍ</b></li>
+                            <li class="m_none"><a href="javascript:go_logout();"><p>로그아웃</p></a></li>
+                            <?php }else{ ?>
+                            <?php } ?>
+                            <li class="ml m_login">
+                              <a><i class="xi-user-o"></i></a>
+                              <div class="tip">
+                                  <?php if($_SESSION['midx']){?>
+                                      <!--<a href="javascript:go_logout();"><p>로그아웃</p></a>
+                                      <span></span>-->
+                                      <a class="point"><img src="/images/icon_point.png"><b><?=number_format($member['point'])?></b>캐시</a>
+                                  <?php }else{ ?>
+                                      <a href="javascript:_go_login();"><p>로그인</p></a>
+                                      <span></span>
+                                      <a href="/member/join.html"><p>회원가입</p></a>
+                                  <?php } ?>
+                              </div>
+                            </li>
+                            <li class="ml">
+                               <a class="new_all_menu_btn">
+							   <button class="on" type="button" tabindex="1800">
+									<i class="icon line w xsmall apps"></i>
+									<i class="icon line w xsmall close2"></i>
+									<span class="blind">메뉴</span>
+								</button>
+							   <!-- <i class="xi-bars"></i> --></a>
+                            </li>
+                        </ul>
+                    </div>
+					 <a href="/member/view.html?gubun=notice&idx=139">
+                <img src="/images/app.png" class="app_icon" />
+              </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="new_header_m">
+        <div class="menu">
+            <ul>
+                <!-- 메가,파워 구매페이지 퍼블리싱 페이지  megamillion_new.html // power_ball_new.html 완료 후 _new삭제 -->
+                <li><a href="/buy/service_buy.html"><p>서비스 안내</p></a></li>
+                <?php if(당첨금높은순()==2){?>
+                <li><a href="<?=$_SESSION['midx'] !='' ? '/buy/megamillion.html':'javascript:_go_login();' ?>"><p>메가밀리언</p></a></li>
+                <li><a href="<?=$_SESSION['midx'] !='' ? '/buy/power_ball.html':'javascript:_go_login();' ?>"><p>파워볼</p></a></li>
+                <?php }else if(당첨금높은순()==1){ ?>
+                  <li><a href="<?=$_SESSION['midx'] !='' ? '/buy/power_ball.html':'javascript:_go_login();' ?>"><p>파워볼</p></a></li>
+                  <li><a href="<?=$_SESSION['midx'] !='' ? '/buy/megamillion.html':'javascript:_go_login();' ?>"><p>메가밀리언</p></a></li>
+                <?php } ?>
+                <!-- <li>
+                  <a href="<?=$_SESSION['midx'] !='' ? '/shop/list.html':'javascript:_go_login();' ?>"><p>SHOP</p></a>
+                </li> -->
+            </ul>
+        </div>
+        <div class="menu">
+            <ul>
+                <li><a href="/buy/draw_mega.html"><p>당첨 결과</p></a></li>
+
+                <? if (strpos($_SERVER['HTTP_HOST'], 'megapower.world') !== false) {
+                    if($_SESSION['midx']){
+                      ?>
+                      <li><a href="/buy/point.html"><p>캐시 충전</p></a></li>
+                      <?
+                    }
+                }else{ ?>
+                <li><a href="/buy/point.html"><p>캐시 충전</p></a></li>
+                <? } ?>
+
+
+                <li class="m_none"><a href="/event/scratch.html"><p>이벤트&쿠폰</p></a></li>
+
+                <li class="m_none"><a href="<?=$_SESSION['midx'] !='' ? '/member/mypage.html':'javascript:_go_login();' ?>"><p>마이페이지</p></a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="new_banner_m">
+        모바일 배너 영역
+    </div>
+
+    <script>
+      // jQuery
+      $(document).ready(function () {
+        $('.app_icon').hover(
+          function () {
+            // 마우스를 올렸을 때
+            console.log('hover');
+            $('.app_icon').attr('src', '/images/app1.png');
+          },
+          function () {
+            // 마우스를 벗어났을 때
+            $('.app_icon').attr('src', '/images/app.png');
+          }
+        );
+      });
+
+      function go_mobile_ct_show(obj){
+        $(".tab_sub_"+obj).slideToggle();
+        $(".tab_sub_"+obj).addClass("active");
+      }
+
+      $(document).ready(function(){
+      $(".hamburger").click(function(){
+          // $(".mobile_menu");
+          $(this).toggleClass("is-active");
+          $(".mobile_menu").slideToggle(500);
+
+      });
+    });
+
+      var swiper = new Swiper(".pc_topSwiper", {
+        cssMode: true,
+        autoplay: {
+          delay: 10000,
+          disableOnInteraction: false,
+        },
+        navigation: {
+          nextEl: ".swiper-button-next",
+          prevEl: ".swiper-button-prev",
+        },
+        mousewheel: true,
+        keyboard: true,
+      });
+
+      function go_top_banner_close(){
+        $(".top.w_max").remove();
+        setCookie('top_banner', 1, 1);
+      }
+
+      function show_cash_charge_notice(){
+        $(".new_all_menu").removeClass("on");
+        $("#cash_charge_notice_popup").addClass("on");
+        $("body").css("overflow", "hidden");
+      }
+
+      function close_cash_charge_notice(){
+        $("#cash_charge_notice_popup").removeClass("on");
+        $("body").css("overflow", "");
+        if (location.pathname.indexOf("/buy/point.html") !== -1 || location.pathname.indexOf("/buy/card.html") !== -1) {
+          location.href = "/index.html";
+        }
+      }
+
+      $(document).on("click", 'a[href*="/buy/point.html"], a[href*="/buy/card.html"]', function(e){
+        e.preventDefault();
+        show_cash_charge_notice();
+      });
+    </script>
+
+<style>
+#cash_charge_notice_popup{ display: none; justify-content: center; align-items: center; position: fixed; z-index: 9999; top: 0; right: 0; bottom: 0; left: 0; padding: 20px; background: rgba(0,0,0,.7); }
+#cash_charge_notice_popup.on{ display: flex; }
+#cash_charge_notice_popup .wrap{ position: relative; z-index: 10; max-width: 560px; width: 100%; }
+#cash_charge_notice_popup .wrap .head{ display: flex; align-items: center; position: relative; padding: 0 50px 0 24px; border-radius: 20px 20px 0 0; min-height: 60px; background: #FFF; box-shadow: 0 1px 0 0 rgba(0,0,0,.1); }
+#cash_charge_notice_popup .wrap .head p{ font-size: 17px; font-weight: 700; color: #000; line-height: 1.4; }
+#cash_charge_notice_popup .wrap .head i{ display: flex; justify-content: center; align-items: center; position: absolute; top: -15px; right: -15px; width: 40px; height: 40px; border-radius: 50%; background: #F00; font-size: 14px; color: #FFF; cursor: pointer; }
+#cash_charge_notice_popup .wrap .body{ overflow: hidden; border-radius: 0 0 20px 20px; background: #FFF; }
+#cash_charge_notice_popup .wrap .body .scroll{ overflow: auto; padding: 24px; max-height: min(70vh, 520px); }
+#cash_charge_notice_popup .notice_text p{ margin: 0 0 12px; line-height: 1.7; font-size: 14px; color: #333; word-break: keep-all; }
+#cash_charge_notice_popup .notice_text p.greeting{ font-weight: 600; color: #000; }
+#cash_charge_notice_popup .notice_text p.em{ padding: 12px 14px; border-radius: 8px; background: #f5f8fc; font-weight: 600; color: #1a3a66; }
+#cash_charge_notice_popup .notice_text p.thanks{ margin-top: 18px; font-weight: 600; color: #000; }
+#cash_charge_notice_popup .notice_btn{ display: flex; justify-content: center; margin: 8px 0 0; }
+#cash_charge_notice_popup .notice_btn button{ padding: 0 36px; height: 42px; border-radius: 21px; border: 0; background: #537db2; font-size: 15px; font-weight: 600; color: #FFF; cursor: pointer; }
+@media(max-width: 768px){
+  #cash_charge_notice_popup .wrap .head{ padding: 14px 44px 14px 18px; }
+  #cash_charge_notice_popup .wrap .head p{ font-size: 15px; }
+  #cash_charge_notice_popup .wrap .body .scroll{ padding: 18px; }
+}
+.bank_acount, .point_new_acount, .account-number { display: none !important; }
+</style>
+
+<div class="cash_charge_notice_popup" id="cash_charge_notice_popup" onclick="if(event.target===this) close_cash_charge_notice();">
+    <div class="wrap">
+        <div class="head">
+            <p>시스템 점검 및 캐시 충전 일시 중단 안내</p>
+            <a href="javascript:close_cash_charge_notice();"><i class="xi-close"></i></a>
+        </div>
+        <div class="body">
+            <div class="scroll">
+                <div class="notice_text">
+                    <p class="greeting">안녕하세요. 고객님.</p>
+                    <p>현재 다량의 복권 스캔본 이미지 데이터 누적으로 인해 일시적으로 서버가 불안정하여, 많은 주문량을 원활하게 처리하기 위한 시스템 안정화 작업을 진행하고 있습니다.</p>
+                    <p>이에 따라 안정화 작업이 완료될 때까지 캐시 충전이 일시적으로 중단됩니다.</p>
+                    <p class="em">단, 기존에 충전되어 있는 캐시는 정상적으로 사용 및 주문이 가능합니다.</p>
+                    <p>보다 빠르고 안정적인 서비스 이용이 가능하도록 시스템 최적화 및 점검을 최대한 신속하게 진행하겠습니다.</p>
+                    <p>또한 서버의 효율적인 운영 및 데이터 관리를 위해 당첨 처리가 완료된 복권의 스캔본 이미지는 순차적으로 폐기 처리될 예정입니다.</p>
+                    <p>서비스 이용에 불편을 드려 죄송하며, 빠른 시일 내에 정상적인 서비스를 제공할 수 있도록 최선을 다하겠습니다.</p>
+                    <p class="thanks">감사합니다.</p>
+                </div>
+                <div class="notice_btn">
+                    <button type="button" onclick="close_cash_charge_notice()">확인</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+

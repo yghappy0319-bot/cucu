@@ -1,0 +1,94 @@
+
+<?php
+/**
+ * 사용방법
+ * class = modal-main-banner
+ * data-modal-id = 배너고유ID
+ * 두가지 값만 지정되면 동작함
+ */
+?>
+
+<?php
+// 배너 임시 비노출 — 복구 시 true 로 변경
+$main_popup_enabled = true;
+?>
+
+<?php if ($main_popup_enabled && $M_login["user_id"] != '') { // 로그인 회원용 팝업 영역 ?>
+
+<div class="modal-main-banner" data-modal-id="modal-mainCash"  >
+  <div class="inner"  >
+    <button type="button" class="close-modal-x"><span class="hide">닫기</span></button>
+
+    <img src="/common/images/index/cash_point.jpg?date=<?=date('his')?>" style="margin-top: -20px; width: 100%;" />
+
+    <button class="dont-show-7-days">7일간 열지 않음</button>
+    <button class="dont-show-1-day">오늘 하루 열지 않음</button>
+    <button class="close-modal">닫기</button>
+  </div>
+</div>
+<?php
+$targetDate = strtotime("2025-05-20 23:59:59");
+$currentTime = time();
+$remainingTime = $targetDate - $currentTime;
+
+$days = floor($remainingTime / (60 * 60 * 24));
+$hours = floor(($remainingTime % (60 * 60 * 24)) / (60 * 60));
+$minutes = floor(($remainingTime % (60 * 60)) / 60);
+$seconds = $remainingTime % 60;
+?>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      var targetTime = new Date("May 20, 2025 23:59:59").getTime();
+      var interval = setInterval(function() {
+          var now = new Date().getTime();
+          var remainingTime = targetTime - now;
+
+          var days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+          var hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          var minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+          var seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+
+          document.getElementById("countdown").innerHTML = days + "일 " + hours + "시간 " + minutes + "분 " + seconds + "초<br>이벤트가 종료됩니다.";
+
+          if (remainingTime < 0) {
+              clearInterval(interval);
+              document.getElementById("countdown").innerHTML = "이벤트가 종료되었습니다!";
+          }
+      }, 1000);
+  });
+</script>
+  <?php if ($is_event_user) { // 미접속자?>
+  <div class="modal-main-banner" data-modal-id="modal-BonusPointEvent0513a">
+    <div class="inner">
+      <button type="button" class="close-modal-x"><span class="hide">닫기</span></button>
+      <div id="countdown" style="position: absolute; width: 100%; top: 468px; font-size: 24px; font-weight: 600; line-height: 120%;"><?php echo "$days일 $hours시간 $minutes분 $seconds초"; ?></div>
+      <img src="/common/images/index/superbig50_popup.png" style="margin-top: -20px; width: 100%;" usemap="#mega-map" />
+      <map name="mega-map">
+        <area target="_self" alt="새로운메가밀리언" title="새로운메가밀리언" href="/contents/mypage/cash-charge.html" coords="50,500,440,650" shape="rect">
+      </map>
+
+      <button class="dont-show-7-days">7일간 열지 않음</button>
+      <button class="dont-show-1-day">오늘 하루 열지 않음</button>
+      <button class="close-modal">닫기</button>
+    </div>
+  </div>
+  <?php } ?>
+
+  <?php if ($is_event_user_b) { // 소액결제자?>
+  <div class="modal-main-banner" data-modal-id="modal-BonusPointEvent0513b">
+    <div class="inner">
+      <button type="button" class="close-modal-x"><span class="hide">닫기</span></button>
+      <div id="countdown" style="position: absolute; width: 100%; top: 468px; font-size: 24px; font-weight: 600; line-height: 120%;"><?php echo "$days일 $hours시간 $minutes분 $seconds초"; ?></div>
+      <img src="/common/images/index/superbig40_popup.png" style="margin-top: -20px; width: 100%;" usemap="#mega-map" />
+      <map name="mega-map">
+        <area target="_self" alt="새로운메가밀리언" title="새로운메가밀리언" href="/contents/mypage/cash-charge.html" coords="50,500,440,650" shape="rect">
+      </map>
+
+      <button class="dont-show-7-days">7일간 열지 않음</button>
+      <button class="dont-show-1-day">오늘 하루 열지 않음</button>
+      <button class="close-modal">닫기</button>
+    </div>
+  </div>
+  <?php } ?>
+
+<?php } ?>

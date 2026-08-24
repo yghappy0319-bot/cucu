@@ -1,0 +1,239 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+  $add_query = "";
+
+  if ($year == '') {
+    $year = date("Y");
+  }
+
+  if ($month == '') {
+    $month = date("m");
+  }
+
+  $sdate = $year."-".$month;
+  $lastday = date('d', strtotime($sdate."-01 +1 month -1 day"));
+
+  $s_year = date("Y");
+  $e_year = date("Y", strtotime(" -1 year"));
+
+  if (isset($patner_id)) {
+    if (trim($patner_id) != '') {
+      $add_query = " AND PATNER_ID='".$patner_id."'";
+      $add_query2 = " AND P.USER_ID='".$patner_id."'";
+    }
+  }
+?>
+
+<style>
+  .table thead tr { display: block; }
+  .table tbody {
+    display: block;
+    height: 600px;
+    overflow: auto;
+  }
+  .table th { width: 9%; }
+  .table td { width: 8%; }
+</style>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">일별통계</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">파트너관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">일별통계</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="year" id="year" class="form-control form-select select2 auto-submit">
+                    <option value="">--기간선택(년)--</option>
+                    <?php
+                      for ($i = $s_year; $i > $e_year; $i--) {
+                    ?>
+                    <option value="<?php echo $i; ?>" <?php echo ($year==$i)?"selected":""; ?>><?php echo $i; ?></option>
+                    <?php } ?>
+
+                  </select>
+                </div>
+                <div class="form-group mr-3 fl-left">
+                  <select name="month" id="month" class="form-control form-select select2 auto-submit">
+                    <option value="">--기간선택(월)--</option>
+                    <option value="01" <?php echo ($month=="01")?"selected":""; ?>>01</option>
+                    <option value="02" <?php echo ($month=="02")?"selected":""; ?>>02</option>
+                    <option value="03" <?php echo ($month=="03")?"selected":""; ?>>03</option>
+                    <option value="04" <?php echo ($month=="04")?"selected":""; ?>>04</option>
+                    <option value="05" <?php echo ($month=="05")?"selected":""; ?>>05</option>
+                    <option value="06" <?php echo ($month=="06")?"selected":""; ?>>06</option>
+                    <option value="07" <?php echo ($month=="07")?"selected":""; ?>>07</option>
+                    <option value="08" <?php echo ($month=="08")?"selected":""; ?>>08</option>
+                    <option value="09" <?php echo ($month=="09")?"selected":""; ?>>09</option>
+                    <option value="10" <?php echo ($month=="10")?"selected":""; ?>>10</option>
+                    <option value="11" <?php echo ($month=="11")?"selected":""; ?>>11</option>
+                    <option value="12" <?php echo ($month=="12")?"selected":""; ?>>12</option>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control auto-submit" name="patner_id" value="<?php echo $patner_id; ?>" placeholder="파트너ID">
+                  <div class="input-group-text btn btn-primary" id="btn-search" style="padding: 10px;">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive">
+              <table class="table border text-nowrap table-striped" id="table-list">
+                <thead>
+                  <tr style="text-align: center;">
+                    <th>일자</th>
+                    <th>신규가입회원수</th>
+                    <th>신규회원쿠폰등록수</th>
+                    <th>기존회원쿠폰등록수</th>
+                    <th>신규회원결제수</th>
+                    <th>PC가입수</th>
+                    <th>Mobile가입수</th>
+                    <th>APP가입수</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    $total_price = array();
+                    $total_cnt = array();
+                    $i = 0;
+
+                    for ($s = $lastday; $s >= 1; $s--) {
+                      $day = $s;
+                      $price_cnt = 0;
+
+                      if ($day < 10) {
+                        $day = "0".$day;
+                      }
+
+                      $date = $sdate."-".$day;
+                      $sDate = $date." 00:00:01";
+                      $eDate = $date." 23:59:59";
+                      $style = "";
+
+                      if ($date == date("Y-m-d")) {
+                        $style = 'background: #F8E5D0;';
+                      }
+
+                      $cnt = $db->get_data("SELECT COUNT(*) AS cnt FROM COUPON_LOG WHERE ISTYPE = '신규' AND REG_DATE BETWEEN '".$sDate."' AND '".$eDate."' ".$add_query);
+
+                      if (!isset($cnt['cnt'])) {
+                        $cnt['cnt']  =  0;
+                      }
+
+                      $old_cnt = $db->get_data("SELECT COUNT(*) AS cnt FROM COUPON_LOG WHERE ISTYPE = '기존' AND REG_DATE BETWEEN '".$sDate."' AND '".$eDate."' ".$add_query);
+
+                      if (!isset($old_cnt['cnt'])) {
+                        $old_cnt['cnt'] = 0;
+                      }
+
+                      $list = $db->get_list("SELECT MEMBER_NO FROM COUPON_LOG WHERE ISTYPE = '신규' AND REG_DATE BETWEEN '".$sDate."' AND '".$eDate."' ".$add_query);
+
+                      if (isset($list['MEMBER_NO'])) {
+                        if (count($list['MEMBER_NO']) > 0) {
+                          $data = implode(",", $list['MEMBER_NO']);
+                          //$data = substr($data, 0, -1);
+                          $price = $db->get_data("SELECT COUNT(*) AS cnt FROM CASH WHERE REG_DATE BETWEEN '".$sDate."' AND '".$eDate."' AND IS_USE='Y' AND MEMBER_NO IN (".$data.") ".$add_query);
+
+                          if (!isset($price['cnt'])) {
+                            $price['cnt'] = 0;
+                          }
+
+                          $price_cnt = $price['cnt'];
+                        }
+                      }
+
+                      $pc_sql = "
+                        SELECT
+                          COUNT(*) AS cnt
+                        FROM
+                          MEMBER AS M
+                          LEFT JOIN
+                          PATNER AS P ON P.PATNER_NO = M.PATNER_NO
+                        WHERE
+                          M.IN_TYPE = 'PC' AND
+                          M.REG_DATE BETWEEN '".$sDate."' AND '".$eDate."'
+                      ".$add_query2;
+                      $pc = $db->get_data($pc_sql);
+
+                      $mobile_sql = "
+                        SELECT
+                          COUNT(*) AS cnt
+                        FROM
+                          MEMBER AS M
+                          LEFT JOIN
+                          PATNER AS P ON P.PATNER_NO = M.PATNER_NO
+                        WHERE
+                          M.IN_TYPE = 'MOBILE' AND
+                          M.REG_DATE BETWEEN '".$sDate."' AND '".$eDate."'
+                      ".$add_query2;
+                      $mobile = $db->get_data($mobile_sql);
+
+                      $app_sql = "
+                        SELECT
+                          COUNT(*) AS cnt
+                        FROM
+                          MEMBER AS M
+                          LEFT JOIN
+                          PATNER AS P ON P.PATNER_NO = M.PATNER_NO
+                        WHERE
+                          M.IN_TYPE = 'APP' AND
+                          M.REG_DATE BETWEEN '".$sDate."' AND '".$eDate."'
+                      ".$add_query2;
+                      $app = $db->get_data($app_sql);
+
+                      if (!isset($pc['cnt'])) {
+                        $pc['cnt'] = 0;
+                      }
+
+                      if (!isset($mobile['cnt'])) {
+                        $mobile['cnt'] = 0;
+                      }
+
+                      if (!isset($app['cnt'])) {
+                        $app['cnt'] = 0;
+                      }
+                  ?>
+                  <tr style="<?php echo $style; ?>">
+                    <td style="text-align: center;"><?php echo date("Y년 m월 d일", strtotime($date)); ?></td>
+                    <td style="text-align: center;"><?php echo number_format($cnt['cnt']); ?></td>
+                    <td style="text-align: center;"><?php echo number_format($cnt['cnt']); ?></td>
+                    <td style="text-align: center;"><?php echo number_format($old_cnt['cnt']); ?></td>
+                    <td style="text-align: center;"><?php echo number_format($price_cnt); ?></td>
+                    <td style="text-align: center;"><?php echo number_format($pc['cnt']); ?></td>
+                    <td style="text-align: center;"><?php echo number_format($mobile['cnt']); ?></td>
+                    <td style="text-align: center;"><?php echo number_format($app['cnt']); ?></td>
+                  </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>

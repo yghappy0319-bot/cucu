@@ -1,0 +1,55 @@
+<div class="left">
+  <h2 class="add_after bg_navy fw500 type_radius"><span class="va_mid">마이페이지</span></h2>
+  <div class="nav_mypage">
+    <nav>
+      <ul>
+        <li class="line"><a class="<?=((strpos($_SERVER['REQUEST_URI'], '/mypage.html') !== false ? "on" : ""))?>" href="/contents/mypage/mypage.html">마이페이지</a></li>
+        <li class="line"><a class="<?=((strpos($_SERVER['REQUEST_URI'], '/history.html') !== false ? "on" : ""))?>" href="/contents/mypage/history.html">구매/당첨내역</a></li>
+        <li class="line"><a class="<?=((strpos($_SERVER['REQUEST_URI'], '/history-image.html') !== false ? "on" : ""))?>" href="/contents/mypage/history-image.html">스캔본 확인</a></li>
+        <li class="line">
+          <a href="" class="nolink">캐시관리</a>
+          <ul>
+            <li><a class="<?=((strpos($_SERVER['REQUEST_URI'], '/cash-history.html') !== false ? "on" : ""))?>" href="/contents/mypage/cash-history.html">충전내역</a></li>
+            <li><a class="<?=((strpos($_SERVER['REQUEST_URI'], '/cash-history-use.html') !== false ? "on" : ""))?>"href="/contents/mypage/cash-history-use.html">사용내역</a></li>
+          </ul>
+        </li>
+        <li class="line">
+          <a href="" class="nolink">당첨금관리</a>
+          <ul>
+            <li><a class="<?=((strpos($_SERVER['REQUEST_URI'], '/wcash-history.html') !== false ? "on" : ""))?>" href="/contents/mypage/wcash-history.html">적립 · 사용내역</a></li>
+            <li><a class="<?=((strpos($_SERVER['REQUEST_URI'], '/cash-refund-apply.html') !== false ? "on" : ""))?>" href="/contents/mypage/cash-refund-apply.html">출금신청</a></li>
+            <li><a class="<?=((strpos($_SERVER['REQUEST_URI'], '/cash-history-refund.html') !== false ? "on" : ""))?>" href="/contents/mypage/cash-history-refund.html">출금내역</a></li>
+          </ul>
+        </li>
+        <li class="line">
+          <a href="" class="nolink">마일리지관리</a>
+          <ul>
+            <li><a class="<?=((strpos($_SERVER['REQUEST_URI'], '/mileage-history.html') !== false ? "on" : ""))?>" href="/contents/mypage/mileage-history.html">적립 · 사용내역</a></li>
+          </ul>
+        </li>
+        <li class="line">
+          <a href="" class="nolink">보너스포인트관리</a>
+          <ul>
+            <li><a class="<?=((strpos($_SERVER['REQUEST_URI'], '/point-history.html') !== false ? "on" : ""))?>" href="/contents/mypage/point-history.html">적립 · 사용내역</a></li>
+          </ul>
+        </li>
+        <li class="line"><a class="<?=((strpos($_SERVER['REQUEST_URI'], '/non-winning.html') !== false ? "on" : ""))?>" href="/contents/mypage/non-winning.html">낙첨 (실물)복권 받기</a></li>
+        <li class="line"><a class="<?=((strpos($_SERVER['REQUEST_URI'], '/coupon.html') !== false ? "on" : ""))?>" href="/contents/mypage/coupon.html">쿠폰 등록</a></li>
+        <li class="line"><a class="<?=((strpos($_SERVER['REQUEST_URI'], '/mynumber.html') !== false ? "on" : ""))?>" href="/contents/mypage/mynumber.html">자주쓰는 번호 관리</a></li>
+        <li class="line">
+          <a href="" class="nolink">나의 문의내역</a>
+          <ul>
+            <li><a href="/contents/cs/direct.html">1:1 문의</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="" class="nolink">MY 정보</a>
+          <ul>
+            <li><a class="<?=((strpos($_SERVER['REQUEST_URI'], '/my-info.html') !== false ? "on" : ""))?>" href="/contents/mypage/my-info.html">회원정보수정</a></li>
+            <li><a class="<?=((strpos($_SERVER['REQUEST_URI'], '/delete.html') !== false ? "on" : ""))?>" href="/contents/mypage/delete.html">회원탈퇴</a></li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>

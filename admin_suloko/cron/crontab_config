@@ -1,0 +1,47 @@
+# crontab 설정내용 기록용
+
+# rdate 1시 0분에
+00 01 * * * /usr/bin/rdate -s time.bora.net
+
+# 환율 업데이트 - 매시 1분 마다 (ex: 9시 1분, 10시 1분)
+1 */1 * * *  wget --delete-after https://admcron.mekosystem.com/cron/crond_exchange.php
+
+# 추첨 영상 업데이트 - 12시부터 15시까지 매시 7분, 17분, 27분, 37분, 47분, 57분 / 일, 화, 수, 목, 토
+# 7,17,27,37,47,57 12-15 * * 0,2,3,4,6 wget --delete-after https://admcron.mekosystem.com/cron/crond_lottery_video.php
+* * * * * wget --delete-after https://admcron.mekosystem.com/cron/crond_lottery_video.php
+
+# 추첨 결과 업데이트 - 12시부터 23시까지 매시 5분, 15분, 25분, 35분, 45분, 55분 / 일, 화, 수, 목, 토
+5,15,25,35,45,55 12-23 * * 0,2,3,4,6 wget --delete-after https://admcron.mekosystem.com/cron/crond_lottery_result.php
+
+# 추첨 스케쥴 생성(년 1회 - 12월 1일 0시 0분
+0 0 1 12 * wget --delete-after https://admcron.mekosystem.com/cron/crond_lottery_schedule.php
+
+
+# 회원 등급 업데이트 - 0시, 6시, 12시 18시 0분
+0 0,6,12,18 * * * wget --delete-after https://admcron.mekosystem.com/cron/crond_membership_level.php
+
+
+# 환급 신청 모니터링 - 매 5분 마다
+*/5 * * * * wget --delete-after https://admcron.mekosystem.com/cron/crond_refund_monitoring.php
+
+
+# 무통장 입금 지연체크 - 매 30분 마다
+*/30 * * * *  wget --delete-after  https://admcron.mekosystem.com/cron/bank_sms_monitoring.php
+
+# 무통장 선입금 후 주문서 체크 - 매 1분 마다
+*/1 * * * *  wget --delete-after  https://admcron.mekosystem.com/cron/bank_sms_exec_orderprocessing.php
+
+# 무통장 신청 후 장기 미입금 건 처리 - 8시부터 23시까지 매시 10분 마다
+*/10 8-23 * * * wget --delete-after https://admcron.mekosystem.com/cron/bank_longTerm_nonPayment.php
+
+
+# 예약 푸시 발송 - 매 1분 마다
+# * * * * * wget --delete-after https://admcron.mekosystem.com/cron/crond_push_reservation_send.php
+
+
+# 회원 보유 자산 합계 (잔여금) - 매월 1일 0시 0분
+0 0 1 * * wget --delete-after https://admcron.mekosystem.com/cron/crond_member_remaining_assets.php
+
+
+# blocking attack ip - 매 1분 마다
+* * * * * /home/lotto/cron/block_attack_ip.sh

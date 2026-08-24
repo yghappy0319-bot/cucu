@@ -1,0 +1,145 @@
+<?php
+include_once "../adm/head.php";
+include_once $_SERVER['DOCUMENT_ROOT']."/lib/sms_server_function.php";
+$page = 1;
+
+if($member['mb_id']=="admin"){
+  $member_where = " ";
+}else{
+  $member_where = " and member_no = {$member['mb_no']} ";
+}
+?>
+<?php include_once "../adm/nav.php";?>
+  <div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+    <div class="main-menu-header">
+      <form>
+        <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+      </form>
+    </div>
+    <?php include_once "../adm/menu.php";?>
+  </div>
+
+  <div class="app-content content container-fluid">
+    <div class="content-wrapper">
+      <!-- <div class="content-header row">
+        <div class="content-header-left col-md-6 col-xs-12 mb-1">
+          <h2 class="content-header-title">사이트 리스트</h2>
+        </div>
+
+      </div> -->
+      <div class="content-body"><!-- Basic Tables start -->
+        <div class="row">
+            <div class="col-xs-12">
+              <form id="searchFrm" >
+                <input type="hidden" name="page" id="page" value="<?=$page?>" >
+                <input type="hidden" name="status" value="<?=$status?>" >
+                <input type="hidden" name="site" id="site" value="<?=$site?>"  >
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">결제 폼 관리</h4>
+                        <a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+
+                        <div class="heading-elements">
+                            <ul class="list-inline mb-0">
+                                <li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+                                <li><a data-action="reload"><i class="icon-reload"></i></a></li>
+                                <li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+                                <li><a data-action="close"><i class="icon-cross2"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card-body collapse in">
+                        <div class="card-block">
+                          <p class="card-text">사이트 정보가 등록되야만 결제 폼 관리가 가능합니다.</p>
+                          <? if($member['mb_no']==1){?>
+                          <div>
+                            <a href="/adm/pay_mng.htm">등록순</a>
+                            <a href="/adm/pay_mng.htm?sort=mb_10">종료순</a>
+                          </div>
+                          <? } ?>
+                        </div>
+
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead class="thead-inverse">
+                                <tr>
+                                  <th>연동여부</th>
+                                  <th>주소</th>
+                                  <th>종료일</th>
+                                  <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                              <?php
+
+                              if($sort=="mb_10"){
+                                $sort_where = " b.mb_10 ";
+                              }else{
+                                $sort_where = " a.regdate ";
+                              }
+
+                              $page_url = "/page/add_site.php";
+                              $countSql = "select count(*) as totalRecords from site where 1=1 {$member_where} ";
+                              $countResult = db_select($countSql);
+                              include_once "pager_count.php";
+                              $sql = "
+                              select a.*, b.mb_10 from site a
+                              left join member b
+                              on a.member_no = b.mb_no
+                              where 1=1 {$member_where} order by {$sort_where} desc  ";
+                              //echo $sql;
+                                $result = db_query($sql);
+                                $allcnt = mysqli_num_rows($result);
+                                for($a=0;$row=db_fetch($result);$a++){
+                                $sitename = explode("//",$row['site']);
+                                $_폼사용여부 = db_select("select count(*) as cnt from tb_pay_form_config where sidx = {$row['idx']} ");
+                              ?>
+                              <tr>
+                            
+                                <td>
+                                  <?= 결제폼사용여부($_폼사용여부['cnt']) ?>
+                                </td>
+                                <td>
+                                  <? if($member['mb_id']=="admin"){ ?>
+                                  <a href="siteview.htm?idx=<?=$row['idx']?>">
+                                      <?= idn_to_utf8($sitename[1])?>
+                                  </a>
+                                <? }else{ ?>
+                                  <?= idn_to_utf8($sitename[1])?>
+                                <? } ?>
+                                </td>
+                                <td>
+                                  <?=$row['mb_10']?>
+                                </td>                                
+                                <td>
+                                  <a href="/adm/payform.htm?idx=<?=$row['idx']?>">관리</a>
+                                </td>
+                              </tr>
+                              <? } ?>
+
+                              <? if($allcnt==0){?>
+                                <tr>
+                                  <td colspan="8" >
+                                    내역이 없습니다.
+                                  </td>
+                                </tr>
+                              <? } ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+
+                </div>
+                </form>
+            </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+<?php include_once "../adm/footer.php";?>

@@ -1,0 +1,584 @@
+<?php
+include_once "../adm/head.php";
+
+$data = db_select("select * from site where idx = {$idx} ");
+
+if($member['mb_no']!=1){
+  //접속 mb_no 와 등록된 mb_no가 다른경우 못봄
+  if($member['mb_no']!=$data['member_no']){
+    exit;
+  }
+}
+
+$fconfig = db_select("select * from tb_pay_form_config where midx = {$data['member_no']} and sidx = {$idx} ");
+?>
+
+<?php include_once "../adm/nav.php";?>
+<div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+  <div class="main-menu-header">
+    <form>
+      <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+    </form>
+  </div>
+  <?php include_once "../adm/menu.php";?>
+</div>
+
+<div class="app-content content container-fluid">
+  <div class="content-wrapper">
+    <div class="content-body">
+    <section id="basic-form-layouts">
+    	<div class="row match-height">
+
+    		<div class="col-md-6">
+    			<div class="card" >
+    				<div class="card-header">
+    					<h4 class="card-title" id="basic-layout-form">결제 폼 관리</h4>
+    					<a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+    					<div class="heading-elements">
+    						<ul class="list-inline mb-0">
+    							<li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+    							<li><a data-action="reload"><i class="icon-reload"></i></a></li>
+    							<li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+    							<li><a data-action="close"><i class="icon-cross2"></i></a></li>
+    						</ul>
+    					</div>
+    				</div>
+
+            <div class="card-body">
+      					<div class="card-block">
+                  <p>
+                    은행명/예금주명/계좌번호는 사이트 관리 -> 관리 -> 수정 페이지에서 변경가능 합니다.
+                  </p>
+
+                  <form method="POST" id="payfromFrm">
+                    <input type="hidden" name="midx" value="<?=$data['member_no']?>" />
+                    <input type="hidden" name="sidx" value="<?=$idx?>" />
+                    <input type="hidden" name="site" value="<?=$data['site']?>" />
+
+        						<ul class="nav nav-tabs">
+        							<li class="nav-item">
+        								<a class="nav-link active" id="base-tab1" data-toggle="tab" aria-controls="tab1" href="#tab1" aria-expanded="true">기본</a>
+        							</li>
+        							<li class="nav-item">
+        								<a class="nav-link" id="base-tab2" data-toggle="tab" aria-controls="tab2" href="#tab2" aria-expanded="false">신용카드</a>
+        							</li>
+        							<li class="nav-item">
+        								<a class="nav-link" id="base-tab3" data-toggle="tab" aria-controls="tab3" href="#tab3" aria-expanded="false">세금</a>
+        							</li>
+                      <li class="nav-item">
+        								<a class="nav-link" id="base-tab4" data-toggle="tab" aria-controls="tab4" href="#tab4" aria-expanded="false">보너스포인트</a>
+        							</li>
+        						</ul>
+
+        						<div class="tab-content px-1 pt-1">
+        							<div role="tabpanel" class="tab-pane active" id="tab1" aria-expanded="true" aria-labelledby="base-tab1">
+
+                          <div class="form-body">
+
+                            <div class="form-group">
+                              <label>결제폼 사용여부</label>
+                              <div class="input-group">
+                                <label class="display-inline-block custom-control custom-radio ml-1">
+                                  <input type="checkbox" name="status" value="1" <?= $fconfig['status'] ? "checked":"" ?> class="custom-control-input" />
+                                  <span class="custom-control-indicator"></span>
+                                  <span class="custom-control-description ml-0">사용함</span>
+                                </label>
+                              </div>
+                            </div>
+
+                            <div class="form-group">
+                              <label>Action url
+                                <span style="background-color: #ccc; padding: 4px;"><?= $fconfig['submit_url']=='/bank/request.php' ? '럭키뱅크':'타URL' ?></span>
+                              </label>
+                              <div class="input-group">
+                                <label class="display-inline-block custom-control custom-radio ml-1">
+                                  <input type="radio" name="form_url" value="1"
+                                  <?= $fconfig['submit_url']=='/bank/request.php' ? 'checked':'' ?>
+                                   class="custom-control-input action_url_chk" />
+                                  <span class="custom-control-indicator"></span>
+                                  <span class="custom-control-description ml-0">럭키뱅크</span>
+                                </label>
+
+                                <label class="display-inline-block custom-control custom-radio ml-1">
+                                  <input type="radio" name="form_url" value="2"
+                                  <?= $fconfig['submit_url']!='/bank/request.php' ? 'checked':'' ?>
+                                  class="custom-control-input action_url_chk" />
+                                  <span class="custom-control-indicator"></span>
+                                  <span class="custom-control-description ml-0">타 사이트</span>
+                                </label>
+
+                                <input type="text" name="action_url"
+                                value="<?=$fconfig['submit_url']?>"
+                                class="form-control action_url" style="display:<?= $fconfig['submit_url']!='/bank/request.php' ? 'block':'none' ?>" />
+
+                              </div>
+                            </div>
+
+
+<div class="form-group">
+  <label>시작 폼</label>
+  <div class="input-group">
+    <label class="display-inline-block custom-control custom-radio ml-1">
+      <input type="radio" name="first_form" value="bank"
+      <?= $fconfig['first_form']=='bank' ? 'checked':'' ?>
+       class="custom-control-input action_url_chk" />
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description ml-0">무통장폼</span>
+    </label>
+
+    <label class="display-inline-block custom-control custom-radio ml-1">
+      <input type="radio" name="first_form" value="card"
+      <?= $fconfig['first_form']=='card' ? 'checked':'' ?>
+      class="custom-control-input action_url_chk" />
+      <span class="custom-control-indicator"></span>
+      <span class="custom-control-description ml-0">카드폼</span>
+    </label>
+  </div>
+</div>
+
+                            <div class="form-group">
+                              <label for="issueinput1">제목</label>
+                              <input type="text" name="title" class="form-control" value="<?= $fconfig['title'] ? $fconfig['title']:"스토어 금액충전" ?>" />
+                            </div>
+
+                            <div class="form-group">
+                              <label for="projectinput8">내용</label>
+<textarea name="top_content" rows="5" class="form-control" ><? if($fconfig['top_content']){?><?=$fconfig['top_content']?>
+<? }else{ ?>
+<p>*스토어로 충전된 금액은 상품 주문 후에는 환불이 불가능합니다.</p>
+<p>*충전금액과 결제금액을 확인 후 정확한 입금 부탁드립니다.</p>
+<? } ?>
+</textarea>
+
+                            </div>
+
+                            <div class="form-group">
+                              <label for="projectinput8">계좌이체 안내</label>
+<textarea name="bottom_content" rows="5" class="form-control">
+<? if($fconfig['bottom_content']){?>
+<?=$fconfig['bottom_content']?>
+<? }else{ ?>
+<p>•입금계좌 : <?=$data['bank']?> <?=$data['o_acount']?> <?=$data['acount_name']?></p>
+<p>•입금자명과 예금주가 동일해야 자동충전됩니다.</p>
+<p>•입금 5분이 경과하여도 충전이 되지 않는 경우 '문의'로 문의주세요.</p>
+<? } ?>
+</textarea>
+                            </div>
+
+                            <div class="form-group">
+                              <label for="issueinput1">[충전금액] 타이틀 변경</label>
+                              <input type="text" name="amount_title" class="form-control" value="<?= $fconfig['amount_title'] ? $fconfig['amount_title']:'충전금액(vat 별도)' ?>" />
+                            </div>
+
+                            <div class="form-group">
+                              <label for="issueinput1">금액</label>
+                              <input type="text" name="amount" value="<?= $fconfig['amount'] ? $fconfig['amount']:'10000|30000|50000|100000' ?>" class="form-control" />
+                              <p>기본 : 10000|30000|50000|100000</p>
+                            </div>
+
+                            <div class="form-group">
+                              <label for="issueinput1">금액(TEXT)</label>
+                              <input type="text" name="amount_value_title" class="form-control" value="<?= $fconfig['amount_value_title'] ? $fconfig['amount_value_title']:'1만원|3만원|5만원|10만원' ?>" />
+                              <p>기본 : 1만원|3만원|5만원|10만원</p>
+                            </div>
+
+
+
+                            <div class="form-group">
+                              <label>부가세별도(+10%)</label>
+                              <div class="input-group">
+                                <label class="display-inline-block custom-control custom-radio ml-1">
+                                  <input type="checkbox" name="tax_status1" value="1" class="custom-control-input" <?= $fconfig['tax_status1'] ? "checked":"" ?>/>
+
+                                  <span class="custom-control-indicator"></span>
+                                  <span class="custom-control-description ml-0">사용</span>
+                                </label>
+                              </div>
+                            </div>
+
+                            <div class="form-group">
+                              <label>신청안함에 부가세 적용(해제시 신청안함 부가세x, 체크시 신청안함 선택시 부가세o)</label>
+                              <div class="input-group">
+                                <label class="display-inline-block custom-control custom-radio ml-1">
+                                  <input type="checkbox" name="tax_status2" value="1" class="custom-control-input" <?= $fconfig['tax_status2'] ? "checked":"" ?>  />
+                                  <span class="custom-control-indicator"></span>
+                                  <span class="custom-control-description ml-0">사용</span>
+                                </label>
+                              </div>
+                            </div>
+
+                            <div class="form-group">
+                              <label>럭키뱅크 홍보주소 보이기</label>
+                              <div class="input-group">
+                                <label class="display-inline-block custom-control custom-radio ml-1">
+                                  <input type="checkbox" name="luckybank_link" value="1" class="custom-control-input" <?= $fconfig['luckybank_link'] ? "checked":"" ?>  />
+                                  <span class="custom-control-indicator"></span>
+                                  <span class="custom-control-description ml-0">사용</span>
+                                </label>
+                              </div>
+                            </div>
+
+                            <div class="form-group">
+                              <label for="issueinput1">결제 신청하기 버튼명(팝업)</label>
+                              <input type="text" name="popup_pay_btn_name" class="form-control" value="<?= $fconfig['popup_pay_btn_name'] ? $fconfig['popup_pay_btn_name']:'결제 신청하기' ?>" />
+                            </div>
+
+                            <div class="form-group">
+                              <label for="projectinput8">입금계좌 안내(팝업)</label>
+<textarea name="forminfo1" rows="5" class="form-control">
+<? if($fconfig['forminfo1']){?>
+<?=$fconfig['forminfo1']?>
+<? }else{ ?>
+<?=$data['bank']?> <?=$data['o_acount']?> <?=$data['acount_name']?>
+<? } ?>
+</textarea>
+<p>사용하지 않는 경우 값을 비워주세요.</p>
+                            </div>
+
+                            <div class="form-group">
+                              <label for="projectinput8">안내사항(팝업)</label>
+<textarea name="forminfo2" rows="5" class="form-control">
+<? if($fconfig['forminfo2']){?>
+<?=$fconfig['forminfo2']?>
+<? }else{ ?>
+<p>★중요★</p>
+<p>신청금액과 입금자명이 일치해야</p>
+<p>정상적으로 충전처리가 완료됩니다.</p>
+<? } ?>
+</textarea>
+<p>사용하지 않는 경우 값을 비워주세요.</p>
+                            </div>
+
+                            <div class="form-group">
+                              <label for="projectinput8">입금신청후/안내사항</label>
+<textarea name="forminfo3" rows="5" class="form-control">
+<? if($fconfig['forminfo3']){?>
+<?=$fconfig['forminfo3']?>
+<? }else{ ?>
+결제금액과 입금자명이 일치해야 자동 충전됩니다.
+입금완료 후 1분 이내 자동 충전됩니다.
+자동충전이 되지 않으면 카톡채팅방으로 연락주세요.
+현금영수증, 세금계산서 발행가능합니다.
+발행을 원하시는 경우 카톡으로 연락주세요.
+<? } ?>
+</textarea>
+<p>사용하지 않는 경우 값을 비워주세요.</p>
+                            </div>
+
+                          </div>
+
+
+
+
+        							</div>
+
+
+
+        							<div class="tab-pane" id="tab2" aria-labelledby="base-tab2" aria-expanded="false">
+                        <div class="form-group">
+                          <label>신용카드 사용여부(PG심사가 끝난경우에만 사용가능 합니다.)</label>
+                          <div class="input-group">
+                            <label class="display-inline-block custom-control custom-radio ml-1">
+                              <input type="checkbox" name="card" value="1" <?= $fconfig['card'] ? "checked":"" ?> class="custom-control-input" />
+                              <span class="custom-control-indicator"></span>
+                              <span class="custom-control-description ml-0">사용함</span>
+                            </label>
+                          </div>
+                        </div>
+
+                        <div class="form-group">
+                          <label for="issueinput1">신용카드 결제폼 URL</label>
+                          <input type="text" name="card_url" class="form-control" value="<?= $fconfig['card_url'] ?>" placeholder="신용카드 기능을 사용하는 경우에만 값을 입력해주세요." />
+                        </div>
+        							</div>
+
+        							<div class="tab-pane" id="tab3" aria-labelledby="base-tab3" aria-expanded="false">
+                        <? if(!$data['popbill_id']){?>
+                          <div>
+                            <p>
+                              <font color="blue">팝빌에 가입되어있지 않아 현금영수증/세금계산서 기능은 사용 불가 합니다.</font>
+                            </p>
+                          </div>
+
+                          <div class="card-text">
+                            <p>현금영수증/전자세금계산서는 <a href="https://www.popbill.com/Member/Form/Link" target="_blank">팝빌</a>API를 연동하여 발행됩니다.(* 팝빌 가입 필수)</p>
+                            <p> <b>링크아이디 : <a href="https://www.popbill.com/Member/Form/Link" target="_blank">DUDRHKS0319</a></b>를 꼭 기재후 가입해주세요.</p>
+                            <p>전자세금계산서의 경우는 팝빌에 인증서등록 및 포인트 충전이 되어있어야하며 건당 100원이 차감 됩니다.</p>
+                            <p>현금영수증은 무료 입니다.</p>
+                            <p><a href="https://www.popbill.com/Member/Form/Link" target="_blank" class="btn btn-secondary btn-min-width mr-1 mb-1">팝빌가입하러가기</a></p>
+                          </div>
+                        <? } ?>
+
+                        <? if($data['popbill_id']){?>
+                        <div class="form-group">
+                          <label>현금영수증</label>
+                          <div class="input-group">
+                            <label class="display-inline-block custom-control custom-radio ml-1">
+                              <input type="checkbox" name="cash_resip" value="1" class="custom-control-input" <?= $fconfig['cash_resip'] ? "checked":""?> />
+                              <span class="custom-control-indicator"></span>
+                              <span class="custom-control-description ml-0">사용</span>
+                            </label>
+                          </div>
+                        </div>
+
+                        <div class="form-group">
+                          <label>세금계산서</label>
+                          <div class="input-group">
+                            <label class="display-inline-block custom-control custom-radio ml-1">
+                              <input type="checkbox" name="card_resip" value="1" class="custom-control-input" <?= $fconfig['card_resip'] ? "checked":""?> />
+                              <span class="custom-control-indicator"></span>
+                              <span class="custom-control-description ml-0">사용</span>
+                            </label>
+                          </div>
+                        </div>
+
+                        <div class="form-group">
+                          <label>현금영수증/세금계산서 정보 저장</label>
+                          <div class="input-group">
+                            <label class="display-inline-block custom-control custom-radio ml-1">
+                              <input type="checkbox" name="tax_info_save" value="1" class="custom-control-input" <?= $fconfig['tax_info_save'] ? "checked":"" ?>/>
+                              <span class="custom-control-indicator"></span>
+                              <span class="custom-control-description ml-0">사용</span>
+                            </label>
+                          </div>
+                        </div>
+                      <? } ?>
+        							</div>
+
+                      <div class="tab-pane" id="tab4" aria-labelledby="base-tab4" aria-expanded="false">
+                          <div>
+                            <p>
+                              <font color="blue">보너스포인트 지급 설정</font>
+                            </p>
+                          </div>
+
+                          <div class="card-text">
+                            보너스포인트 지급 설정을 하면 결제 금액의 퍼센테이지 만큼 보너스포인트로 지급됩니다.
+                          </div>
+
+                          <hr />
+
+
+                          <div class="form-group">
+                            <label>무통장입금</label>
+                            <div class="input-group">
+                              <label class="display-inline-block custom-control custom-radio ml-1">
+
+                                <input type="radio" name="bank_event" value="1"
+                                <?= $fconfig['bank_event']=='1' ? 'checked':'' ?>
+                                 class="custom-control-input js-bonus-bank" />
+
+                                <span class="custom-control-indicator"></span>
+                                <span class="custom-control-description ml-0">사용안함</span>
+                              </label>
+
+                              <label class="display-inline-block custom-control custom-radio ml-1">
+                                <input type="radio" name="bank_event" value="2"
+                                <?= $fconfig['bank_event']=='2' ? 'checked':'' ?>
+                                 class="custom-control-input js-bonus-bank" />
+                                <span class="custom-control-indicator"></span>
+                                <span class="custom-control-description ml-0">사용함</span>
+                              </label>
+                            </div>
+                            <div class="js-bank-persent-wrap" style="display:<?= $fconfig['bank_event']=='2' ? 'block' : 'none' ?>;">
+                            <p class="text-muted small mb-0 mt-1">입금(결제) 금액 대비 보너스포인트 지급 비율</p>
+                            <input type="text" name="bank_persent" class="form-control mt-1" style="max-width: 200px;" value="<?= isset($fconfig['bank_persent']) ? $fconfig['bank_persent'] : 0 ?>" placeholder="예: 5" />
+                            <p class="small text-muted">단위: % (숫자만 입력)</p>
+                            </div>
+                          </div>
+
+                          <div class="form-group">
+                            <label>신용카드</label>
+                            <div class="input-group">
+                              <label class="display-inline-block custom-control custom-radio ml-1">
+                                <input type="radio" name="card_event" value="1"
+                                <?= $fconfig['card_event']=='1' ? 'checked':'' ?>
+                                 class="custom-control-input js-bonus-card" />
+                                <span class="custom-control-indicator"></span>
+                                <span class="custom-control-description ml-0">사용안함</span>
+                              </label>
+
+                              <label class="display-inline-block custom-control custom-radio ml-1">
+                                <input type="radio" name="card_event" value="2"
+                                <?= $fconfig['card_event']=='2' ? 'checked':'' ?>
+                                 class="custom-control-input js-bonus-card" />
+                                <span class="custom-control-indicator"></span>
+                                <span class="custom-control-description ml-0">사용함</span>
+                              </label>
+                            </div>
+                            <div class="js-card-persent-wrap" style="display:<?= $fconfig['card_event']=='2' ? 'block' : 'none' ?>;">
+                            <p class="text-muted small mb-0 mt-1">카드 결제 금액 대비 보너스포인트 지급 비율</p>
+                            <input type="text" name="card_persent" class="form-control mt-1" style="max-width: 200px;" value="<?= isset($fconfig['card_persent']) ? $fconfig['card_persent'] : 0 ?>" placeholder="예: 3" />
+                            <p class="small text-muted">단위: % (숫자만 입력)</p>
+                            </div>
+                          </div>
+
+                      </div>
+
+
+                      <div class="form-actions">
+                        <button type="button" class="btn btn-warning mr-1">
+                          <i class="icon-cross2"></i> 취소
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="go_pay_form_set()">
+                          <i class="icon-check2"></i> 수정
+                        </button>
+                      </div>
+
+        						</div>
+                  </form>
+      					</div>
+      				</div>
+
+    				</div>
+    			</div>
+
+
+
+          <div class="col-md-6">
+          			<div class="card" style="height: 1070px;">
+          				<div class="card-header">
+          					<h4 class="card-title" id="basic-layout-colored-form-control">입금 폼 예시</h4>
+          					<a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+          					<div class="heading-elements">
+          						<ul class="list-inline mb-0">
+          							<li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+          							<li><a data-action="reload"><i class="icon-reload"></i></a></li>
+          							<li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+          							<li><a data-action="close"><i class="icon-cross2"></i></a></li>
+          						</ul>
+          					</div>
+          				</div>
+          				<div class="card-body collapse in">
+          					<div class="card-block">
+
+                      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+                      <link rel="stylesheet" type="text/css" href="https://pay.luckybank.kr/css/cashform.css?data=1">
+                      <script src="https://pay.luckybank.kr/js/cash_form_v1.js"></script>
+
+                      <div class="luckybank" ></div>
+                      <script>
+                      let siteinfo = [{
+                      "USER_ID":"{{ user['username'] }}",
+                      "USER_PHONE":"{{ user['phone'] }}",
+                      "code":"<?= $fconfig['code'] ?>"
+                      }];
+                      luckybank(siteinfo);
+                      </script>
+
+          					</div>
+          				</div>
+          			</div>
+          		</div>
+    		</div>
+
+        <? if($member['mb_no']==1){?>
+        <div class="col-md-6">
+          <div class="card" >
+            <div class="card-header">
+              <h4 class="card-title" id="basic-layout-form">무통장 입금폼 스크립트</h4>
+              <a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+              <div class="heading-elements">
+                <ul class="list-inline mb-0">
+                  <li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+                  <li><a data-action="reload"><i class="icon-reload"></i></a></li>
+                  <li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+                  <li><a data-action="close"><i class="icon-cross2"></i></a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="card-body collapse in">
+              <div class="card-block">
+<xmp>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://pay.luckybank.kr/css/cashform.css?data=1">
+<script src="https://pay.luckybank.kr/js/cash_form_v1.js"></script>
+
+<div class="luckybank" ></div>
+<script>
+let siteinfo = [{
+"USER_ID":"{{ user['username'] }}",
+"USER_PHONE":"{{ user['phone'] }}",
+"code":"<?= $fconfig['code'] ?>"
+}];
+luckybank(siteinfo);
+</script>
+</xmp>
+              </div>
+            </div>
+          </div>
+        </div>
+        <? } ?>
+    	</div>
+    </section>
+    <!-- // Basic form layout section end -->
+  </div>
+
+
+
+  </div>
+</div>
+<?php include_once "../adm/footer.php";?>
+<script>
+function syncBonusPersentFields() {
+  var bankOn = $('input[name="bank_event"]:checked').val() === '2';
+  var cardOn = $('input[name="card_event"]:checked').val() === '2';
+  $('.js-bank-persent-wrap').css('display', bankOn ? 'block' : 'none');
+  $('.js-card-persent-wrap').css('display', cardOn ? 'block' : 'none');
+}
+$(document).on('change', 'input[name="bank_event"], input[name="card_event"]', syncBonusPersentFields);
+$(function(){ syncBonusPersentFields(); });
+
+$('.action_url_chk').on('change', function() {
+    $(".action_url").val("");
+    if ($(this).prop('checked')) {
+        if($(this).val()==2){
+          $(".action_url").show();
+        }else{
+          $(".action_url").val("");
+          $(".action_url").css("display","none");
+        }
+    } else {
+    }
+});
+
+  function go_pay_form_set(){
+    var bankOn = $('input[name="bank_event"]:checked').val() === '2';
+    var cardOn = $('input[name="card_event"]:checked').val() === '2';
+    var bankVal = ($('input[name="bank_persent"]').val() || '').toString().replace(/^\s+|\s+$/g, '');
+    var cardVal = ($('input[name="card_persent"]').val() || '').toString().replace(/^\s+|\s+$/g, '');
+    if (bankOn) {
+      var b = bankVal === '' ? NaN : parseFloat(bankVal);
+      if (bankVal === '' || isNaN(b) || b <= 0) {
+        alert('0이상의 값을 입력해주세요');
+        return;
+      }
+    }
+    if (cardOn) {
+      var c = cardVal === '' ? NaN : parseFloat(cardVal);
+      if (cardVal === '' || isNaN(c) || c <= 0) {
+        alert('0이상의 값을 입력해주세요');
+        return;
+      }
+    }
+    var params = jQuery("#payfromFrm").serialize();
+    $.ajax({
+      type : "POST",
+      url: "/ajax/_ajax_pay_form_set.php",
+      async: false,
+      data: params,
+      success: function(result) {
+      var r = result.trim();
+      console.log(r);
+        if(r==1){
+          alert('저장 되었습니다.');
+          location.reload();
+        }
+
+      },
+      error:function(e) {
+        alert(e.responseText);
+      }
+    });
+  }
+</script>

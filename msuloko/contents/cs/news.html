@@ -1,0 +1,206 @@
+<?php
+  $page_title = "최신뉴스 | 고객센터 - 파워볼, 메가밀리언, 미국 복권, 슈로코";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_BBS.php";
+
+  // INJECTION
+  $page = xss_clean($page);
+  $limit = xss_clean($limit);
+  $order = xss_clean($order);
+  $find_text = xss_clean($find_text);
+  $find_object = xss_clean($find_object);
+  $qtype = xss_clean($qtype);
+
+  if (!is_numeric($page)) $page = 1;
+  if (!is_numeric($limit)) $limit = 20;
+
+  if (!$order) $order = " REG_DATE DESC";
+  $add_query  = " AND GUBUN='NEWS' AND STATUS='Y'";
+  $PARAM      = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit";
+
+  if ($find_object == 'all') {
+    $add_query  .= " AND (SUBJECT like '%".$find_text."%' OR CONTENT like '%".$find_text."%')";
+    $find_object = '';
+  }
+
+  $find_op = array(
+    "all"     => "제목+내용",
+    "SUBJECT" => "제목",
+    "CONTENT" => "내용"
+  );
+
+  $order_op  =  array(
+    " REG_DATE DESC" => "최신순",
+    " REG_DATE ASC"  => "오래된순",
+  );
+
+  /* PIN 공지 */
+  $pin_list = F_BBS_list(array(
+    "row"       => 100,
+    "page"      => 1,
+    "order"     => " PIN DESC, REG_DATE DESC",
+    "add_query" => " AND GUBUN='NEWS' AND STATUS='Y' AND PIN > 0"
+  ));
+
+  $list = F_BBS_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['BBS_NO'] = array();
+  }
+
+  $total =  0;
+  if ($list['total'] > 0) {
+    $total = ceil($list['total'] / $limit);
+  }
+
+  $page_row_t = intval($list['total']/$limit) + 1; // 전체 페이지 수
+  if (($page_row_t - 1) == ($list['total'] / $limit)) $page_row_t--;
+
+  $menu_on['bbs'] = true;
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="cs bg_contents">
+        <div class="contents f_NotoSansKR">
+          <?php
+            $bbs_sub['news'] = true;
+            include "inc_bbs.html";
+          ?>
+          <section class="sec_cs wrap_com section bg_white">
+            <form role="form" name="topSearch" id="srForm" method="get" action="<?=$_SERVER['PHP_SELF']?>">
+              <div class="search_type1 flex align_center space" style="padding-top: 20px;">
+                <div class="select">
+                  <select id="find_object" name="find_object">
+                    <?=option_make($find_op, $find_object)?>
+                  </select>
+                </div>
+                <div class="input flex1">
+                  <input type="search" id="find_text" name="find_text" value="<?=$find_text?>" placeholder="검색어를 입력해주세요." />
+                  <input type="hidden" id="qtype" name="qtype" value="<?=$qtype?>" />
+                  <button type="button" class="btn searchBtn"><span class="hide">검색</span></button>
+                </div>
+              </div>
+            </form>
+            <div class="board_type1 wrap_board ls50">
+              <div class="filter flex space align_center">
+                <div>
+                  <select id="sch_order">
+                    <?=option_make($order_op, $order)?>
+                  </select>
+                </div>
+                <div>전체 <span><?=number_format($list['total'])?></span>건</div>
+              </div>
+              <div class="wrap_list">
+                <ol class="list_board" id="list_box">
+                  <?php
+                    // PIN 공지
+                    if ($pin_list['total'] > 0) {
+                      for ($i = 0; $i < count($pin_list['BBS_NO']); $i++) {
+                        $subject = $pin_list['SUBJECT'][$i];
+                        $subject = str_replace("{new}", "<img src='/common/images/icon_new_3d.png' style='width:1.2rem'>", $subject);
+                        $subject = str_replace("{i}", "<img src='/common/images/icon_i_3d.png' style='width:1.2rem'>", $subject);
+                  ?>
+                  <li>
+                    <a href="./news_detail.php?no=<?=$pin_list['BBS_NO'][$i]?>">
+                      <div>
+                        <strong class='color_red3'>[공지] </strong><?=$subject?>
+                      </div>
+                      <ul>
+                        <li>
+                          <span>날짜</span>
+                          <p><?=date("Y-m-d", strtotime($pin_list['REG_DATE'][$i]))?></p>
+                        </li>
+                        <li>
+                          <span>조회</span>
+                          <p><?=number_format($pin_list['HIT'][$i])?></p>
+                        </li>
+                      </ul>
+                    </a>
+                  </li>
+                  <?php
+                      }
+                    }
+                    for ($i = 0; $i < count($list['BBS_NO']); $i++) {
+                      $no = $list['total'] - (($page-1) * $list['row']) - $i;
+                      // new 이미지는 상단공지만 적용
+                      $subject = $list['SUBJECT'][$i];
+                      $subject = str_replace("{new}", "", $subject);
+                      $subject = str_replace("{i}", "", $subject);
+                  ?>
+                  <li>
+                    <a href="./news_detail.php?no=<?=$list['BBS_NO'][$i]?>">
+                      <div><?=$subject?></div>
+                      <ul>
+                        <li>
+                          <span>날짜</span>
+                          <p><?=date("Y-m-d", strtotime($list['REG_DATE'][$i]))?></p>
+                        </li>
+                        <li>
+                          <span>조회</span>
+                          <p><?=number_format($list['HIT'][$i])?></p>
+                        </li>
+                      </ul>
+                    </a>
+                  </li>
+                  <?php
+                    }
+                    if ($list['total'] <= 0) {
+                  ?>
+                  <li>
+                    <a>
+                      <div class="txt_center">등록된 글이 없습니다.</div>
+                      <ul></ul>
+                    </a>
+                  </li>
+                  <?php } ?>
+                </ol>
+                <?php if ($list['total'] > 0) { ?>
+                <!-- 페이징 숫자 표시는 5개까지 -->
+                <div class="wrap_paging">
+                  <?php
+                    $page_info['cur'] = $page;
+                    $page_info['row'] = $limit;
+                    $page_info['total'] = $list['total'];
+                    $list['page_string'] = print_page_num1($page_info);
+                    echo $list['page_string'];
+                  ?>
+                </div>
+                <?php } ?>
+              </div>
+            </div>
+          </section>
+          <div class="wrap_com">
+            <?php include $_SERVER['DOCUMENT_ROOT']."/inc/quick.html"; ?>
+          </div>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script>
+  $('.searchBtn').click(function() {
+    $('#srForm').submit();
+  });
+
+  $('#sch_order').change(function() {
+    let find_object = $('#find_object').val();
+    let find_text = $('#find_text').val();
+    let order = $(this).val();
+
+    location.href = `./news.html?find_object=${find_object}&find_text=${find_text}&order=${order}`;
+  });
+</script>
+</html>

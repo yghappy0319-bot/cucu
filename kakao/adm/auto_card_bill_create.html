@@ -1,0 +1,330 @@
+<?php
+include_once('../common.php');
+include_once "../_chk.php";
+
+if($auto_amt>0){
+  $가격 = $auto_amt;
+}else{
+  $가격 = 11000;
+}
+
+
+
+if(!$member['billKey']){
+  ?>
+  <script>
+    alert('빌링키가 해제되어 처음 인증화면으로 돌아갑니다.');
+    location.href="/adm/auto_card_bill.html";
+  </script>
+  <?
+}
+
+?>
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=EUC-KR">
+<title>무통장 입금 자동확인 - 럭키뱅크</title>
+<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+<style>
+    /* 기본 스타일 */
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+    }
+
+    .wrap {
+        padding: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        box-sizing: border-box;
+    }
+
+    h2 {
+        font-size: 1.25em;
+        margin-top: 0;
+        padding-bottom: 15px;
+        color: #444;
+    }
+
+    .first, .second {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .first {
+        padding: 30px;
+    }
+
+    .second {
+        padding: 30px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    td {
+        padding: 10px;
+        text-align: left;
+        font-weight: bold;
+    }
+
+    input {
+        border: 1px solid #aaa;
+        border-radius: 4px;
+        padding: 8px;
+        width: 100%;
+        font-size: 1em;
+    }
+
+    button {
+        width: 100%;
+        max-width: 300px;
+        border-radius: 4px;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #1e5dd2;
+        border: none;
+        color: #fff;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .can_btn {
+      background-color: pink;
+      color: #333;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .can_btn:hover {
+            background-color: pink;
+    }
+
+    button:hover {
+        background-color: #165bb5;
+    }
+
+    /* 반응형 디자인 */
+    @media (max-width: 768px) {
+        .first, .second {
+            width: 100%;
+        }
+
+        table {
+            font-size: 0.9em;
+        }
+
+        button {
+            max-width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .wrap {
+            padding: 15px;
+        }
+
+        h2 {
+            font-size: 1em;
+        }
+
+        table {
+            font-size: 0.8em;
+        }
+        .first {padding:0px;}
+    }
+    .wrap p:nth-child(2){
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <form id="orderFrm">
+    <?
+        //아래의 데이터들로 실제 자동결제가 이루어집니다
+    ?>
+  <input type="hidden" name="mb_no" id="mb_no" value="<?=$member['mb_no']?>">    <!-- 필수: 카드 비밀번호 앞 2자리 -->
+  <input type="hidden" name="mid" value="pgerrormam">
+  <input type="hidden" name="arsConnType" value="02">   <!-- 필수: 인피니소프트에서 발급한 상점 아이디 -->
+  <input type="hidden" name="billKey" value="<?=$member['billKey']?>">  <!-- 필수: 가맹점 주문번호 -->
+  <input type="hidden" name="amt" value="<?=$가격?>">
+  <input type="hidden" name="userId" id="userId" value="<?=$member['mb_id']?>">    <!-- 필수: 카드 비밀번호 앞 2자리 -->
+  <input type="hidden" name="goodsName" value="무통장 입금 자동확인 매월 자동결제 10000"> <!-- 옵션: 기존 발급받은 빌키(해당 값이 존재할 경우 기존 빌키를 삭제 후 새로 등록) -->
+  <input type="hidden" name="moid" value="">
+  <input type="hidden" name="payExpDate" value="">
+
+  <? if($member['auto_payment_status']==1){ ?>
+  <div>
+    <div style="text-align: center;">
+      <p>자동결제가 진행중 입니다.</p>
+    </div>
+
+    <div>
+      <button type="button" class="can_btn" onclick="go_auto_bill_cancel('<?=$member['billKey']?>')">자동결제 취소하기</button>
+      <button type="button" onclick="back()">닫기</button>
+    </div>
+  </div>
+  <? }else{ ?>
+
+  <p>1. 자동결제 인증(완료) <a href="javascript:go_auto_bill_cancel('<?=$member['billKey']?>')">취소하기</a></p>
+  <p>2. 자동결제 카드등록(진행중)</p>
+	<div class="first" id="first" >
+        <table id="regCardTable">
+          <tr>
+              <td>상품명</td>
+              <td>
+                  무통장 입금 자동확인 매월 자동결제
+              </td>
+          </tr>
+
+          <tr>
+              <td>가격</td>
+              <td>
+                  <?=number_format($가격)?>원(부가세별도)
+              </td>
+          </tr>
+
+            <tr>
+                <td>결제자 성함</td>
+                <td>
+                    <input name="buyerName" value="<?=$member['mb_name']?>"> <!-- 옵션: 기존 발급받은 빌키(해당 값이 존재할 경우 기존 빌키를 삭제 후 새로 등록) -->
+                </td>
+            </tr>
+            <tr>
+                <td>결제자 연락처</td>
+                <td>
+                    <input name="buyerHp" value="<?=$member['mb_hp']?>">    <!-- 필수: 등록자 이름 -->
+                </td>
+            </tr>
+            <tr>
+                <td>결제자 이메일</td>
+                <td>
+                    <input name="buyerEmail" value="<?=$member['mb_email']?>">    <!-- 필수: 개인카드: 주민번호 앞 6자리, 법인카드: 사업자번호 10자리 -->
+                </td>
+            </tr>
+            <tr>
+                <td>할부개월</td>
+                <td>
+                    <select name="cardQuota">
+                      <option value="00">일시불</option>
+                      <option value="02">2개월</option>
+                      <option value="03">3개월</option>
+                      <option value="04">4개월</option>
+                      <option value="05">5개월</option>
+                      <option value="06">6개월</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+
+		<button onclick="javascript:send();" style="cursor:pointer">요청</button>
+	</div>
+  <? } ?>
+  </form>
+</div>
+
+<script type="text/javascript">
+function go_auto_cencel(){
+  if(confirm("자동결제를 취소하시겠습니까?")){
+    alert("test중 입니다.");
+  }
+}
+function setDate(){
+    var d = new Date();
+    var year = d.getFullYear();
+    var month = d.getMonth()+1;
+    var date = d.getDate();
+    if ( month < 10 ){
+        month = '0' + month;
+    }
+    if ( date < 10 ){
+        date = '0' + date;
+    }
+
+    for (var i = 0; i < document.getElementsByName("moid").length; i++) {
+        document.getElementsByName("moid")[i].value = year+""+month+""+date+"001";
+    }
+
+    for (var i = 0; i < document.getElementsByName("payExpDate").length; i++) {
+        document.getElementsByName("payExpDate")[i].value = year+""+month+""+date+"235959";
+    }
+}
+
+function send(){
+  if(confirm("결제가 1회 진행됩니다. 자동결제를 요청하시겠습니까?")){
+    var params = jQuery("#orderFrm").serialize();
+      $.ajax({
+        type : "POST",
+        url: "/ajax/_ajax_card_bill_auto.php",
+        async: false,
+        data: params,
+        dataType: "json",
+        success: function(result) {
+          console.log(result);
+          if (result.resultCode == "0000") {
+              alert(result.resultMsg);
+               window.close();
+          } else {
+              alert(result.resultMsg);
+              location.reload();
+              return false;
+          }
+        },
+        error:function(e) {
+          alert(e.responseText);
+        }
+      });
+  }
+
+}
+function back() {
+  window.close();
+}
+
+function go_auto_bill_cancel(obj){
+  if(confirm("빌링키를 다시 취소/재요청 하시겠습니까?")){
+    var userid = $("#userId").val();
+    $.ajax({
+       type : "POST",
+       url: "/ajax/_ajax_card_billkey_cancel.php",
+       async: false,
+       data: {
+         billkey : obj,
+         userid : userid
+       },
+       dataType: "json",
+       success: function(result) {
+         console.log(result);
+         if (result.resultCode == "0000") {
+             alert(result.resultMsg);
+              window.close();
+         } else {
+             alert(result.resultMsg);
+             location.reload();
+             return false;
+         }
+       },
+       error:function(e) {
+          alert(e.responseText);
+       }
+    });
+  }
+}
+
+$(document).ready(function () {
+	$("#second").hide();
+	setDate();
+});
+</script>
+</body>
+</html>

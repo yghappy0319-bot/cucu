@@ -1,0 +1,178 @@
+<?php
+include_once __DIR__ . '/head.php';
+
+if ($member['mb_id'] !== 'admin') {
+    echo '<script>alert("접근 권한이 없습니다.");location.href="/adm/index.php";</script>';
+    exit;
+}
+
+$target_where = "mb_10 != '' AND IFNULL(mb_hp,'') != ''";
+$target_cnt = db_select("select count(*) as cnt from member where {$target_where}");
+$target_list = db_query("select mb_no, mb_id, mb_name, mb_hp, mb_10 from member where {$target_where} order by mb_10 asc");
+?>
+<?php include_once __DIR__ . '/nav.php'; ?>
+<div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+  <div class="main-menu-header">
+    <form>
+      <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+    </form>
+  </div>
+  <?php include_once __DIR__ . '/menu.php'; ?>
+</div>
+
+<div class="app-content content container-fluid">
+  <div class="content-wrapper">
+    <div class="content-header row">
+      <div class="content-header-left col-md-8 col-xs-12 mb-1">
+        <h2 class="content-header-title">전체문자 보내기</h2>
+        <p class="text-muted mb-0">서비스 이용중(종료 대상 아님) 회원에게 문자를 발송합니다.</p>
+      </div>
+    </div>
+    <div class="content-body">
+      <div class="row">
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">문자 작성</h4>
+            </div>
+            <div class="card-body collapse in">
+              <div class="card-block">
+                <div class="alert alert-info mb-2">
+                  발송 대상: 서비스 이용중 회원 <strong><?= (int)($target_cnt['cnt'] ?? 0) ?></strong>명
+                  <span class="text-muted">(연락처가 있는 회원만)</span>
+                </div>
+
+                <div class="form-group">
+                  <label for="sms_title">제목 <span class="text-danger">*</span></label>
+                  <input type="text" id="sms_title" class="form-control" maxlength="40" placeholder="문자 제목을 입력하세요" value="럭키뱅크 안내" />
+                </div>
+
+                <div class="form-group">
+                  <label for="sms_content">내용 <span class="text-danger">*</span></label>
+                  <textarea id="sms_content" class="form-control" rows="10" placeholder="문자 내용을 입력하세요"></textarea>
+                  <small class="text-muted">줄바꿈은 그대로 발송됩니다.</small>
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" id="btn_sms_send" class="btn btn-danger">전체 발송</button>
+                </div>
+                <div id="sms_send_result" class="mt-2 text-muted" style="display:none;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-header">
+              <h4 class="card-title">발송 대상 미리보기</h4>
+            </div>
+            <div class="card-body collapse in">
+              <div class="card-block" style="max-height:480px; overflow:auto;">
+                <table class="table table-sm table-bordered mb-0">
+                  <thead>
+                    <tr>
+                      <th>아이디</th>
+                      <th>연락처</th>
+                      <th>종료일</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  <?php
+                  $preview = 0;
+                  while ($row = db_fetch($target_list)) {
+                      $preview++;
+                      if ($preview > 100) {
+                          break;
+                      }
+                  ?>
+                    <tr>
+                      <td><?= htmlspecialchars($row['mb_id']) ?></td>
+                      <td><?= htmlspecialchars($row['mb_hp']) ?></td>
+                      <td><?= htmlspecialchars($row['mb_10']) ?></td>
+                    </tr>
+                  <?php } ?>
+                  <?php if ($preview === 0) { ?>
+                    <tr><td colspan="3" class="text-center text-muted">대상 회원이 없습니다.</td></tr>
+                  <?php } elseif ((int)($target_cnt['cnt'] ?? 0) > 100) { ?>
+                    <tr><td colspan="3" class="text-center text-muted">외 <?= (int)$target_cnt['cnt'] - 100 ?>명…</td></tr>
+                  <?php } ?>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/app-assets/js/core/libraries/jquery.min.js" type="text/javascript"></script>
+<script>
+(function() {
+  var sending = false;
+  $('#btn_sms_send').on('click', function() {
+    if (sending) {
+      return;
+    }
+    var title = $.trim($('#sms_title').val());
+    var content = $.trim($('#sms_content').val());
+    var cnt = <?= (int)($target_cnt['cnt'] ?? 0) ?>;
+
+    if (!title) {
+      alert('제목을 입력해 주세요.');
+      $('#sms_title').focus();
+      return;
+    }
+    if (!content) {
+      alert('내용을 입력해 주세요.');
+      $('#sms_content').focus();
+      return;
+    }
+    if (cnt < 1) {
+      alert('발송 대상 회원이 없습니다.');
+      return;
+    }
+    if (!confirm('서비스 이용중 회원 ' + cnt + '명에게 문자를 발송하시겠습니까?\n발송 후 취소할 수 없습니다.')) {
+      return;
+    }
+
+    sending = true;
+    var $btn = $('#btn_sms_send');
+    $btn.prop('disabled', true).text('발송 중…');
+    $('#sms_send_result').show().text('발송 중입니다. 잠시만 기다려 주세요.');
+
+    $.ajax({
+      type: 'POST',
+      url: '/adm/ajax/_ajax_sms_send_all.php',
+      data: {
+        title: title,
+        content: content
+      },
+      success: function(result) {
+        var r = (result || '').toString().trim();
+        if (r.indexOf('OK|') === 0) {
+          var parts = r.split('|');
+          var msg = '발송 완료\n전체: ' + (parts[1] || 0) + '건\n성공: ' + (parts[2] || 0) + '건\n실패/스킵: ' + (parts[3] || 0) + '건';
+          alert(msg);
+          $('#sms_send_result').text(msg.replace(/\n/g, ' / '));
+        } else {
+          alert(r || '발송에 실패했습니다.');
+          $('#sms_send_result').text(r || '발송에 실패했습니다.');
+        }
+      },
+      error: function(xhr) {
+        alert(xhr.responseText || '요청 오류');
+        $('#sms_send_result').text(xhr.responseText || '요청 오류');
+      },
+      complete: function() {
+        sending = false;
+        $btn.prop('disabled', false).text('전체 발송');
+      }
+    });
+  });
+})();
+</script>
+
+<?php include_once __DIR__ . '/footer.php'; ?>

@@ -1,0 +1,97 @@
+<?php
+$title = "미국복권 구매대행 최신뉴스";
+include "../header.html";
+?>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">최신뉴스</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>고객센터</p></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>최신뉴스</p></li>
+            </ul>
+        </div>
+
+        <div class="modle_menu_02">
+            <a href="<?=$_SESSION['midx'] !='' ? '/member/notice.html':'javascript:_go_login();' ?>">공지사항</a>
+            <a class="on" href="/member/news.html">최신뉴스</a>
+            <a href="<?=$_SESSION['midx'] !='' ? '/member/faq.html':'javascript:_go_login();' ?>">자주묻는질문</a>
+            <a href="/member/inquiry.html">1:1문의</a>
+
+        </div>
+
+        <?
+        $page_num = 5;
+        $page = isset($_GET["page"])? $_GET["page"] : 1;
+
+        if($_GET['list_num']>0){
+          $list_num = $_GET['list_num'];
+        }else{
+          $list_num = 9;
+        }
+
+        $records = 10;
+        $table = "lr_post";
+        $where = " gubun = 'news' ";
+        include_once "../page_code.php";
+        ?>
+
+        <div class="modle_options">
+            <div class="total">
+                총 <span><?=$num?></span> / <b><?=$page?></b>
+            </div>
+            <div class="search">
+                <select>
+                    <option>제목</option>
+                </select>
+                <input type="text">
+                <button>검색</button>
+            </div>
+        </div>
+
+        <div class="board_inner">
+            <form id="searchFrm">
+                <input type="hidden" name="page" id="page" value="<?=$page?>">
+            </form>
+            <table class="board">
+                <thead>
+                    <tr>
+                        <th>번호</th>
+                        <th>제목</th>
+                        <th>작성일</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?
+                    $result = db_query("select * from lr_post where gubun = 'news' order by regdate desc limit $start, $list_num ");
+                    $no= $num - $list_num * ($page-1);
+                    while($quiry=db_fetch($result)){
+                    ?>
+                    <tr>
+                        <td class="text-center" ><?=$no;?></td>
+                        <td><a href="/member/view2.html?gubun=news&idx=<?=$quiry['idx']?>"><?=$quiry['title']?></a></td>
+                        <td class="text-center"><?=date("y-m-d",strtotime($quiry['regdate']))?></td>
+                    </tr>
+                    <?
+                        $no--;
+                    } ?>
+                    <? if($num ==0){?>
+                    <tr>
+                        <td colspan="3">등록된 글이 없습니다.</td>
+                    </tr>
+                    <? } ?>
+                </tbody>
+            </table>
+            <div class="page"><?php include_once "../pager.php" ?></div>
+        </div>
+
+    </div>
+</div>
+
+<?php
+include "../footer_new.html";
+?>

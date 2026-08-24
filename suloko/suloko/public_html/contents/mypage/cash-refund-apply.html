@@ -1,0 +1,180 @@
+<?php
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+
+  if ($M_login['user_id'] == '') {
+    meta_go("/login.html");
+    exit;
+  }
+
+  $mb = $db->get_data("SELECT * FROM MEMBER WHERE USER_ID='{$M_login['user_id']}'");
+?>
+
+<style>
+.bx_type2 > .left:before{
+  margin-right: 0;
+  width: 0;
+  height: 0;
+  background: none;
+}
+</style>
+
+<body>
+  <a href="#main" class="skip">본문 바로가기</a>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html";?>
+  <main id="main">
+    <div class="wrap_mypage clear wrap_com">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/nav-mypage.html";?>
+      <div class="right">
+        <section class="sec_refund">
+          <div class="wrap_title">
+            <h3 class="heading">당첨금 출금신청</h3>
+          </div>
+          <div class="bx_type2 top flex space align_center bg_navy type_radius">
+            <p class="left add_before fw300 ls50">
+              <img src="<?=$mlevel_image_op[$mb['LEVEL']]?>" style="width: 1.3rem;">&nbsp;&nbsp;
+              <span class="va_mid"><strong><?=$mb['NAME']?> <span class="color_red">[<?=$mlevel_op[$mb['LEVEL']]?>]</span></strong>
+              회원님, 현재 당첨금은</span><strong class="color_ylw"><?=number_format($mb['WINCASH'])?> 원</strong><span class="va_mid">입니다.</span>
+            </p>
+          </div>
+          <div class="bx_notice">
+            <ul class="list_bul light_gray">
+              <li>
+                <span style="color: #f00; font-weight: 700;">
+                  카드깡 등 슈로코의 결제서비스를 악용하는 사례를 방지하기 위해 캐시 충전 후 미사용 캐시는 카드 승인 취소만 가능합니다.
+                </span>
+              </li>
+              <li><span>출금신청하신 당첨금은 본인명의의 계좌번호로 이체됩니다.</span></li>
+              <li><span>계좌번호가 정확해야 이체되므로 계좌번호 확인 후 신청해 주시기 바랍니다.</span></li>
+              <li>
+                <span>당첨금 출금 및 이체는 1일 1회 처리됩니다.</span><br>
+              </li>
+              <li>
+                <span>보유중인 당첨금이
+                  <span style="color: #f00; font-weight: 700;">1,100원</span>이상이면 출금가능 합니다.
+                </span>
+              </li>
+              <li><span>회원 본인의 명의의 계좌정보만 유효합니다.</span>
+                <ul>
+                  <li><span>- 출금계좌 등록은 회원명과 예금주명이 동일한 경우 등록됩니다.</span></li>
+                  <li><span>- 은행 이체 시 이체오류가 발생한경우에는 당일 18시 이전에 당첨금으로 반환 처리 됩니다.</span></li>
+                  <li><span>- 반복적으로 이체오류가 발생하는 경우, 계좌정보를 변경 등록하시기 바랍니다.</span></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </section>
+        <section class="sec_apply mb100">
+          <div class="wrap_title">
+            <strong class="heading fs23">출금신청</strong>
+          </div>
+          <form class="f_NotoSansKR space_btm" name="w_frm" id="w_frm" method="post" action="./cash-refund-apply-action.php">
+            <input type="hidden" name="mb_cash" id="mb_cash" value="<?=$mb['WINCASH']?>" />
+            <fieldset>
+              <legend class="hide">출금신청 접수 입력 폼</legend>
+              <ul class="list_reg type2 ls50">
+                <li>
+                  <label for="bank"><span>입금은행</span></label>
+                  <div class="bx_input">
+                    <select name="BANK1" id="bank">
+                      <option value="">은행을 선택해주세요.</option>
+                      <?=option_make($bank_op, "")?>
+                    </select>
+                  </div>
+                </li>
+                <li>
+                  <label for="bank2"><span>계좌번호</span></label>
+                  <div class="bx_input ">
+                    <input type="number" id="bank2" name="BANK2" placeholder="-없이 숫자만 입력해주세요." />
+                  </div>
+                </li>
+                <li>
+                  <label for="bank3"><span>예금주명</span></label>
+                  <div class="bx_input ">
+                    <input type="text" id="bank3" name="BANK3" value="<?=$M_login["name"]?>" readonly />
+                  </div>
+                </li>
+                <li class="flex align_center">
+                  <label for="money"><span>신청금액</span></label>
+                  <div>
+                    <div class="bx_input">
+                      <input type="text" id="money" name="MONEY" placeholder="출금하실 금액을 입력해 주세요." />
+                    </div>
+                  </div>
+                  <span>현재 출금 신청 가능액은 <strong style="color:#f00"><?=number_format($mb['WINCASH'])?></strong>원 입니다.</span>
+                </li>
+                <li class="item_refund">
+                  <label class="nocursor"><span>출금금액</span></label>
+                  <div style="line-height: 1.9rem;">
+                    <strong class=" f_GmarketSans" id="tot_price" style="color:#f00">0</strong> 원
+                  </div>
+                </li>
+              </ul>
+              <div class="wrap_btn type2 flex align_center space">
+                <a class="btn_navy" id="ok_btn" style='cursor:pointer;'>신청하기</a>
+              </div>
+            </fieldset>
+          </form>
+        </section>
+      </div>
+    </div>
+  </main>
+  <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+</body>
+
+<script>
+  $(document).ready(function() {
+    $(document).on("click", "#ok_btn", function() {
+      var bank = $("#bank").val();
+      var bank2 = $("#bank2").val();
+      var bank3 = $("#bank3").val();
+      var money = Number($("#money").val());
+      var mb_cash = Number($("#mb_cash").val());
+
+      if (bank == '') {
+        alert("계좌 은행을 선택해 주세요1.");
+        return false;
+      }
+      if (bank2 == '') {
+        alert("계좌 번호를 정확히 입력해 주세요.");
+        return false;
+      }
+      if (bank3 == '') {
+        alert("예금주명을 입력해 주세요.");
+        return false;
+      }
+      if (money == '' || isNaN(money)) {
+        alert("환급 신청액을 입력해 주세요.");
+        return false;
+      }
+      if (money < 1100) {
+        alert("가능한 환급 신청액이 아닙니다.\n최소 출금 신청액은 1100원 이상입니다.");
+        return false;
+      }
+      if (money > mb_cash) {
+        alert("환급 신청액이 신청 가능한 금액을 초과하였습니다.");
+        return false;
+      }
+
+      $("#w_frm").submit();
+    });
+
+    $(document).on('input propertychange', '#money', function() {
+      var price = Number($(this).val());
+
+      if (isNaN(price)) {
+        $("#money").val(null);
+        $("#tot_price").html(0);
+        return false;
+      }
+
+      $('#tot_price').html(price.toLocaleString('ko-KR'));
+    });
+
+    $(document).on('change', '#bank', function() {
+      $('#money').val(null);
+      $('#tot_price').html(0);
+    });
+  });
+</script>
+
+</html>

@@ -1,0 +1,246 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+  if ($year == "") {
+    $year = date("Y");
+  }
+
+  $s_year = date("Y");
+  $e_year = date("Y", strtotime(" -1 year"));
+
+  $cash_op = array(
+    array(
+      "price"        => 5500,
+      "ipoint"       => 0,
+      "ipoint_text"  => "없음",
+      "ipoint_text2" => "1게임 이용 가능",
+      "cash"         => 5000,
+    ),
+    array(
+      "price"        => 7370,
+      "ipoint"       => 0,
+      "ipoint_text"  => "없음",
+      "ipoint_text2" => "쿠폰 사용 시",
+      "cash"         => 6700,
+    ),
+    array(
+      "price"        => 11000,
+      "ipoint"       => 300,
+      "ipoint_text"  => "+ 300 마일리지",
+      "ipoint_text2" => "2게임 이용 가능",
+      "cash"         => 10000,
+    ),
+    array(
+      "price"        => 22000,
+      "ipoint"       => 600,
+      "ipoint_text"  => "+ 600 마일리지",
+      "ipoint_text2" => "4게임 이용 가능",
+      "cash"         => 20000,
+    ),
+    array(
+      "price"        => 33000,
+      "ipoint"       => 900,
+      "ipoint_text"  => "+ 900 마일리지",
+      "ipoint_text2" => "6게임 이용 가능",
+      "cash"         => 30000,
+    ),
+    array(
+      "price"        => 55000,
+      "ipoint"       => 1500,
+      "ipoint_text"  => "+ 1500 마일리지",
+      "ipoint_text2" => "10게임 이용 가능",
+      "cash"         => 50000,
+    ),
+    array(
+      "price"        => 110000,
+      "ipoint"       => 5000,
+      "ipoint_text"  => "+ 5000 마일리지",
+      "ipoint_text2" => "20게임 이용 가능",
+      "cash"         => 100000,
+    ),
+  );
+?>
+
+<style>
+  .table thead tr {
+    display: block;
+  }
+  .table tbody {
+    display: block;
+    height: 600px;
+    overflow: auto;
+  }
+  .table thead tr:first-child th:first-child {
+    width: 3%;
+    text-align: center;
+  }
+  .table thead tr:first-child th {
+    width: 5%;
+    text-align: center;
+  }
+  .table th {
+    width: 7%;
+    text-align: center;
+  }
+  .table th:first-child {
+    width: 0%;
+  }
+  .table td {
+    width: 4.8%;
+  }
+  .table td:first-child {
+    width: 3%;
+  }
+</style>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">월별 매출</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">매출현황</a></li>
+          <li class="breadcrumb-item active" aria-current="page">년도별 매출</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="year" id="year" class="form-control form-select select2">
+                    <option value="">--기간선택(년)--</option>
+                    <?php for ($i = $s_year; $i > $e_year; $i--) { ?>
+                    <option value="<?=$i?>" <?=($year == $i) ? "selected" : ""?>><?=$i?></option>
+                    <?php } ?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <div class="input-group-text btn btn-primary" id="btn-search" style="padding: 10px;">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive">
+              <table class="table border text-nowrap table-striped" id="table-list">
+                <thead>
+                  <tr>
+                    <th style="text-align: center;">Date</th>
+                    <?php foreach ($cash_op as $v) { ?>
+                    <th colspan="2" style="text-align: center;"><?=number_format($v['cash'])?>원</th>
+                    <?php } ?>
+                    <th colspan="2" style="text-align: center;">TOTAL</th>
+                  </tr>
+                  <tr>
+                    <th style="text-align: center;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+                    <?php foreach ($cash_op as $v) { ?>
+                    <th style="text-align: center;">금액</th>
+                    <th style="text-align: center;">건수</th>
+                    <?php } ?>
+                    <th style="text-align: center;">금액</th>
+                    <th style="text-align: center;">건수</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    $total_price = array();
+                    $total_cnt = array();
+                    $i = 0;
+
+                    for ($s = 1; $s <= 12; $s++) {
+                      $month = $s;
+
+                      if ($month < 10) {
+                        $month = "0".$month;
+                      }
+
+                      $date    = $year."-".$month;
+                      $lastday = date('d', strtotime($date."-01 +1 month -1 day"));
+                      $sDate   = $date."-01 00:00:01";
+                      $eDate   = $date."-".$lastday." 23:59:59";
+                      $style   = "";
+
+                      if ($date == date("Y-m")) {
+                        $style = 'background: #F8E5D0;';
+                      }
+                  ?>
+                  <tr style="<?=$style?>">
+                    <td><?=date("Y년 m월", strtotime($sDate))?></td>
+                    <?php
+                      $total = 0;
+                      $ctotal = 0;
+
+                      foreach ($cash_op as $k => $cash) {
+                        $price = $db->get_data("SELECT SUM(CASH) AS PRICE FROM CASH WHERE CASH = '".$cash['cash']."' AND REG_DATE BETWEEN '".$sDate."' AND '".$eDate."' AND IS_USE='Y'");
+                        $cnt = $db->get_data("SELECT COUNT(*) AS CNT FROM CASH WHERE CASH = '".$cash['cash']."' AND REG_DATE BETWEEN '".$sDate."' AND '".$eDate."' AND IS_USE='Y'");
+
+                        if (!isset($price['PRICE'])) {
+                          $price['PRICE'] = 0;
+                        }
+
+                        if (!isset($cnt['CNT'])) {
+                          $cnt['CNT'] = 0;
+                        }
+
+                        $total += $price['PRICE'];
+                        $ctotal += $cnt['CNT'];
+
+                        if (!isset($total_price[$cash['cash']])) {
+                          $total_price[$cash['cash']] = $price['PRICE'];
+                        } else {
+                          $total_price[$cash['cash']] += $price['PRICE'];
+                        }
+
+                        if (!isset($total_cnt[$cash['cash']])) {
+                          $total_cnt[$cash['cash']] = $cnt['CNT'];
+                        } else {
+                          $total_cnt[$cash['cash']] += $cnt['CNT'];
+                        }
+                    ?>
+                    <td style="text-align: center;"><?=number_format($price['PRICE'])?></td>
+                    <td style="text-align: center;"><?=number_format($cnt['CNT'])?></td>
+                    <?php } ?>
+                    <td style="text-align: center;"><?=number_format($total)?></td>
+                    <td style="text-align: center;"><?=number_format($ctotal)?></td>
+                  </tr>
+                  <?php } ?>
+                  <tr>
+                    <td>합계</td>
+                    <?php
+                      $all_price = 0;
+                      $all_cnt = 0;
+                      foreach ($cash_op as $v) {
+                        $all_price += $total_price[$v['cash']];
+                        $all_cnt += $total_cnt[$v['cash']];
+                    ?>
+                    <td style="text-align: center;"><?=number_format($total_price[$v['cash']])?></td>
+                    <td style="text-align: center;"><?=number_format($total_cnt[$v['cash']])?></td>
+                    <?php } ?>
+                    <td style="text-align: center;"><?=number_format($all_price)?></td>
+                    <td style="text-align: center;"><?=number_format($all_cnt)?></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>

@@ -1,0 +1,64 @@
+<?
+include "../header.html";
+?>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">정보수정</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>Mypage</p></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>정보수정</p></li>
+            </ul>
+        </div>
+
+        <?php
+        include "../mypage_menu_new.html";
+        ?>
+
+        <form method="POST" id="infoFrm">
+            <div class="new_member_join">
+                <div class="wrap join_form">
+                    <a class="logo"><img src="/images/logo.gif"></a>
+                    <div class="line"><p>계정정보</p></div>
+                    <div class="row">
+                        <div class="tit">비밀번호를 한번 더 입력해주세요.</div>
+                        <input type="password" name="password" class="in">
+                    </div>
+                    <button type="button" onclick="go_pass_chk()" class="reg_btn">확인</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+  function go_pass_chk(){
+    var params = jQuery("#infoFrm").serialize();
+      $.ajax({
+        type : "POST",
+        url: "ajax_pass_chk.php",
+        async: false,
+        data: params,
+        success: function(result) {
+        var r = result.trim();
+          if(r==1){
+            top.location.href="/member/info.html";
+          }else{
+            alert('비밀번호를 확인해 주세요.');
+          }
+          console.log(r);
+        },
+        error:function(e) {
+          alert(e.responseText);
+        }
+      });
+  }
+</script>
+
+<?php
+include "../footer_new.html";
+?>

@@ -1,0 +1,26 @@
+<?
+if(!isset($_SERVER["HTTPS"])) {
+header('Location: https://'.$_SERVER["HTTP_HOST"].$_SERVER['REQUEST_URI']);
+}
+
+$도메인 = "https://toxnfillglobalbranch.com";
+
+include_once "head.php";
+?>
+    <header></header>
+    <nav></nav>
+    <section>
+      <div class="wrap" >
+        <? include_once "nav.php"; ?>
+        <a href="javascript:;" ><img src="/img/pc1.png" class="pc_img" /></a>
+        <a href="javascript:;" ><img src="/img/pc1.png" class="mo_img" style="display:none;" /></a>
+        <? include_once "social.php"; ?>
+      </div>
+
+    </section>
+    <footer>
+
+    </footer>
+</body>
+
+</html>

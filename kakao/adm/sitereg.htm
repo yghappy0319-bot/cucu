@@ -1,0 +1,484 @@
+<?php
+include_once "../adm/head.php";
+
+$data = db_select("select * from site where idx = {$idx} ");
+$panelType = "perfect";
+if(isset($data['luckypanel']) && $data['luckypanel']==1){
+  $panelType = "lucky";
+}else if(isset($data['website']) && $data['website']==1){
+  $panelType = "website";
+}else if(isset($data['telegram']) && $data['telegram']==1){
+  $panelType = "telegram";
+}
+?>
+
+<?php include_once "../adm/nav.php";?>
+<div data-scroll-to-active="true" class="main-menu menu-fixed menu-dark menu-accordion menu-shadow">
+  <div class="main-menu-header">
+    <form>
+      <input type="text" placeholder="Search" class="menu-search form-control round" name="search" />
+    </form>
+  </div>
+  <?php include_once "../adm/menu.php";?>
+</div>
+<style>
+.auth_code{    font-size: 1.2rem; font-weight: bold;}
+</style>
+<div class="app-content content container-fluid">
+  <div class="content-wrapper">
+    <div class="content-header row">
+      <div class="content-header-left col-md-6 col-xs-12 mb-1">
+        <h2 class="content-header-title">사이트 등록</h2>
+      </div>
+    </div>
+
+    <div class="content-body">
+      <section id="basic-form-layouts">
+        <form method="POST" id="orderFrm" >
+        <input type="hidden" name="member_no" value="<?=$member['mb_no']?>" />
+        <input type="hidden" id="sms_status"  />
+        <input type="hidden" name="errorlist_number" id="errorlist_number" value="<?= $errorlist_number ? $errorlist_number:$data['errorlist_number'] ?>"  />
+        <input type="hidden" name="biz_status" value="<?= $data['biz_status'] ? $data['biz_status']:0 ?>"  />
+        <input type="hidden" name="luckypanel" id="luckypanel" value="<?= $data['luckypanel']==1 ? 1 : 0 ?>" />
+        <input type="hidden" name="website" id="website" value="<?= $data['website']==1 ? 1 : 0 ?>" />
+        <input type="hidden" name="telegram" id="telegram" value="<?= isset($data['telegram']) && $data['telegram']==1 ? 1 : 0 ?>" />
+
+
+      	<div class="row match-height">
+      		<div class="col-md-6">
+      			<div class="card" >
+      				<div class="card-header">
+      					<h4 class="card-title" id="basic-layout-form">사이트 등록</h4>
+      					<a class="heading-elements-toggle"><i class="icon-ellipsis font-medium-3"></i></a>
+      					<div class="heading-elements">
+      						<ul class="list-inline mb-0">
+      							<li><a data-action="collapse"><i class="icon-minus4"></i></a></li>
+      							<li><a data-action="reload"><i class="icon-reload"></i></a></li>
+      							<li><a data-action="expand"><i class="icon-expand2"></i></a></li>
+      							<li><a data-action="close"><i class="icon-cross2"></i></a></li>
+      						</ul>
+      					</div>
+      				</div>
+      				<div class="card-body collapse in">
+      					<div class="card-block">
+      						<div class="card-text">
+      							<p>무통장입금 자동화 서비스를 이용하시려면 사이트 등록을 진행해주세요.</p>
+      						</div>
+      							<div class="form-body">
+                      <h4 class="form-section"><i class="icon-repeat2"></i> 서비스 상태</h4>
+                      <div class="row">
+                        <div class="form-group">
+    											<div class="input-group">
+    												<label class="display-inline-block custom-control custom-radio ml-1">
+    													<input type="radio" name="site_status" class="custom-control-input" value="1" <?=$data['status']==1 ? "checked":""?>>
+    													<span class="custom-control-indicator"></span>
+    													<span class="custom-control-description ml-0">정상</span>
+    												</label>
+    												<label class="display-inline-block custom-control custom-radio">
+    													<input type="radio" name="site_status" class="custom-control-input" value="0" <?=$data['status']==0 ? "checked":""?> >
+    													<span class="custom-control-indicator"></span>
+    													<span class="custom-control-description ml-0">중지</span>
+    												</label>
+    											</div>
+    										</div>
+                      </div>
+
+                      <h4 class="form-section"><i class="icon-head"></i> 사이트 정보</h4>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="projectinput1">웹사이트 주소</label>
+                            <input type="text" class="form-control" placeholder="https 를 포함한 주소를 입력" name="site" id="site" value="<?= $data['site'] ?>">
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="projectinput2">관리자 연락처</label>
+                            <input type="text" class="form-control" placeholder="관리자 연락처" name="phone" id="phone" value="<?= $data['phone'] ? $data['phone']:$member['mb_hp']; ?>">
+                          </div>
+                        </div>
+                      </div>
+
+      								<h4 class="form-section"><i class="icon-head"></i> 계좌 등록</h4>
+      								<div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="projectinput5">은행</label>
+
+                            <select name="bank" id="bank" class="form-control" onchange="go_bank_acount_chk(this.value)">
+                              <option value="">은행 선택</option>
+                                <?
+                                  $result = 무통장서비스_통보가능은행();
+                                  foreach($result as $banks){
+
+                                    if($idx){
+                                      $_bankdate = $data['bank'];
+                                    }else{
+                                      $_bankdate = $bank;
+                                    }
+
+                                ?>
+                                <option value="<?=$banks['bank_name']?>" <?=$banks['bank_name']==$_bankdate ? "selected":"" ?> ><?=$banks['bank_name']?></option>
+                              <? } ?>
+                            </select>
+
+
+                          </div>
+
+
+
+                          
+                        </div>
+
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="projectinput3">예금주명</label>
+                            <input type="text" id="projectinput3" class="form-control" name="acount_name" value="<?= $acount_name ? $acount_name:$data['acount_name'] ?>" >
+                          </div>
+                        </div>
+      								</div>
+
+      								<div class="row">
+      									<div class="col-md-6">
+      										<div class="form-group">
+      											<label for="projectinput3">계좌번호(-포함)</label>
+      											<input type="text" class="form-control" placeholder="계좌번호" name="o_acount" id="user_acount" value="<?= $o_acount ? $o_acount:$data['o_acount'] ?>" >
+      										</div>
+      									</div>
+                        
+                        <? if($member['mb_no']==1){?>
+      									<div class="col-md-6" >
+      										<div class="form-group">
+                            <label for="projectinput3">마킹 계좌 - 수정금지</label>
+      											<input type="text" class="form-control" placeholder="마킹 계좌 - 수정금지" name="acount" id="o_acount" value="<?= $acount ? $acount:$data['acount'] ?>" >
+      										</div>
+      									</div>
+                        <? }else{ ?>
+                          <input type="hidden" name="acount" value="<?= $acount ? $acount:$data['acount'] ?>" readonly>
+                        <? } ?>
+                        
+      								</div>
+
+      								<h4 class="form-section"><i class="icon-clipboard4"></i>타입 선택</h4>
+                      <div class="row">
+                        <div class="form-group">
+                          <div class="input-group">
+                            <label class="display-inline-block custom-control custom-radio ml-1">
+                              <input type="radio" name="panel_type" class="custom-control-input" value="lucky" onclick="toggle_panel_form('lucky')" <?=$panelType==="lucky" ? "checked":""?>>
+                              <span class="custom-control-indicator"></span>
+                              <span class="custom-control-description ml-0">럭키패널</span>
+                            </label>
+                            <label class="display-inline-block custom-control custom-radio">
+                              <input type="radio" name="panel_type" class="custom-control-input" value="perfect" onclick="toggle_panel_form('perfect')" <?=$panelType==="perfect" ? "checked":""?>>
+                              <span class="custom-control-indicator"></span>
+                              <span class="custom-control-description ml-0">퍼팩트패널</span>
+                            </label>
+                            <label class="display-inline-block custom-control custom-radio">
+                              <input type="radio" name="panel_type" class="custom-control-input" value="website" onclick="toggle_panel_form('website')" <?=$panelType==="website" ? "checked":""?>>
+                              <span class="custom-control-indicator"></span>
+                              <span class="custom-control-description ml-0">웹사이트</span>
+                            </label>
+                            <label class="display-inline-block custom-control custom-radio">
+                              <input type="radio" name="panel_type" class="custom-control-input" value="telegram" onclick="toggle_panel_form('telegram')" <?=$panelType==="telegram" ? "checked":""?>>
+                              <span class="custom-control-indicator"></span>
+                              <span class="custom-control-description ml-0">텔레그램</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+
+
+                      <div id="lucky_panel_box" style="display:<?=$panelType==='lucky' ? 'block' : 'none'?>;">
+                        <h4 class="form-section"><i class="icon-link"></i> 럭키패널 연동 정보</h4>
+                        <div class="card-text">
+                          <p>럭키패널을 사용하신다면 API URL을 입력해주세요.</p>
+                        </div>
+                        <div id="lucky_api_url_form" style="display:<?=$panelType==='lucky' ? 'block' : 'none'?>;" >
+                          <div class="form-group">
+                            <label for="lucky_api_url">API URL을 입력해주세요.</label>
+                            <input type="text" class="form-control" placeholder="Lucky Api URL" name="api_key" id="api_key" value="<?= isset($data['api_key']) ? $data['api_key'] : '' ?>">
+                          </div>
+                        </div>
+                      </div>
+
+
+                      <div id="perfect_panel_box" style="display:<?=$panelType==='perfect' ? 'block' : 'none'?>;">
+                        <h4 class="form-section"><i class="icon-clipboard4"></i> 퍼팩트패널 Admin Api Key (v2)</h4>
+                        <div class="card-text">
+                          <p>
+                            API v2 키는 퍼팩트패널 관리콘솔에서 셋팅/확인 가능합니다.
+                          </p>
+
+                          <div>
+                            <ul>
+                              <li>1. Panels 클릭</li>
+                              <li>2. 우측 끝에 Admin area 옆 쩜3개 클릭</li>
+                              <li>3. Admin API v2클릭</li>
+                              <li>4. Create new API Key 버튼 누르기</li>
+                              <li>5. Payments 에 Add payment 체크</li>
+                              <li>6. Generate API Key 버튼을 눌러 v2키 생성</li>
+                            </ul>
+                          </div>
+                          <p><a href="https://my.perfectpanel.com/signin" target="_blank">퍼팩트패널 관리콘솔 이동하기</a></p>
+                        </div>
+                        <div class="form-group">
+                          <label for="companyName">API Key(v2)</label>
+                          <input type="text" class="form-control" placeholder="Api Key v2" name="api_key_v2" id="api_key_v2" value="<?=$data['api_key_v2']?>">
+                        </div>
+                      </div>
+
+
+                      <div id="website_panel_box" style="display:<?=$panelType==='website' ? 'block' : 'none'?>;">
+                        <h4 class="form-section"><i class="icon-home"></i> 웹사이트(개인 사이트)</h4>
+                        <div class="card-text">
+                          <p>웹사이트를 선택하면 API Key(v2)는 자동으로 숫자 1로 저장됩니다.</p>
+                        </div>
+                      </div>
+
+
+                      <div id="telegram_panel_box" style="display:<?=$panelType==='telegram' ? 'block' : 'none'?>;">
+                        <h4 class="form-section"><i class="icon-telegram"></i> 텔레그램</h4>
+                        <div class="card-text">
+                          <p>텔레그램을 선택하면 API Key(v2)는 자동으로 숫자 1로 저장됩니다.</p>
+                        </div>
+                      </div>
+
+                      <div id="website_api_url_form" style="display:<?=$panelType==='website' || $panelType==='telegram' ? 'block' : 'none'?>;" >
+                        <div class="form-group">
+                          <label for="api_url">API URL을 입력해주세요.</label>
+                          <input type="text" class="form-control" placeholder="Api URL" name="api_url" id="api_url" value="<?=$data['api_url']?>">
+                        </div>
+                      </div>
+
+
+      							</div>
+
+      							<div class="form-actions">
+      								<button type="button" class="btn btn-warning mr-1" onclick="go_sitereg_cencel()">
+      									<i class="icon-cross2"></i> 취소
+      								</button>
+      								<button type="button" class="btn btn-primary" onclick="go_add_site('<?=$idx ? "update":"insert"; ?>','<?=$idx?>')">
+      									<i class="icon-check2"></i> <?=$idx ? "저장하기":"등록하기"; ?>
+      								</button>
+                      <button type="button" class="btn btn-danger mr-1" onclick="go_site_delete(<?=$idx?>)">삭제</button>
+      							</div>
+      					</div>
+      				</div>
+      			</div>
+      		</div>
+
+      	</div>
+        </form>
+
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggle_panel_form(panelType){
+  $("#perfect_panel_box").hide();
+  $("#lucky_panel_box").hide();
+  $("#website_panel_box").hide();
+  $("#telegram_panel_box").hide();
+  $("#lucky_api_url_form").hide();
+  $("#website_api_url_form").hide();
+  $("#luckypanel").val("0");
+  $("#website").val("0");
+  $("#telegram").val("0");
+
+  if(panelType==="perfect"){
+    $("#perfect_panel_box").show();
+    if($("#api_key_v2").val()=="1"){
+      $("#api_key_v2").val("");
+    }
+  }else if(panelType==="lucky"){
+    $("#lucky_panel_box").show();
+    $("#lucky_api_url_form").show();
+    $("#luckypanel").val("1");
+    if($("#api_key_v2").val()=="1"){
+      $("#api_key_v2").val("");
+    }
+  }else if(panelType==="website"){
+    $("#website_panel_box").show();
+    $("#website_api_url_form").show();
+    $("#website").val("1");
+    $("#api_key_v2").val("1");
+  }else if(panelType==="telegram"){
+    $("#telegram_panel_box").show();
+    $("#website_api_url_form").show();
+    $("#telegram").val("1");
+    $("#api_key_v2").val("1");
+  }
+}
+
+function go_site_delete(idx){
+  if(confirm("사이트정보를 삭제하시겠습니까?")){
+    $.ajax({
+       type : "POST",
+       url: "/ajax/_ajax_site_delete.php",
+       async: true,
+       data: {
+         idx : idx,
+       },
+       success: function(result) {
+          var r = result.trim();
+          console.log(r);
+          if(r==1){
+            alert("삭제되었습니다.");
+            location.href="/adm/sitelist.htm";
+          }else{
+            alert(r);
+          }
+
+       },
+       error:function(e) {
+          alert(e.responseText);
+       }
+    });
+  }
+}
+function go_sitereg_cencel(){
+  location.href="/adm/sitelist.htm";
+}
+
+function go_new_phone(){
+  if(login_id=="testuser"){
+    alert("테스트 아이디는 수정/삭제가 불가 합니다.");
+    return false;
+  }
+
+  var bank = $("#bank").val();
+  var phone = $("#phone").val();
+  var sms_status = $("#sms_status").val();
+
+  if(sms_status==1){
+    alert("문자가 발송되었습니다. 문자가 오지 않았을경우 새로고침 후 다시 신청해주세요.");
+    return false;
+  }
+
+  $.ajax({
+     type : "POST",
+     url: "_ajax_send_number.php",
+     async: false,
+     data: {
+       bank : bank,
+       phone : phone
+     },
+     success: function(result) {
+        var r = result.trim();
+        console.log(r);
+        if(r==1){
+          $("#sms_status").val(1);
+          $("#phone").attr("readonly",true);
+          alert("발송되었습니다.");
+          $("#errorlist_number").show();
+        }else{
+          alert(r);
+        }
+
+     },
+     error:function(e) {
+        alert(e.responseText);
+     }
+  });
+}
+
+    function go_add_site(status,obj){
+      if(login_id=="testuser"){
+        alert("테스트 아이디는 수정/삭제가 불가 합니다.");
+        return false;
+      }
+
+      var params = jQuery("#orderFrm").serialize();
+      var obj = obj;
+      var status = status;
+      var site = $("#site");
+      var bank = $("#bank");
+      var phone = $("#phone");
+      var errorlist_number = $("#errorlist_number");
+      var api_key = $("#api_key_v2");
+      var tax_status = $("#tax_chk:checked").val();
+      var panelTypeChecked = $("input[name='panel_type']:checked").length > 0;
+
+      if(!panelTypeChecked){
+        alert("타입 선택에서 럭키패널, 퍼팩트패널, 웹사이트, 텔레그램 중 하나를 선택해주세요.");
+        return false;
+      }
+
+      // if(site.val()==""){
+      //   alert("운영중인 웹사이트 주소를 입력해주세요.");
+      //   site.focus();
+      //   return false;
+      // }
+
+      if(bank.val()!="기타"){
+        if(!tax_status){
+          params+= "&biz_status=0";
+        }
+
+        if(bank.val()==""){
+          alert("입금 통보 은행을 선택해주세요.");
+          bank.focus();
+          return false;
+        }
+        if(phone.val()==""){
+          alert("연락처를 입력해주세요.");
+          phone.focus();
+          return false;
+        }
+        if(errorlist_number.val()==""){
+          alert("발급받은 입금 통보번호를 입력해주세요.");
+          errorlist_number.focus();
+          return false;
+        }
+        // if(api_key.val()==""){
+        //   alert("퍼펙트패널 API KEY v2를 입력해주세요. 퍼펙트패널이 아닐경우 숫자1을 입력해주세요.");
+        //   api_key.focus();
+        //   return false;
+        // }
+      }
+
+      if(obj>0){
+        params+= "&idx="+obj;
+      }
+      if(status){
+        params+= "&status="+status;
+      }
+
+        $.ajax({
+          type : "POST",
+          url: "/ajax/_ajax_site_add.php",
+          async: false,
+          data: params,
+          success: function(result) {
+          var r = result.trim();
+          console.log(r);
+            if(r==1){
+              alert("등록되었습니다.");
+              location.href="/adm/sitelist.htm";
+            }else{
+              alert(r);
+              return false;
+            }
+          },
+          error:function(e) {
+            alert(e.responseText);
+          }
+        });
+    }
+
+    $(document).ready(function(){
+      var panelType = $("input[name='panel_type']:checked").val() || "perfect";
+
+      $("input[name='panel_type'][value='"+panelType+"']").prop("checked",true);
+      toggle_panel_form(panelType);
+
+      $(document).on("change","input[name='panel_type']",function(){
+        toggle_panel_form($(this).val());
+      });
+    });
+
+    </script>
+
+<?php include_once "../adm/footer.php";?>

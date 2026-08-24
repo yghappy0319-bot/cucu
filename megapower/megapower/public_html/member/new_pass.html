@@ -1,0 +1,98 @@
+<?php
+include "../header.html";
+
+$sql = "select * from lr_new_pass where code = '{$code}' ";
+//echo $sql;
+$data = db_select($sql);
+if($data['status']==1){
+  echo "<script>alert('이미 처리된 코드 입니다.');location.href='/';</script>";
+}
+
+?>
+<style>
+.idpass-find {text-align: center;    min-height: 500px;}
+.idpass-find .login_id {background-color: #EEEEEE; border: 0px; font-size: 18px; padding: 8px; margin-bottom: 12px; border-radius: 4px; width: 250px;}
+.idpass-find .login_id::placeholder {    font-weight: 600;}
+.idpass-find .phonecode {border-radius: 4px; font-weight: 800; font-size: 16px; border: 1px solid; width: 250px; padding: 10px; display: inline-block;text-decoration: none; background-color: #fff;}
+.idpass-find .code_chk {border-radius: 4px; font-weight: 800; font-size: 16px; border: 1px solid; width: 250px; padding: 10px; display: inline-block;text-decoration: none; background-color: #333; color:#fff; margin-bottom: 10px; }
+</style>
+
+<div class="w_max">
+    <div class="w_min">
+        <div class="modle_guide">
+            <div class="modle_sub_title">비밀번호 변경</div>
+            <ul>
+                <li><i class="xi-home"></i></li>
+                <li><i class="xi-angle-right"></i></li>
+                <li><p>비밀번호 변경</p></li>
+            </ul>
+        </div>
+
+        <div class="new_member_find">
+            <form method="POST" id="idpassFrm" >
+              <input type="hidden" name="code" value="<?=$code?>" />
+                <div class="in">
+                    <a class="logo" href="/index_new.html"><img src="/images/logo.gif"></a>
+                    <div class="passform"  >
+                      <input type="text" name="newpass" id="newpass" class="login_id" placeholder="변경할 비밀번호 입력"  />
+                      <input type="text" name="newrepass" id="newrepass" class="login_id" placeholder="변경할 비밀번호 재입력" style="    margin-top: 10px;"  />
+                      <button type="button" onclick="go_password_update()" class="phonecode" >비밀번호 다시 설정하기</button>
+                    </div>
+
+                </div>
+            </form>
+
+            <div class="foot_text">
+                <p class="t1"><i class="xi-info"></i>가입된 정보가 조회되지 않는다면?</p>
+                <p class="t2"><a href="/member/inquiry.html">1:1문의 페이지 바로가기</a></p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+  function go_password_update(){
+    var newpass = $("#newpass").val();
+    var newrepass = $("#newrepass").val();
+    if(!newpass){
+      alert("변경할 비밀번호를 입력해주세요.");
+      return false;
+    }
+    if(!newrepass){
+      alert("변경할 비밀번호를 재입력해주세요.");
+      return false;
+    }
+
+    if(newpass!=newrepass){
+      alert("비밀번호가 다릅니다.");
+      return false;
+    }
+
+    var params = jQuery("#idpassFrm").serialize();
+      $.ajax({
+        type : "POST",
+        url: "_ajax_new_pass_update.php",
+        async: false,
+        data: params,
+        dataType: "json",
+        success: function(result) {
+          if(result==1){
+            alert("변경되었습니다.");
+            location.href="/";
+            return false;
+          }
+
+        },
+        error:function(e) {
+          alert(e.responseText);
+        }
+      });
+  }
+</script>
+
+
+<?php
+  include_once "../lib/channer_talk.php";
+  include "../footer_new.html";
+?>

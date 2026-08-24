@@ -1,0 +1,447 @@
+<?php
+  $page_title = "슈로코몰 | 쇼핑몰 - 파워볼, 메가밀리언, 미국 복권, 슈로코";
+
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_BBS.php";
+  $menu_on['shop'] = true;
+
+  $product = $db->get_data("SELECT * FROM PRODUCT WHERE idx = '{$product}' ");
+  $이미지주소 = "https://sadmin.mekosystem.com";
+?>
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .breadcrumb {
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .breadcrumb a {
+        color: #666;
+        text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+        color: #333;
+    }
+
+    .product-main {
+        background: white;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .product-content {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        padding: 24px;
+    }
+
+    .product-image {
+        aspect-ratio: 1;
+        background-color: #f5f5f5;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 120px;
+        color: #ccc;
+    }
+
+    .product-info h1 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+
+    .product-price {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 24px;
+    }
+
+    .product-description {
+        color: #666;
+        margin-bottom: 32px;
+        line-height: 1.8;
+    }
+
+    .quantity-section {
+        margin-bottom: 24px;
+    }
+
+    .quantity-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .quantity-control {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .quantity-btn {
+        width: 40px;
+        height: 40px;
+        border: 1px solid #ddd;
+        background: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: #666;
+    }
+
+    .quantity-btn:hover {
+        background-color: #f5f5f5;
+    }
+
+    .quantity-input {
+        width: 60px;
+        height: 40px;
+        text-align: center;
+        border: 1px solid #ddd;
+        border-left: none;
+        border-right: none;
+        outline: none;
+        font-size: 1rem;
+    }
+
+    .total-price {
+        margin-top: 16px;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 16px;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .btn-cart {
+        background-color: white;
+        color: #333;
+        border: 1px solid #333;
+    }
+
+    .btn-cart:hover {
+        background-color: #333;
+        color: white;
+    }
+
+    .btn-buy {
+        background-color: #333;
+        color: white;
+    }
+
+    .btn-buy:hover {
+        background-color: #555;
+    }
+
+    /* 상품 상세 정보 */
+    .product-details {
+        background: white;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 40px 0px;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+
+    .details-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 24매px;
+    }
+
+    .details-content {
+        color: #666;
+        line-height: 1.8;
+    }
+
+    .details-content img {width: 100% !important;}
+
+    .spec-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 24px;
+    }
+
+    .spec-table th,
+    .spec-table td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+    }
+
+    .spec-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        width: 150px;
+    }
+
+
+    /* 모바일 반응형 */
+    @media (max-width: 480px) {
+        .container {
+            padding: 20px 16px;
+        }
+
+
+
+        .product-info h1 {
+            font-size: 1.5rem;
+        }
+
+        .product-price {
+            font-size: 1.3rem;
+        }
+
+        .product-details,
+        .related-products {
+            padding: 24px;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .spec-table th {
+            width: 120px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .product-image {
+            font-size: 80px;
+        }
+
+        .quantity-control {
+            transform: scale(0.9);
+        }
+
+        .related-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .spec-table th,
+        .spec-table td {
+            padding: 8px;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+<body class="body_idx">
+<div class="wrap_bg">
+    <div id="wrap">
+        <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+        <main id="main" class="cs bg_contents">
+            <div class="contents f_NotoSansKR">
+
+                <section class="sec_cs wrap_com section bg_white">
+
+                    <div class="board_type1 wrap_board ls50">
+
+                        <div class="wrap_list">
+
+
+                            <div class="container">
+                                <!-- 브레드크럼 -->
+                                <nav class="breadcrumb">
+                                    <a href="#" onclick="goToProductList()">상품</a> > <span>블루투스 헤드폰</span>
+                                </nav>
+
+                                <!-- 상품 메인 -->
+                                <div class="product-main">
+                                    <div class="product-content">
+                                        <div class="product-image">
+                                            <img src="<?=$이미지주소?>/upload/SHOP/<?=$product['product_img']?>">
+                                        </div>
+
+                                        <div class="product-info">
+                                            <h1><?=$product['product_name']?></h1>
+                                            <div class="product-price" id="display-price">
+                                                <?= number_format($product['product_price']) ?>원
+                                            </div>
+
+                                            <div class="product-description">
+                                                <?=$product['content1']?>
+                                            </div>
+
+                                            <div class="quantity-section">
+                                                <label class="quantity-label">수량</label>
+                                                <div class="quantity-control">
+                                                    <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+                                                    <input type="number" class="quantity-input" value="1" min="1" id="quantity" onchange="updateTotal()">
+                                                    <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
+                                                </div>
+                                                <div class="total-price">
+                                                    총 금액: <span id="total-price"><?= number_format($product['product_price']) ?>원</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="button-group">
+                                                <button class="btn btn-buy" onclick="buyNow('<?=$product[idx]?>')">바로구매</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 상품 상세 정보 -->
+                                <div class="product-details">
+                                    <h2 class="details-title">상품 상세 정보</h2>
+                                    <div class="details-content">
+                                        <?=$product['content1']?>
+                                        <?=$product['content2']?>
+
+                                        <table class="spec-table">
+                                            <? if($product['etc1']){?>
+                                            <tr>
+                                                <th>브랜드</th>
+                                                <td><?=$product['etc1']?></td>
+                                            </tr>
+                                            <? } ?>
+                                            <? if($product['etc2']){?>
+                                            <tr>
+                                                <th>모델명</th>
+                                                <td><?=$product['etc2']?></td>
+                                            </tr>
+                                            <? } ?>
+
+                                            <? if($product['etc3']){?>
+                                            <tr>
+                                                <th>연결방식</th>
+                                                <td><?=$product['etc3']?></td>
+                                            </tr>
+                                            <? } ?>
+
+                                            <? if($product['etc4']){?>
+                                            <tr>
+                                                <th>배터리</th>
+                                                <td><?=$product['etc4']?></td>
+                                            </tr>
+                                            <? } ?>
+
+                                            <? if($product['etc5']){?>
+                                            <tr>
+                                                <th>무게</th>
+                                                <td><?=$product['etc5']?></td>
+                                            </tr>
+                                            <? } ?>
+
+                                            <? if($product['etc6']){?>
+                                            <tr>
+                                                <th>색상</th>
+                                                <td><?=$product['etc6']?></td>
+                                            </tr>
+                                            <? } ?>
+                                        </table>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+
+                        </div>
+                    </div>
+                </section>
+
+                <div class="wrap_com">
+                    <?php include $_SERVER['DOCUMENT_ROOT']."/inc/quick.html"; ?>
+                </div>
+            </div>
+        </main>
+
+        <form id="orderFrm" action="/contents/shop/cart.html" >
+            <input type="hiddn" name="product" id="product" >
+            <input type="hiddn" name="quantity" id="order_quantity" >
+
+        </form>
+
+
+        <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+</div>
+</body>
+
+<script>
+    const basePrice = "<?=$product['product_price']?>";
+
+    function changeQuantity(change) {
+        const quantityInput = document.getElementById('quantity');
+        let newQuantity = parseInt(quantityInput.value) + change;
+
+        if (newQuantity < 1) newQuantity = 1;
+
+        quantityInput.value = newQuantity;
+        console.log(newQuantity);
+
+        $("#order_quantity").val(newQuantity);
+        updateTotal();
+    }
+
+    function updateTotal() {
+        const quantity = parseInt(document.getElementById('quantity').value) || 1;
+        const total = basePrice * quantity;
+        document.getElementById('total-price').textContent = total.toLocaleString() + '원';
+    }
+
+    function addToCart() {
+        const quantity = document.getElementById('quantity').value;
+        const button = document.querySelector('.btn-cart');
+
+        button.textContent = '추가됨!';
+        button.style.backgroundColor = '#666';
+        button.style.color = 'white';
+
+        setTimeout(() => {
+            button.textContent = '장바구니';
+            button.style.backgroundColor = 'white';
+            button.style.color = '#333';
+        }, 1500);
+
+        console.log(`장바구니에 ${quantity}개 추가`);
+    }
+
+    function buyNow(obj) {
+        const quantity = document.getElementById('quantity').value;
+        $("#product").val(obj);
+        $("#order_quantity").val(quantity);
+        $("#orderFrm").submit();
+    }
+
+    function goToProduct(productId) {
+        console.log(`${productId} 상품으로 이동`);
+    }
+
+    function goToProductList() {
+        console.log('상품 리스트로 이동');
+    }
+
+    // 초기 총액 설정
+    updateTotal();
+</script>
+
+</html>

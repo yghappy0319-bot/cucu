@@ -1,0 +1,141 @@
+<?
+include_once "header.php";
+$YY = date("Y");
+$MM = $mm ? $mm:date("m");
+
+?>
+      <div class="content">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="card">
+              <div class="card-header">
+                <h4 class="card-title"> 일 매출</h4>
+              </div>
+              <div class="card-body">
+                <form id="searchFrm" >
+                      <div>
+                        <select name="yy">
+                          <?
+                            for($a=2023;$a<=date("Y",strtotime("+3 years"));$a++){
+                          ?>
+                              <option value="<?=$a?>"><?=$a?></option>
+                          <? } ?>
+                        </select>
+                        <select name="mm">
+                          <?
+                            for($a=1;$a<=12;$a++){
+                              $a = sprintf("%02d", $a);
+                              if($mm){
+                                $MM = $mm;
+                              }
+                          ?>
+                              <option value="<?=$a?>" <?= $a==$MM ? "selected":"" ?> ><?=$a?></option>
+                          <? } ?>
+                        </select>
+                        <button>검색</button>
+                      </div>
+                    </form>
+                                    
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead class=" text-primary">
+                      <th>날짜</th>
+                      <th>게임수 파워/메가</th>
+                      <th>충전캐시</th>
+                      <th>티켓비 - 매출</th>
+                    </thead>
+                    <tbody>
+
+
+        <?
+          $_마지막일 = date('t',strtotime($YY."-".$MM."-01"));
+
+            //for ($i = $_마지막일; $i >= 1; $i--) {
+            for ($i=1;$i<=$_마지막일;$i++){
+            $MM = sprintf("%02d", $MM);
+            $i = sprintf("%02d",$i);
+            $_주문일 = $YY."-".$MM."-".$i;
+
+            $_장영관계정아닌거 = " and midx != 6 ";
+
+            if($member['code']){
+              $referral = " and b.recommender = '{$member['code']}' ";
+            }
+
+        $sql1 = "select sum(a.cash) as cash, sum(a.point) as point
+        from lr_deposit_log a left join lr_member b
+        on a.midx = b.idx  where a.status = 2 and a.regdate like '%{$_주문일}%' {$referral} ";
+        $총입금액 = db_select($sql1);
+
+        $_pbsql = "select sum(a.buy_cnt) as buy_cnt
+        from lr_orders a left join lr_member b
+        on a.midx = b.idx
+        where a.gubun = 'pb' {$_장영관계정아닌거} and a.regdate like '%{$_주문일}%' {$referral} ";
+        //echo $_pbsql."<br />";
+        $파워볼 = db_select($_pbsql);
+
+        $_mega_sql = "select sum(a.buy_cnt) as buy_cnt
+        from lr_orders a left join lr_member b
+        on a.midx = b.idx
+        where a.gubun = 'mm' {$_장영관계정아닌거} and a.regdate like '%{$_주문일}%' {$referral} ";
+        //echo $_mega_sql."<br />";
+        $메가볼 = db_select($_mega_sql);
+
+            //환율_해당월_평균
+            $환율sql = "SELECT AVG(amount) AS average_amount FROM lr_exchange where date like '%{$_주문일}%'";
+            $환율 = db_select($환율sql);
+
+
+            $티켓비총합 = $원화파워금액 + $원화메가금액;
+            $티켓비뺀매출 = $총입금액['point']-$티켓비총합
+        ?>
+                        <tr>
+                          <td>
+                            <?=$YY?>년 <?=$MM?>월 <?=$i?>일
+                            <?=요일($YY."-".$MM."-".$i)?>
+                          </td>
+                          <td>
+                            <? if($파워볼['buy_cnt']>0 || $메가볼['buy_cnt']>0){?>
+                            <font color="red"><?= $파워볼['buy_cnt'] > 0 ? $파워볼['buy_cnt']:0 ?></font> / <font color="blue"><?= $메가볼['buy_cnt']>0 ? $메가볼['buy_cnt']:0 ?></font>
+                            <? } ?>
+                          </td>
+                          <td>
+                            <? if($총입금액['cash']>0 || $총입금액['point']>0){?>
+                            <b><?=number_format($총입금액['point'])?>원</b>
+                            <? } ?>
+                          </td>
+                          <td>
+                            <? if($티켓비뺀매출>0){?>
+                            <b><?=number_format($티켓비뺀매출)?>원</b>
+                              <? } ?>
+                          </td>
+                        </tr>
+        <?
+        $총_파워개수 += $파워볼['buy_cnt'];
+        $총_메가개수 += $메가볼['buy_cnt'];
+
+        $총_티켓비뺀매출 += $티켓비뺀매출;
+        }
+        ?>
+                        <tr>
+                          <td colspan="1" >-</td>
+                          <td><?=$총_파워개수?> / <?=$총_메가개수 ?></td>
+                          <td colspan="1" >-</td>
+                          <td>
+                            총 매출 : <?=number_format($총_티켓비뺀매출)?>원
+                          </td>
+                        </tr>
+                    </tbody>
+                  </table>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+<? include_once "footer.php";?>
+<script>
+  $(".nav li").removeClass('active');
+  $(".nav li").eq(4).addClass('active');
+</script>

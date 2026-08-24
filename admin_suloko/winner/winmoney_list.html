@@ -1,0 +1,288 @@
+<?php
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/inc/header.html";
+  include $_SERVER['DOCUMENT_ROOT']."/_library/function_T_WCASH_LOG.php";
+
+  F_admin_chk($S_login);
+
+  if (!$page) $page = 1;
+  if ($S_login['limit']) $limit = $S_login['limit'];
+
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit&admin_log=$admin_log";
+
+  $add_query = "";
+  #$add_query .= " AND MEMO IN ('당첨금 사용','당첨금 적립','캐시출금신청','캐시출금신청 - 취소')";
+
+  if ($find_object == "all" && $find_text != "") {
+    $add_query  .= " AND (m.USER_ID = '{$find_text}' OR m.NAME = '{$find_text}')";
+    $find_object = "";
+  }
+
+  if ($admin_log) {
+    $add_query .= " AND MEMO = '{$admin_log}'";
+  }
+
+  $memo_op_list = $db->get_list("SELECT MEMO FROM T_WCASH_LOG GROUP BY MEMO");
+
+  $memo_op = array();
+
+  for ($i = 0; $i < count($memo_op_list["MEMO"]); $i++) {
+    $memo_op[$memo_op_list["MEMO"][$i]] = $memo_op_list["MEMO"][$i];
+  }
+  unset($memo_op_list);
+
+  $list = F_T_WCASH_LOG_join_ORDERS_list(array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => $order,
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  ));
+
+  if ($list['total'] == 0) {
+    $list['LOG_NO'] = array();
+  }
+
+  $find_op = array(
+    "m.USER_ID" => "아이디",
+    "m.NAME"    => "성명"
+  );
+?>
+
+<!--app-content open-->
+<div class="app-content">
+  <div class="side-app">
+    <!-- PAGE-HEADER -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">당첨금관리</h1>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">포인트관리</a></li>
+          <li class="breadcrumb-item active" aria-current="page">당첨금관리</li>
+        </ol>
+      </div>
+    </div>
+    <!-- PAGE-HEADER END -->
+
+    <!-- Row -->
+    <div class="row row-sm">
+      <div class="col-lg-12">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div>
+              <form role="form" name="topSearch" id="srForm" method="get" action="<?=$PHP_SELF?>">
+                <div class="form-group mr-3 fl-left">
+                  <select name="admin_log" id="select-beast" class="form-control form-select select2 auto-submit">
+                    <option value="">로그</option>
+                    <?=option_make($memo_op, $admin_log)?>
+                  </select>
+                </div>
+                <div class="form-group fl-left">
+                  <select name="find_object" id="select-beast" class="form-control form-select select2">
+                    <option value="all">--전체--</option>
+                    <?=option_make($find_op,$find_object)?>
+                  </select>
+                </div>
+                <div class="input-group col-md-2 fl-left">
+                  <input type="text" class="form-control" name="find_text" value="<?=$find_text?>">
+                  <div class="input-group-text btn btn-primary" id="btn-search">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </div>
+                </div>
+                <div class="form-group fl-left" style="float: right;">
+                  <select name="limit" id="select-beast" class="form-control form-select select2">
+                    <?=option_make($limit_op, $limit)?>
+                  </select>
+                </div>
+              </form>
+            </div>
+            <div class="table-responsive table-wrapper">
+              <table class="table border table-center text-nowrap table-bordered table-scroll" id="table-list">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>ID</th>
+                    <th>성명</th>
+                    <th>주문/환급 번호</th>
+                    <th>보유 당첨금</th>
+                    <th>적립 당첨금</th>
+                    <th>사용 당첨금</th>
+                    <th>잔여 당첨금</th>
+                    <th>로그</th>
+                    <th>등록일시</th>
+                    <?php if ($S_login['level'] > 2 && $S_login['user_id'] != "admin215") { ?>
+                    <th>수동 지급</th>
+                    <th>수동 차감</th>
+                    <th>실행취소</th>
+                    <?php } ?>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php
+                    if (count($list['LOG_NO']) > 0) {
+                      for ($i = 0; $i < count($list['LOG_NO']); $i++) {
+                        $no     = $list['total'] - (($page-1) * $list['row']) - $i;
+                        $cash   = $list['WCASH'][$i]; // 사용당첨금
+                        $o_cash = $list['O_WCASH'][$i]; // 지급,차감전당첨금
+                        $n_cash = $list['N_WCASH'][$i]; // 지급,차감후당첨금
+                        $order  = ($list['ORDERS_NO'][$i] > 0 ? "<a href='/order/orders_list.html?find_object=ORDERS_NO&find_text={$list['ORDERS_NO'][$i]}' target='_blank'>{$list['ORDERS_NO'][$i]}</a>" : "");
+                        $invoce = ($list['INVOCE_NO'][$i] > 0 ? "<a href='/winner/refund.html?find_object=INVOCE_NO&find_text={$list['INVOCE_NO'][$i]}' target='_blank'>{$list['INVOCE_NO'][$i]}</a>" : "");
+
+                        $MEMO = $list['MEMO'][$i];
+                        // 메모 추가 정보
+                        if ($list['ORDERS_NO'][$i] > 0) {
+                          $MEMO .= "<br>(".$ball_op[$list['GUBUN'][$i]].", ".$list['DRAWNUM'][$i]."회차, ".$list['GAMECNT'][$i]."게임)";
+                        }
+                  ?>
+                  <tr>
+                    <td><?=$no?></td>
+                    <td><?=$list['USER_ID'][$i]?><i class="modal-effect fa fa-search checkUser"
+                        title="상세정보"
+                        style="cursor: pointer; margin-left: 3px;"
+                        data-bs-effect="effect-scale"
+                        data-bs-target="#memberModal"
+                        data-bs-toggle="modal"
+                        data-no="<?=$list['MEMBER_NO'][$i]?>">
+                      </i></td>
+                    <td><?=$list['NAME'][$i]?></td>
+                    <td><?=$order?><?=$invoce?></td>
+                    <td class="text-end"><?=number_format($o_cash)?></td>
+                    <td class="text-end text-red"><strong><?php if ($list['STATUS'][$i] == 'P') echo "+".number_format($cash); ?></strong></td>
+                    <td class="text-end text-blue"><strong><?php if ($list['STATUS'][$i] == 'M') echo "-".number_format($cash); ?></strong></td>
+                    <td class="text-end"><?=number_format($n_cash)?></td>
+                    <td><?=$MEMO?></td>
+                    <td><?=$list['REG_DATE'][$i]?></td>
+                    <?php if ($S_login['level'] > 2 && $S_login['user_id'] != "admin215") { ?>
+                    <td>
+                      <input type="text" id="pay" style="width: 50px;" />
+                      <button class="btn btn-primary btn_price_in" data-tp="+" data-uid="<?=$list['USER_ID'][$i]?>">지급</button>
+                    </td>
+                    <td>
+                      <input type="text" id="subtract" style="width: 50px;" />
+                      <button class="btn btn-danger btn_price_in" data-tp="-" data-uid="<?=$list['USER_ID'][$i]?>">차감</button>
+                    </td>
+                    <td><button class="btn btn-success btn_price_cancel" data-uid="<?=$list['USER_ID'][$i]?>">취소</button></td>
+                    <?php } ?>
+                  </tr>
+                  <?php
+                      }
+                    // 회원의 충전캐시가 없는 경우
+                    } else {
+                      $query = "SELECT * FROM MEMBER WHERE USER_ID = '{$find_text}' OR NAME = '{$find_text}'";
+                      $list2 = $db->get_list($query);
+
+                      if (count($list2['MEMBER_NO']) > 0) {
+                        for ($i = 0; $i < count($list2['MEMBER_NO']); $i++) {
+                  ?>
+                  <tr>
+                    <td></td>
+                    <td style="cursor: pointer;" class="checkUser" data-no="<?=$list2['MEMBER_NO'][$i]?>"><?=$list2['USER_ID'][$i]?></td>
+                    <td><?=$list2['NAME'][$i]?></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <?php if ($S_login['level'] > 2 && $S_login['user_id'] != "admin215") { ?>
+                    <td>
+                      <input type="text" id="pay" style="width: 50px;">
+                      <button class="btn btn-primary btn_price_in" data-tp="+" data-uid="<?=$list2['USER_ID'][$i]?>">지급</button>
+                    </td>
+                    <td>
+                      <input type="text" id="subtract" style="width: 50px;">
+                      <button class="btn btn-danger btn_price_in" data-tp="-" data-uid="<?=$list2['USER_ID'][$i]?>">차감</button>
+                    </td>
+                    <td>
+                      <button class="btn btn-success btn_price_cancel" data-uid="<?=$list2['USER_ID'][$i]?>">취소</button>
+                    </td>
+                    <?php } ?>
+                  </tr>
+                  <?php
+                        }
+                      } else {
+                        echo "<tr><td colspan='13' class='text-center'>일치하는 정보가 없습니다.</td></tr>";
+                      }
+                    }
+                  ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-body">
+              <?=$list['page_string']?>
+            </div>
+            <!-- pagination-wrapper -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Row -->
+  </div>
+</div>
+<!-- CONTAINER CLOSED -->
+
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+<?php require_once $_SERVER['DOCUMENT_ROOT']."/inc/modal_member.html"; ?>
+
+<script>
+  $(function() {
+    $(document).on('click', '.btn_price_in', function() {
+      let type = $(this).data('tp');
+      let user_id = $(this).data('uid');
+      let cash = 0;
+      let wcash = $(this).parent().find('input').val();
+      let point = 0;
+      let ipoint = 0;
+      let txt = '추가';
+
+      if (type == '-') {
+        txt = '감소';
+      }
+
+      if (user_id == '') {
+        alert(txt + ' 실패하였습니다.');
+        return false;
+      }
+
+      if (wcash == '') {
+        alert('변경할 금액을 입력해 주세요.');
+        return false;
+      }
+
+      if (confirm(txt + '하시겠습니까?')) {
+        $.post('/member/default.php', {
+          mode: 'in_member_price',
+          user_id: user_id,
+          cash: cash,
+          wcash: wcash,
+          point: point,
+          ipoint: ipoint,
+          type: type
+        }, function(e) {
+          alert(e.msg);
+          if (e.error) {
+            window.location.reload();
+          }
+        }, 'json');
+      }
+    });
+
+    $(document).on('click', '.btn_price_cancel', function() {
+      let uid = $(this).data('uid');
+
+      if (confirm('이 회원에 대한 전행위를 실행취소 하시겠습니까?')) {
+        $.post('/member/default.php', {
+          mode: 'cancel_staff_wcash_price',
+          user_id: uid,
+        }, function(e) {
+          alert(e.msg);
+          if (e.error) {
+            window.location.reload();
+          }
+        }, 'json');
+      }
+    });
+  });
+</script>

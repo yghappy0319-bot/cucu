@@ -1,0 +1,159 @@
+<?php
+  header("HTTP/1.1 404 Forbidden");
+  exit;
+  include $_SERVER['DOCUMENT_ROOT']."/inc/meta.html";
+  require_once $_SERVER['DOCUMENT_ROOT']."/_library/function_ORDERS.php";
+
+  if (!$page) $page = 1;
+  if (!$limit) $limit = 6;
+  if (!$codelk) $$codelk = "";
+  $add_query = " AND (WIN1 > 0 OR WIN2 > 0 OR WIN3 > 0 OR WIN4 > 0 OR WIN5 > 0)";
+  $PARAM = "&order=$order&find_text=$find_text&find_object=$find_object&limit=$limit&codelk=$codelk";
+
+  if ($codelk != '') {
+    $add_query .= " AND GUBUN='".$codelk."'";
+  }
+
+  $condition = array(
+    "row"         => $limit,
+    "page"        => $page,
+    "order"       => " PLAYDATE DESC",
+    "find_text"   => $find_text,
+    "find_object" => $find_object,
+    "add_query"   => $add_query,
+  );
+
+  $list = F_ORDERS_WIN_list($condition);
+
+  if ($list['total'] == 0) {
+    $list['ORDERS_NO'] = array();
+  }
+
+  $total =  0;
+  if ($list['total'] > 0) {
+    $total = ceil($list['total'] / $limit);
+  }
+  $menu_on['draw'] = true;
+?>
+
+<body class="body_idx">
+  <div class="wrap_bg">
+    <div id="wrap">
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/header.html"; ?>
+      <main id="main" class="cs bg_contents">
+        <div class="contents f_NotoSansKR">
+          <!-- <div class="title_sub bb border_dcdcdc" style="margin-bottom:0">
+            <h2 class="title">당첨자 회원 리스트</h2>
+            <a href="/" class="btn_back"><span class="hide">뒤로가기</span></a>
+          </div> -->
+          <section class="sec_win wrap_com section bg_white">
+            <!--<div class="wrap_tab type2">
+              <ul class="tab_type2 flex wrap">
+                <li><a href="draw-guide.html">
+                    <p>추첨안내</p>
+                  </a></li>
+                <li>
+                  <a href="draw-mega.html">
+                    <p>메가밀리언 당첨결과</p>
+                  </a>
+                </li>
+                <li>
+                  <a href="draw-power.html">
+                    <p>파워볼 당첨결과</p>
+                  </a>
+                </li>
+                <li class="on">
+                  <a href="draw-winners.html">
+                    <p>당첨자 회원 리스트</p>
+                  </a>
+                </li>
+              </ul>
+            </div>-->
+            <div class="wrap_tab bg_white" style="padding-top: 0px;">
+              <ul class="tab_type1 flex">
+                <li class="<?=($codelk == '') ? "on" : ""?>"><a href="draw-winners.html" style="line-height: 1.4rem;">전체</a></li>
+                <li class="<?=($codelk == 'MM') ? "on" : ""?>"><a href="./draw-winners.html?codelk=MM" style="line-height: 1.4rem;">메가밀리언</a></li>
+                <li class="<?=($codelk == 'PB') ? "on" : ""?>"><a href="./draw-winners.html?codelk=PB" style="line-height: 1.4rem;">파워볼</a></li>
+              </ul>
+            </div>
+            <div class="board_type1 wrap_board ls50">
+              <h3 class="h_type4 pt50">당첨자 회원 리스트</h3>
+              <div class="wrap_list bt border_dcdcdc">
+                <ul class="list_win flex wrap space">
+                  <?php
+                    for ($i = 0; $i < count($list['ORDERS_NO']); $i++) {
+                      $gubun = "파워볼";
+                      $ticketUrl = "";
+
+                      if ($list['GUBUN'][$i] == 'MM') {
+                        $gubun = "메가밀리언";
+                      }
+
+                      if ($list['IMG_PATH'][$i] != '') {
+                        $ticketImg = $list['IMG_PATH'][$i];
+                        $ticketImgDate = $list['IMG_DATE'][$i];
+                        $ticketTime = strtotime($ticketImgDate);
+
+                        if (strpos($ticketImg, "/") === false) {
+                          $ticketTime = strtotime($ticketImgDate);
+                          $ticketDir = date('ymd', $ticketTime);
+                          $ticketUrl = $ticketImageURI . $ticketDir . '/'. $ticketImg . '';
+                        } else {
+                          $ticketDir = '';
+                          $ticketUrl = $ticketImageURI . $ticketImg . '';
+                        }
+                      }
+                  ?>
+                  <li>
+                    <a>
+                      <div style="background: url('<?=$ticketUrl?>') no-repeat; background-size: 100%;"></div>
+                      <div class="title">
+                        <p><span><?=$list["PLAYDATE"][$i]?></span>
+                          <?=$gubun?> 당첨자 <?=iconv_substr($list['NAME'][$i], 0, 1, 'utf-8')."**"?></p>
+                      </div>
+                    </a>
+                  </li>
+                  <?php } ?>
+                  <?php if ($list['total'] <= 0) { ?>
+                  <li style="width: 100%;">
+                    <a>
+                      <div style="display: none;"></div>
+                      <div class="title txt_center">당첨내역이 없습니다.</div>
+                    </a>
+                  </li>
+                  <?php } ?>
+                </ul>
+                <?php if ($list['total'] > 0) { ?>
+                <!-- 페이징 숫자 표시는 5개까지 -->
+                <div class="wrap_paging">
+                  <?php
+                    $page_info['cur'] = $page;
+                    $page_info['row'] = $limit;
+                    $page_info['total'] = $list['total'];
+                    $list['page_string'] = print_page_num1($page_info);
+                    echo $list['page_string'];
+                  ?>
+                </div>
+                <?php } ?>
+              </div>
+            </div>
+          </section>
+          <div class="wrap_com">
+            <?php include $_SERVER['DOCUMENT_ROOT']."/inc/quick.html"; ?>
+          </div>
+        </div>
+      </main>
+      <?php include $_SERVER['DOCUMENT_ROOT']."/inc/footer.html"; ?>
+    </div>
+  </div>
+</body>
+
+<script>
+  $(function() {
+    $(document).on("change", "#codelk", function() {
+      var codelk = $(this).val();
+      location.href = "./draw-winners.html?codelk=" + codelk;
+    });
+  });
+</script>
+</html>
