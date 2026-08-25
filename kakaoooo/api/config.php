@@ -507,8 +507,8 @@ function 무기_시전한도_3시간($무기명, int $강화단계): int
 
 /**
  * 활 시전 1회당 타수 흡수량 (랜덤)
- * +1~10:1 · +11~20:1~2 · +21~30:2~3 · +31~40:3~4 · +41~50:5~6
- * 이후 10강마다 min+2 / max+2
+ * +1~10:1 · +11~20:1~2 · +21~30:1~3 · +31~40:1~4 · +41~50:1~5 …
+ * 10강 구간마다 최댓값 +1 (최솟값은 항상 1)
  */
 function 활_흡수타수($강화단계): ?int
 {
@@ -516,27 +516,8 @@ function 활_흡수타수($강화단계): ?int
     if ($e < 1) {
         return null;
     }
-    if ($e <= 10) {
-        return 1;
-    }
-    if ($e <= 20) {
-        $min = 1;
-        $max = 2;
-    } elseif ($e <= 30) {
-        $min = 2;
-        $max = 3;
-    } elseif ($e <= 40) {
-        $min = 3;
-        $max = 4;
-    } elseif ($e <= 50) {
-        $min = 5;
-        $max = 6;
-    } else {
-        $extra = (int)floor(($e - 41) / 10);
-        $min = 5 + ($extra * 2);
-        $max = 6 + ($extra * 2);
-    }
-    return rand($min, $max);
+    $max = (int)ceil($e / 10);
+    return rand(1, $max);
 }
 
 /**
